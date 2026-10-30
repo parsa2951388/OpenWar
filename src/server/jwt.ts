@@ -1,279 +1,327 @@
-
 import { randomUUID } from "node:crypto";
-import {
-  TokenPayload,
-  TokenPayloadSchema,
-  UserMeResponse,
-  UserMeResponseSchema,
-} from "@openfront/shared/ApiSchemas";
-import { base64urlToUuid, uuidToBase64url } from "@openfront/shared/Base64";
-import { CloseCode, CloseReason } from "@openfront/shared/CloseCodes";
-import { GameEnv } from "@openfront/shared/configuration/Env";
-import { PersistentIdSchema } from "@openfront/shared/WireSchemas";
-import { SignJWT, jwtVerify } from "jose";
+import type { TokenPayload } from "@openfront/shared/ApiSchemas";
 import { z } from "zod";
+import { censorPlayer } from "./Censor";
 import { ServerEnv } from "./ServerEnv";
 
-const GUEST_TOKEN_TTL_SECONDS = 30 * 24 * 60 * 60;
+const JoinVerifyVerdictSchema = z.discriminatedUnion("status", [
+  z.object({
+    status: z.literal("approved"),
+    username: z.string(),
+    clanTag: z.string().nullable().optional(),
+  }),
+  z.object({
+    status: z.literal("rejected"),
+    reason: z.string(),
+    errorCodes: z.array(z.string()).optional(),
+  }),
+  z.object({
+    status: z.literal("error"),
+    reason: z.string(),
+    username: z.string().optional(),
+    clanTag: z.string().nullable().optional(),
+  }),
+]);
 
-type TokenVerificationResult =
-  | {
-      type: "success";
-      persistentId: string;
-      claims: TokenPayload | null;
-    }
-  | { type: "error"; message: string };
-
-function errorMessage(error: unknown): string {
-  if (error instanceof Error) return error.message;
-  if (typeof error === "string") return error;
-  return "An unknown error occurred";
-}
-
-/**
- * Creates a signed, long-lived guest token for an OpenWar standalone server.
- *
- * The server generates the persistent identity. The client must never choose
- * another player's persistent ID or submit a plain UUID as authorization.
- *
- * The returned JWT is a bearer credential and must be stored and transmitted
- * securely by the client.
- */
-export async function createGuestToken(): Promise<{
-  token: string;
-  persistentId: string;
-  expiresIn: number;
-}> {
-  if (!ServerEnv.standaloneMode()) {
-    throw new Error(
-      "Guest token issuance is available only in OpenWar standalone mode",
-    );
-  }
-
-  const persistentId = randomUUID();
-  const issuedAt = Math.floor(Date.now() / 1000);
-  const expiresAt = issuedAt + GUEST_TOKEN_TTL_SECONDS;
-
-  const token = await new SignJWT({
-    provider: "guest",
+const TurnstileResponseSchema = z
+  .object({
+    success: z.boolean(),
+    "error-codes": z.array(z.string()).optional(),
+    hostname: z.string().optional(),
+    action: z.string().optional(),
+    cdata: z.string().optional(),
   })
-    .setProtectedHeader({
-      alg: "HS256",
-      typ: "JWT",
-    })
-    .setIssuer(ServerEnv.guestJwtIssuer())
-    .setAudience(ServerEnv.jwtAudience())
-    .setSubject(uuidToBase64url(persistentId))
-    .setJti(randomUUID())
-    .setIssuedAt(issuedAt)
-    .setExpirationTime(expiresAt)
-    .sign(ServerEnv.guestJwtSecret());
+  .passthrough();
 
-  return {
-    token,
-    persistentId,
-    expiresIn: GUEST_TOKEN_TTL_SECONDS,
-  };
+export type JoinVerifyResponse =
+  | { status: "approved"; username: string; clanTag: string | null }
+  | { status: "rejected"; reason: string; errorCodes?: string[] }
+  | {
+      status: "error";
+      reason: string;
+      degraded: boolean;
+      identity?: { username: string; clanTag: string | null };
+    };
+
+export type JoinVerifyPlan =
+  | { action: "reject" }
+  | { action: "skip" }
+  | { action: "verify"; token: string | null };
+
+export function isSteamAuthenticated(claims: TokenPayload | null): boolean {
+  return claims?.provider === "steam";
 }
 
-/**
- * Verifies an OpenWar guest token.
- *
- * Guest tokens are accepted only when standalone mode is explicitly enabled.
- * The signature, algorithm, issuer, audience, expiration and payload shape
- * are all checked before the persistent identity is trusted.
- */
-async function verifyGuestToken(
-  token: string,
-): Promise<TokenVerificationResult> {
+export type ClientAuth = "account" | "anonymous";
+
+export function clientAuth(claims: TokenPayload | null): ClientAuth {
+  const provider = claims?.provider;
+  return provider === undefined || provider === "guest"
+    ? "anonymous"
+    : "account";
+}
+
+export function planJoinVerify(args: {
+  isReadmit: boolean;
+  gameStarted: boolean;
+  turnstileToken: string | null;
+  identityUnchanged: boolean;
+  steamAuthed: boolean;
+}): JoinVerifyPlan {
+  if (!args.isReadmit) {
+    if (args.steamAuthed) {
+      return { action: "verify", token: null };
+    }
+
+    if (!args.turnstileToken) {
+      return { action: "reject" };
+    }
+
+    return { action: "verify", token: args.turnstileToken };
+  }
+
+  if (args.gameStarted || args.identityUnchanged) {
+    return { action: "skip" };
+  }
+
+  return { action: "verify", token: null };
+}
+
+const inFlightByToken = new Map<string, Promise<JoinVerifyResponse>>();
+
+function parseJoinVerifyResponse(data: unknown): JoinVerifyResponse {
+  const parsed = JoinVerifyVerdictSchema.safeParse(data);
+
+  if (!parsed.success) {
+    return {
+      status: "error",
+      reason: `api-worker returned malformed response: ${parsed.error.message}`,
+      degraded: false,
+    };
+  }
+
+  if (parsed.data.status === "approved") {
+    return {
+      status: "approved",
+      username: parsed.data.username,
+      clanTag: parsed.data.clanTag ?? null,
+    };
+  }
+
+  if (parsed.data.status === "error") {
+    const { reason, username, clanTag } = parsed.data;
+
+    return {
+      status: "error",
+      reason,
+      degraded: true,
+      ...(username !== undefined && {
+        identity: { username, clanTag: clanTag ?? null },
+      }),
+    };
+  }
+
+  return parsed.data;
+}
+
+async function fetchJoinVerify(
+  ip: string,
+  token: string | null,
+  username: string,
+  clanTag: string | null,
+): Promise<Response> {
+  return fetch(`${ServerEnv.jwtIssuer()}/join_verify`, {
+    method: "POST",
+    signal: AbortSignal.timeout(5000),
+    headers: {
+      "Content-Type": "application/json",
+      "x-api-key": ServerEnv.apiKey(),
+    },
+    body: JSON.stringify({ ip, token, username, clanTag }),
+  });
+}
+
+async function verifyJoinRequest(
+  ip: string,
+  turnstileToken: string | null,
+  username: string,
+  clanTag: string | null,
+): Promise<JoinVerifyResponse> {
   try {
-    const { payload } = await jwtVerify(
-      token,
-      ServerEnv.guestJwtSecret(),
-      {
-        algorithms: ["HS256"],
-        issuer: ServerEnv.guestJwtIssuer(),
-        audience: ServerEnv.jwtAudience(),
-      },
+    const response = await fetchJoinVerify(
+      ip,
+      turnstileToken,
+      username,
+      clanTag,
     );
 
-    const result = TokenPayloadSchema.safeParse(payload);
-
-    if (!result.success) {
+    if (!response.ok) {
       return {
-        type: "error",
-        message: z.prettifyError(result.error),
+        status: "error",
+        reason: `api-worker returned ${response.status}`,
+        degraded: false,
       };
     }
 
-    const claims = result.data;
-
-    if (claims.provider !== "guest") {
-      return {
-        type: "error",
-        message: "Token is not an OpenWar guest token",
-      };
-    }
-
-    // Guest sessions have no OpenFront account profile. Returning null claims
-    // makes the existing Worker join path treat this player as anonymous.
-    return {
-      type: "success",
-      persistentId: claims.sub,
-      claims: null,
-    };
+    return parseJoinVerifyResponse(await response.json());
   } catch (error) {
     return {
-      type: "error",
-      message: errorMessage(error),
+      status: "error",
+      reason: `api-worker unavailable: ${error}`,
+      degraded: false,
     };
   }
 }
 
 /**
- * Verifies a play token.
- *
- * Standalone mode accepts only OpenWar-issued guest JWTs. It never downloads
- * OpenFront's JWKS and never falls back to accepting a plain persistent ID.
- *
- * Non-standalone mode preserves the existing development and OpenFront API
- * authentication paths.
+ * Standalone verification:
+ * - A first-time join must pass Cloudflare Turnstile.
+ * - Re-admits with no token only receive local name screening.
+ * - A failed or unavailable Turnstile service rejects the join.
+ * - OpenFront's join_verify API is never contacted.
  */
-export async function verifyClientToken(
-  token: string,
-): Promise<TokenVerificationResult> {
-  if (ServerEnv.standaloneMode()) {
-    return verifyGuestToken(token);
-  }
+async function verifyStandaloneJoin(
+  ip: string,
+  turnstileToken: string | null,
+  username: string,
+  clanTag: string | null,
+): Promise<JoinVerifyResponse> {
+  const screenedIdentity = censorPlayer(username, clanTag);
 
-  if (PersistentIdSchema.safeParse(token).success) {
-    if (ServerEnv.env() === GameEnv.Dev) {
-      return {
-        type: "success",
-        persistentId: token,
-        claims: null,
-      };
-    }
-
+  // A null token is allowed only for a re-admit whose original session
+  // has already passed the first-join Turnstile check.
+  if (turnstileToken === null || turnstileToken.length === 0) {
     return {
-      type: "error",
-      message: "persistent ID not allowed in production",
+      status: "approved",
+      username: screenedIdentity.username,
+      clanTag: screenedIdentity.clanTag,
     };
   }
+
+  let secret: string;
 
   try {
-    const issuer = ServerEnv.jwtIssuer();
-    const audience = ServerEnv.jwtAudience();
-    const key = await ServerEnv.jwkPublicKey();
-
-    const { payload } = await jwtVerify(token, key, {
-      algorithms: ["EdDSA"],
-      issuer,
-      audience,
-    });
-
-    const result = TokenPayloadSchema.safeParse(payload);
-
-    if (!result.success) {
-      return {
-        type: "error",
-        message: z.prettifyError(result.error),
-      };
-    }
-
-    const claims = result.data;
-
+    secret = ServerEnv.turnstileSecretKey();
+  } catch {
     return {
-      type: "success",
-      persistentId: claims.sub,
-      claims,
-    };
-  } catch (error) {
-    return {
-      type: "error",
-      message: errorMessage(error),
+      status: "rejected",
+      reason: "Turnstile server secret is not configured",
+      errorCodes: ["turnstile-secret-missing"],
     };
   }
-}
 
-// status is the API's HTTP status; unset for network and parse failures.
-export type UserMeError = {
-  type: "error";
-  status?: number;
-  message: string;
-};
+  const body = new URLSearchParams();
+  body.set("secret", secret);
+  body.set("response", turnstileToken);
+  body.set("idempotency_key", randomUUID());
 
-export async function getUserMe(
-  token: string,
-): Promise<
-  { type: "success"; response: UserMeResponse } | UserMeError
-> {
-  // Guest tokens intentionally have no account profile. The Worker join
-  // handler should not call this function for a guest session.
-  if (ServerEnv.standaloneMode()) {
-    return {
-      type: "error",
-      message: "Account profiles are unavailable in standalone mode",
-    };
+  if (ip && ip !== "unknown") {
+    body.set("remoteip", ip);
   }
 
   try {
     const response = await fetch(
-      ServerEnv.jwtIssuer() + "/users/@me",
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
       {
+        method: "POST",
         headers: {
-          authorization: `Bearer ${token}`,
-          "x-api-key": ServerEnv.apiKey(),
+          "Content-Type": "application/x-www-form-urlencoded",
         },
+        body,
         signal: AbortSignal.timeout(5000),
       },
     );
 
-    if (response.status !== 200) {
+    if (!response.ok) {
       return {
-        type: "error",
-        status: response.status,
-        message: `Failed to fetch user me: ${response.statusText}`,
+        status: "rejected",
+        reason: "Turnstile verification service returned an HTTP error",
+        errorCodes: [`http-${response.status}`],
       };
     }
 
-    const body: unknown = await response.json();
-    const result = UserMeResponseSchema.safeParse(body);
+    const responseBody: unknown = await response.json();
+    const parsed = TurnstileResponseSchema.safeParse(responseBody);
 
-    if (!result.success) {
+    if (!parsed.success) {
       return {
-        type: "error",
-        message: `Invalid response: ${z.prettifyError(result.error)}`,
+        status: "rejected",
+        reason: "Turnstile returned an invalid response",
+        errorCodes: ["invalid-turnstile-response"],
+      };
+    }
+
+    if (!parsed.data.success) {
+      return {
+        status: "rejected",
+        reason: "Turnstile verification failed",
+        errorCodes: parsed.data["error-codes"] ?? ["verification-failed"],
       };
     }
 
     return {
-      type: "success",
-      response: result.data,
+      status: "approved",
+      username: screenedIdentity.username,
+      clanTag: screenedIdentity.clanTag,
     };
-  } catch (error) {
+  } catch {
+    // Fail closed: do not admit a first-time player when the anti-bot
+    // verification service cannot be reached.
     return {
-      type: "error",
-      message: `Failed to fetch user me: ${errorMessage(error)}`,
+      status: "rejected",
+      reason: "Turnstile verification service is unavailable",
+      errorCodes: ["turnstile-unavailable"],
     };
   }
 }
 
-// How a join closes when /users/@me fails. A 401/403 is the API's rejection
-// of the session itself: retrying with the same token cannot succeed.
-export function userMeFailureClose(error: UserMeError): {
-  code: CloseCode;
-  reason: CloseReason;
-} {
-  if (error.status === 401 || error.status === 403) {
-    return {
-      code: CloseCode.Unauthorized,
-      reason: CloseReason.InvalidToken,
-    };
+/**
+ * Verifies a join using the appropriate authentication backend.
+ *
+ * Standalone mode uses Cloudflare directly and local name screening.
+ * Normal OpenFront mode keeps its existing API verification behavior.
+ */
+export async function verifyJoin(
+  ip: string,
+  turnstileToken: string | null,
+  username: string,
+  clanTag: string | null,
+  persistentId?: string,
+): Promise<JoinVerifyResponse> {
+  const verifier = ServerEnv.standaloneMode()
+    ? verifyStandaloneJoin
+    : verifyJoinRequest;
+
+  if (turnstileToken !== null && turnstileToken.length > 0) {
+    const key = `${turnstileToken}\0${persistentId ?? ""}\0${username}\0${clanTag ?? ""}`;
+
+    const inFlight = inFlightByToken.get(key);
+
+    if (inFlight) {
+      return inFlight;
+    }
+
+    const promise = verifier(
+      ip,
+      turnstileToken,
+      username,
+      clanTag,
+    ).finally(() => {
+      inFlightByToken.delete(key);
+    });
+
+    inFlightByToken.set(key, promise);
+
+    return promise;
   }
 
-  return {
-    code: CloseCode.InternalError,
-    reason: CloseReason.AccountLookupFailed,
-  };
+  return verifier(ip, turnstileToken, username, clanTag);
 }
+
+export function _inFlightTokenCount(): number {
+  return inFlightByToken.size;
+}
+
+export function _clearInFlightTokens(): void {
+  inFlightByToken.clear();
+  }
