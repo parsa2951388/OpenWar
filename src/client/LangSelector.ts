@@ -263,6 +263,7 @@ export class LangSelector extends LitElement {
 
   private applyTranslation() {
     this.applyDocumentLanguage();
+    document.dispatchEvent(new CustomEvent("language-changed", { detail: this.currentLang }));
     const components = [
       "single-player-modal",
       "host-lobby-modal",
