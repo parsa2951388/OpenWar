@@ -330,7 +330,11 @@ export async function startWorker() {
     ServerEnv.jwtIssuer() + "/reserved_clan_tags",
     log,
   );
-  void privilegeRefresher.start();
+  // Independent guest deployments use the engine's fail-open cosmetic
+  // defaults; there is no external account/cosmetic API to poll.
+  if (!ServerEnv.selfHostedAuthEnabled()) {
+    void privilegeRefresher.start();
+  }
 
   // Ahead of everything that can reject a request — the worker-prefix check
   // below and the rate limiter further down — so that a 404 or a 429 still
