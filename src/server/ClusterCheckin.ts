@@ -88,6 +88,11 @@ export function registeredSite(): string | undefined {
  * Every deployed host has one and registers under its own site.
  */
 export function checkinBody(liveGames: number): CheckinBody | null {
+  // A standalone guest deployment has exactly one fixed server and no
+  // upstream registry. Keep the master's local lobby scheduler active, but
+  // do not POST check-ins or poll map weights against the Pages front door.
+  if (ServerEnv.selfHostedAuthEnabled()) return null;
+
   const host = ServerEnv.publicHost();
   if (host === undefined) return null;
   const machine = ServerEnv.machine();
