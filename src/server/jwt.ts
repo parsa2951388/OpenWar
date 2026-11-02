@@ -41,6 +41,11 @@ export async function verifyClientToken(
       issuer,
       audience,
     });
+    // Refresh tokens are accepted only by /auth/refresh, never by the game
+    // WebSocket or game-creation endpoints.
+    if (payload.token_use === "refresh") {
+      return { type: "error", message: "refresh token cannot access the game" };
+    }
     const result = TokenPayloadSchema.safeParse(payload);
     if (!result.success) {
       return {
