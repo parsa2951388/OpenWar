@@ -309,13 +309,19 @@ export async function startWorker() {
       // The ranked loop follows the deployment-active flag the master pushes
       // to this worker (OPE-469): a draining, standby or fenced server keeps
       // the games it has but stops offering new matches.
-      startRankedCheckinLoops({
-        gm,
-        playlist,
-        workerId,
-        log,
-        isActive: () => lobbyService.isDeploymentActive(),
-      });
+      // Ranked matchmaking needs the upstream matchmaking API. Standalone
+      // guest mode uses local hosted/public lobbies instead and must not
+      // repeatedly poll an API that this deployment intentionally does not
+      // provide.
+      if (!ServerEnv.selfHostedAuthEnabled()) {
+        startRankedCheckinLoops({
+          gm,
+          playlist,
+          workerId,
+          log,
+          isActive: () => lobbyService.isDeploymentActive(),
+        });
+      }
     },
     1000 + Math.random() * 2000,
   );
