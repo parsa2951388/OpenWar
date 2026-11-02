@@ -244,7 +244,22 @@ export class LangSelector extends LitElement {
     this.applyTranslation();
   }
 
+  private applyDocumentLanguage(): void {
+    const root = document.documentElement;
+    const locale = this.currentLang === "debug" ? "en" : this.currentLang;
+    root.lang = locale;
+    let script = "";
+    try {
+      script = new Intl.Locale(locale).maximize().script ?? "";
+    } catch {
+      script = "";
+    }
+    const rtlScripts = new Set(["Arab", "Hebr", "Thaa", "Nkoo", "Adlm", "Syrc"]);
+    root.dir = rtlScripts.has(script) ? "rtl" : "ltr";
+  }
+
   private applyTranslation() {
+    this.applyDocumentLanguage();
     const components = [
       "single-player-modal",
       "host-lobby-modal",
