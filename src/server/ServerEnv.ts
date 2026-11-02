@@ -128,9 +128,9 @@ export class ServerEnv {
   static jwtIssuer(): string {
     const configured = process.env.API_BASE_URL?.trim();
     if (configured) {
-      return configured.endsWith("/")
-        ? configured.replaceAll(/\/+$/, "")
-        : configured;
+      let baseUrl = configured;
+      while (baseUrl.endsWith("/")) baseUrl = baseUrl.slice(0, -1);
+      return baseUrl;
     }
     const audience = ServerEnv.jwtAudience();
     return audience === "localhost"
