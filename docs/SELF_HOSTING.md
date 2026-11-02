@@ -5,65 +5,88 @@
 Open War is a Node.js game server, not a static-only website. The production
 container runs nginx on port **80**, a Node master process on port 3000, and
 one or more game workers on ports 3001 onward. nginx handles HTTP and
-WebSocket upgrade routing. Run the container as a long-lived web service and
-route the public game hostname to container port 80.
+WebSocket upgrade routing. Run the container as a long-lived web service.
 
-The Docker image now includes a readiness health check against
-`/api/health`. It returns healthy only after the master has enough ready game
-workers. A process that is running but whose workers failed to start should
-not be considered ready.
+The Docker image includes a readiness health check against `/api/health`.
+It returns healthy only after the master has enough ready game workers. A
+container whose main process runs but whose workers failed to start should not
+be considered ready.
 
-## Important upstream service dependency
+## Current production topology: Cloudflare Pages proxy
 
-The standalone mode now provides its own Ed25519 guest-token issuer, JWKS,
-refresh-cookie handling and minimal guest profile on the same origin as the
-game server. It deliberately does not provide OAuth, account linking,
-purchases, clans, progression, paid cosmetics or a cross-server registry.
-Guest identities are anonymous and are not recoverable as accounts.
+The current Open War deployment uses Cloudflare Pages as the browser-facing
+origin and Render as the private upstream game-server origin:
 
-The game server applies local username/clan-tag filtering. Cloudflare
-Turnstile can be enabled by setting BOTH `TURNSTILE_SITE_KEY` and
-`TURNSTILE_SECRET_KEY`; the server then verifies challenges directly with
-Cloudflare. With neither configured, the game remains playable using its
-local name filter and connection/game rate limits.
+- Browser URL: `https://parsaoj.pages.dev`
+- Pages advanced-mode Worker: `cloudflare-pages/_worker.js`
+- Upstream Node/nginx game server: `https://open-war-game.onrender.com`
 
-For a Cloudflare Pages front door, deploy `cloudflare-pages/_worker.js` in
-advanced mode and point it at this server. Set `API_BASE_URL` to the Pages
-origin so guest authentication, JWKS and refresh cookies remain first-party
-in the browser. Set `GAME_HOST` to the direct game-server hostname and
-`SITE_HOST` to the Pages origin; clients use the former for game HTTP and
-WebSockets, while the latter is the allowed browser origin for game API CORS.
+The Pages Worker forwards the original request path, query, method, body,
+headers, cookies and WebSocket upgrade metadata to the Render origin. This
+keeps authentication, JWKS, game HTTP requests and game WebSockets on the same
+browser origin. The Render hostname is the upstream target; clients should
+normally enter the game through the Pages URL.
+
+For this topology, use these server settings:
+
+| Variable | Value / purpose |
+| --- | --- |
+| `GAME_ENV` | `prod` |
+| `DOMAIN` | `parsaoj.pages.dev` (hostname only; JWT audience) |
+| `API_BASE_URL` | `https://parsaoj.pages.dev` (no trailing slash) |
+| `SELF_HOSTED_AUTH` | `true` |
+| `GIT_COMMIT` | Full commit SHA built into the server |
+| `NUM_WORKERS` | Positive number of game workers |
+| `INSTANCE_LETTER` | One lowercase letter reserved for the standalone server |
+| `JWT_PRIVATE_KEY` | Persistent Ed25519 PKCS#8 private key; secret manager only |
+| `JWT_KEY_ID` | Stable key identifier |
+| `SUBDOMAIN`, `GAME_HOST`, `SITE_HOST`, `GAME_DOMAIN` | Leave unset for the same-origin Pages proxy mode |
+| `CDN_BASE` | May be empty when assets are served through the same origin |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Optional pair; set both to enable Cloudflare Turnstile |
+
+Do not set `GAME_HOST` or `SITE_HOST` in the current full-proxy topology.
+With those unset, the page shell injects a one-server cluster entry using
+`DOMAIN`; the browser keeps game API and WebSocket traffic on
+`parsaoj.pages.dev`, and the Pages Worker proxies it to Render.
+
+### Optional alternative: direct game-server connections
+
+A different topology can serve the page from Pages but send game HTTP and
+WebSocket traffic directly to a separate game hostname. In that case, set
+`API_BASE_URL` to the Pages origin, set `SITE_HOST` to the Pages hostname,
+and set `GAME_HOST` to the public game-server hostname. The game server's
+CORS allowlist then needs to recognize the Pages page origin. Do not combine
+these direct-host settings with the current full-proxy topology unless the
+client is intentionally being configured to bypass the Pages proxy for game
+traffic.
+
+## Independent guest identity
+
+Standalone mode provides its own Ed25519 guest-token issuer, public JWKS,
+refresh-cookie handling and minimal guest profile. It deliberately does not
+provide Google, Discord, Steam or email OAuth, password sign-in, account
+linking, purchases, clans, hosted progression, paid cosmetics, or a
+cross-server registry. Guest identities are anonymous, stored browser-side,
+and cannot be recovered as accounts after browser data is cleared or when
+switching devices.
+
+The access JWT is short-lived. The refresh token is a signed, stateless token
+with a 30-day lifetime, delivered in a host-only `__Host-` cookie with
+`Secure`, `HttpOnly`, `SameSite=Lax` and `Path=/`. Because this mode has
+no server-side session registry, an individual refresh token cannot be
+revoked before expiry after theft. Logging out clears the browser cookie;
+rotating the signing key invalidates all issued tokens. This is a lightweight
+guest identity, not a full account security and recovery system.
+
+The game server applies local username/clan-tag filtering and connection/game
+rate limits. Cloudflare Turnstile can be enabled by setting BOTH
+`TURNSTILE_SITE_KEY` and `TURNSTILE_SECRET_KEY`; the server then verifies
+challenges directly with Cloudflare. With neither configured, local filtering
+and rate limits remain active, but the extra Turnstile challenge is absent.
 
 Do not expose `GAME_ENV=dev` as a public workaround. Development mode accepts
 raw persistent IDs rather than production JWTs; standalone production mode
 uses signed Ed25519 guest tokens instead.
-
-## Required server configuration
-
-The production server validates several environment variables at startup:
-
-| Variable | Purpose |
-| --- | --- |
-| `GAME_ENV` | Must be `prod` for a public production server. |
-| `DOMAIN` | JWT audience and current API hostname suffix. |
-| `GIT_COMMIT` | Exact full commit SHA served by this container. |
-| `NUM_WORKERS` | Positive number of game workers behind nginx. |
-| `INSTANCE_LETTER` | One lowercase letter reserved for this deployment's game IDs. |
-| `GAME_HOST` | Public hostname the browser connects to for game HTTP and WebSockets. |
-| `SITE_HOST` | Public website origin allowed by the game API's CORS policy (hostname only). |
-| `API_BASE_URL` | Public HTTPS origin for auth/JWKS requests; use the Pages front door when one is configured. No trailing slash. |
-| `SELF_HOSTED_AUTH` | Set to `true` to enable the independent guest API. |
-| `JWT_PRIVATE_KEY` | Persistent Ed25519 PKCS#8 private key; store as a secret. |
-| `JWT_KEY_ID` | Key identifier, for example `open-war-1`. |
-| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Optional pair; set both to enable Cloudflare Turnstile. |
-| `API_KEY` | Retained for optional internal integrations. |
-
-For a single-host deployment, set `DOMAIN` to the provider's bare public
-hostname and `API_BASE_URL` to `https://<hostname>`. Leave `GAME_HOST` and
-`SUBDOMAIN` unset: the page shell injects a one-server map and all HTTP and
-WebSocket traffic stays on the same origin. `CDN_BASE` may be empty when
-assets are served by the same origin. Store the private key and Turnstile
-secret in the hosting provider's secret manager; never commit them.
 
 ## Local smoke test
 
@@ -74,7 +97,8 @@ docker build -t open-war .
 docker run --rm -p 8080:80 open-war
 ```
 
-The image build validates the production bundle and the container startup
+The image build validates the production bundle and container startup
 configuration. The container will not become healthy until its game workers
 are ready. A browser smoke test is still required to verify guest login,
-lobby creation, WebSocket connection, and a complete two-player match.
+lobby creation, WebSocket connection, and a complete match with two
+independent clients.
