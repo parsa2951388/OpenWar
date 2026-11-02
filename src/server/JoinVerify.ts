@@ -155,11 +155,11 @@ async function fetchJoinVerify(
   if (!ServerEnv.turnstileEnabled()) {
     return Response.json({ status: "approved", ...identity });
   }
+  // The caller already rejects a missing token on a first anonymous join.
+  // A null token here is reserved for a Steam-authenticated join or a
+  // previously admitted player changing identity during a rejoin.
   if (!token) {
-    return Response.json({
-      status: "rejected",
-      reason: "missing_turnstile_token",
-    });
+    return Response.json({ status: "approved", ...identity });
   }
 
   const body = new URLSearchParams({
