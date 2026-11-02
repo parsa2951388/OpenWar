@@ -16,7 +16,6 @@ import {
   buildPublicAssetManifest,
   copyRootPublicFiles,
   createHashedPublicAssetFiles,
-  getProprietaryDir,
   getPublicDir,
   getResourcesDir,
   writePublicAssetManifest,
@@ -67,34 +66,6 @@ function serveRootPublicDir(publicDir: string): Plugin {
           return next();
         if (rel === "" || rel.endsWith("/")) rel += "index.html";
         const filePath = path.join(publicDir, rel);
-        if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile())
-          return next();
-        const mime = lookupMime(filePath);
-        if (mime) res.setHeader("Content-Type", mime);
-        res.setHeader("Cache-Control", "no-store");
-        fs.createReadStream(filePath).pipe(res);
-      });
-    },
-  };
-}
-
-function serveProprietaryDir(
-  proprietaryDir: string,
-  resourcesDir: string,
-): Plugin {
-  return {
-    name: "serve-proprietary-dir",
-    configureServer(server) {
-      // Must run before Vite's htmlFallback; skip when resources/ has the file
-      // so publicDir keeps precedence.
-      server.middlewares.use((req, res, next) => {
-        if (!req.url) return next();
-        const rel = decodeURIComponent(
-          new URL(req.url, "http://x").pathname,
-        ).replace(/^\//, "");
-        if (rel.includes("..")) return next();
-        if (fs.existsSync(path.join(resourcesDir, rel))) return next();
-        const filePath = path.join(proprietaryDir, rel);
         if (!fs.existsSync(filePath) || !fs.statSync(filePath).isFile())
           return next();
         const mime = lookupMime(filePath);
@@ -231,8 +202,7 @@ export default defineConfig(({ mode }) => {
     [devInstanceLetter]: { host: "localhost", numWorkers: devNumWorkers },
   });
   const resourcesDir = getResourcesDir(__dirname);
-  const proprietaryDir = getProprietaryDir(__dirname);
-  const sourceDirs = [resourcesDir, proprietaryDir];
+  const sourceDirs = [resourcesDir];
   const assetManifest: AssetManifest = isProduction
     ? buildPublicAssetManifest(sourceDirs)
     : {};
@@ -254,7 +224,7 @@ export default defineConfig(({ mode }) => {
       : undefined,
     instanceId: JSON.stringify(env.INSTANCE_ID ?? "DEV_ID"),
     manifestHref: buildAssetUrl("manifest.json", assetManifest, cdnBase),
-    faviconHref: buildAssetUrl("images/Favicon.svg", assetManifest, cdnBase),
+    faviconHref: buildAssetUrl("images/OpenWarMark.svg", assetManifest, cdnBase),
     gameplayScreenshotUrl: buildAssetUrl(
       "images/GameplayScreenshot.png",
       assetManifest,
@@ -266,11 +236,11 @@ export default defineConfig(({ mode }) => {
       cdnBase,
     ),
     desktopLogoImageUrl: buildAssetUrl(
-      "images/OpenFront.png",
+      "images/OpenWarLogo.svg",
       assetManifest,
       cdnBase,
     ),
-    mobileLogoImageUrl: buildAssetUrl("images/OF.png", assetManifest, cdnBase),
+    mobileLogoImageUrl: buildAssetUrl("images/OpenWarLogo.svg", assetManifest, cdnBase),
   };
 
   // Vite's HTML transform replaces the source <script src="/src/client/Main.ts">
@@ -437,7 +407,6 @@ export default defineConfig(({ mode }) => {
       ...(!isProduction
         ? [
             serveRootPublicDir(getPublicDir(resourcesDir)),
-            serveProprietaryDir(proprietaryDir, resourcesDir),
             randomWorkerCreateProxy(devNumWorkers),
             steamLinkAliasRedirect(),
           ]

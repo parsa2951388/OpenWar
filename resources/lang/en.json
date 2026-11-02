@@ -1460,7 +1460,7 @@
   "main": {
     "account": "Account",
     "clans": "Clans",
-    "copyright": "© OpenFront™ and Contributors",
+    "copyright": "© OpenFront and Contributors",
     "create": "Create Lobby",
     "discord_avatar_alt": "Discord profile avatar",
     "github": "GitHub",
@@ -1482,7 +1482,7 @@
     "solo": "Solo",
     "store": "Store",
     "terms_of_service": "Terms of Service",
-    "title": "OpenFront (ALPHA)",
+    "title": "Open War",
     "troubleshooting": "Troubleshooting",
     "tutorial": "Tutorial",
     "user_avatar_alt": "{username}'s avatar",

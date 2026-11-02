@@ -573,12 +573,12 @@ class Client {
     await customElements.whenDefined("mobile-nav-bar");
     await customElements.whenDefined("desktop-nav-bar");
 
-    const openFrontFont = new FontFace(
-      "OpenFront",
-      `url(${assetUrl("fonts/OpenFront.ttf")})`,
+    const openWarFont = new FontFace(
+      "Open War",
+      `url(${assetUrl("fonts/overpass-bold.woff")})`,
     );
-    document.fonts.add(openFrontFont);
-    openFrontFont.load().catch(() => {});
+    document.fonts.add(openWarFont);
+    openWarFont.load().catch(() => {});
 
     // The tagged version only, so a player's version reads the same across web
     // and Steam. The build's full identity -- the commit on an untagged build,

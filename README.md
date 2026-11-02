@@ -1,163 +1,79 @@
-<p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="proprietary/images/OpenFrontLogoDark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="proprietary/images/OpenFrontLogo.svg">
-    <img src="proprietary/images/OpenFrontLogo.svg" alt="OpenFrontIO Logo" width="300">
-  </picture>
-</p>
+# Open War
 
-[OpenFront.io](https://openfront.io/) is an online real-time strategy game focused on territorial control and alliance building. Players compete to expand their territory, build structures, and form strategic alliances in various maps based on real-world geography.
+Open War is an unofficial community fork based on [OpenFrontIO](https://github.com/openfrontio/OpenFrontIO), an open-source real-time strategy game focused on territorial control, resource management and alliances.
 
-This is a fork/rewrite of WarFront.io. Credit to https://github.com/WarFrontIO.
+Open War is not affiliated with, endorsed by, or an official product of OpenFront Inc. or the OpenFront contributors.
 
-![CI](https://github.com/openfrontio/OpenFrontIO/actions/workflows/ci.yml/badge.svg)
-[![Crowdin](https://badges.crowdin.net/openfront-mls/localized.svg)](https://crowdin.com/project/openfront-mls)
-[![CLA assistant](https://cla-assistant.io/readme/badge/openfrontio/OpenFrontIO)](https://cla-assistant.io/openfrontio/OpenFrontIO)
-[![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
-[![Assets: CC BY-SA 4.0](https://img.shields.io/badge/Assets-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
+## Project status
 
-## License
+This repository contains the Open War fork and its game client, deterministic simulation engine, shared protocol packages and Node.js game server. The current work is focused on removing upstream private-service dependencies, replacing restricted brand assets, and preparing independent hosting.
 
-OpenFront source code is licensed under the **GNU Affero General Public License v3.0**
+**A public, production-ready independent multiplayer deployment is not declared complete until its own authentication, lobby service, WebSocket transport, security controls, asset audit, two-client end-to-end tests and Docker health checks have passed.**
 
-Current copyright notices appear in:
+## Attribution and licenses
 
-- Footer: "© OpenFront and Contributors"
-- Loading screen: "© OpenFront and Contributors"
+- The game source is distributed under the GNU Affero General Public License version 3, together with the additional conditions recorded in [LICENSE](LICENSE). Read the complete license before modifying or redistributing this fork.
+- Assets in `/resources` are licensed under Creative Commons Attribution-ShareAlike 4.0. Attribution to OpenFront / OpenFront Inc. and share-alike obligations apply. See [LICENSE-ASSETS](LICENSE-ASSETS) and [resources/LICENSE](resources/LICENSE).
+- The upstream `/proprietary` assets are excluded from the Open War build and must not be copied into the deployed application.
+- The required visible notice `© OpenFront and Contributors` is retained in the game footer.
+- New Open War logo artwork is original project artwork and, because it is placed under `/resources`, is released under the same CC BY-SA 4.0 terms.
 
-Modified versions must preserve these notices in reasonably visible locations.
+## Requirements
 
-See the [LICENSE](LICENSE) for complete requirements.
+- Node.js 24.15.0 or newer in the Node 24 release line
+- npm 12.1.0 or newer in the npm 12 release line
+- A modern desktop or mobile browser
 
-For asset licensing, see [LICENSE-ASSETS](LICENSE-ASSETS).  
-For license history, see [LICENSING.md](LICENSING.md).
-
-## 🌟 Features
-
-- **Real-time Strategy Gameplay**: Expand your territory and engage in strategic battles
-- **Alliance System**: Form alliances with other players for mutual defense
-- **Multiple Maps**: Play across various geographical regions including Europe, Asia, Africa, and more
-- **Resource Management**: Balance your expansion with defensive capabilities
-- **Cross-platform**: Play in any modern web browser
-
-## 📋 Prerequisites
-
-- [Node.js](https://nodejs.org/) v24.15.0 or newer in the Node 24 release line
-- [npm](https://www.npmjs.com/) v12.1.0 or newer in the npm 12 release line
-- A modern web browser (Chrome, Firefox, Edge, etc.)
-
-Node.js may bundle an older npm version. Upgrade it before installing project dependencies:
+Install dependencies with the repository's locked install script:
 
 ```bash
-npm install --global --ignore-scripts npm@12.1.0
+npm run inst
 ```
 
-## 🚀 Installation
+Do not use `npm install` or `npm i` for the project workspaces. The `inst` script runs `npm ci --ignore-scripts` against the committed lockfile.
 
-1. **Clone the repository**
+## Local development
 
-   ```bash
-   git clone https://github.com/openfrontio/OpenFrontIO.git
-   cd OpenFrontIO
-   ```
-
-2. **Install dependencies**
-
-   ```bash
-   npm run inst
-   ```
-
-   Do NOT use `npm install` nor `npm i` for project dependencies. Use `npm run inst`; it runs the safer `npm ci --ignore-scripts` to install exactly the versions in `package-lock.json` without running lifecycle scripts.
-
-   The repository also rejects dependency releases less than seven days old and dependencies sourced from Git, remote URLs, local tarballs, or directories. Wait until a new release passes the seven-day window before updating it; security exceptions require explicit maintainer review.
-
-## 🎮 Running the Game
-
-### Development Mode
-
-Run both the client and server in development mode with live reloading:
+Run the client and development server together:
 
 ```bash
 npm run dev
 ```
 
-This will:
-
-- Start the webpack dev server for the client
-- Launch the game server with development settings
-- Open the game in your default browser (to disable this behavior, set `SKIP_BROWSER_OPEN=true` in your environment)
-
-### Client Only
-
-To run just the client with hot reloading:
+Or start them separately:
 
 ```bash
 npm run start:client
-```
-
-### Server Only
-
-To run just the server with development settings:
-
-```bash
 npm run start:server-dev
 ```
 
-### Connecting to staging or production backends
+The development server has development-only identity shortcuts. **Do not expose development mode as a public production server.** Production hosting requires an Open War-owned issuer and signing keys, secure token verification, anti-abuse verification, correct worker routing and secret management.
 
-Sometimes it's useful to connect to production servers when replaying a game, testing user profiles, purchases, or login flow.
-
-> To replay a production game, make sure you're on the same commit that the game you want to replay was executed on, you can find the `gitCommit` value via `https://api.openfront.io/game/[gameId]`.
-> Unfinished games cannot be replayed on localhost.
-
-To connect to staging api servers:
+## Validation commands
 
 ```bash
-npm run dev:staging
+npm run typecheck
+npm run build-prod
+npm test
+npm run lint
+npm run format:check
 ```
 
-To connect to production api servers:
+Build and runtime results must be recorded against the exact deployed commit. A successful static build alone does not prove multiplayer readiness.
 
-```bash
-npm run dev:prod
-```
+## Architecture
 
-## 🛠️ Development Tools
+- `src/client/` — user interface, input, WebSocket transport and rendering
+- `packages/engine/` — deterministic game simulation
+- `packages/engine-api/` and `packages/engine-lib/` — simulation contracts, schemas, map and deterministic helpers
+- `src/server/` — lobby, worker routing, HTTP and WebSocket game server
+- `packages/shared/` and `packages/zbin/` — shared protocol, schemas and binary encoding
+- `resources/` — redistributable game assets and static files
 
-- **Format code**:
+## Links
 
-  ```bash
-  npm run format
-  ```
-
-- **Lint code with Oxlint**:
-
-  ```bash
-  npm run lint
-  ```
-
-- **Lint and fix code with Oxlint**:
-
-  ```bash
-  npm run lint:fix
-  ```
-
-- **Testing**
-  ```bash
-  npm test
-  ```
-
-## 🏗️ Project Structure
-
-- `/src/client` - Frontend game client
-- `/src/server` - Backend game server
-- `/packages/engine` - Deterministic game simulation (`@openfront/engine`)
-- `/packages/engine-api` - The engine's contract: types, schemas, game updates and the worker protocol (`@openfront/engine-api`)
-- `/packages/engine-lib` - Engine code also used outside the engine: map grid, rules, helpers (`@openfront/engine-lib`)
-- `/packages/shared` - Code shared by client and server: wire schemas, env, asset URLs (`@openfront/shared`)
-- `/packages/zbin` - Compact binary wire format for zod schemas (self-contained, zod-only)
-- `/resources` - Static assets (images, maps, etc.)
-
-## 🤝 Contributing
-
-Contributions and translations are welcome! See [CONTRIBUTING.md](CONTRIBUTING.md) for the workflow, the approved-issue process, project governance, and translation info.
+- [Open War source repository](https://github.com/parsa2951388/OpenWar)
+- [OpenFrontIO upstream project](https://github.com/openfrontio/OpenFrontIO)
+- [AGPL-3.0 license](LICENSE)
+- [Asset license](LICENSE-ASSETS)
+- [Asset credits](resources/public/asset-credits.html)
