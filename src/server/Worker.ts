@@ -44,6 +44,7 @@ import { GameManager } from "./GameManager";
 import { registerGamePreviewRoute } from "./GamePreviewRoute";
 import { GamePhase, type GameServer } from "./GameServer";
 import {
+  clientAuth,
   isSteamAuthenticated,
   type JoinVerifyResponse,
   planJoinVerify,
@@ -730,7 +731,7 @@ export async function startWorker() {
           persistentId,
           isReadmit,
         );
-        if (ServerEnv.env() !== GameEnv.Dev) {
+        if (ServerEnv.env() !== GameEnv.Dev && ServerEnv.turnstileEnabled()) {
           const stored = game?.storedIdentity(persistentId) ?? null;
           const steamAuthed = isSteamAuthenticated(claims);
           // SECURITY: the reject/skip/verify split (first joins must
@@ -847,7 +848,7 @@ export async function startWorker() {
           | undefined;
 
         const allowedFlares = ServerEnv.allowedFlares();
-        if (claims === null) {
+        if (claims === null || clientAuth(claims) === "anonymous") {
           if (allowedFlares !== undefined) {
             log.warn("Unauthorized: Anonymous user attempted to join game");
             admissionGuard.rollback();
