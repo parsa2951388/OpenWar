@@ -8,7 +8,7 @@ import { verifyClientToken } from "./jwt";
 import { ServerEnv } from "./ServerEnv";
 
 const GUEST_INPUT = z.object({ persistentId: z.string().uuid() });
-const REFRESH_COOKIE = "openwar_refresh";
+const REFRESH_COOKIE = "__Host-openwar_refresh";
 const REFRESH_TTL_SECONDS = 30 * 24 * 60 * 60;
 const ACCESS_TTL_SECONDS = 15 * 60;
 
@@ -39,14 +39,14 @@ function cookieValue(req: Request, name: string): string | null {
 function setRefreshCookie(res: Response, token: string): void {
   res.setHeader(
     "Set-Cookie",
-    `${REFRESH_COOKIE}=${encodeURIComponent(token)}; Max-Age=${REFRESH_TTL_SECONDS}; Path=/auth; HttpOnly; Secure; SameSite=Lax`,
+    `${REFRESH_COOKIE}=${encodeURIComponent(token)}; Max-Age=${REFRESH_TTL_SECONDS}; Path=/; HttpOnly; Secure; SameSite=Lax`,
   );
 }
 
 function clearRefreshCookie(res: Response): void {
   res.setHeader(
     "Set-Cookie",
-    `${REFRESH_COOKIE}=; Max-Age=0; Path=/auth; HttpOnly; Secure; SameSite=Lax`,
+    `${REFRESH_COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`,
   );
 }
 
