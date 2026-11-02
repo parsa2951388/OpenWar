@@ -27,6 +27,13 @@ Turnstile can be enabled by setting BOTH `TURNSTILE_SITE_KEY` and
 Cloudflare. With neither configured, the game remains playable using its
 local name filter and connection/game rate limits.
 
+For a Cloudflare Pages front door, deploy `cloudflare-pages/_worker.js` in
+advanced mode and point it at this server. Set `API_BASE_URL` to the Pages
+origin so guest authentication, JWKS and refresh cookies remain first-party
+in the browser. Set `GAME_HOST` to the direct game-server hostname and
+`SITE_HOST` to the Pages origin; clients use the former for game HTTP and
+WebSockets, while the latter is the allowed browser origin for game API CORS.
+
 Do not expose `GAME_ENV=dev` as a public workaround. Development mode accepts
 raw persistent IDs rather than production JWTs; standalone production mode
 uses signed Ed25519 guest tokens instead.
@@ -42,7 +49,9 @@ The production server validates several environment variables at startup:
 | `GIT_COMMIT` | Exact full commit SHA served by this container. |
 | `NUM_WORKERS` | Positive number of game workers behind nginx. |
 | `INSTANCE_LETTER` | One lowercase letter reserved for this deployment's game IDs. |
-| `API_BASE_URL` | Public HTTPS origin of this same game server; no trailing slash. |
+| `GAME_HOST` | Public hostname the browser connects to for game HTTP and WebSockets. |
+| `SITE_HOST` | Public website origin allowed by the game API's CORS policy (hostname only). |
+| `API_BASE_URL` | Public HTTPS origin for auth/JWKS requests; use the Pages front door when one is configured. No trailing slash. |
 | `SELF_HOSTED_AUTH` | Set to `true` to enable the independent guest API. |
 | `JWT_PRIVATE_KEY` | Persistent Ed25519 PKCS#8 private key; store as a secret. |
 | `JWT_KEY_ID` | Key identifier, for example `open-war-1`. |
@@ -67,5 +76,5 @@ docker run --rm -p 8080:80 open-war
 
 The image build validates the production bundle and the container startup
 configuration. The container will not become healthy until its game workers
-are ready. The public API dependency above still prevents this smoke test from
-proving a production multiplayer deployment.
+are ready. A browser smoke test is still required to verify guest login,
+lobby creation, WebSocket connection, and a complete two-player match.
