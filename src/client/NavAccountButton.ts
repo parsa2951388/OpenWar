@@ -39,6 +39,10 @@ function navAccountInstances(): NavAccountElements[] {
 // something to read instead of a dispatch they missed.
 let lastUserMeResponse: UserMeResponse | false | null = null;
 
+document.addEventListener("language-changed", () => {
+  if (lastUserMeResponse !== null) updateAccountNavButton(lastUserMeResponse);
+});
+
 /** The last resolved /users/@me response, or null before auth resolves. */
 export function latestUserMeResponse(): UserMeResponse | false | null {
   return lastUserMeResponse;
