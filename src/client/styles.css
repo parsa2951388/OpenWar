@@ -1,6 +1,37 @@
 @import "tailwindcss";
 @import "./halloween.css";
 
+/* Persian typography and document direction are selected at runtime by LangSelector. */
+html[lang="fa"] body,
+html[lang="fa"] body *:not(svg):not(svg *) {
+  font-family: "Vazirmatn", Tahoma, Arial, sans-serif;
+}
+
+html[lang="fa"] body .font-mono,
+html[lang="fa"] body code,
+html[lang="fa"] body pre,
+html[lang="fa"] body kbd {
+  font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
+}
+
+html[dir="rtl"] {
+  direction: rtl;
+}
+
+html[dir="rtl"] input,
+html[dir="rtl"] textarea {
+  direction: auto;
+  unicode-bidi: plaintext;
+}
+
+/* Identifiers and room codes remain readable in their natural LTR order. */
+html[dir="rtl"] #lobbyIdInput,
+html[dir="rtl"] .lobby-id,
+html[dir="rtl"] [dir="ltr"] {
+  direction: ltr;
+  unicode-bidi: isolate;
+}
+
 @custom-variant dark (&:where(.dark, .dark *));
 @custom-variant hover (&:hover);
 /* The Steam shell has no ad slots, so it can use the width they reserve. */
