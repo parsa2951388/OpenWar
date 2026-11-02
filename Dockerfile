@@ -112,4 +112,10 @@ else
 fi
 EOF
 RUN chmod +x /usr/local/bin/start.sh
+# The public listener is nginx on port 80; /api/health reports whether the
+# master and its game workers are ready, not merely whether the process exists.
+EXPOSE 80
+HEALTHCHECK --interval=30s --timeout=5s --start-period=90s --retries=5 \
+  CMD curl --fail --silent --show-error --max-time 5 http://127.0.0.1/api/health || exit 1
+
 ENTRYPOINT ["/usr/local/bin/start.sh"]
