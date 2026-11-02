@@ -1,5 +1,6 @@
 import { UserMeResponse } from "@openfront/shared/ApiSchemas";
 import { responseHasLinkedIdentity } from "./AccountIdentity";
+import { ClientEnv } from "./ClientEnv";
 import { getDiscordAvatarUrl, translateText } from "./Utils";
 
 // Every account trigger rendered by <nav-account-menu> (the desktop nav pill
@@ -122,6 +123,17 @@ function updateInstance(
     setBordered(false);
   };
 
+  const showGuest = () => {
+    avatarEl?.classList.add("hidden");
+    personIconEl?.classList.remove("hidden");
+    emailBadgeEl?.classList.add("hidden");
+    if (signInTextEl) {
+      signInTextEl.textContent = translateText("auth_guest.nav_label");
+      signInTextEl.classList.remove("hidden");
+    }
+    setBordered(true);
+  };
+
   const showSignIn = () => {
     avatarEl?.classList.add("hidden");
     personIconEl?.classList.remove("hidden");
@@ -194,6 +206,11 @@ function updateInstance(
   // session with no linked identity at all gets the sign-in prompt.
   if (responseHasLinkedIdentity(userMeResponse)) {
     showLoggedInPlain();
+    return;
+  }
+
+  if (ClientEnv.selfHostedAuthEnabled()) {
+    showGuest();
     return;
   }
 
