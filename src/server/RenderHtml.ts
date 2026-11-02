@@ -90,6 +90,7 @@ export async function renderHtmlContent(
     turnstileSiteKey: JSON.stringify(ServerEnv.turnstileSiteKey()),
     jwtAudience: JSON.stringify(ServerEnv.jwtAudience()),
     apiBaseUrl: JSON.stringify(ServerEnv.jwtIssuer()),
+    selfHostedAuth: JSON.stringify(ServerEnv.selfHostedAuthEnabled()),
     // Environment-scoped like the two above (so the static per-version page
     // carries it too), but optional: absent when the deployment has no key,
     // and the guarded template line then drops out entirely.
