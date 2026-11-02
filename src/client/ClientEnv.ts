@@ -253,7 +253,12 @@ export class ClientEnv {
     return ClientEnv.get().apiBaseUrl;
   }
   static selfHostedAuthEnabled(): boolean {
-    return ClientEnv.get().selfHostedAuth === true;
+    try {
+      return ClientEnv.get().selfHostedAuth === true;
+    } catch {
+      // Older desktop shells and isolated tests have no standalone bootstrap flag.
+      return false;
+    }
   }
   static jwtIssuer(): string {
     const configured = ClientEnv.apiBaseUrl();
