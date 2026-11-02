@@ -26,6 +26,7 @@ import { MasterLobbyService } from "./MasterLobbyService";
 import { setNoStoreHeaders } from "./NoStoreHeaders";
 import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
+import { registerSelfHostedApi } from "./SelfHostedApi";
 import { ServerEnv } from "./ServerEnv";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
 
@@ -323,6 +324,9 @@ export async function startMaster() {
     }, MAP_WEIGHTS_POLL_MS);
   }
 }
+
+// Install the independent guest/JWT API before the SPA fallback.
+registerSelfHostedApi(app);
 
 app.get("/api/health", (_req, res) => {
   const ready = lobbyService?.isHealthy() ?? false;
