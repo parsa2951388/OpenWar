@@ -1,3 +1,4 @@
+import { createPrivateKey, createPublicKey } from "crypto";
 import { GameID } from "@openfront/engine-api/Schemas";
 import { simpleHash } from "@openfront/engine-lib/Util";
 import {
@@ -63,12 +64,27 @@ export class ServerEnv {
     }
     return n;
   }
+  // Turnstile is optional for a self-hosted guest-only deployment. When both
+  // halves are present the client renders the challenge and the server verifies
+  // it directly with Cloudflare; when either is absent, the local name filter
+  // and connection/game rate limits remain active.
+  static turnstileEnabled(): boolean {
+    return Boolean(process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY);
+  }
   static turnstileSiteKey(): string {
-    const v = process.env.TURNSTILE_SITE_KEY;
-    if (!v) {
-      throw new Error("TURNSTILE_SITE_KEY not set");
-    }
-    return v;
+    return ServerEnv.turnstileEnabled() ? process.env.TURNSTILE_SITE_KEY! : "";
+  }
+  static turnstileSecretKey(): string {
+    return process.env.TURNSTILE_SECRET_KEY ?? "";
+  }
+  static selfHostedAuthEnabled(): boolean {
+    return process.env.SELF_HOSTED_AUTH === "true" && Boolean(ServerEnv.jwtPrivateKey());
+  }
+  static jwtPrivateKey(): string {
+    return (process.env.JWT_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
+  }
+  static jwtKeyId(): string {
+    return process.env.JWT_KEY_ID ?? "open-war-1";
   }
   // Optional, unlike turnstileSiteKey: a deployment without a key just keeps
   // the inline Stripe flow off (the store falls back to redirect checkout).
@@ -110,6 +126,8 @@ export class ServerEnv {
     return process.env.CDN_BASE ?? "";
   }
   static jwtIssuer(): string {
+    const configured = process.env.API_BASE_URL?.trim();
+    if (configured) return configured.replace(/\\/+$/, "");
     const audience = ServerEnv.jwtAudience();
     return audience === "localhost"
       ? "http://localhost:8787"
@@ -117,6 +135,22 @@ export class ServerEnv {
   }
   static async jwkPublicKey(): Promise<JWK> {
     if (ServerEnv.publicKey) return ServerEnv.publicKey;
+
+    // In independent-host mode, derive the public Ed25519 key from the
+    // persistent private key. No request to the upstream API is needed.
+    const privatePem = ServerEnv.jwtPrivateKey();
+    if (privatePem) {
+      const privateKey = createPrivateKey(privatePem);
+      const publicJwk = createPublicKey(privateKey).export({ format: "jwk" });
+      ServerEnv.publicKey = {
+        ...publicJwk,
+        alg: "EdDSA",
+        use: "sig",
+        kid: ServerEnv.jwtKeyId(),
+      } as JWK;
+      return ServerEnv.publicKey;
+    }
+
     const jwksUrl = ServerEnv.jwtIssuer() + "/.well-known/jwks.json";
     console.log(`Fetching JWKS from ${jwksUrl}`);
     const response = await fetch(jwksUrl);
