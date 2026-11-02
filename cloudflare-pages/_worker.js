@@ -15,20 +15,9 @@ export default {
       ORIGIN,
     );
 
-    const headers = new Headers(request.headers);
-    headers.delete("host");
-    headers.set("x-forwarded-host", incomingUrl.host);
-    headers.set("x-forwarded-proto", incomingUrl.protocol.replace(":", ""));
-
     // Constructing from the original Request preserves method, body,
-    // cookies, query parameters and WebSocket upgrade metadata.
+    // headers, cookies, query parameters and WebSocket upgrade metadata.
     const upstreamRequest = new Request(upstreamUrl.toString(), request);
-    for (const [name, value] of headers) {
-      upstreamRequest.headers.set(name, value);
-    }
-
-    return fetch(upstreamRequest, {
-      redirect: "manual",
-    });
+    return fetch(upstreamRequest, { redirect: "manual" });
   },
 };
