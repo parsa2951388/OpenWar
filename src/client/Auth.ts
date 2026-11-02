@@ -496,6 +496,35 @@ async function refreshJwt(): Promise<void> {
   }
 }
 
+async function doGuestLogin(): Promise<void> {
+  try {
+    const response = await fetch(getApiBase() + "/auth/guest", {
+      method: "POST",
+      headers: { "Content-Type": "application/json" },
+      credentials: "include",
+      body: JSON.stringify({
+        persistentId: getPersistentIDFromLocalStorage(),
+      }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    if (!response.ok) {
+      console.error("Guest session creation failed", response.status);
+      __jwt = null;
+      return;
+    }
+    const body = await response.json();
+    if (typeof body?.jwt !== "string" || typeof body?.expiresIn !== "number") {
+      throw new Error("Guest session response was malformed");
+    }
+    __expiresAt = Date.now() + body.expiresIn * 1000;
+    __jwt = body.jwt;
+    updateUserSettingsForJwt(body.jwt);
+  } catch (error) {
+    console.error("Guest session creation failed", error);
+    __jwt = null;
+  }
+}
+
 async function doRefreshJwt(): Promise<void> {
   if (steamSDK.isOnSteam()) {
     const result = await steamSDK.getTicket();
@@ -535,10 +564,10 @@ async function doRefreshJwt(): Promise<void> {
       signal: AbortSignal.timeout(10_000),
     });
     if (response.status === 401) {
-      // The only answer that means the session is dead: the server has
-      // already cleared the refresh cookie.
-      console.warn("Refresh rejected", response);
-      void logOut();
+      // A new self-hosted browser has no refresh cookie yet. Establish a
+      // signed guest session using its locally generated anonymous identity.
+      console.info("No refresh session; starting a guest session");
+      await doGuestLogin();
       return;
     }
     if (response.status !== 200) {
