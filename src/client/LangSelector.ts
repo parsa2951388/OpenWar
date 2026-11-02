@@ -256,6 +256,9 @@ export class LangSelector extends LitElement {
     }
     const rtlScripts = new Set(["Arab", "Hebr", "Thaa", "Nkoo", "Adlm", "Syrc"]);
     root.dir = rtlScripts.has(script) ? "rtl" : "ltr";
+    root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input:not([dir]), textarea:not([dir])").forEach((element) => {
+      element.setAttribute("dir", "auto");
+    });
   }
 
   private applyTranslation() {
