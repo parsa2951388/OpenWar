@@ -22,6 +22,14 @@ html[dir="rtl"] [dir="auto"] {
   unicode-bidi: plaintext;
 }
 
+html[dir="rtl"] input[type="email"],
+html[dir="rtl"] input[type="url"],
+html[dir="rtl"] input[type="tel"] {
+  direction: ltr;
+  text-align: left;
+  unicode-bidi: isolate;
+}
+
 /* Identifiers and room codes remain readable in their natural LTR order. */
 html[dir="rtl"] #lobbyIdInput,
 html[dir="rtl"] .lobby-id,
