@@ -559,7 +559,9 @@ class Client {
     // so rendering the widget there just fails — and replays never
     // send a token anyway (see getTurnstileToken below).
     const turnstilePrefetch =
-      isDesktopShell() || isReplayShellHost(window.location.hostname)
+      isDesktopShell() ||
+      isReplayShellHost(window.location.hostname) ||
+      ClientEnv.turnstileSiteKey().length === 0
         ? null
         : getTurnstileToken();
     // A prefetch that fails is not an error anyone has asked about yet: the
@@ -2306,6 +2308,7 @@ class Client {
   ): Promise<string | null> {
     if (
       ClientEnv.env() === GameEnv.Dev ||
+      ClientEnv.turnstileSiteKey().length === 0 ||
       isDesktopShell() ||
       // Single-player and replays: no server to verify a token against (and
       // on the CDN replay shells Turnstile cannot load at all). Shared with
