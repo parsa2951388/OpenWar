@@ -1,5 +1,6 @@
 import type { TokenPayload } from "@openfront/shared/ApiSchemas";
 import { z } from "zod";
+import { censorPlayer } from "./Censor";
 import { ServerEnv } from "./ServerEnv";
 
 const JoinVerifyVerdictSchema = z.discriminatedUnion("status", [
@@ -150,17 +151,48 @@ async function fetchJoinVerify(
   username: string,
   clanTag: string | null,
 ): Promise<Response> {
-  return fetch(`${ServerEnv.jwtIssuer()}/join_verify`, {
-    method: "POST",
-    // First sighting of a novel flagged name adds an LLM round-trip of
-    // up to ~3s server-side, so the timeout must stay at 5s or above.
-    signal: AbortSignal.timeout(5000),
-    headers: {
-      "Content-Type": "application/json",
-      "x-api-key": ServerEnv.apiKey(),
-    },
-    body: JSON.stringify({ ip, token, username, clanTag }),
+  const identity = censorPlayer(username, clanTag);
+  if (!ServerEnv.turnstileEnabled()) {
+    return Response.json({ status: "approved", ...identity });
+  }
+  if (!token) {
+    return Response.json({
+      status: "rejected",
+      reason: "missing_turnstile_token",
+    });
+  }
+
+  const body = new URLSearchParams({
+    secret: ServerEnv.turnstileSecretKey(),
+    response: token,
   });
+  if (ip && ip !== "unknown") body.set("remoteip", ip);
+
+  const response = await fetch(
+    "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+    {
+      method: "POST",
+      headers: { "Content-Type": "application/x-www-form-urlencoded" },
+      body,
+      signal: AbortSignal.timeout(5000),
+    },
+  );
+  if (!response.ok) {
+    throw new Error(`Turnstile siteverify returned ${response.status}`);
+  }
+
+  const verdict = (await response.json()) as {
+    success?: boolean;
+    "error-codes"?: string[];
+  };
+  if (!verdict.success) {
+    return Response.json({
+      status: "rejected",
+      reason: "turnstile_failed",
+      errorCodes: verdict["error-codes"] ?? [],
+    });
+  }
+  return Response.json({ status: "approved", ...identity });
 }
 
 async function verifyJoinRequest(
