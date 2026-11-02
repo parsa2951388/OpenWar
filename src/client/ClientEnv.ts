@@ -136,6 +136,7 @@ export class ClientEnv {
     }
     const bc = window.BOOTSTRAP_CONFIG as typeof window.BOOTSTRAP_CONFIG & {
       apiBaseUrl?: string;
+      selfHostedAuth?: boolean;
     };
     // Only the values that are the same for every player are required.
     //
@@ -170,6 +171,7 @@ export class ClientEnv {
       turnstileSiteKey: bc.turnstileSiteKey,
       jwtAudience: bc.jwtAudience,
       apiBaseUrl: bc.apiBaseUrl,
+      selfHostedAuth: bc.selfHostedAuth === true,
       // Optional: a deployment without a key (or a desktop shell, which
       // buys on Steam) omits it, and the inline Stripe flow stays off.
       stripePublishableKey: bc.stripePublishableKey,
@@ -249,6 +251,9 @@ export class ClientEnv {
   }
   static apiBaseUrl(): string | undefined {
     return ClientEnv.get().apiBaseUrl;
+  }
+  static selfHostedAuthEnabled(): boolean {
+    return ClientEnv.get().selfHostedAuth === true;
   }
   static jwtIssuer(): string {
     const configured = ClientEnv.apiBaseUrl();
@@ -678,6 +683,8 @@ export interface ClientEnvValues {
   // Optional origin of the independent auth/game API. Empty means the
   // legacy api.<audience> convention.
   apiBaseUrl?: string;
+  // True only for the standalone guest-only deployment.
+  selfHostedAuth?: boolean;
   // Optional: absent when the deployment carries no Stripe key (dev, desktop
   // shells). Environment-scoped like turnstileSiteKey, so a static page
   // carries it too.
