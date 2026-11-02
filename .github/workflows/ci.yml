@@ -8,7 +8,8 @@ on:
   push:
     branches: [main]
 
-permissions: {}
+permissions:
+  contents: read
 
 jobs:
   build:
@@ -145,3 +146,18 @@ jobs:
             git --no-pager diff
             exit 1
           fi
+
+
+  # Validate the actual production container, not only Vite's static bundle.
+  # This catches missing files and Docker-stage regressions before a deploy.
+  docker-build:
+    name: 🐳 Docker image build
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          submodules: false
+      - name: Build production image
+        run: docker build --pull --tag open-war:ci .
