@@ -27,6 +27,7 @@ export class LangSelector extends LitElement {
   @state() private debugMode: boolean = false;
   @state() isVisible = true;
 
+  private directionObserver: MutationObserver | null = null;
   private debugKeyPressed: boolean = false;
   private languageMetadata: LanguageMetadata[] = metadata;
   private languageCache = new Map<string, Record<string, string>>();
@@ -38,6 +39,17 @@ export class LangSelector extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     this.setupDebugKey();
+    this.directionObserver = new MutationObserver((records) => {
+      for (const record of records) {
+        for (const node of record.addedNodes) {
+          if (node instanceof Element) this.applyAutoDirection(node);
+        }
+      }
+    });
+    this.directionObserver.observe(document.documentElement, {
+      childList: true,
+      subtree: true,
+    });
     void this.initializeLanguage();
     window.addEventListener(
       "language-selected",
@@ -47,6 +59,8 @@ export class LangSelector extends LitElement {
 
   disconnectedCallback() {
     super.disconnectedCallback();
+    this.directionObserver?.disconnect();
+    this.directionObserver = null;
     window.removeEventListener(
       "language-selected",
       this.handleLanguageSelected as EventListener,
@@ -244,6 +258,15 @@ export class LangSelector extends LitElement {
     this.applyTranslation();
   }
 
+  private applyAutoDirection(root: ParentNode): void {
+    if (root instanceof HTMLInputElement || root instanceof HTMLTextAreaElement) {
+      if (!root.hasAttribute("dir")) root.setAttribute("dir", "auto");
+    }
+    root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+      "input:not([dir]), textarea:not([dir])",
+    ).forEach((element) => element.setAttribute("dir", "auto"));
+  }
+
   private applyDocumentLanguage(): void {
     const root = document.documentElement;
     const locale = this.currentLang === "debug" ? "en" : this.currentLang;
@@ -256,9 +279,7 @@ export class LangSelector extends LitElement {
     }
     const rtlScripts = new Set(["Arab", "Hebr", "Thaa", "Nkoo", "Adlm", "Syrc"]);
     root.dir = rtlScripts.has(script) ? "rtl" : "ltr";
-    root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>("input:not([dir]), textarea:not([dir])").forEach((element) => {
-      element.setAttribute("dir", "auto");
-    });
+    this.applyAutoDirection(root);
   }
 
   private applyTranslation() {
