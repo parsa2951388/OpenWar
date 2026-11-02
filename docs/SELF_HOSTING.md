@@ -15,24 +15,21 @@ not be considered ready.
 
 ## Important upstream service dependency
 
-The source tree documents the original account/game API as a closed-source
-Cloudflare Worker. The game server currently expects an API issuer at
-`https://api.<DOMAIN>` for, among other things:
+The standalone mode now provides its own Ed25519 guest-token issuer, JWKS,
+refresh-cookie handling and minimal guest profile on the same origin as the
+game server. It deliberately does not provide OAuth, account linking,
+purchases, clans, progression, paid cosmetics or a cross-server registry.
+Guest identities are anonymous and are not recoverable as accounts.
 
-- Ed25519 JWT public keys at `/.well-known/jwks.json`;
-- guest/account token exchange and refresh;
-- first-join Turnstile verification and name screening at `/join_verify`;
-- server registration and the public server list;
-- player/profile, cosmetics, progression and related account data.
-
-Those endpoints are not supplied by this repository. Setting DNS or pointing
-`API_DOMAIN` at the game server does not implement them. A public multiplayer
-deployment is therefore **not ready** until an independently operated API
-implements the required contracts and the two-client join/rejoin flow passes.
+The game server applies local username/clan-tag filtering. Cloudflare
+Turnstile can be enabled by setting BOTH `TURNSTILE_SITE_KEY` and
+`TURNSTILE_SECRET_KEY`; the server then verifies challenges directly with
+Cloudflare. With neither configured, the game remains playable using its
+local name filter and connection/game rate limits.
 
 Do not expose `GAME_ENV=dev` as a public workaround. Development mode accepts
-raw persistent IDs rather than production JWTs; those IDs are not an
-authentication mechanism and can be impersonated.
+raw persistent IDs rather than production JWTs; standalone production mode
+uses signed Ed25519 guest tokens instead.
 
 ## Required server configuration
 
@@ -45,13 +42,19 @@ The production server validates several environment variables at startup:
 | `GIT_COMMIT` | Exact full commit SHA served by this container. |
 | `NUM_WORKERS` | Positive number of game workers behind nginx. |
 | `INSTANCE_LETTER` | One lowercase letter reserved for this deployment's game IDs. |
-| `TURNSTILE_SITE_KEY` | Public Turnstile widget key served to browsers. |
-| `API_KEY` | Private shared key used by server-to-API calls. |
+| `API_BASE_URL` | Public HTTPS origin of this same game server; no trailing slash. |
+| `SELF_HOSTED_AUTH` | Set to `true` to enable the independent guest API. |
+| `JWT_PRIVATE_KEY` | Persistent Ed25519 PKCS#8 private key; store as a secret. |
+| `JWT_KEY_ID` | Key identifier, for example `open-war-1`. |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Optional pair; set both to enable Cloudflare Turnstile. |
+| `API_KEY` | Retained for optional internal integrations. |
 
-A routable deployment also needs `GAME_HOST` or `SUBDOMAIN` and the matching
-DNS/TLS configuration. `CDN_BASE` may be empty when assets are served by the
-same origin. Secrets must be stored in the hosting provider's secret manager,
-never committed to this repository.
+For a single-host deployment, set `DOMAIN` to the provider's bare public
+hostname and `API_BASE_URL` to `https://<hostname>`. Leave `GAME_HOST` and
+`SUBDOMAIN` unset: the page shell injects a one-server map and all HTTP and
+WebSocket traffic stays on the same origin. `CDN_BASE` may be empty when
+assets are served by the same origin. Store the private key and Turnstile
+secret in the hosting provider's secret manager; never commit them.
 
 ## Local smoke test
 
