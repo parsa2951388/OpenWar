@@ -61,6 +61,10 @@ npm run format:check
 
 Build and runtime results must be recorded against the exact deployed commit. A successful static build alone does not prove multiplayer readiness.
 
+## Self-hosting
+
+See [the self-hosting guide](docs/SELF_HOSTING.md) for container topology, readiness checks, required configuration and the remaining production API dependencies.
+
 ## Architecture
 
 - `src/client/` — user interface, input, WebSocket transport and rendering
