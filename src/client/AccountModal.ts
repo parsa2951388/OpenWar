@@ -374,6 +374,7 @@ export class AccountModal extends BaseModal {
     return html`
       <input
         type="email"
+        dir="ltr"
         .value=${this.email}
         @input=${this.handleEmailInput}
         placeholder=${translateText("account_modal.email_placeholder")}
