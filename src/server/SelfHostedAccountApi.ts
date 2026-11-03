@@ -990,6 +990,51 @@ async function passwordLogin(
   );
 }
 
+async function resendVerificationEmail(
+  req: Request,
+  res: Response,
+): Promise<void> {
+  if (!requireOrigin(req, res)) return;
+  if (!authDatabaseConfigured() || !ServerEnv.emailApiKey() || !ServerEnv.emailFrom()) {
+    res.status(503).json({ error: "email_delivery_not_configured" });
+    return;
+  }
+  const parsed = EmailResendInput.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(202).setHeader("Cache-Control", "no-store").json({ status: "accepted" });
+    return;
+  }
+  await ensureAuthDatabase();
+  const emailNormalized = normalizeEmail(parsed.data.email);
+  const result = await authPool().query(
+    `SELECT id, email
+       FROM auth_accounts
+      WHERE email_normalized = $1
+        AND email_verified_at IS NULL
+        AND status = 'active'`,
+    [emailNormalized],
+  );
+  const account = result.rows[0] as { id: string; email: string } | undefined;
+  if (account) {
+    const token = await createEmailChallenge(
+      account.id,
+      "verify_email",
+      account.email,
+    );
+    const verificationUrl = emailLink("/auth/email/verify", token);
+    const sent = await sendResendEmail({
+      to: account.email,
+      subject: "Verify your Open War account",
+      html: `<p>Verify your Open War email address:</p><p><a href="${verificationUrl}">Verify email</a></p><p>This link expires in 30 minutes.</p>`,
+      text: `Verify your Open War email: ${verificationUrl}\nThis link expires in 30 minutes.`,
+    });
+    if (!sent) {
+      console.warn("Verification resend was not accepted by the email provider.");
+    }
+  }
+  res.status(202).setHeader("Cache-Control", "no-store").json({ status: "accepted" });
+}
+
 async function requestPasswordReset(
   req: Request,
   res: Response,
