@@ -218,6 +218,13 @@ export async function registerEmailPassword(
   return "error";
 }
 
+export async function resendVerificationEmail(
+  email: string,
+): Promise<boolean> {
+  const result = await postAuthJson("/auth/email/resend", { email });
+  return result.status === 202;
+}
+
 export async function requestPasswordReset(
   email: string,
 ): Promise<PasswordAuthResult> {
