@@ -55,6 +55,10 @@ export class LangSelector extends LitElement {
       "language-selected",
       this.handleLanguageSelected as EventListener,
     );
+    window.addEventListener(
+      "language-picker-requested",
+      this.handleLanguagePickerRequested,
+    );
   }
 
   disconnectedCallback() {
@@ -65,7 +69,15 @@ export class LangSelector extends LitElement {
       "language-selected",
       this.handleLanguageSelected as EventListener,
     );
+    window.removeEventListener(
+      "language-picker-requested",
+      this.handleLanguagePickerRequested,
+    );
   }
+
+  private handleLanguagePickerRequested = () => {
+    void this.openModal();
+  };
 
   private handleLanguageSelected = (e: CustomEvent) => {
     if (e.detail && e.detail.lang) {
