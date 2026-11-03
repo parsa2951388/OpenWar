@@ -100,10 +100,7 @@ export class EditionHub extends LitElement {
         <div class="ow-edition-heading">
           <span class="ow-edition-eyebrow">${this.t("top_eyebrow")}</span>
           <h1>${this.t("intro_title")}</h1>
-          <p>${this.copy(
-            "تجربهٔ کلاسیک را برای نبرد سریع انتخاب کن یا وارد میز عملیات و مسیر توسعهٔ جدید شو.",
-            "Choose the familiar classic battlefield or explore the new Operations command experience.",
-          )}</p>
+          <p>${this.t("intro_description")}</p>
         </div>
         <div class="ow-edition-switch" role="group" aria-label=${this.t("edition_switch_label")}>
           <button
@@ -141,10 +138,7 @@ export class EditionHub extends LitElement {
               ${this.t("operations_eyebrow")}
             </div>
             <h2>${this.t("operations_headline")}</h2>
-            <p>${this.copy(
-              "در نسخهٔ جدید، پیروزی فقط به گسترش قلمرو وابسته نیست. خطوط تدارکاتی، اطلاعات میدان، اهداف چندمرحله‌ای و تصمیم‌های تیمی به هستهٔ بازی اضافه خواهند شد.",
-              "The new edition is designed around more than territorial expansion. Supply lines, battlefield intelligence, multi-stage objectives and team decisions are planned as core gameplay systems.",
-            )}</p>
+            <p>${this.t("operations_description")}</p>
             <div class="ow-operations-actions">
               <button class="ow-action-primary" type="button" @click=${this.openTraining}>
                 ${this.t("practice_action")}
@@ -154,10 +148,7 @@ export class EditionHub extends LitElement {
                 ${this.t("browse_battles_action")}
               </button>
             </div>
-            <small class="ow-honest-note">${this.copy(
-              "تمرین و نبردهای آنلاین فعلاً از موتور و قوانین موجود استفاده می‌کنند؛ مکانیک‌های اختصاصی Operations هنوز در حال پیاده‌سازی‌اند.",
-              "Practice and live battles currently use the existing game rules. The exclusive Operations mechanics are still being implemented.",
-            )}</small>
+            <small class="ow-honest-note">${this.t("current_rules_note")}</small>
           </div>
           <div class="ow-theatre-map" role="img" aria-label=${this.t("theatre_map_alt")}>
             <div class="ow-map-grid"></div>
@@ -248,10 +239,7 @@ export class EditionHub extends LitElement {
           <div class="ow-classic-heading">
             <span class="ow-edition-eyebrow">${this.t("classic_eyebrow")}</span>
             <h2>${this.t("classic_title")}</h2>
-            <p>${this.copy(
-              "همان سبک آشنای نبردهای قلمرویی و مسابقات سریع؛ مستقل و بدون تغییر در قوانین فعلی.",
-              "The familiar territory-control experience and quick matches, with the existing game rules preserved.",
-            )}</p>
+            <p>${this.t("classic_description")}</p>
           </div>
           <game-mode-selector></game-mode-selector>
         </section>
