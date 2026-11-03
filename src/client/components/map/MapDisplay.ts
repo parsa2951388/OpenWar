@@ -112,10 +112,10 @@ export class MapDisplay extends LitElement {
       title=${translateText(
         this.favorite ? "map_component.unfavorite" : "map_component.favorite",
       )}
-      class="absolute top-1.5 right-1.5 w-7 h-7 flex items-center justify-center rounded-full bg-black/40 backdrop-blur-sm transition-all duration-200 active:scale-90 ${
+      class="map-favorite-button absolute top-1.5 right-1.5 w-7 h-7 flex items-center justify-center rounded-full bg-black/50 backdrop-blur-sm transition-all duration-200 active:scale-90 focus-visible:opacity-100 focus-visible:ring-2 focus-visible:ring-cyan-200 ${
         this.favorite
           ? "opacity-100 text-cyber-yellow"
-          : "opacity-0 group-hover:opacity-100 text-white hover:text-cyber-yellow"
+          : "opacity-100 sm:opacity-0 sm:group-hover:opacity-100 text-white hover:text-cyber-yellow"
       }"
     >
       ${starIcon(this.favorite, "w-4 h-4")}
@@ -127,12 +127,12 @@ export class MapDisplay extends LitElement {
       <div
         role="button"
         tabindex="0"
-        aria-selected="${this.selected}"
+        aria-pressed="${this.selected}"
         aria-label="${this.translation ?? this.mapName ?? this.mapKey}"
         @keydown="${this.handleKeydown}"
-        class="w-full h-full p-3 flex flex-col items-center justify-between rounded-xl border cursor-pointer transition-all duration-200 active:scale-95 gap-3 group ${
+        class="openwar-map-card w-full h-full p-3 flex flex-col items-center justify-between rounded-xl border cursor-pointer transition-all duration-200 active:scale-95 gap-3 group ${
           this.selected
-            ? "bg-malibu-blue/20 border-malibu-blue/50 shadow-[var(--shadow-malibu-blue-strong)]"
+            ? "is-selected bg-malibu-blue/20 border-malibu-blue/50 shadow-[var(--shadow-malibu-blue-strong)]"
             : "bg-white/5 border-white/10 hover:bg-white/10 hover:border-white/20 hover:scale-105"
         }"
       >
