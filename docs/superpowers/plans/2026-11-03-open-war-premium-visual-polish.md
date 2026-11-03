@@ -37,10 +37,12 @@
 
 ### Task 2: Homepage and map-selection polish
 
-**Files:** src/client/styles.css
+**Files:** src/client/styles.css; src/client/components/map/MapDisplay.ts; src/client/components/map/MapPicker.ts
 
 - [x] Add a restrained ambient blue/cyan gradient only to the homepage shell.
 - [x] Refine option and random-map cards with clear hierarchy, selected states, and restrained depth.
+- [x] Apply the shared visual treatment to the actual featured-map and random-map cards.
+- [x] Keep map cards keyboard-operable and show favorite controls on touch screens.
 - [x] Add visible keyboard focus to cards and lobby-code controls.
 - [x] Respect prefers-reduced-motion for the affected controls.
 

@@ -529,15 +529,18 @@ label.option-card:hover {
   margin-top: -4px;
 }
 
+.openwar-map-card,
 .random-map {
-  border: 1px solid rgba(131, 202, 235, 0.2);
+  border-color: rgba(131, 202, 235, 0.2);
   border-radius: 12px;
   background: linear-gradient(
     150deg,
     rgba(23, 43, 66, 0.96),
     rgba(10, 23, 39, 0.96)
   );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.055);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.055),
+    0 10px 26px rgba(0, 0, 0, 0.14);
   transition:
     border-color 180ms ease,
     background-color 180ms ease,
@@ -545,12 +548,21 @@ label.option-card:hover {
     transform 180ms ease;
 }
 
+.openwar-map-card:not(.is-selected):hover,
 .random-map:hover:not(.selected) {
-  border-color: rgba(80, 215, 248, 0.58);
-  box-shadow: 0 10px 26px rgba(0, 132, 209, 0.15);
+  border-color: rgba(80, 215, 248, 0.62);
+  background: linear-gradient(
+    150deg,
+    rgba(28, 64, 91, 0.98),
+    rgba(10, 31, 51, 0.98)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.08),
+    0 14px 32px rgba(0, 132, 209, 0.16);
   transform: translateY(-2px);
 }
 
+.openwar-map-card.is-selected,
 .random-map.selected {
   border: 2px solid #55d9f4;
   background: linear-gradient(
@@ -563,11 +575,18 @@ label.option-card:hover {
     0 0 22px rgba(0, 200, 255, 0.13);
 }
 
-.option-card:focus-visible,
+.openwar-map-card:focus-visible,
 .random-map:focus-visible,
+.option-card:focus-visible,
 .lobby-id-button:focus-visible {
   outline: 3px solid #6ee7ff;
   outline-offset: 3px;
+}
+
+.map-favorite-button:focus-visible {
+  opacity: 1;
+  outline: 2px solid #6ee7ff;
+  outline-offset: 2px;
 }
 
 #helpModal table {
@@ -912,12 +931,14 @@ unit-display .tutorial-highlight::after {
 @media (prefers-reduced-motion: reduce) {
   .option-card,
   .option-image,
+  .openwar-map-card,
   .random-map,
   .lobby-id-button {
     transition: none !important;
   }
 
   .option-card:hover:not(.disabled),
+  .openwar-map-card:hover,
   .random-map:hover:not(.selected),
   .lobby-id-button:hover {
     transform: none !important;
