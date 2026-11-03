@@ -1032,7 +1032,7 @@ async function requestPasswordReset(
   const account = result.rows[0] as { id: string; email: string } | undefined;
   if (account) {
     const token = await createEmailChallenge(account.id, "reset_password", account.email);
-    const resetUrl = emailLink("/#modal=account", token);
+    const resetUrl = emailLink("/auth/password/reset", token);
     const sent = await sendResendEmail({
       to: account.email,
       subject: "Reset your Open War password",
@@ -1423,6 +1423,18 @@ export function registerSelfHostedAccountApi(app: Express): void {
       console.error("Email verification failed:", error instanceof Error ? error.message : "unknown error");
       if (!res.headersSent) res.status(503).send("Email verification is temporarily unavailable.");
     }
+  });
+
+  app.get("/auth/password/reset", (req, res) => {
+    const token = typeof req.query.token === "string" ? req.query.token : "";
+    if (!token || token.length < 32 || token.length > 256) {
+      res.status(400).send("Password reset link is invalid or expired.");
+      return;
+    }
+    res.redirect(
+      303,
+      `${ServerEnv.authOrigin()}/#modal=account&resetToken=${encodeURIComponent(token)}`,
+    );
   });
 
   app.post("/auth/oauth/:provider/start", oauthLimit, async (req, res) => {
