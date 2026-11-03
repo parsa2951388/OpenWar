@@ -33,23 +33,23 @@
 
 - [x] Add rendered logo source and accessible-name assertions to the existing mobile top-bar test.
 - [ ] Verify the focused test in CI.
-- [ ] Use the existing resources/images/OpenWarLogo.svg asset in the mobile header.
+- [x] Use the existing resources/images/OpenWarLogo.svg asset in the mobile header.
 
 ### Task 2: Homepage and map-selection polish
 
 **Files:** src/client/styles.css
 
-- [ ] Add a restrained ambient blue/cyan gradient only to the homepage shell.
-- [ ] Refine option and random-map cards with clear hierarchy, selected states, and restrained depth.
-- [ ] Add visible keyboard focus to cards and lobby-code controls.
-- [ ] Respect prefers-reduced-motion for the affected controls.
+- [x] Add a restrained ambient blue/cyan gradient only to the homepage shell.
+- [x] Refine option and random-map cards with clear hierarchy, selected states, and restrained depth.
+- [x] Add visible keyboard focus to cards and lobby-code controls.
+- [x] Respect prefers-reduced-motion for the affected controls.
 
 ### Task 3: Deployment documentation accuracy
 
 **Files:** docs/SELF_HOSTING.md
 
-- [ ] Replace the obsolete Pages hostname with the live production hostname.
-- [ ] Keep the Render origin and same-origin proxy architecture unchanged.
+- [x] Replace the obsolete Pages hostname with the live production hostname.
+- [x] Keep the Render origin and same-origin proxy architecture unchanged.
 
 ### Task 4: Release verification
 
