@@ -43,10 +43,26 @@ describe("language selector navigation mount", () => {
     await vi.waitFor(() => expect(translateText("main.solo")).toBe("Solo"));
   });
 
-  it("mounts the language selector in the mobile navigation", async () => {
-    const nav = mount("mobile-nav-bar");
-    await nav.updateComplete;
+  it("opens the shared language picker from the mobile navigation", async () => {
+    const desktop = mount("desktop-nav-bar");
+    const mobile = mount("mobile-nav-bar");
+    await Promise.all([desktop.updateComplete, mobile.updateComplete]);
 
-    expect(nav.querySelector("lang-selector")).not.toBeNull();
+    const languageModal = document.createElement("language-modal");
+    languageModal.id = "page-language";
+    document.body.appendChild(languageModal);
+    const showPage = vi.fn();
+    window.showPage = showPage;
+
+    expect(desktop.querySelectorAll("lang-selector")).toHaveLength(1);
+    expect(mobile.querySelectorAll("lang-selector")).toHaveLength(0);
+
+    const trigger = mobile.querySelector<HTMLButtonElement>(
+      "[data-language-picker-trigger]",
+    );
+    expect(trigger).not.toBeNull();
+    trigger!.click();
+
+    await vi.waitFor(() => expect(showPage).toHaveBeenCalledWith("page-language"));
   });
 });
