@@ -316,12 +316,16 @@ export async function startMaster() {
       applyCheckinState(result, (active) => lobbyService.setActive(active));
     }, CHECKIN_INTERVAL_MS);
 
-    // Public-lobby rotation weights from the API. Until the first fetch
-    // lands every map has DEFAULT_MAP_WEIGHT; while it keeps failing, the last
-    // known weights stay in effect.
-    startPolling(async () => {
-      playlist.setWeights(await fetchMapWeights());
-    }, MAP_WEIGHTS_POLL_MS);
+    // Public-lobby rotation weights from the optional upstream API. In
+    // standalone hosting the built-in DEFAULT_MAP_WEIGHT remains active;
+    // never request JSON from the same-origin SPA fallback for this feature.
+    if (ServerEnv.mapWeightsApiEnabled()) {
+      startPolling(async () => {
+        playlist.setWeights(await fetchMapWeights());
+      }, MAP_WEIGHTS_POLL_MS);
+    } else {
+      log.info("Map weights API polling disabled; using default map weights");
+    }
   }
 }
 
