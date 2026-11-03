@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import "../../src/client/LangSelector";
 import "../../src/client/components/DesktopNavBar";
@@ -6,19 +6,27 @@ import "../../src/client/components/MobileNavBar";
 
 type Mountable = HTMLElement & { updateComplete: Promise<unknown> };
 
-async function mount(tag: "desktop-nav-bar" | "mobile-nav-bar"): Promise<Mountable> {
-  const el = document.createElement(tag) as Mountable;
-  document.body.appendChild(el);
-  await el.updateComplete;
-  const utilityIcons = el.querySelector("nav-utility-icons") as
-    | (HTMLElement & { updateComplete?: Promise<unknown> })
+async function mountNavigation(): Promise<{
+  desktop: Mountable;
+  mobile: Mountable;
+  selector: HTMLElement & { updateComplete: Promise<unknown> };
+}> {
+  const desktop = document.createElement("desktop-nav-bar") as Mountable;
+  const mobile = document.createElement("mobile-nav-bar") as Mountable;
+  document.body.append(desktop, mobile);
+  await Promise.all([desktop.updateComplete, mobile.updateComplete]);
+
+  const utilityIcons = desktop.querySelector("nav-utility-icons") as
+    | Mountable
     | null;
   await utilityIcons?.updateComplete;
-  const selector = el.querySelector("lang-selector") as
-    | (HTMLElement & { updateComplete?: Promise<unknown> })
+
+  const selector = document.querySelector("lang-selector") as
+    | (HTMLElement & { updateComplete: Promise<unknown> })
     | null;
-  await selector?.updateComplete;
-  return el;
+  if (!selector) throw new Error("Shared language selector did not render");
+  await selector.updateComplete;
+  return { desktop, mobile, selector };
 }
 
 beforeEach(() => {
@@ -28,23 +36,40 @@ beforeEach(() => {
 
 afterEach(() => {
   document.body.innerHTML = "";
+  window.showPage = undefined;
 });
 
-describe("navigation language selector", () => {
-  it.each([
-    ["desktop", "desktop-nav-bar"],
-    ["mobile", "mobile-nav-bar"],
-  ] as const)(
-    "renders one functional language selector in the %s navigation",
-    async (_label, tag) => {
-      const el = await mount(tag);
-      const selector = el.querySelector("lang-selector");
-      expect(selector).not.toBeNull();
-      expect(el.querySelectorAll("lang-selector")).toHaveLength(1);
-      expect(selector?.querySelector("#lang-selector")).not.toBeNull();
-      expect(
-        selector?.querySelector<HTMLButtonElement>("#lang-selector")?.title,
-      ).toBe("Change Language");
-    },
-  );
+describe("shared desktop/mobile language selection", () => {
+  it("mounts exactly one language selector for both navigation layouts", async () => {
+    const { desktop, mobile, selector } = await mountNavigation();
+
+    expect(document.querySelectorAll("lang-selector")).toHaveLength(1);
+    expect(desktop.querySelector("lang-selector")).toBe(selector);
+    expect(mobile.querySelector("lang-selector")).toBeNull();
+    expect(
+      selector.querySelector<HTMLButtonElement>("#lang-selector")?.title,
+    ).toBe("Change Language");
+  });
+
+  it("opens the shared language page from the mobile sidebar action", async () => {
+    const { mobile } = await mountNavigation();
+    const showPage = vi.fn();
+    window.showPage = showPage;
+    const page = document.createElement("div");
+    page.id = "page-language";
+    document.body.appendChild(page);
+
+    const trigger = mobile.querySelector<HTMLButtonElement>(
+      '[data-action="open-language-selector"]',
+    );
+    expect(trigger).not.toBeNull();
+    expect(trigger?.getAttribute("data-i18n-aria-label")).toBe(
+      "select_lang.title",
+    );
+
+    trigger?.click();
+    await vi.waitFor(() => {
+      expect(showPage).toHaveBeenCalledWith("page-language");
+    });
+  });
 });
