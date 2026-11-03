@@ -55,12 +55,15 @@ export async function ensureAuthDatabase(): Promise<void> {
       ],
     ] as const;
 
-    let lockAcquired = false;
     try {
-      await client.query("SELECT pg_advisory_lock(hashtext($1))", [
+      // Keep the lock and every migration inside one explicit transaction.
+      // This works with both direct PostgreSQL connections and transaction
+      // poolers such as Neon PgBouncer; a session-level advisory lock would
+      // not survive separate pooled statements.
+      await client.query("BEGIN");
+      await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [
         "open-war-auth-schema",
       ]);
-      lockAcquired = true;
       await client.query(
         "CREATE TABLE IF NOT EXISTS schema_migrations (version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())",
       );
@@ -73,7 +76,13 @@ export async function ensureAuthDatabase(): Promise<void> {
         if (existing.rowCount) continue;
 
         const sql = await readFile(path.join(root, filename), "utf8");
-        await client.query(sql);
+        // Migration files are also runnable directly. Strip their transaction
+        // wrappers here so all migrations participate in the outer advisory-
+        // locked transaction and either all commit or all roll back.
+        const transactionalSql = sql
+          .replace(/^\s*BEGIN\s*;\s*/i, "")
+          .replace(/\s*COMMIT\s*;\s*$/i, "");
+        await client.query(transactionalSql);
         const confirmed = await client.query(
           "SELECT 1 FROM schema_migrations WHERE version = $1",
           [version],
@@ -82,17 +91,15 @@ export async function ensureAuthDatabase(): Promise<void> {
           throw new Error(`Migration ${version} did not record completion`);
         }
       }
+
+      await client.query("COMMIT");
+    } catch (error) {
+      await client.query("ROLLBACK").catch(() => {});
+      throw error;
     } finally {
-      if (lockAcquired) {
-        await client
-          .query("SELECT pg_advisory_unlock(hashtext($1))", [
-            "open-war-auth-schema",
-          ])
-          .catch(() => {});
-      }
       client.release();
     }
-  })().catch((error) => {
+  })  })().catch((error) => {
     migrationPromise = null;
     throw error;
   });
