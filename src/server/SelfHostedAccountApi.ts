@@ -1488,11 +1488,14 @@ function rateLimitOptions(max: number) {
 }
 
 export function registerSelfHostedAccountApi(app: Express): void {
-  const strictLimit = rateLimitOptions(8);
-  const resetLimit = rateLimitOptions(4);
+  const registerLimit = rateLimitOptions(8);
+  const passwordLoginLimit = rateLimitOptions(8);
+  const passwordResetLimit = rateLimitOptions(4);
+  const verificationResendLimit = rateLimitOptions(4);
   const oauthLimit = rateLimitOptions(15);
+  const passwordMutationLimit = rateLimitOptions(8);
 
-  app.post("/auth/register", strictLimit, async (req, res) => {
+  app.post("/auth/register", registerLimit, async (req, res) => {
     try {
       await registerEmailAccount(req, res);
     } catch (error) {
@@ -1501,7 +1504,7 @@ export function registerSelfHostedAccountApi(app: Express): void {
     }
   });
 
-  app.post("/auth/login/password", strictLimit, async (req, res) => {
+  app.post("/auth/login/password", passwordLoginLimit, async (req, res) => {
     try {
       await passwordLogin(req, res);
     } catch (error) {
@@ -1510,7 +1513,7 @@ export function registerSelfHostedAccountApi(app: Express): void {
     }
   });
 
-  app.post("/auth/password/forgot", resetLimit, async (req, res) => {
+  app.post("/auth/password/forgot", passwordResetLimit, async (req, res) => {
     try {
       await requestPasswordReset(req, res);
     } catch (error) {
@@ -1519,7 +1522,7 @@ export function registerSelfHostedAccountApi(app: Express): void {
     }
   });
 
-  app.post("/auth/password/reset", strictLimit, async (req, res) => {
+  app.post("/auth/password/reset", passwordMutationLimit, async (req, res) => {
     try {
       await resetPassword(req, res);
     } catch (error) {
