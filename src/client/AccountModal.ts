@@ -26,6 +26,7 @@ import {
   registerEmailPassword,
   requestPasswordReset,
   completePasswordReset,
+  resendVerificationEmail,
 } from "./Auth";
 import "./components/baseComponents/stats/DiscordUserHeader";
 import "./components/baseComponents/stats/PlayerGameHistoryView";
@@ -105,6 +106,7 @@ export class AccountModal extends BaseModal {
   @state() private authMode: "login" | "register" | "forgot" | "reset" = "login";
   @state() private authBusy: boolean = false;
   @state() private authNotice: string | null = null;
+  @state() private verificationPending: boolean = false;
   private passwordResetToken: string | null = null;
   @state() private isLoadingUser: boolean = false;
   // Counts openings, to key the profile card's and the Progression tab's
@@ -483,6 +485,13 @@ export class AccountModal extends BaseModal {
         ${this.authNotice ? html`
           <p role="status" class="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.06] px-3 py-2 text-xs leading-5 text-cyan-100/85">${this.authNotice}</p>
         ` : nothing}
+        ${this.verificationPending ? html`
+          <button
+            type="button"
+            class="w-full py-2 text-xs font-semibold text-cyan-200/80 transition hover:text-cyan-100"
+            @click=${this.handleResendVerification}
+          >Resend verification email</button>
+        ` : nothing}
       </div>
     `;
   }
@@ -492,6 +501,7 @@ export class AccountModal extends BaseModal {
     this.authNotice = null;
     this.password = "";
     this.passwordConfirmation = "";
+    if (mode === "login") this.verificationPending = false;
     this.requestUpdate();
   }
 
@@ -1358,6 +1368,20 @@ export class AccountModal extends BaseModal {
     this.passwordConfirmation = (e.target as HTMLInputElement).value;
   }
 
+  private async handleResendVerification(): Promise<void> {
+    if (!this.email.trim() || this.authBusy) return;
+    this.authBusy = true;
+    try {
+      const accepted = await resendVerificationEmail(this.email);
+      this.authNotice = accepted
+        ? "If this address has an unverified account, a new verification link has been sent."
+        : "The verification email could not be sent. Try again later.";
+    } finally {
+      this.authBusy = false;
+      this.requestUpdate();
+    }
+  }
+
   private async handleSubmit() {
     // Preserve the upstream build's existing magic-link account flow.
     if (!ClientEnv.selfHostedAuthEnabled()) {
@@ -1414,6 +1438,7 @@ export class AccountModal extends BaseModal {
 
       if (this.authMode === "register") {
         const result = await registerEmailPassword(this.email, this.password);
+        this.verificationPending = result === "verification_required";
         this.authNotice =
           result === "verification_required"
             ? "Account created. Open the verification link sent to your email, then sign in."
