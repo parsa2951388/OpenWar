@@ -49,13 +49,6 @@ vi.mock("../../src/client/Api", async (importOriginal) => {
   };
 });
 
-// Deterministic "version element not found" (Main.ts line 411) regardless of
-// whether the Lit nav bars have rendered their version spans yet.
-vi.mock("../../src/client/GameVersion", async (importOriginal) => {
-  const actual = await importOriginal<Record<string, unknown>>();
-  return { ...actual, renderNavVersion: () => 0 };
-});
-
 // Main is the only importer. Stubbing it keeps onUserMe's boot-interrupt tail
 // deterministic (no confirm dialogs, no reward popups).
 vi.mock("../../src/client/BootInterrupts", () => ({
@@ -314,11 +307,16 @@ describe("Client.initialize() booted from Main.ts module scope", () => {
     await new Promise((resolve) => setTimeout(resolve, 100));
   });
 
-  it("runs the signed-out boot: onUserMe(false) and the missing-version warn", () => {
-    // renderNavVersion() === 0 branch (line 411).
-    expect(warnSpy).toHaveBeenCalledWith("Game version element not found");
-    // userAuth() === false → onUserMe(false) (line 735), which flips the ad
-    // entitlement on for a signed-out web player.
+  it("mounts translated navigation before Main reads the nav controls", () => {
+    expect(warnSpy).not.toHaveBeenCalledWith("Game version element not found");
+    expect(warnSpy).not.toHaveBeenCalledWith("Lang selector element not found");
+    expect(document.querySelector("lang-selector")).not.toBeNull();
+    expect(document.documentElement.lang).toBe("en");
+    expect(
+      document.querySelector<HTMLButtonElement>('[data-i18n="main.play"]')
+        ?.textContent?.trim(),
+    ).not.toBe("");
+    // userAuth() === false → onUserMe(false), which enables signed-out web ads.
     expect(window.adsEnabled).toBe(true);
   });
 
