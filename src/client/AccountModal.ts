@@ -1359,6 +1359,23 @@ export class AccountModal extends BaseModal {
   }
 
   private async handleSubmit() {
+    // Preserve the upstream build's existing magic-link account flow.
+    if (!ClientEnv.selfHostedAuthEnabled()) {
+      if (!this.email) {
+        await showInGameAlert(translateText("account_modal.enter_email_address"));
+        return;
+      }
+      const success = await sendMagicLink(this.email);
+      await showInGameAlert(
+        success
+          ? translateText("account_modal.recovery_email_sent", {
+              email: this.email,
+            })
+          : translateText("account_modal.failed_to_send_recovery_email"),
+      );
+      return;
+    }
+
     if (this.authBusy) return;
     this.authBusy = true;
     this.authNotice = null;
