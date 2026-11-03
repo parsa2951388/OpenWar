@@ -1,6 +1,6 @@
 # Open War Authentication — Architecture & Database Design
 
-**Status:** Foundation design  
+**Status:** Implemented in review branch; deployment gated on production resources and credentials  
 **Target branch:** `open-war/auth-foundation`  
 **Current deployment:** Cloudflare Pages proxy → Render `open-war-game`  
 **Database discovery:** No Render PostgreSQL instance was found in the connected workspace.
@@ -46,7 +46,7 @@ Do not place database credentials, OAuth client secrets, signing keys, or mail A
 
 ## 4. Database model
 
-The initial schema is in `database/migrations/0001_authentication_foundation.sql`.
+The initial schema is in `database/migrations/0001_authentication_foundation.sql`; replay-detection and OAuth browser binding are added by `0002_auth_session_replay_and_oauth_binding.sql`.
 
 | Table | Responsibility |
 | --- | --- |
@@ -73,7 +73,7 @@ A persistent UUID already owned by another account must never be reassigned. Do 
 ### Email + password
 
 - Registration requires the current guest access token, normalized email, and a password.
-- Hash passwords using Argon2id with parameters calibrated for the production instance. Never store or log plaintext passwords.
+- Hash passwords using Node.js `crypto.scrypt` with N=32768, r=8, p=1 and a unique 16-byte salt. Never store or log plaintext passwords.
 - Create the account, player mapping, initial session, and verification challenge in one database transaction.
 - Send a single-use verification link. Until the email is verified, block password sign-in and account linking that relies on that email.
 - Login returns the same generic failure for an unknown email and an incorrect password to avoid account enumeration.
@@ -115,14 +115,15 @@ The following routes are the target contract; they are not implemented by this s
 | --- | --- | --- |
 | POST | `/auth/register` | Convert the current guest identity to an email/password account. |
 | POST | `/auth/login/password` | Verify credentials and create a session. |
+| POST | `/auth/oauth/:provider/start` | Start Google/Discord login or link with PKCE and a browser-bound state. |
 | POST | `/auth/password/forgot` | Send a generic password-reset response and email when applicable. |
 | POST | `/auth/password/reset` | Consume a single-use reset token and replace the password. |
 | POST | `/auth/email/verify` | Verify an email using a single-use challenge. |
-| GET | `/auth/login/google` | Begin Google login. |
-| GET | `/auth/callback/google` | Complete Google login. |
-| GET | `/auth/login/discord` | Begin Discord login. |
-| GET | `/auth/callback/discord` | Complete Discord login. |
-| GET | `/auth/link/:provider` | Begin explicit provider linking for an authenticated account. |
+| GET | `/auth/callback/google` | Complete Google OIDC authorization-code flow. |
+
+| GET | `/auth/callback/discord` | Complete Discord authorization-code flow. |
+
+| GET | `/auth/password/reset` | Redirect a reset-email link into the account modal with the single-use token. |
 | POST | `/auth/refresh` | Rotate guest or account refresh state. |
 | POST | `/auth/logout` | Revoke the current session and clear its cookie. |
 | POST | `/auth/revoke` | Revoke all sessions and clear the cookie. |
@@ -144,9 +145,9 @@ Planned Render environment variables:
 | `DISCORD_CLIENT_SECRET` | Discord OAuth client secret. |
 | `OAUTH_CALLBACK_BASE_URL` | Canonical callback origin, e.g. `https://open-war-8o2.pages.dev`. |
 | `EMAIL_PROVIDER` | Email delivery adapter selection. |
-| `EMAIL_API_KEY` | Provider secret (e.g. Resend) or equivalent SMTP secret. |
+| `RESEND_API_KEY` | Resend API secret used for verification and reset messages. |
 | `EMAIL_FROM` | Verified sender address. |
-| `AUTH_ENCRYPTION_KEY` | Key used to encrypt temporary OAuth PKCE material at rest. |
+| `AUTH_ENCRYPTION_KEY` | 32-byte hexadecimal key used to encrypt temporary OAuth PKCE material at rest. |
 
 Existing `JWT_PRIVATE_KEY`, `JWT_KEY_ID`, `DOMAIN`, `API_BASE_URL`, and `SELF_HOSTED_AUTH` remain in place. All secrets belong in Render Environment settings, never in GitHub source or browser code.
 
@@ -171,6 +172,18 @@ Existing `JWT_PRIVATE_KEY`, `JWT_KEY_ID`, `DOMAIN`, `API_BASE_URL`, and `SELF_HO
 7. Add unit, integration, concurrency, and browser end-to-end tests.
 8. Enable the feature only after migration, secrets, two-browser account recovery tests, guest-to-account continuity tests, and deployment health checks pass.
 
-## 10. Current completion boundary
+## 10. Current implementation and deployment boundary
 
-This branch adds the database design and first SQL migration only. It does **not** provision a Render database, run the migration, enable account endpoints, or change the live deployment. The migration must be reviewed and the application/mailer/OAuth implementation completed before it is applied to production.
+The review branch now contains:
+- A PostgreSQL connection pool and serialized, versioned migration runner.
+- Account/password registration and login using scrypt, email verification, password-reset request and completion.
+- Google OIDC and Discord OAuth authorization-code flows with PKCE, state, browser binding, and verified provider identity.
+- Account sessions with hashed refresh tokens, per-device session rows, rotation, logout, logout-all, and reuse detection.
+- Guest-to-account conversion that preserves the existing persistent player UUID.
+- Client-side account controls for the standalone guest panel, including Google, Discord, and email/password.
+
+The branch is **not production-active**. No Render PostgreSQL instance exists in the connected workspace, no migration has been run against production, and OAuth/email provider credentials have not been configured. The existing live Render service still deploys `open-war/independent-self-host`; auto-deploy is disabled. Do not merge or switch the production service until the database, secrets, provider callback URLs, CI, and browser end-to-end checks are complete.
+
+Render's free PostgreSQL tier is temporary and is not suitable for permanent player accounts. Use a paid database for production after approving the recurring cost. Keep all keys in Render Environment settings; never commit them.
+
+The live guest session path remains unchanged and continues to serve players who have not created a permanent account.
