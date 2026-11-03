@@ -93,6 +93,7 @@ COPY src ./src
 # node_modules/@openfront/* are symlinks into packages/; without this copy
 # they dangle and the server dies at boot.
 COPY packages ./packages
+COPY database ./database
 
 
 ARG GIT_COMMIT=unknown
