@@ -175,42 +175,76 @@ export class EditionHub extends LitElement {
         <div class="ow-systems-grid">
           <article class="ow-system-card">
             <span class="ow-system-index">01</span>
-            <span class="ow-system-icon" aria-hidden="true">⌁</span>
+            <span class="ow-system-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="m3.5 9 8.5-4.5L20.5 9v10h-17V9Z" />
+                <path d="m3.5 9 8.5 5 8.5-5M12 14v5M8 11.5h.01M16 11.5h.01" />
+              </svg>
+            </span>
             <h4>${this.t("supply_title")}</h4>
             <p>${this.t("supply_description")}</p>
             <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">02</span>
-            <span class="ow-system-icon" aria-hidden="true">◎</span>
+            <span class="ow-system-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <circle cx="12" cy="12" r="7.5" />
+                <path d="m12 12 5.5-5.5M12 3v2M21 12h-2M12 21v-2M3 12h2" />
+              </svg>
+            </span>
             <h4>${this.t("recon_title")}</h4>
             <p>${this.t("recon_description")}</p>
             <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">03</span>
-            <span class="ow-system-icon" aria-hidden="true">◇</span>
+            <span class="ow-system-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 20V4M6 5h11l-2 3 2 3H6" />
+                <circle cx="6" cy="18" r="1.5" />
+              </svg>
+            </span>
             <h4>${this.t("objectives_title")}</h4>
             <p>${this.t("objectives_description")}</p>
             <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">04</span>
-            <span class="ow-system-icon" aria-hidden="true">⌘</span>
+            <span class="ow-system-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M6 5h4a4 4 0 0 1 4 4v10M14 10a4 4 0 0 1 4-4h1M14 15a4 4 0 0 0 4 4h1" />
+                <circle cx="6" cy="5" r="2" />
+                <circle cx="19" cy="6" r="2" />
+                <circle cx="19" cy="19" r="2" />
+              </svg>
+            </span>
             <h4>${this.t("doctrine_title")}</h4>
             <p>${this.t("doctrine_description")}</p>
             <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">05</span>
-            <span class="ow-system-icon" aria-hidden="true">⌖</span>
+            <span class="ow-system-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 19c5-1 3-6 8-7s4-5 8-7" />
+                <circle cx="4" cy="19" r="1.5" />
+                <circle cx="12" cy="12" r="1.5" />
+                <circle cx="20" cy="5" r="1.5" />
+              </svg>
+            </span>
             <h4>${this.t("campaign_title")}</h4>
             <p>${this.t("campaign_description")}</p>
             <span class="ow-system-status">${this.t("content_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">06</span>
-            <span class="ow-system-icon" aria-hidden="true">▤</span>
+            <span class="ow-system-icon" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 20h16M6 17v-5M11 17V8M16 17v-3M20 17V5" />
+                <path d="m5 9 5-3 5 2 5-5" />
+              </svg>
+            </span>
             <h4>${this.t("after_action_title")}</h4>
             <p>${this.t("after_action_description")}</p>
             <span class="ow-system-status">${this.t("experience_design_status")}</span>
