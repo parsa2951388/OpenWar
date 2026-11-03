@@ -52,9 +52,12 @@ export class MobileNavBar extends LitElement {
       <div class="absolute right-0 bottom-0 w-px bg-transparent" style="height: calc(50% - 64px)"></div>
       <div class="flex-1 w-full flex flex-col justify-start overflow-y-auto lg:pt-[clamp(1rem,3vh,4rem)] lg:pb-[clamp(0.5rem,2vh,2rem)] lg:px-[clamp(1rem,1.5vw,2rem)] pt-4 pb-4 px-5 gap-4 lg:gap-[clamp(1rem,3vh,3rem)]">
         <div class="flex flex-col text-malibu-blue mb-4 ml-[clamp(0.2rem,0.4vw,0.4vh)]">
-          <div class="flex flex-col items-center gap-1">
-            <img src=${assetUrl("images/OpenWarLogo.svg")} alt="Open War" class="w-auto h-auto max-w-[220px] max-h-[4.5rem]" />
-            <div id="game-version" class="l-header__highlightText text-center"></div>
+          <div class="flex flex-row items-center justify-between gap-2">
+            <div class="flex min-w-0 flex-col items-center gap-1">
+              <img src=${assetUrl("images/OpenWarLogo.svg")} alt="Open War" class="w-auto h-auto max-w-[180px] max-h-[4.5rem]" />
+              <div id="game-version" class="l-header__highlightText text-center"></div>
+            </div>
+            <lang-selector class="shrink-0"></lang-selector>
           </div>
         </div>
         <button class="${MOBILE_ITEM} ${currentPage === "page-play" ? "active" : ""}" data-page="page-play" data-i18n="main.play"></button>
