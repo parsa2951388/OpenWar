@@ -85,6 +85,42 @@ export class ServerEnv {
   static selfHostedAuthEnabled(): boolean {
     return process.env.SELF_HOSTED_AUTH === "true" && Boolean(ServerEnv.jwtPrivateKey());
   }
+  static authDatabaseUrl(): string {
+    return process.env.DATABASE_URL ?? "";
+  }
+  static authDatabasePoolMax(): number {
+    const raw = Number(process.env.AUTH_DATABASE_POOL_MAX ?? "8");
+    return Number.isInteger(raw) && raw >= 1 && raw <= 20 ? raw : 8;
+  }
+  static authOrigin(): string {
+    const configured = process.env.AUTH_ORIGIN?.trim();
+    if (configured) return configured.replace(/\/$/, "");
+    const audience = ServerEnv.jwtAudience();
+    return audience === "localhost"
+      ? "http://localhost:9000"
+      : `https://${audience}`;
+  }
+  static authEncryptionKey(): string {
+    return process.env.AUTH_ENCRYPTION_KEY ?? "";
+  }
+  static googleClientId(): string {
+    return process.env.GOOGLE_CLIENT_ID ?? "";
+  }
+  static googleClientSecret(): string {
+    return process.env.GOOGLE_CLIENT_SECRET ?? "";
+  }
+  static discordClientId(): string {
+    return process.env.DISCORD_CLIENT_ID ?? "";
+  }
+  static discordClientSecret(): string {
+    return process.env.DISCORD_CLIENT_SECRET ?? "";
+  }
+  static emailApiKey(): string {
+    return process.env.RESEND_API_KEY ?? "";
+  }
+  static emailFrom(): string {
+    return process.env.EMAIL_FROM ?? "";
+  }
   static jwtPrivateKey(): string {
     return (process.env.JWT_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
   }
