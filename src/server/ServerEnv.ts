@@ -64,6 +64,11 @@ export class ServerEnv {
     }
     return n;
   }
+  // The upstream map-weights API is optional for standalone deployments.
+  // The default remains enabled for upstream-compatible installations.
+  static mapWeightsApiEnabled(): boolean {
+    return process.env.MAP_WEIGHTS_API_ENABLED !== "false";
+  }
   // Turnstile is optional for a self-hosted guest-only deployment. When both
   // halves are present the client renders the challenge and the server verifies
   // it directly with Cloudflare; when either is absent, the local name filter
