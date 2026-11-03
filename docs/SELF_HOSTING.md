@@ -34,6 +34,7 @@ For this topology, use these server settings:
 | `GAME_ENV` | `prod` |
 | `DOMAIN` | `parsaoj.pages.dev` (hostname only; JWT audience) |
 | `API_BASE_URL` | `https://parsaoj.pages.dev` (no trailing slash) |
+| `MAP_WEIGHTS_API_ENABLED` | Set to `false` when no upstream `/map_weights` endpoint exists; omitted defaults to enabled for upstream-compatible deployments |
 | `SELF_HOSTED_AUTH` | `true` |
 | `GIT_COMMIT` | Full commit SHA built into the server |
 | `NUM_WORKERS` | Positive number of game workers |
@@ -47,7 +48,10 @@ For this topology, use these server settings:
 Do not set `GAME_HOST` or `SITE_HOST` in the current full-proxy topology.
 With those unset, the page shell injects a one-server cluster entry using
 `DOMAIN`; the browser keeps game API and WebSocket traffic on
-`parsaoj.pages.dev`, and the Pages Worker proxies it to Render.
+`parsaoj.pages.dev`, and the Pages Worker proxies it to Render. If this
+standalone service has no compatible upstream `/map_weights` endpoint, set
+`MAP_WEIGHTS_API_ENABLED=false`; the built-in default map rotation weights
+remain active and the game does not poll the SPA fallback for JSON.
 
 ### Optional alternative: direct game-server connections
 
