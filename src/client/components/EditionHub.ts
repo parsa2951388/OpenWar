@@ -1,20 +1,25 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import "../GameModeSelector";
-import { whenModalLoaded } from "../LazyModals";
 import type { HostLobbyModal } from "../HostLobbyModal";
 import type { JoinLobbyModal } from "../JoinLobbyModal";
+import { whenModalLoaded } from "../LazyModals";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
-import { normalizeOpenWarEdition, type OpenWarEdition } from "./EditionPreference";
+import {
+  normalizeOpenWarEdition,
+  type OpenWarEdition,
+} from "./EditionPreference";
 import "./EditionHub.css";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
 
 function readEditionPreference(): OpenWarEdition {
   try {
-    return normalizeOpenWarEdition(window.localStorage.getItem(EDITION_STORAGE_KEY));
+    return normalizeOpenWarEdition(
+      window.localStorage.getItem(EDITION_STORAGE_KEY),
+    );
   } catch {
     return "classic";
   }
@@ -64,14 +69,20 @@ export class EditionHub extends LitElement {
   };
 
   private validateUsername(): boolean {
-    const input = document.querySelector("username-input") as UsernameInput | null;
+    const input = document.querySelector(
+      "username-input",
+    ) as UsernameInput | null;
     return input ? input.canPlay() : true;
   }
 
   private openTraining = () => {
     if (!this.validateUsername()) return;
     whenModalLoaded("single-player-modal", () => {
-      (document.querySelector("single-player-modal") as SinglePlayerModal | null)?.open();
+      (
+        document.querySelector(
+          "single-player-modal",
+        ) as SinglePlayerModal | null
+      )?.open();
     });
   };
 
@@ -83,33 +94,47 @@ export class EditionHub extends LitElement {
   private openPrivateRoom = () => {
     if (!this.validateUsername()) return;
     whenModalLoaded("host-lobby-modal", () => {
-      (document.querySelector("host-lobby-modal") as HostLobbyModal | null)?.open();
+      (
+        document.querySelector("host-lobby-modal") as HostLobbyModal | null
+      )?.open();
     });
   };
 
   private joinRoom = () => {
     if (!this.validateUsername()) return;
     whenModalLoaded("join-lobby-modal", () => {
-      (document.querySelector("join-lobby-modal") as JoinLobbyModal | null)?.open();
+      (
+        document.querySelector("join-lobby-modal") as JoinLobbyModal | null
+      )?.open();
     });
   };
 
   private renderEditionControl() {
     return html`
-      <section class="ow-edition-header" aria-label=${this.t("choose_experience")}>
+      <section
+        class="ow-edition-header"
+        aria-label=${this.t("choose_experience")}
+      >
         <div class="ow-edition-heading">
           <span class="ow-edition-eyebrow">${this.t("top_eyebrow")}</span>
           <h1>${this.t("intro_title")}</h1>
           <p>${this.t("intro_description")}</p>
         </div>
-        <div class="ow-edition-switch" role="group" aria-label=${this.t("edition_switch_label")}>
+        <div
+          class="ow-edition-switch"
+          role="group"
+          aria-label=${this.t("edition_switch_label")}
+        >
           <button
             type="button"
             class="ow-edition-tab ${this.edition === "classic" ? "is-active" : ""}"
             aria-pressed=${this.edition === "classic" ? "true" : "false"}
             @click=${() => this.selectEdition("classic")}
           >
-            <span class="ow-edition-tab-mark ow-edition-tab-mark-classic" aria-hidden="true"></span>
+            <span
+              class="ow-edition-tab-mark ow-edition-tab-mark-classic"
+              aria-hidden="true"
+            ></span>
             <span>${this.t("classic_title")}</span>
             <small>${this.t("classic_subtitle")}</small>
           </button>
@@ -119,7 +144,10 @@ export class EditionHub extends LitElement {
             aria-pressed=${this.edition === "operations" ? "true" : "false"}
             @click=${() => this.selectEdition("operations")}
           >
-            <span class="ow-edition-tab-mark ow-edition-tab-mark-operations" aria-hidden="true"></span>
+            <span
+              class="ow-edition-tab-mark ow-edition-tab-mark-operations"
+              aria-hidden="true"
+            ></span>
             <span>${this.t("operations_label")}</span>
             <small>${this.t("operations_subtitle")}</small>
           </button>
@@ -130,7 +158,10 @@ export class EditionHub extends LitElement {
 
   private renderOperationsDashboard() {
     return html`
-      <section class="ow-operations-dashboard" ?hidden=${this.edition !== "operations"}>
+      <section
+        class="ow-operations-dashboard"
+        ?hidden=${this.edition !== "operations"}
+      >
         <div class="ow-operations-hero">
           <div class="ow-operations-hero-content">
             <div class="ow-operations-kicker">
@@ -140,17 +171,31 @@ export class EditionHub extends LitElement {
             <h2>${this.t("operations_headline")}</h2>
             <p>${this.t("operations_description")}</p>
             <div class="ow-operations-actions">
-              <button class="ow-action-primary" type="button" @click=${this.openTraining}>
+              <button
+                class="ow-action-primary"
+                type="button"
+                @click=${this.openTraining}
+              >
                 ${this.t("practice_action")}
                 <span aria-hidden="true">↗</span>
               </button>
-              <button class="ow-action-secondary" type="button" @click=${this.openPublicBattles}>
+              <button
+                class="ow-action-secondary"
+                type="button"
+                @click=${this.openPublicBattles}
+              >
                 ${this.t("browse_battles_action")}
               </button>
             </div>
-            <small class="ow-honest-note">${this.t("current_rules_note")}</small>
+            <small class="ow-honest-note"
+              >${this.t("current_rules_note")}</small
+            >
           </div>
-          <div class="ow-theatre-map" role="img" aria-label=${this.t("theatre_map_alt")}>
+          <div
+            class="ow-theatre-map"
+            role="img"
+            aria-label=${this.t("theatre_map_alt")}
+          >
             <div class="ow-map-grid"></div>
             <div class="ow-map-contours"></div>
             <div class="ow-map-route ow-map-route-one"></div>
@@ -158,8 +203,12 @@ export class EditionHub extends LitElement {
             <span class="ow-map-point ow-map-point-base">HQ</span>
             <span class="ow-map-point ow-map-point-depot">DEPOT</span>
             <span class="ow-map-point ow-map-point-objective">OBJ 04</span>
-            <span class="ow-map-coordinate ow-map-coordinate-top">38° 12′ N · 46° 17′ E</span>
-            <span class="ow-map-coordinate ow-map-coordinate-bottom">THEATRE / 04</span>
+            <span class="ow-map-coordinate ow-map-coordinate-top"
+              >38° 12′ N · 46° 17′ E</span
+            >
+            <span class="ow-map-coordinate ow-map-coordinate-bottom"
+              >THEATRE / 04</span
+            >
             <span class="ow-map-compass" aria-hidden="true">N</span>
           </div>
         </div>
@@ -176,44 +225,80 @@ export class EditionHub extends LitElement {
           <article class="ow-system-card">
             <span class="ow-system-index">01</span>
             <span class="ow-system-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="m3.5 9 8.5-4.5L20.5 9v10h-17V9Z" />
                 <path d="m3.5 9 8.5 5 8.5-5M12 14v5M8 11.5h.01M16 11.5h.01" />
               </svg>
             </span>
             <h4>${this.t("supply_title")}</h4>
             <p>${this.t("supply_description")}</p>
-            <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
+            <span class="ow-system-status"
+              >${this.t("mechanic_design_status")}</span
+            >
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">02</span>
             <span class="ow-system-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <circle cx="12" cy="12" r="7.5" />
                 <path d="m12 12 5.5-5.5M12 3v2M21 12h-2M12 21v-2M3 12h2" />
               </svg>
             </span>
             <h4>${this.t("recon_title")}</h4>
             <p>${this.t("recon_description")}</p>
-            <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
+            <span class="ow-system-status"
+              >${this.t("mechanic_design_status")}</span
+            >
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">03</span>
             <span class="ow-system-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="M6 20V4M6 5h11l-2 3 2 3H6" />
                 <circle cx="6" cy="18" r="1.5" />
               </svg>
             </span>
             <h4>${this.t("objectives_title")}</h4>
             <p>${this.t("objectives_description")}</p>
-            <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
+            <span class="ow-system-status"
+              >${this.t("mechanic_design_status")}</span
+            >
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">04</span>
             <span class="ow-system-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M6 5h4a4 4 0 0 1 4 4v10M14 10a4 4 0 0 1 4-4h1M14 15a4 4 0 0 0 4 4h1" />
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
+                <path
+                  d="M6 5h4a4 4 0 0 1 4 4v10M14 10a4 4 0 0 1 4-4h1M14 15a4 4 0 0 0 4 4h1"
+                />
                 <circle cx="6" cy="5" r="2" />
                 <circle cx="19" cy="6" r="2" />
                 <circle cx="19" cy="19" r="2" />
@@ -221,12 +306,21 @@ export class EditionHub extends LitElement {
             </span>
             <h4>${this.t("doctrine_title")}</h4>
             <p>${this.t("doctrine_description")}</p>
-            <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
+            <span class="ow-system-status"
+              >${this.t("mechanic_design_status")}</span
+            >
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">05</span>
             <span class="ow-system-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="M4 19c5-1 3-6 8-7s4-5 8-7" />
                 <circle cx="4" cy="19" r="1.5" />
                 <circle cx="12" cy="12" r="1.5" />
@@ -235,19 +329,30 @@ export class EditionHub extends LitElement {
             </span>
             <h4>${this.t("campaign_title")}</h4>
             <p>${this.t("campaign_description")}</p>
-            <span class="ow-system-status">${this.t("content_design_status")}</span>
+            <span class="ow-system-status"
+              >${this.t("content_design_status")}</span
+            >
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">06</span>
             <span class="ow-system-icon" aria-hidden="true">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" stroke-linecap="round" stroke-linejoin="round">
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              >
                 <path d="M4 20h16M6 17v-5M11 17V8M16 17v-3M20 17V5" />
                 <path d="m5 9 5-3 5 2 5-5" />
               </svg>
             </span>
             <h4>${this.t("after_action_title")}</h4>
             <p>${this.t("after_action_description")}</p>
-            <span class="ow-system-status">${this.t("experience_design_status")}</span>
+            <span class="ow-system-status"
+              >${this.t("experience_design_status")}</span
+            >
           </article>
         </div>
 
@@ -257,8 +362,20 @@ export class EditionHub extends LitElement {
             <p>${this.t("private_room_description")}</p>
           </div>
           <div class="ow-operations-footer-actions">
-            <button class="ow-action-secondary" type="button" @click=${this.joinRoom}>${this.t("join_code_action")}</button>
-            <button class="ow-action-primary" type="button" @click=${this.openPrivateRoom}>${this.t("create_room_action")}</button>
+            <button
+              class="ow-action-secondary"
+              type="button"
+              @click=${this.joinRoom}
+            >
+              ${this.t("join_code_action")}
+            </button>
+            <button
+              class="ow-action-primary"
+              type="button"
+              @click=${this.openPrivateRoom}
+            >
+              ${this.t("create_room_action")}
+            </button>
           </div>
         </div>
       </section>
@@ -269,7 +386,10 @@ export class EditionHub extends LitElement {
     return html`
       <main class="ow-edition-hub">
         ${this.renderEditionControl()}
-        <section class="ow-classic-edition" ?hidden=${this.edition !== "classic"}>
+        <section
+          class="ow-classic-edition"
+          ?hidden=${this.edition !== "classic"}
+        >
           <div class="ow-classic-heading">
             <span class="ow-edition-eyebrow">${this.t("classic_eyebrow")}</span>
             <h2>${this.t("classic_title")}</h2>
