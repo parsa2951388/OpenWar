@@ -65,7 +65,9 @@ export class MobileNavBar extends LitElement {
         <button class="${MOBILE_ITEM} ${currentPage === "page-inventory" ? "active" : ""}" data-page="page-inventory" data-i18n="main.inventory"></button>
         <button class="${MOBILE_ITEM}" data-page="page-leaderboard" data-i18n="main.leaderboard"></button>
         <button class="no-game-portal ${MOBILE_ITEM}" data-page="page-clan" data-i18n="main.clans"></button>
-        <div class="flex flex-col w-full mt-auto [.in-game_&]:hidden items-end justify-end pt-4 border-t border-white/10"></div>
+        <div class="flex items-center justify-end gap-2 mt-auto w-full [.in-game_&]:hidden pt-4 border-t border-white/10">
+          <lang-selector></lang-selector>
+        </div>
       </div>
     `;
   }
