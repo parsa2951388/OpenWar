@@ -71,6 +71,7 @@ export function currentGameVersion(): string {
  */
 export function taggedGameVersion(rawVersion: string): string {
   const trimmed = rawVersion.trim();
+  if (!VERSION_RE.test(trimmed)) return "";
   return trimmed.startsWith("v") ? trimmed : `v${trimmed}`;
 }
 
