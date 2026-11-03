@@ -390,6 +390,14 @@ describe("RenderHtml environment-only render", () => {
     expect(config.serverHost).toBe("blue.openfront.io");
   });
 
+  it("uses original Open War artwork for desktop and mobile shell logos", async () => {
+    const html = await renderHtmlContent(REAL_TEMPLATE);
+
+    expect(html.match(/OpenWarLogo\\.svg/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(html).not.toContain("OpenFront.png");
+    expect(html).not.toContain("OF.png");
+  });
+
   it("renders valid Schema.org VideoGame JSON-LD", async () => {
     const html = await renderHtmlContent(REAL_TEMPLATE);
     const match = html.match(
