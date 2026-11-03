@@ -106,14 +106,12 @@ describe("taggedGameVersion", () => {
     expect(taggedGameVersion("  v0.33.18\n")).toBe("v0.33.18");
   });
 
-  // The original untagged rendering, kept deliberately. The footer is the half
-  // that names the commit instead -- see composeGameVersion above, which turns
-  // this same input into "bf739f8".
-  it("renders the placeholder as-is on an untagged build", () => {
-    expect(taggedGameVersion("x.xx.xx")).toBe("vx.xx.xx");
-    expect(composeGameVersion("x.xx.xx", SHA)).not.toBe(
-      taggedGameVersion("x.xx.xx"),
-    );
+  // Untagged builds have their exact identity in the footer. A fake
+  // semantic version under the logo is actively misleading, so omit it.
+  it("hides the placeholder on an untagged build", () => {
+    expect(taggedGameVersion("x.xx.xx")).toBe("");
+    expect(taggedGameVersion("")).toBe("");
+    expect(taggedGameVersion("v0.33.18")).toBe("v0.33.18");
   });
 });
 
