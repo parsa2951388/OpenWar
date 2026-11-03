@@ -99,7 +99,7 @@ export async function ensureAuthDatabase(): Promise<void> {
     } finally {
       client.release();
     }
-  })  })().catch((error) => {
+  })().catch((error) => {
     migrationPromise = null;
     throw error;
   });
