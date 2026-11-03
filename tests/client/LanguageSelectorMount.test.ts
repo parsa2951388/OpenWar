@@ -63,6 +63,8 @@ describe("language selector navigation mount", () => {
     expect(trigger).not.toBeNull();
     trigger!.click();
 
-    await vi.waitFor(() => expect(showPage).toHaveBeenCalledWith("page-language"));
+    await vi.waitFor(() =>
+      expect(showPage).toHaveBeenCalledWith("page-language"),
+    );
   });
 });
