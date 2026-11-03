@@ -1,8 +1,9 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ClientEnv } from "../../src/client/ClientEnv";
 import "../../src/client/LangSelector";
 import "../../src/client/components/DesktopNavBar";
 import "../../src/client/components/MobileNavBar";
+import { translateText } from "../../src/client/Utils";
 
 type LitElementLike = HTMLElement & { updateComplete: Promise<unknown> };
 
@@ -22,12 +23,14 @@ beforeEach(() => {
     gitCommit: "test",
   };
   window.currentPageId = "page-play";
+  localStorage.setItem("lang", "en");
   ClientEnv.reset();
 });
 
 afterEach(() => {
   document.body.innerHTML = "";
   window.BOOTSTRAP_CONFIG = undefined;
+  localStorage.removeItem("lang");
   ClientEnv.reset();
 });
 
@@ -37,6 +40,7 @@ describe("language selector navigation mount", () => {
     await nav.updateComplete;
 
     expect(nav.querySelector("lang-selector")).not.toBeNull();
+    await vi.waitFor(() => expect(translateText("main.solo")).toBe("Solo"));
   });
 
   it("mounts the language selector in the mobile navigation", async () => {
