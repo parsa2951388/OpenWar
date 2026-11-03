@@ -48,6 +48,9 @@ const ResetPasswordInput = z.object({
 const EmailResendInput = z.object({
   email: z.string().trim().email().max(254),
 });
+const VerifyEmailInput = z.object({
+  token: z.string().regex(/^[A-Za-z0-9_-]{32,256}$/),
+});
 const OAuthStartInput = z.object({
   returnPath: z.string().max(2048).optional(),
 });
@@ -1133,15 +1136,17 @@ async function verifyEmail(
   req: Request,
   res: Response,
 ): Promise<void> {
+  if (!requireOrigin(req, res)) return;
   if (!authDatabaseConfigured()) {
-    res.status(503).send("Account verification is not configured.");
+    res.status(503).json({ error: "account_auth_not_configured" });
     return;
   }
-  const token = typeof req.query.token === "string" ? req.query.token : "";
-  if (!token) {
-    res.status(400).send("Verification link is invalid or expired.");
+  const parsed = VerifyEmailInput.safeParse(req.body);
+  if (!parsed.success) {
+    res.status(400).json({ error: "invalid_or_expired_token" });
     return;
   }
+
   const verified = await authTransaction(async (client) => {
     const result = await client.query(
       `SELECT id, account_id, target_email
@@ -1149,55 +1154,109 @@ async function verifyEmail(
         WHERE token_hash = $1 AND purpose = 'verify_email'
           AND consumed_at IS NULL AND expires_at > now()
         FOR UPDATE`,
-      [sha256(token)],
+      [sha256(parsed.data.token)],
     );
-    if (!result.rowCount) return false;
+    if (!result.rowCount) return null;
+
     const challenge = result.rows[0] as {
       id: string;
       account_id: string;
       target_email: string;
     };
+    const updated = await client.query(
+      `UPDATE auth_accounts
+          SET email_verified_at = now(), updated_at = now()
+        WHERE id = $1 AND email_normalized = $2
+        RETURNING id`,
+      [challenge.account_id, normalizeEmail(challenge.target_email)],
+    );
+    if (!updated.rowCount) return null;
+
     await client.query(
       "UPDATE auth_email_challenges SET consumed_at = now() WHERE id = $1",
       [challenge.id],
     );
-    await client.query(
-      `UPDATE auth_accounts
-          SET email_verified_at = now(), updated_at = now()
-        WHERE id = $1 AND email_normalized = $2`,
-      [challenge.account_id, normalizeEmail(challenge.target_email)],
+    const player = await client.query(
+      "SELECT persistent_id FROM auth_account_players WHERE account_id = $1",
+      [challenge.account_id],
     );
-    return true;
+    if (!player.rowCount) {
+      throw new Error("account_player_mapping_missing");
+    }
+    return {
+      accountId: challenge.account_id,
+      persistentId: player.rows[0].persistent_id as string,
+    };
   });
+
   if (!verified) {
-    res.status(400).send("Verification link is invalid or expired.");
+    res.status(400).json({ error: "invalid_or_expired_token" });
     return;
   }
 
-  const result = await authPool().query(
-    `SELECT a.id AS account_id, p.persistent_id
-       FROM auth_accounts a
-       JOIN auth_account_players p ON p.account_id = a.id
-      WHERE a.id = (
-        SELECT account_id FROM auth_email_challenges
-         WHERE token_hash = $1 AND purpose = 'verify_email'
-         ORDER BY created_at DESC LIMIT 1
-      )`,
-    [sha256(token)],
-  );
-  if (!result.rowCount) {
-    res.status(400).send("The account could not be loaded after verification.");
-    return;
-  }
   const session = await createAccountSession(
-    result.rows[0].account_id as string,
-    result.rows[0].persistent_id as string,
+    verified.accountId,
+    verified.persistentId,
     "email",
     req.get("user-agent") ?? "",
   );
   setRefreshCookie(res, session.refreshToken);
   res.setHeader("Cache-Control", "no-store");
-  res.redirect(303, `${ServerEnv.authOrigin()}/#modal=account&verified=1`);
+  res.json({ status: "verified" });
+}
+
+function renderEmailVerificationPage(token: string): string {
+  // The token alphabet is validated by the route before it reaches this HTML.
+  return `<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<meta name="referrer" content="no-referrer">
+<title>Verify your Open War account</title>
+<style>
+:root{color-scheme:dark;font-family:Inter,system-ui,sans-serif;background:#071426;color:#f8fafc}
+*{box-sizing:border-box}body{min-height:100vh;margin:0;display:grid;place-items:center;padding:24px}
+main{width:min(100%,440px);padding:32px;border:1px solid #ffffff22;border-radius:24px;background:#0d1c30;box-shadow:0 24px 80px #0008}
+h1{font-size:24px;margin:0 0 12px}p{color:#cbd5e1;line-height:1.7;font-size:14px}
+button{width:100%;margin-top:16px;padding:14px;border:0;border-radius:12px;background:linear-gradient(90deg,#06b6d4,#2563eb);color:white;font-weight:800;font-size:14px;cursor:pointer}
+button:disabled{opacity:.6;cursor:wait}#status{min-height:24px;color:#a5f3fc}
+</style>
+</head>
+<body>
+<main>
+<h1>Verify your email</h1>
+<p>Confirm that you own this email address to secure your Open War account and sign in on other devices.</p>
+<form id="verify-form">
+<input id="verification-token" type="hidden" value="${token}">
+<button id="verify-button" type="submit">Verify email address</button>
+</form>
+<p id="status" role="status" aria-live="polite"></p>
+</main>
+<script>
+document.getElementById("verify-form").addEventListener("submit", async function(event) {
+  event.preventDefault();
+  const button = document.getElementById("verify-button");
+  const status = document.getElementById("status");
+  button.disabled = true;
+  status.textContent = "Verifying your email…";
+  try {
+    const response = await fetch("/auth/email/verify/confirm", {
+      method: "POST",
+      credentials: "same-origin",
+      headers: {"Content-Type": "application/json"},
+      body: JSON.stringify({token: document.getElementById("verification-token").value})
+    });
+    if (!response.ok) throw new Error("Verification failed");
+    window.location.replace("/#modal=account&verified=1");
+  } catch {
+    status.textContent = "This verification link is invalid or expired. Request a new link from the account screen.";
+    button.disabled = false;
+  }
+});
+</script>
+</body>
+</html>`;
 }
 
 async function rotateAccountRefreshToken(
@@ -1469,12 +1528,27 @@ export function registerSelfHostedAccountApi(app: Express): void {
     }
   });
 
-  app.get("/auth/email/verify", async (req, res) => {
+  app.get("/auth/email/verify", (req, res) => {
+    const token = typeof req.query.token === "string" ? req.query.token : "";
+    if (!/^[A-Za-z0-9_-]{32,256}$/.test(token)) {
+      res.status(400).send("Verification link is invalid or expired.");
+      return;
+    }
+    res.setHeader("Cache-Control", "no-store");
+    res.setHeader("Referrer-Policy", "no-referrer");
+    res.setHeader(
+      "Content-Security-Policy",
+      "default-src 'none'; script-src 'unsafe-inline'; style-src 'unsafe-inline'; connect-src 'self'; base-uri 'none'; frame-ancestors 'none'",
+    );
+    res.type("html").send(renderEmailVerificationPage(token));
+  });
+
+  app.post("/auth/email/verify/confirm", async (req, res) => {
     try {
       await verifyEmail(req, res);
     } catch (error) {
       console.error("Email verification failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).send("Email verification is temporarily unavailable.");
+      if (!res.headersSent) res.status(503).json({ error: "email_verification_unavailable" });
     }
   });
 
