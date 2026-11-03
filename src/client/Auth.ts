@@ -95,16 +95,132 @@ function startDesktopLinkFlow(): boolean {
   return false;
 }
 
-export function discordLogin() {
-  if (startDesktopLinkFlow()) return;
-  const redirectUri = encodeURIComponent(window.location.href);
-  window.location.href = `${getApiBase()}/auth/login/discord?redirect_uri=${redirectUri}`;
+async function startSelfHostedOAuth(
+  provider: "google" | "discord",
+): Promise<boolean> {
+  const authHeader = await getAuthHeader();
+  if (!authHeader) return false;
+
+  try {
+    const response = await fetch(
+      `${getApiBase()}/auth/oauth/${provider}/start`,
+      {
+        method: "POST",
+        headers: {
+          Authorization: authHeader,
+          "Content-Type": "application/json",
+        },
+        credentials: "include",
+        body: JSON.stringify({
+          returnPath: `${window.location.pathname}${window.location.search}${window.location.hash}`,
+        }),
+        signal: AbortSignal.timeout(10_000),
+      },
+    );
+    if (!response.ok) {
+      console.warn(`Failed to start ${provider} authentication:`, response.status);
+      return false;
+    }
+    const body = await response.json();
+    if (typeof body?.url !== "string") return false;
+    window.location.assign(body.url);
+    return true;
+  } catch (error) {
+    console.warn(`Failed to start ${provider} authentication:`, error);
+    return false;
+  }
 }
 
-export function googleLogin() {
+export async function discordLogin(): Promise<void> {
   if (startDesktopLinkFlow()) return;
-  const redirectUri = encodeURIComponent(window.location.href);
-  window.location.href = `${getApiBase()}/auth/login/google?redirect_uri=${redirectUri}`;
+  const started = await startSelfHostedOAuth("discord");
+  if (!started) {
+    await showInGameAlert(translateText("account_modal.login_error"));
+  }
+}
+
+export async function googleLogin(): Promise<void> {
+  if (startDesktopLinkFlow()) return;
+  const started = await startSelfHostedOAuth("google");
+  if (!started) {
+    await showInGameAlert(translateText("account_modal.login_error"));
+  }
+}
+
+export type PasswordAuthResult =
+  | "success"
+  | "email_exists"
+  | "invalid_credentials"
+  | "email_not_verified"
+  | "verification_required"
+  | "accepted"
+  | "error";
+
+async function postAuthJson(
+  path: string,
+  body: Record<string, string>,
+  authHeader?: string,
+): Promise<{ ok: boolean; status: number; body: Record<string, unknown> }> {
+  try {
+    const headers: Record<string, string> = {
+      "Content-Type": "application/json",
+    };
+    if (authHeader) headers.Authorization = authHeader;
+    const response = await fetch(`${getApiBase()}${path}`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify(body),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const result = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+    return { ok: response.ok, status: response.status, body: result };
+  } catch (error) {
+    console.warn(`Authentication request failed for ${path}:`, error);
+    return { ok: false, status: 0, body: {} };
+  }
+}
+
+export async function emailPasswordLogin(
+  email: string,
+  password: string,
+): Promise<PasswordAuthResult> {
+  const result = await postAuthJson("/auth/login/password", { email, password });
+  if (result.ok) return "success";
+  if (result.body.error === "email_not_verified") return "email_not_verified";
+  if (result.body.error === "invalid_credentials") return "invalid_credentials";
+  return "error";
+}
+
+export async function registerEmailPassword(
+  email: string,
+  password: string,
+): Promise<PasswordAuthResult> {
+  const authHeader = await getAuthHeader();
+  if (!authHeader) return "error";
+  const result = await postAuthJson(
+    "/auth/register",
+    { email, password },
+    authHeader,
+  );
+  if (result.status === 202) return "verification_required";
+  if (result.body.error === "email_exists") return "email_exists";
+  return "error";
+}
+
+export async function requestPasswordReset(
+  email: string,
+): Promise<PasswordAuthResult> {
+  const result = await postAuthJson("/auth/password/forgot", { email });
+  return result.status === 202 ? "accepted" : "error";
+}
+
+export async function completePasswordReset(
+  token: string,
+  password: string,
+): Promise<PasswordAuthResult> {
+  const result = await postAuthJson("/auth/password/reset", { token, password });
+  return result.ok ? "success" : "error";
 }
 
 // "Sign in through Steam" (OPE-115). The web-only way into an account whose
@@ -158,29 +274,7 @@ export async function linkGoogle(): Promise<boolean> {
     );
     return true;
   }
-  const authHeader = await getAuthHeader();
-  if (authHeader === "") return false;
-  const redirectUri = encodeURIComponent(window.location.href);
-  try {
-    const response = await fetch(
-      `${getApiBase()}/auth/link/google?redirect_uri=${redirectUri}`,
-      {
-        headers: { Authorization: authHeader },
-        credentials: "include",
-      },
-    );
-    if (!response.ok) {
-      console.error("Failed to start Google link", response);
-      return false;
-    }
-    const { url } = await response.json();
-    if (typeof url !== "string") return false;
-    window.location.href = url;
-    return true;
-  } catch (e) {
-    console.warn("Failed to start Google link", e);
-    return false;
-  }
+  return startSelfHostedOAuth("google");
 }
 
 // Link a Steam account to the currently logged-in player (OPE-115). Same shape
