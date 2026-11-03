@@ -31,6 +31,8 @@ jobs:
           npx oxfmt --write
           src/client/components/EditionHub.ts
           src/client/components/EditionHub.css
+          resources/lang/en.json
+          resources/lang/fa.json
           src/client/components/EditionPreference.ts
           src/client/components/PlayPage.ts
           tests/client/EditionHub.test.ts
@@ -38,7 +40,9 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add             src/client/components/EditionHub.ts             src/client/components/EditionHub.css             src/client/components/EditionPreference.ts             src/client/components/PlayPage.ts             tests/client/EditionHub.test.ts
+          git add             src/client/components/EditionHub.ts             src/client/components/EditionHub.css             src/client/components/EditionPreference.ts             src/client/components/PlayPage.ts             tests/client/EditionHub.test.ts \
+            resources/lang/en.json \
+            resources/lang/fa.json
           if git diff --cached --quiet; then
             echo "The dual-edition files are already formatted."
             exit 0
