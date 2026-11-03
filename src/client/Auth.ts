@@ -133,6 +133,11 @@ async function startSelfHostedOAuth(
 
 export async function discordLogin(): Promise<void> {
   if (startDesktopLinkFlow()) return;
+  if (!ClientEnv.selfHostedAuthEnabled()) {
+    const redirectUri = encodeURIComponent(window.location.href);
+    window.location.href = `${getApiBase()}/auth/login/discord?redirect_uri=${redirectUri}`;
+    return;
+  }
   const started = await startSelfHostedOAuth("discord");
   if (!started) {
     await showInGameAlert(translateText("account_modal.login_error"));
@@ -141,6 +146,11 @@ export async function discordLogin(): Promise<void> {
 
 export async function googleLogin(): Promise<void> {
   if (startDesktopLinkFlow()) return;
+  if (!ClientEnv.selfHostedAuthEnabled()) {
+    const redirectUri = encodeURIComponent(window.location.href);
+    window.location.href = `${getApiBase()}/auth/login/google?redirect_uri=${redirectUri}`;
+    return;
+  }
   const started = await startSelfHostedOAuth("google");
   if (!started) {
     await showInGameAlert(translateText("account_modal.login_error"));
@@ -274,7 +284,29 @@ export async function linkGoogle(): Promise<boolean> {
     );
     return true;
   }
-  return startSelfHostedOAuth("google");
+  if (ClientEnv.selfHostedAuthEnabled()) {
+    return startSelfHostedOAuth("google");
+  }
+  const authHeader = await getAuthHeader();
+  if (authHeader === "") return false;
+  const redirectUri = encodeURIComponent(window.location.href);
+  try {
+    const response = await fetch(
+      `${getApiBase()}/auth/link/google?redirect_uri=${redirectUri}`,
+      {
+        headers: { Authorization: authHeader },
+        credentials: "include",
+      },
+    );
+    if (!response.ok) return false;
+    const body = await response.json();
+    if (typeof body?.url !== "string") return false;
+    window.location.assign(body.url);
+    return true;
+  } catch (error) {
+    console.warn("Failed to start Google link", error);
+    return false;
+  }
 }
 
 // Link a Steam account to the currently logged-in player (OPE-115). Same shape
