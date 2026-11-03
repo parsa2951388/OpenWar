@@ -167,6 +167,25 @@
   "account_settings_modal": {
     "title": "Account Settings"
   },
+  "auth_guest": {
+    "badge": "GUEST MODE",
+    "active_title": "Welcome to the battlefield",
+    "active_description": "Your guest session is active. You can play instantly without creating an account or entering a password.",
+    "session_label": "Session status",
+    "session_active": "Active and ready to play",
+    "session_unavailable": "Unavailable",
+    "identity_label": "Identity type",
+    "identity_guest": "Guest player",
+    "storage_note": "Your guest identity is stored in this browser's local data. Clearing site data or switching devices may permanently remove access to this identity.",
+    "recovery_note": "Google, Discord, Steam and email sign-in are not available in this build. Guest account recovery and identity or progress transfer between devices are not supported.",
+    "continue_button": "Return to game",
+    "error_title": "Guest session unavailable",
+    "error_description": "We couldn't connect to the identity service. Check your connection and try again.",
+    "failure_note": "Multiplayer matches are unavailable until a guest session can be created.",
+    "retry_button": "Try again",
+    "nav_label": "Guest",
+    "view_profile": "Guest session"
+  },
   "ban_notice": {
     "appeal": "If you believe this is a mistake, contact us on Discord.",
     "category": {
@@ -2878,24 +2897,5 @@
     "you_won": "You Won!",
     "your_team": "Your team won!",
     "youtube_tutorial": "Need some help?"
-  },
-  "auth_guest": {
-    "badge": "GUEST MODE",
-    "active_title": "Welcome to the battlefield",
-    "active_description": "Your guest session is active. You can play instantly without creating an account or entering a password.",
-    "session_label": "Session status",
-    "session_active": "Active and ready to play",
-    "session_unavailable": "Unavailable",
-    "identity_label": "Identity type",
-    "identity_guest": "Guest player",
-    "storage_note": "Your guest identity is stored in this browser's local data. Clearing site data or switching devices may permanently remove access to this identity.",
-    "recovery_note": "Google, Discord, Steam and email sign-in are not available in this build. Guest account recovery and identity or progress transfer between devices are not supported.",
-    "continue_button": "Return to game",
-    "error_title": "Guest session unavailable",
-    "error_description": "We couldn't connect to the identity service. Check your connection and try again.",
-    "failure_note": "Multiplayer matches are unavailable until a guest session can be created.",
-    "retry_button": "Try again",
-    "nav_label": "Guest",
-    "view_profile": "Guest session"
   }
 }
