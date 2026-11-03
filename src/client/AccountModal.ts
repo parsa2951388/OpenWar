@@ -1427,6 +1427,7 @@ export class AccountModal extends BaseModal {
           window.location.reload();
           return;
         }
+        this.verificationPending = result === "email_not_verified";
         this.authNotice =
           result === "email_not_verified"
             ? "Verify your email address before signing in. Check your inbox."
@@ -1438,12 +1439,13 @@ export class AccountModal extends BaseModal {
 
       if (this.authMode === "register") {
         const result = await registerEmailPassword(this.email, this.password);
-        this.verificationPending = result === "verification_required";
+        this.verificationPending =
+          result === "verification_required" || result === "email_exists";
         this.authNotice =
           result === "verification_required"
             ? "Account created. Open the verification link sent to your email, then sign in."
             : result === "email_exists"
-              ? "An account already uses this email. Sign in or reset its password."
+              ? "An account already uses this email. Sign in, reset its password, or request a verification email if it is still unverified."
               : "Registration is unavailable. Check the email service configuration and try again.";
         return;
       }
