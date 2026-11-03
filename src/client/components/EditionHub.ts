@@ -6,6 +6,7 @@ import type { HostLobbyModal } from "../HostLobbyModal";
 import type { JoinLobbyModal } from "../JoinLobbyModal";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
+import { translateText } from "../Utils";
 import { normalizeOpenWarEdition, type OpenWarEdition } from "./EditionPreference";
 import "./EditionHub.css";
 
@@ -22,7 +23,6 @@ function readEditionPreference(): OpenWarEdition {
 @customElement("openwar-edition-hub")
 export class EditionHub extends LitElement {
   @state() private edition: OpenWarEdition = readEditionPreference();
-  @state() private locale = document.documentElement.lang;
 
   createRenderRoot() {
     return this;
@@ -39,15 +39,11 @@ export class EditionHub extends LitElement {
   }
 
   private onLanguageChanged = () => {
-    this.locale = document.documentElement.lang;
+    this.requestUpdate();
   };
 
-  private isPersian(): boolean {
-    return this.locale.toLowerCase().startsWith("fa");
-  }
-
-  private copy(persian: string, english: string): string {
-    return this.isPersian() ? persian : english;
+  private t(key: string): string {
+    return translateText(`edition_hub.${key}`);
   }
 
   private selectEdition = (edition: OpenWarEdition) => {
@@ -100,16 +96,16 @@ export class EditionHub extends LitElement {
 
   private renderEditionControl() {
     return html`
-      <section class="ow-edition-header" aria-label=${this.copy("انتخاب تجربهٔ بازی", "Choose your game experience")}>
+      <section class="ow-edition-header" aria-label=${this.t("choose_experience")}>
         <div class="ow-edition-heading">
-          <span class="ow-edition-eyebrow">${this.copy("دو مسیر، یک جهان", "TWO WAYS TO COMMAND")}</span>
-          <h1>${this.copy("دنیای Open War را انتخاب کن", "Choose your Open War experience")}</h1>
+          <span class="ow-edition-eyebrow">${this.t("top_eyebrow")}</span>
+          <h1>${this.t("intro_title")}</h1>
           <p>${this.copy(
             "تجربهٔ کلاسیک را برای نبرد سریع انتخاب کن یا وارد میز عملیات و مسیر توسعهٔ جدید شو.",
             "Choose the familiar classic battlefield or explore the new Operations command experience.",
           )}</p>
         </div>
-        <div class="ow-edition-switch" role="group" aria-label=${this.copy("حالت بازی", "Game edition")}>
+        <div class="ow-edition-switch" role="group" aria-label=${this.t("edition_switch_label")}>
           <button
             type="button"
             class="ow-edition-tab ${this.edition === "classic" ? "is-active" : ""}"
@@ -117,8 +113,8 @@ export class EditionHub extends LitElement {
             @click=${() => this.selectEdition("classic")}
           >
             <span class="ow-edition-tab-mark ow-edition-tab-mark-classic" aria-hidden="true"></span>
-            <span>${this.copy("کلاسیک", "Classic")}</span>
-            <small>${this.copy("نبردهای قلمرویی", "Territory warfare")}</small>
+            <span>${this.t("classic_title")}</span>
+            <small>${this.t("classic_subtitle")}</small>
           </button>
           <button
             type="button"
@@ -127,8 +123,8 @@ export class EditionHub extends LitElement {
             @click=${() => this.selectEdition("operations")}
           >
             <span class="ow-edition-tab-mark ow-edition-tab-mark-operations" aria-hidden="true"></span>
-            <span>${this.copy("عملیات جدید", "New · Operations")}</span>
-            <small>${this.copy("فرماندهی و لجستیک", "Command and logistics")}</small>
+            <span>${this.t("operations_label")}</span>
+            <small>${this.t("operations_subtitle")}</small>
           </button>
         </div>
       </section>
@@ -142,20 +138,20 @@ export class EditionHub extends LitElement {
           <div class="ow-operations-hero-content">
             <div class="ow-operations-kicker">
               <span class="ow-status-dot" aria-hidden="true"></span>
-              ${this.copy("میز فرماندهی · پیش‌نمایش محصول", "COMMAND DESK · PRODUCT PREVIEW")}
+              ${this.t("operations_eyebrow")}
             </div>
-            <h2>${this.copy("هر نبرد، یک عملیات استراتژیک", "Every battle is a strategic operation")}</h2>
+            <h2>${this.t("operations_headline")}</h2>
             <p>${this.copy(
               "در نسخهٔ جدید، پیروزی فقط به گسترش قلمرو وابسته نیست. خطوط تدارکاتی، اطلاعات میدان، اهداف چندمرحله‌ای و تصمیم‌های تیمی به هستهٔ بازی اضافه خواهند شد.",
               "The new edition is designed around more than territorial expansion. Supply lines, battlefield intelligence, multi-stage objectives and team decisions are planned as core gameplay systems.",
             )}</p>
             <div class="ow-operations-actions">
               <button class="ow-action-primary" type="button" @click=${this.openTraining}>
-                ${this.copy("ورود به تمرین فعلی", "Enter current practice")}
+                ${this.t("practice_action")}
                 <span aria-hidden="true">↗</span>
               </button>
               <button class="ow-action-secondary" type="button" @click=${this.openPublicBattles}>
-                ${this.copy("مشاهدهٔ نبردهای آنلاین", "Browse live battles")}
+                ${this.t("browse_battles_action")}
               </button>
             </div>
             <small class="ow-honest-note">${this.copy(
@@ -163,7 +159,7 @@ export class EditionHub extends LitElement {
               "Practice and live battles currently use the existing game rules. The exclusive Operations mechanics are still being implemented.",
             )}</small>
           </div>
-          <div class="ow-theatre-map" role="img" aria-label=${this.copy("نمای مفهومی نقشهٔ عملیاتی با خطوط ارتفاع و مسیرهای تدارکاتی", "Conceptual theatre map with contour lines and supply routes")}>
+          <div class="ow-theatre-map" role="img" aria-label=${this.t("theatre_map_alt")}>
             <div class="ow-map-grid"></div>
             <div class="ow-map-contours"></div>
             <div class="ow-map-route ow-map-route-one"></div>
@@ -179,65 +175,65 @@ export class EditionHub extends LitElement {
 
         <div class="ow-operations-section-heading">
           <div>
-            <span class="ow-edition-eyebrow">${this.copy("سیستم‌های اختصاصی", "SIGNATURE SYSTEMS")}</span>
-            <h3>${this.copy("چیزی فراتر از قلمروگیری", "Beyond territorial control")}</h3>
+            <span class="ow-edition-eyebrow">${this.t("systems_eyebrow")}</span>
+            <h3>${this.t("systems_title")}</h3>
           </div>
-          <span class="ow-roadmap-status">${this.copy("در حال توسعه", "IN DEVELOPMENT")}</span>
+          <span class="ow-roadmap-status">${this.t("in_development")}</span>
         </div>
 
         <div class="ow-systems-grid">
           <article class="ow-system-card">
             <span class="ow-system-index">01</span>
             <span class="ow-system-icon" aria-hidden="true">⌁</span>
-            <h4>${this.copy("شبکهٔ تدارکات", "Supply network")}</h4>
-            <p>${this.copy("انبارها، مسیرهای زمینی، بندرها و کاروان‌ها؛ قطع مسیر دشمن می‌تواند نتیجهٔ نبرد را تغییر دهد.", "Depots, roads, ports and convoys. Disrupting an enemy supply route can change the outcome of a battle.")}</p>
-            <span class="ow-system-status">${this.copy("طراحی مکانیک", "MECHANIC DESIGN")}</span>
+            <h4>${this.t("supply_title")}</h4>
+            <p>${this.t("supply_description")}</p>
+            <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">02</span>
             <span class="ow-system-icon" aria-hidden="true">◎</span>
-            <h4>${this.copy("شناسایی و اطلاعات", "Recon and intelligence")}</h4>
-            <p>${this.copy("رادار، مه جنگ و گزارش‌هایی با زمان و میزان اطمینان؛ همه‌چیز همیشه برای همه آشکار نیست.", "Radar, fog of war and intelligence reports with age and confidence. Information is never automatically complete.")}</p>
-            <span class="ow-system-status">${this.copy("طراحی مکانیک", "MECHANIC DESIGN")}</span>
+            <h4>${this.t("recon_title")}</h4>
+            <p>${this.t("recon_description")}</p>
+            <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">03</span>
             <span class="ow-system-icon" aria-hidden="true">◇</span>
-            <h4>${this.copy("اهداف عملیاتی", "Operational objectives")}</h4>
-            <p>${this.copy("مراکز فرماندهی، مناطق کلیدی، اسکورت کاروان و مأموریت‌های چندمرحله‌ای.", "Command centres, strategic locations, convoy escort and multi-stage missions.")}</p>
-            <span class="ow-system-status">${this.copy("طراحی مکانیک", "MECHANIC DESIGN")}</span>
+            <h4>${this.t("objectives_title")}</h4>
+            <p>${this.t("objectives_description")}</p>
+            <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">04</span>
             <span class="ow-system-icon" aria-hidden="true">⌘</span>
-            <h4>${this.copy("دکترین و نقش‌ها", "Doctrine and roles")}</h4>
-            <p>${this.copy("تخصص‌های لجستیک، شناسایی، دفاع و تحرک برای هماهنگی بهتر تیم.", "Logistics, reconnaissance, defence and mobility specialisations for coordinated teams.")}</p>
-            <span class="ow-system-status">${this.copy("طراحی مکانیک", "MECHANIC DESIGN")}</span>
+            <h4>${this.t("doctrine_title")}</h4>
+            <p>${this.t("doctrine_description")}</p>
+            <span class="ow-system-status">${this.t("mechanic_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">05</span>
             <span class="ow-system-icon" aria-hidden="true">⌖</span>
-            <h4>${this.copy("کمپین گروهی", "Co-op campaign")}</h4>
-            <p>${this.copy("مأموریت‌های طراحی‌شده برای بازی انفرادی یا همکاری چندنفره علیه هوش مصنوعی.", "Authored missions for solo play or cooperative operations against AI.")}</p>
-            <span class="ow-system-status">${this.copy("طراحی محتوا", "CONTENT DESIGN")}</span>
+            <h4>${this.t("campaign_title")}</h4>
+            <p>${this.t("campaign_description")}</p>
+            <span class="ow-system-status">${this.t("content_design_status")}</span>
           </article>
           <article class="ow-system-card">
             <span class="ow-system-index">06</span>
             <span class="ow-system-icon" aria-hidden="true">▤</span>
-            <h4>${this.copy("گزارش پس از نبرد", "After-action review")}</h4>
-            <p>${this.copy("خط زمانی رویدادها، عملکرد تیم، مسیر تدارکات و تصمیم‌های تعیین‌کنندهٔ مسابقه.", "Event timeline, team contribution, logistics history and the decisions that shaped the match.")}</p>
-            <span class="ow-system-status">${this.copy("طراحی تجربه", "EXPERIENCE DESIGN")}</span>
+            <h4>${this.t("after_action_title")}</h4>
+            <p>${this.t("after_action_description")}</p>
+            <span class="ow-system-status">${this.t("experience_design_status")}</span>
           </article>
         </div>
 
         <div class="ow-operations-footer">
           <div>
-            <strong>${this.copy("اتاق خصوصی برای دوستانت بساز", "Set up a private room for your group")}</strong>
-            <p>${this.copy("ساخت اتاق فعلاً از مسیر فعلی لابی انجام می‌شود؛ پیکربندی اختصاصی Operations بعداً به آن متصل می‌شود.", "Room creation currently uses the existing lobby flow. Operations-specific match rules will be connected in a later implementation phase.")}</p>
+            <strong>${this.t("private_room_title")}</strong>
+            <p>${this.t("private_room_description")}</p>
           </div>
           <div class="ow-operations-footer-actions">
-            <button class="ow-action-secondary" type="button" @click=${this.joinRoom}>${this.copy("پیوستن با کد", "Join with code")}</button>
-            <button class="ow-action-primary" type="button" @click=${this.openPrivateRoom}>${this.copy("ساخت اتاق", "Create room")}</button>
+            <button class="ow-action-secondary" type="button" @click=${this.joinRoom}>${this.t("join_code_action")}</button>
+            <button class="ow-action-primary" type="button" @click=${this.openPrivateRoom}>${this.t("create_room_action")}</button>
           </div>
         </div>
       </section>
@@ -250,8 +246,8 @@ export class EditionHub extends LitElement {
         ${this.renderEditionControl()}
         <section class="ow-classic-edition" ?hidden=${this.edition !== "classic"}>
           <div class="ow-classic-heading">
-            <span class="ow-edition-eyebrow">${this.copy("تجربهٔ اصلی", "THE ORIGINAL EXPERIENCE")}</span>
-            <h2>${this.copy("کلاسیک", "Classic")}</h2>
+            <span class="ow-edition-eyebrow">${this.t("classic_eyebrow")}</span>
+            <h2>${this.t("classic_title")}</h2>
             <p>${this.copy(
               "همان سبک آشنای نبردهای قلمرویی و مسابقات سریع؛ مستقل و بدون تغییر در قوانین فعلی.",
               "The familiar territory-control experience and quick matches, with the existing game rules preserved.",
