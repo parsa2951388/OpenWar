@@ -571,9 +571,39 @@ class Client {
     turnstilePrefetch?.catch(() => {});
     this.turnstileTokenPromise = turnstilePrefetch;
 
-    // Wait for components to render before setting version
+    // customElements.whenDefined() only guarantees registration. Lit still
+    // renders asynchronously, so wait for both navigation roots and their
+    // nested utility controls before querying translated or versioned nodes.
     await customElements.whenDefined("mobile-nav-bar");
     await customElements.whenDefined("desktop-nav-bar");
+
+    type RenderReadyElement = HTMLElement & {
+      updateComplete: Promise<unknown>;
+    };
+    const navigationRoots = [
+      document.querySelector("mobile-nav-bar"),
+      document.querySelector("desktop-nav-bar"),
+    ].filter(
+      (element): element is RenderReadyElement =>
+        element !== null && "updateComplete" in element,
+    );
+    await Promise.all(
+      navigationRoots.map((element) => element.updateComplete),
+    );
+
+    const utilityIcons = Array.from(
+      document.querySelectorAll("nav-utility-icons"),
+    ) as RenderReadyElement[];
+    await Promise.all(
+      utilityIcons.map((element) => element.updateComplete),
+    );
+
+    const languageSelectors = Array.from(
+      document.querySelectorAll("lang-selector"),
+    ) as RenderReadyElement[];
+    await Promise.all(
+      languageSelectors.map((element) => element.updateComplete),
+    );
 
     const openWarFont = new FontFace(
       "Open War",
