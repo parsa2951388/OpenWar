@@ -358,15 +358,6 @@ async function createEmailChallenge(
   return token;
 }
 
-function escapeHtml(value: string): string {
-  return value
-    .replaceAll("&", "&amp;")
-    .replaceAll("<", "&lt;")
-    .replaceAll(">", "&gt;")
-    .replaceAll('"', "&quot;")
-    .replaceAll("'", "&#39;");
-}
-
 function emailLink(path: string, token: string): string {
   const url = new URL(path, ServerEnv.authOrigin());
   url.searchParams.set("token", token);
@@ -1137,6 +1128,30 @@ async function verifyEmail(
     res.status(400).send("Verification link is invalid or expired.");
     return;
   }
+
+  const result = await authPool().query(
+    `SELECT a.id AS account_id, p.persistent_id
+       FROM auth_accounts a
+       JOIN auth_account_players p ON p.account_id = a.id
+      WHERE a.id = (
+        SELECT account_id FROM auth_email_challenges
+         WHERE token_hash = $1 AND purpose = 'verify_email'
+         ORDER BY created_at DESC LIMIT 1
+      )`,
+    [sha256(token)],
+  );
+  if (!result.rowCount) {
+    res.status(400).send("The account could not be loaded after verification.");
+    return;
+  }
+  const session = await createAccountSession(
+    result.rows[0].account_id as string,
+    result.rows[0].persistent_id as string,
+    "email",
+    req.get("user-agent") ?? "",
+  );
+  setRefreshCookie(res, session.refreshToken);
+  res.setHeader("Cache-Control", "no-store");
   res.redirect(303, `${ServerEnv.authOrigin()}/#modal=account&verified=1`);
 }
 
