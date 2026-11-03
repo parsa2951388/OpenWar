@@ -100,28 +100,28 @@ function cookieValue(req: Request, name: string): string | null {
 }
 
 function setRefreshCookie(res: Response, token: string): void {
-  res.setHeader(
+  res.append(
     "Set-Cookie",
     `${REFRESH_COOKIE}=${encodeURIComponent(token)}; Max-Age=${REFRESH_TTL_SECONDS}; Path=/; HttpOnly; Secure; SameSite=Lax`,
   );
 }
 
 function clearRefreshCookie(res: Response): void {
-  res.setHeader(
+  res.append(
     "Set-Cookie",
     `${REFRESH_COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`,
   );
 }
 
 function setOAuthCookie(res: Response, value: string): void {
-  res.setHeader(
+  res.append(
     "Set-Cookie",
     `${OAUTH_COOKIE}=${encodeURIComponent(value)}; Max-Age=600; Path=/; HttpOnly; Secure; SameSite=Lax`,
   );
 }
 
 function clearOAuthCookie(res: Response): void {
-  res.setHeader(
+  res.append(
     "Set-Cookie",
     `${OAUTH_COOKIE}=; Max-Age=0; Path=/; HttpOnly; Secure; SameSite=Lax`,
   );
@@ -252,13 +252,12 @@ async function signAccountAccessToken(
     .sign(await privateSigningKey());
 }
 
-async function sendAccountSession(
-  res: Response,
+async function createAccountSession(
   accountId: string,
   persistentId: string,
   provider: AccountProvider,
   userAgent: string,
-): Promise<void> {
+): Promise<{ jwt: string; refreshToken: string }> {
   const refreshToken = randomToken(48);
   const tokenHash = sha256(refreshToken);
   const sessionId = randomUUID();
@@ -284,10 +283,28 @@ async function sendAccountSession(
     );
   });
 
-  const jwt = await signAccountAccessToken(persistentId, provider);
-  setRefreshCookie(res, refreshToken);
+  return {
+    refreshToken,
+    jwt: await signAccountAccessToken(persistentId, provider),
+  };
+}
+
+async function sendAccountSession(
+  res: Response,
+  accountId: string,
+  persistentId: string,
+  provider: AccountProvider,
+  userAgent: string,
+): Promise<void> {
+  const session = await createAccountSession(
+    accountId,
+    persistentId,
+    provider,
+    userAgent,
+  );
+  setRefreshCookie(res, session.refreshToken);
   res.setHeader("Cache-Control", "no-store");
-  res.json({ jwt, expiresIn: ACCESS_TTL_SECONDS });
+  res.json({ jwt: session.jwt, expiresIn: ACCESS_TTL_SECONDS });
 }
 
 async function sendResendEmail(args: {
@@ -830,16 +847,16 @@ async function completeOAuth(
       return { accountId, persistentId };
     });
 
-    await sendAccountSession(
-      res,
+    const session = await createAccountSession(
       account.accountId,
       account.persistentId,
       provider,
       req.get("user-agent") ?? "",
     );
-    // The browser already has an authenticated HttpOnly refresh cookie. The
-    // redirect reloads the client, which exchanges it for a new access JWT.
-    if (res.headersSent) return;
+    setRefreshCookie(res, session.refreshToken);
+    res.setHeader("Cache-Control", "no-store");
+    // The browser reloads, then exchanges the HttpOnly refresh cookie for
+    // an access JWT without exposing any credential in the redirect URL.
     redirectAfterOAuth(res, returnPath);
   } catch (error) {
     const code =
@@ -1131,7 +1148,6 @@ async function verifyEmail(
 }
 
 async function rotateAccountRefreshToken(
-  req: Request,
   res: Response,
   token: string,
 ): Promise<boolean> {
@@ -1455,7 +1471,7 @@ export function registerSelfHostedAccountApi(app: Express): void {
     const token = cookieValue(req, REFRESH_COOKIE);
     if (!token || token.includes(".")) return next();
     try {
-      const handled = await rotateAccountRefreshToken(req, res, token);
+      const handled = await rotateAccountRefreshToken(res, token);
       if (!handled) return next();
     } catch (error) {
       console.error("Account refresh failed:", error instanceof Error ? error.message : "unknown error");
