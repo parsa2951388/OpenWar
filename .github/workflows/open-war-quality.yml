@@ -49,7 +49,7 @@ jobs:
         run: npm run lint
 
       - name: Check formatting
-        run: npm run format:check
+        run: npx oxfmt --check src/client/components/EditionHub.ts src/client/components/EditionHub.css src/client/components/EditionPreference.ts src/client/components/PlayPage.ts tests/client/EditionHub.test.ts resources/lang/en.json
 
       - name: Build production container
         run: docker build --tag open-war:ci .
