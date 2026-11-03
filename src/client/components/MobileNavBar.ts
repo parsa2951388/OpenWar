@@ -44,6 +44,10 @@ export class MobileNavBar extends LitElement {
     return html`<span class="relative ml-2 shrink-0 -mt-2 w-2 h-2"><span class="absolute inset-0 ${color} rounded-full animate-ping"></span><span class="absolute inset-0 ${color} rounded-full"></span></span>`;
   }
 
+  private _openLanguageSelector = () => {
+    window.dispatchEvent(new Event("open-language-selector"));
+  };
+
   render() {
     window.currentPageId ??= "page-play";
     const currentPage = window.currentPageId;
@@ -57,7 +61,31 @@ export class MobileNavBar extends LitElement {
               <img src=${assetUrl("images/OpenWarLogo.svg")} alt="Open War" class="w-auto h-auto max-w-[180px] max-h-[4.5rem]" />
               <div id="game-version" class="l-header__highlightText text-center"></div>
             </div>
-            <lang-selector class="shrink-0"></lang-selector>
+            <button
+              type="button"
+              class="h-10 w-10 shrink-0 rounded-full border border-white/15 text-white/80 transition-colors hover:border-malibu-blue hover:text-malibu-blue"
+              data-action="open-language-selector"
+              data-i18n-title="select_lang.title"
+              data-i18n-aria-label="select_lang.title"
+              @click=${this._openLanguageSelector}
+            >
+              <svg
+                xmlns="http://www.w3.org/2000/svg"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.8"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                class="mx-auto h-5 w-5"
+                aria-hidden="true"
+              >
+                <circle cx="12" cy="12" r="9"></circle>
+                <path d="M3 12h18"></path>
+                <path d="M12 3a15 15 0 0 1 0 18"></path>
+                <path d="M12 3a15 15 0 0 0 0 18"></path>
+              </svg>
+            </button>
           </div>
         </div>
         <button class="${MOBILE_ITEM} ${currentPage === "page-play" ? "active" : ""}" data-page="page-play" data-i18n="main.play"></button>
