@@ -483,6 +483,7 @@ async function startOAuth(
     return;
   }
 
+  await ensureAuthDatabase();
   const identity = await requireAnyAccountIdentity(req);
   if (!identity) {
     res.status(401).json({ error: "valid_session_required" });
@@ -867,15 +868,6 @@ async function completeOAuth(
   }
 }
 
-function authErrorCode(error: unknown): string {
-  const message = error instanceof Error ? error.message : "";
-  if (message === "email_exists") return "email_exists";
-  if (message === "identity_already_linked" || message === "provider_already_linked") {
-    return "identity_already_linked";
-  }
-  return "account_auth_failed";
-}
-
 async function registerEmailAccount(
   req: Request,
   res: Response,
@@ -968,6 +960,7 @@ async function passwordLogin(
     res.status(400).json({ error: "invalid_credentials" });
     return;
   }
+  await ensureAuthDatabase();
   const emailNormalized = normalizeEmail(parsed.data.email);
   const result = await authPool().query(
     `SELECT a.id AS account_id, a.password_hash, a.status,
@@ -1024,6 +1017,7 @@ async function requestPasswordReset(
     res.status(202).json({ status: "accepted" });
     return;
   }
+  await ensureAuthDatabase();
   const emailNormalized = normalizeEmail(parsed.data.email);
   const result = await authPool().query(
     "SELECT id, email FROM auth_accounts WHERE email_normalized = $1 AND status = 'active' AND password_hash IS NOT NULL",
@@ -1040,8 +1034,7 @@ async function requestPasswordReset(
       text: `Reset your Open War password: ${resetUrl}\nThis link expires in 30 minutes.`,
     });
     if (!sent) {
-      res.status(503).json({ error: "email_delivery_failed" });
-      return;
+      console.warn("Password reset email was not accepted by the email provider.");
     }
   }
   // Same answer for existing and unknown addresses to reduce account enumeration.
