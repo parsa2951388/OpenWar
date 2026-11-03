@@ -55,6 +55,12 @@ describe("play-page mobile top bar", () => {
   describe("off CrazyGames", () => {
     beforeEach(mount);
 
+    it("uses the Open War brand in the mobile top bar", () => {
+      const logo = el.querySelector<HTMLImageElement>(".col-start-2 img");
+      expect(logo?.getAttribute("src")).toBe("images/OpenWarLogo.svg");
+      expect(logo?.alt).toBe("Open War");
+    });
+
     it("puts the bell/help icons beside the profile menu", () => {
       expect(rightSlot()).toEqual(["nav-utility-icons", "nav-account-menu"]);
     });
