@@ -113,6 +113,7 @@ export class NavUtilityIcons extends LitElement {
     const currentPage = window.currentPageId;
     return html`
       <div class="flex items-center gap-1">
+        <lang-selector class="shrink-0"></lang-selector>
         <div class="relative">
           <button
             class="${this.buttonClass()} ${
