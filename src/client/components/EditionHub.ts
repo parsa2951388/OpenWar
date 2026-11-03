@@ -6,16 +6,10 @@ import type { HostLobbyModal } from "../HostLobbyModal";
 import type { JoinLobbyModal } from "../JoinLobbyModal";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
+import { normalizeOpenWarEdition, type OpenWarEdition } from "./EditionPreference";
 import "./EditionHub.css";
 
-export type OpenWarEdition = "classic" | "operations";
-
 const EDITION_STORAGE_KEY = "openwar.edition";
-
-/** Treat unknown, missing and legacy values as Classic to preserve the old entry flow. */
-export function normalizeOpenWarEdition(value: string | null): OpenWarEdition {
-  return value === "operations" ? "operations" : "classic";
-}
 
 function readEditionPreference(): OpenWarEdition {
   try {
