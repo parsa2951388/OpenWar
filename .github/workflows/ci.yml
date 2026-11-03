@@ -6,7 +6,10 @@ on:
       - checks_requested
   pull_request:
   push:
-    branches: [main]
+    branches:
+      - main
+      - open-war/independent-self-host
+      - open-war/quality-10-of-10
 
 permissions:
   contents: read
