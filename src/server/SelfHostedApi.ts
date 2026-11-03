@@ -6,6 +6,7 @@ import { UserMeResponseSchema } from "@openfront/shared/ApiSchemas";
 import { base64urlToUuid, uuidToBase64url } from "@openfront/shared/Base64";
 import { verifyClientToken } from "./jwt";
 import { ServerEnv } from "./ServerEnv";
+import { registerSelfHostedAccountApi } from "./SelfHostedAccountApi";
 
 const GUEST_INPUT = z.object({ persistentId: z.string().uuid() });
 const REFRESH_COOKIE = "__Host-openwar_refresh";
@@ -106,6 +107,10 @@ function bearerToken(req: Request): string | null {
  */
 export function registerSelfHostedApi(app: Express): void {
   if (!ServerEnv.selfHostedAuthEnabled()) return;
+
+  // Register permanent-account endpoints before the guest fallbacks so the
+  // same URL can serve both guest JWT refreshes and database-backed sessions.
+  registerSelfHostedAccountApi(app);
 
   app.get("/.well-known/jwks.json", async (_req, res) => {
     try {
