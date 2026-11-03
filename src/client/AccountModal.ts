@@ -22,6 +22,10 @@ import {
   reauthAfterPortalChange,
   sendMagicLink,
   steamLogin,
+  emailPasswordLogin,
+  registerEmailPassword,
+  requestPasswordReset,
+  completePasswordReset,
 } from "./Auth";
 import "./components/baseComponents/stats/DiscordUserHeader";
 import "./components/baseComponents/stats/PlayerGameHistoryView";
@@ -96,6 +100,12 @@ export class AccountModal extends BaseModal {
   protected routerName = "account";
 
   @state() private email: string = "";
+  @state() private password: string = "";
+  @state() private passwordConfirmation: string = "";
+  @state() private authMode: "login" | "register" | "forgot" | "reset" = "login";
+  @state() private authBusy: boolean = false;
+  @state() private authNotice: string | null = null;
+  private passwordResetToken: string | null = null;
   @state() private isLoadingUser: boolean = false;
   // Counts openings, to key the profile card's and the Progression tab's
   // once-per-open flourish.
@@ -221,7 +231,7 @@ export class AccountModal extends BaseModal {
 
   private renderStandaloneGuestPanel(active: boolean): TemplateResult {
     return html`
-      <div class="flex min-h-full items-center justify-center p-4 sm:p-7">
+      <div class="flex min-h-full flex-col items-center justify-center gap-5 p-4 sm:p-7">
         <section class="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#071426]/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-8">
           <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl"></div>
           <div class="relative flex flex-col items-center text-center">
@@ -276,6 +286,7 @@ export class AccountModal extends BaseModal {
             </button>
           </div>
         </section>
+        ${this.renderStandaloneAuthMethods()}
       </div>
     `;
   }
@@ -295,7 +306,7 @@ export class AccountModal extends BaseModal {
   }
 
   protected modalConfig() {
-    if (this.isLoadingUser || this.isStandaloneGuestMode() || !this.isLinkedAccount()) {
+    if (this.isLoadingUser || !this.isLinkedAccount()) {
       return {};
     }
     return {
@@ -330,7 +341,7 @@ export class AccountModal extends BaseModal {
         translateText("account_modal.fetching_account"),
       );
     }
-    if (this.isStandaloneGuestMode()) {
+    if (this.isStandaloneGuestMode() && !this.isLinkedAccount()) {
       return this.renderStandaloneGuestPanel(!!this.userMeResponse?.player?.publicId);
     }
     if (!this.isLinkedAccount()) {
@@ -369,24 +380,153 @@ export class AccountModal extends BaseModal {
     }
   }
 
-  // Email input + "get magic link" button used by the sign-in form.
+  // Legacy upstream builds still use the existing magic-link flow. The
+  // standalone Open War deployment uses database-backed password accounts.
   private renderEmailField(): TemplateResult {
+    if (!ClientEnv.selfHostedAuthEnabled()) {
+      return html`
+        <input
+          type="email"
+          dir="ltr"
+          .value=${this.email}
+          @input=${this.handleEmailInput}
+          placeholder=${translateText("account_modal.email_placeholder")}
+          class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-malibu-blue/50 focus:border-malibu-blue/50 transition-all font-medium hover:bg-white/10"
+        />
+        <o-button
+          variant="primary"
+          width="block"
+          size="md"
+          translationKey="account_modal.get_magic_link"
+          @click=${this.handleSubmit}
+        ></o-button>
+      `;
+    }
+
+    const needsEmail = this.authMode !== "reset";
+    const needsPassword = this.authMode === "login" || this.authMode === "register" || this.authMode === "reset";
     return html`
-      <input
-        type="email"
-        dir="ltr"
-        .value=${this.email}
-        @input=${this.handleEmailInput}
-        placeholder=${translateText("account_modal.email_placeholder")}
-        class="w-full px-4 py-3 bg-white/5 border border-white/10 rounded-xl text-white placeholder-white/20 focus:outline-none focus:ring-2 focus:ring-malibu-blue/50 focus:border-malibu-blue/50 transition-all font-medium hover:bg-white/10"
-      />
-      <o-button
-        variant="primary"
-        width="block"
-        size="md"
-        translationKey="account_modal.get_magic_link"
-        @click=${this.handleSubmit}
-      ></o-button>
+      <div class="w-full space-y-3 text-left">
+        <div class="flex rounded-xl border border-white/10 bg-black/20 p-1">
+          <button
+            type="button"
+            class="flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${this.authMode === "login" ? "bg-cyan-500/20 text-cyan-100" : "text-white/55 hover:text-white"}"
+            @click=${() => this.setAuthMode("login")}
+          >Sign in</button>
+          <button
+            type="button"
+            class="flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${this.authMode === "register" ? "bg-cyan-500/20 text-cyan-100" : "text-white/55 hover:text-white"}"
+            @click=${() => this.setAuthMode("register")}
+          >Create account</button>
+        </div>
+        ${needsEmail ? html`
+          <label class="block space-y-1.5">
+            <span class="text-xs font-semibold text-white/65">Email address</span>
+            <input
+              type="email"
+              autocomplete="email"
+              dir="ltr"
+              .value=${this.email}
+              @input=${this.handleEmailInput}
+              placeholder="you@example.com"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
+            />
+          </label>
+        ` : html`
+          <p class="text-xs leading-5 text-cyan-100/75">Choose a new password for your Open War account.</p>
+        `}
+        ${needsPassword ? html`
+          <label class="block space-y-1.5">
+            <span class="text-xs font-semibold text-white/65">${this.authMode === "reset" ? "New password" : "Password"}</span>
+            <input
+              type="password"
+              autocomplete=${this.authMode === "login" ? "current-password" : "new-password"}
+              minlength="12"
+              maxlength="128"
+              .value=${this.password}
+              @input=${this.handlePasswordInput}
+              placeholder="At least 12 characters"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
+            />
+          </label>
+        ` : nothing}
+        ${this.authMode === "register" || this.authMode === "reset" ? html`
+          <label class="block space-y-1.5">
+            <span class="text-xs font-semibold text-white/65">Confirm password</span>
+            <input
+              type="password"
+              autocomplete="new-password"
+              minlength="12"
+              maxlength="128"
+              .value=${this.passwordConfirmation}
+              @input=${this.handlePasswordConfirmationInput}
+              placeholder="Repeat your password"
+              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
+            />
+          </label>
+        ` : nothing}
+        <button
+          type="button"
+          ?disabled=${this.authBusy}
+          @click=${this.handleSubmit}
+          class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-50"
+        >${this.authBusy ? "Please wait…" : this.authMode === "login" ? "Sign in with email" : this.authMode === "register" ? "Create account" : this.authMode === "forgot" ? "Send reset link" : "Save new password"}</button>
+        <div class="flex justify-between gap-3 text-xs">
+          ${this.authMode === "login" ? html`
+            <button type="button" class="text-cyan-200/80 hover:text-cyan-100" @click=${() => this.setAuthMode("forgot")}>Forgot password?</button>
+            <span class="text-white/35">Secure account sign-in</span>
+          ` : html`
+            <button type="button" class="text-cyan-200/80 hover:text-cyan-100" @click=${() => this.setAuthMode("login")}>Back to sign in</button>
+            <span class="text-white/35">Email verification required</span>
+          `}
+        </div>
+        ${this.authNotice ? html`
+          <p role="status" class="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.06] px-3 py-2 text-xs leading-5 text-cyan-100/85">${this.authNotice}</p>
+        ` : nothing}
+      </div>
+    `;
+  }
+
+  private setAuthMode(mode: "login" | "register" | "forgot" | "reset"): void {
+    this.authMode = mode;
+    this.authNotice = null;
+    this.password = "";
+    this.passwordConfirmation = "";
+    this.requestUpdate();
+  }
+
+  private renderStandaloneAuthMethods(): TemplateResult {
+    return html`
+      <section class="w-full max-w-xl rounded-[24px] border border-white/10 bg-[#071426]/95 p-5 shadow-[0_20px_65px_rgba(0,0,0,0.35)] sm:p-7">
+        <div class="mb-5 text-center">
+          <h3 class="text-xl font-black tracking-tight text-white">Protect your progress</h3>
+          <p class="mt-2 text-xs leading-6 text-slate-300/70">Create a permanent account to recover your player identity on another device.</p>
+        </div>
+        <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+          <button
+            type="button"
+            @click=${this.handleDiscordLogin}
+            class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#4752C4]"
+          >
+            <img src=${assetUrl("images/DiscordLogo.svg")} alt="" class="h-5 w-5" />
+            Continue with Discord
+          </button>
+          <button
+            type="button"
+            @click=${this.handleGoogleLogin}
+            class="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dadce0] bg-white px-4 py-3 text-sm font-extrabold text-[#1f1f1f] transition hover:bg-[#f7f8f8]"
+          >
+            <img src=${assetUrl("images/GoogleLogo.svg")} alt="" class="h-5 w-5" />
+            Continue with Google
+          </button>
+        </div>
+        <div class="my-5 flex items-center gap-3">
+          <span class="h-px flex-1 bg-white/10"></span>
+          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">or use email</span>
+          <span class="h-px flex-1 bg-white/10"></span>
+        </div>
+        ${this.renderEmailField()}
+      </section>
     `;
   }
 
@@ -1207,24 +1347,93 @@ export class AccountModal extends BaseModal {
   }
 
   private handleEmailInput(e: Event) {
-    const target = e.target as HTMLInputElement;
-    this.email = target.value;
+    this.email = (e.target as HTMLInputElement).value;
+  }
+
+  private handlePasswordInput(e: Event) {
+    this.password = (e.target as HTMLInputElement).value;
+  }
+
+  private handlePasswordConfirmationInput(e: Event) {
+    this.passwordConfirmation = (e.target as HTMLInputElement).value;
   }
 
   private async handleSubmit() {
-    if (!this.email) {
-      await showInGameAlert(translateText("account_modal.enter_email_address"));
-      return;
-    }
+    if (this.authBusy) return;
+    this.authBusy = true;
+    this.authNotice = null;
+    try {
+      if (this.authMode !== "reset" && !this.email.trim()) {
+        this.authNotice = "Enter a valid email address.";
+        return;
+      }
+      if (
+        this.authMode === "register" || this.authMode === "reset"
+      ) {
+        if (this.password.length < 12) {
+          this.authNotice = "Use a password with at least 12 characters.";
+          return;
+        }
+        if (this.password !== this.passwordConfirmation) {
+          this.authNotice = "The passwords do not match.";
+          return;
+        }
+      }
 
-    const success = await sendMagicLink(this.email);
-    await showInGameAlert(
-      success
-        ? translateText("account_modal.recovery_email_sent", {
-            email: this.email,
-          })
-        : translateText("account_modal.failed_to_send_recovery_email"),
-    );
+      if (this.authMode === "login") {
+        const result = await emailPasswordLogin(this.email, this.password);
+        if (result === "success") {
+          window.location.reload();
+          return;
+        }
+        this.authNotice =
+          result === "email_not_verified"
+            ? "Verify your email address before signing in. Check your inbox."
+            : result === "invalid_credentials"
+              ? "The email address or password is incorrect."
+              : "Account sign-in is temporarily unavailable.";
+        return;
+      }
+
+      if (this.authMode === "register") {
+        const result = await registerEmailPassword(this.email, this.password);
+        this.authNotice =
+          result === "verification_required"
+            ? "Account created. Open the verification link sent to your email, then sign in."
+            : result === "email_exists"
+              ? "An account already uses this email. Sign in or reset its password."
+              : "Registration is unavailable. Check the email service configuration and try again.";
+        return;
+      }
+
+      if (this.authMode === "forgot") {
+        const result = await requestPasswordReset(this.email);
+        this.authNotice =
+          result === "accepted"
+            ? "If an account exists for that address, a password-reset link has been sent."
+            : "Password reset is temporarily unavailable.";
+        return;
+      }
+
+      if (!this.passwordResetToken) {
+        this.authNotice = "This password-reset link is invalid or expired.";
+        return;
+      }
+      const reset = await completePasswordReset(
+        this.passwordResetToken,
+        this.password,
+      );
+      if (reset === "success") {
+        this.passwordResetToken = null;
+        this.setAuthMode("login");
+        this.authNotice = "Password updated. Sign in with your new password.";
+      } else {
+        this.authNotice = "This password-reset link is invalid or expired.";
+      }
+    } finally {
+      this.authBusy = false;
+      this.requestUpdate();
+    }
   }
 
   // Portal sign-in: after their prompt completes, exchange the new token
@@ -1293,6 +1502,23 @@ export class AccountModal extends BaseModal {
     return code;
   }
 
+  private consumePasswordResetTokenArg(
+    args?: Record<string, unknown>,
+  ): string | null {
+    const token =
+      typeof args?.resetToken === "string" ? args.resetToken : null;
+    if (!token) return null;
+    const params = new URLSearchParams(window.location.hash.slice(1));
+    params.delete("resetToken");
+    const rest = params.toString();
+    history.replaceState(
+      null,
+      "",
+      rest ? `#${rest}` : window.location.pathname + window.location.search,
+    );
+    return token;
+  }
+
   protected onOpen(args?: Record<string, unknown>): void {
     // A new opening: the full profile card and the Progression tab play
     // their flourish again, and the tab reads the player's progress afresh.
@@ -1305,6 +1531,11 @@ export class AccountModal extends BaseModal {
     consumeLinkResult(args);
     this.loginError = consumeLoginResult(args);
     this.prefillCreatorCode = this.consumeCreatorCodeArg(args);
+    this.passwordResetToken = this.consumePasswordResetTokenArg(args);
+    this.setAuthMode(this.passwordResetToken ? "reset" : "login");
+    if (args?.verified === "1" || args?.verified === 1) {
+      this.authNotice = "Email verified. You can now sign in with your password.";
+    }
 
     this.refreshPortalUser();
 
