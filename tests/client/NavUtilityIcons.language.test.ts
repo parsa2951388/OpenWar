@@ -10,6 +10,10 @@ async function mount(tag: "desktop-nav-bar" | "mobile-nav-bar"): Promise<Mountab
   const el = document.createElement(tag) as Mountable;
   document.body.appendChild(el);
   await el.updateComplete;
+  const utilityIcons = el.querySelector("nav-utility-icons") as
+    | (HTMLElement & { updateComplete?: Promise<unknown> })
+    | null;
+  await utilityIcons?.updateComplete;
   const selector = el.querySelector("lang-selector") as
     | (HTMLElement & { updateComplete?: Promise<unknown> })
     | null;
