@@ -297,7 +297,10 @@
 @media (prefers-reduced-motion: reduce) {
   .ow-edition-tab,
   .ow-action-primary,
-  .ow-action-secondary { transition: none; }
+  .ow-action-secondary,
+  .ow-system-card {
+    transition: none;
+  }
   .ow-action-primary:hover,
   .ow-system-card:hover { transform: none; }
 }
