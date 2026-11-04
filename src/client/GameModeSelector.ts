@@ -306,6 +306,9 @@ export class GameModeSelector extends LitElement {
   // multiplayerAllowedForBackend for why one missed heartbeat must not dim
   // these buttons.
   @state() private backendOutage = false;
+  // The Classic lobby feed is paused while the Operations edition is selected.
+  // Main.ts may still call start() after a game ends, so start() must honor this gate.
+  private editionActive = true;
   private serverTimeOffset: number = 0;
   private defaultLobbyTime: number = 0;
 
@@ -558,7 +561,18 @@ export class GameModeSelector extends LitElement {
    * use it to undo a stop(), since a needless reconnect drops the cached
    * snapshot and re-primes the list from the server.
    */
+  public setEditionActive(active: boolean): void {
+    if (this.editionActive === active) return;
+    this.editionActive = active;
+    if (active) {
+      this.start();
+    } else {
+      this.stop();
+    }
+  }
+
   public start() {
+    if (!this.editionActive) return;
     this.openLobbyFeed();
   }
 
