@@ -54,14 +54,15 @@ describe("/auth/refresh failure handling", () => {
     expect(localStorage.getItem(PERSISTENT_ID_KEY)).toBe("persistent-id");
   });
 
-  it("logs out on a 401", async () => {
+  it("starts a guest session when no refresh cookie exists (401)", async () => {
     answerRefreshWith(401);
 
     expect(await userAuth()).toBe(false);
 
-    expect(logoutCalls()).toHaveLength(1);
-    await vi.waitFor(() =>
-      expect(localStorage.getItem(PERSISTENT_ID_KEY)).toBeNull(),
-    );
+    expect(logoutCalls()).toHaveLength(0);
+    expect(
+      fetchMock.mock.calls.some((call) => String(call[0]).includes("/auth/guest")),
+    ).toBe(true);
+    expect(localStorage.getItem(PERSISTENT_ID_KEY)).toBe("persistent-id");
   });
 });
