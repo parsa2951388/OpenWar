@@ -13,7 +13,6 @@ function makeMenu(): BuildMenu {
 
 const item = (unitType: UnitType) => ({ unitType, icon: "" }) as any;
 
-
 describe("UnitDisplay visible structure prices", () => {
   it("shows city and factory prices without relying on hover", async () => {
     const display = document.createElement("unit-display") as any;
@@ -32,11 +31,7 @@ describe("UnitDisplay visible structure prices", () => {
     display.playerBuildables = Object.values(UnitType).map((type) => ({
       type,
       cost:
-        type === UnitType.City
-          ? 125n
-          : type === UnitType.Factory
-            ? 450n
-            : 10n,
+        type === UnitType.City ? 125n : type === UnitType.Factory ? 450n : 10n,
       canBuild: true,
       canUpgrade: false,
     }));

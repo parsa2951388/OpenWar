@@ -173,9 +173,7 @@ export class UnitDisplay extends LitElement implements Controller {
           this.playerBuildables = buildables;
           this.requestUpdate();
         })
-        .catch((error) =>
-          console.warn("Failed to refresh unit costs", error),
-        )
+        .catch((error) => console.warn("Failed to refresh unit costs", error))
         .finally(() => {
           this.buildablesRefreshPending = false;
         });
@@ -200,7 +198,9 @@ export class UnitDisplay extends LitElement implements Controller {
 
     return html`
       <div class="border-t border-white/10 p-0.5 w-full">
-        <div class="grid grid-cols-5 sm:grid-cols-10 grid-flow-row gap-1 w-full max-w-full px-1 mx-auto">
+        <div
+          class="grid grid-cols-5 sm:grid-cols-10 grid-flow-row gap-1 w-full max-w-full px-1 mx-auto"
+        >
           ${this.renderUnitItem(
             cityIcon,
             this._cities,
@@ -399,9 +399,14 @@ export class UnitDisplay extends LitElement implements Controller {
                 : null
             }
           </div>
-          <div class="unit-cost inline-flex items-center justify-center gap-0.5 text-[10px] leading-3 font-semibold text-amber-300 whitespace-nowrap tabular-nums" translate="no">
+          <div
+            class="unit-cost inline-flex items-center justify-center gap-0.5 text-[10px] leading-3 font-semibold text-amber-300 whitespace-nowrap tabular-nums"
+            translate="no"
+          >
             <img src=${goldCoinIcon} alt="" aria-hidden="true" class="size-3" />
-            <span>${this.playerBuildables === null ? "…" : renderNumber(this.cost(unitType))}</span>
+            <span
+              >${this.playerBuildables === null ? "…" : renderNumber(this.cost(unitType))}</span
+            >
           </div>
         </div>
       </div>

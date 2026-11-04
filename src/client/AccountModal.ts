@@ -235,7 +235,6 @@ export class AccountModal extends BaseModal {
     );
   }
 
-
   private isLinkedAccount(): boolean {
     // The portal identity only counts once the backend token exchange
     // produced a session — otherwise a failed exchange would show a dead

@@ -334,17 +334,30 @@ export class BuildMenu extends LitElement implements Controller {
         gap: 5px;
         touch-action: manipulation;
       }
-      .build-icon { font-size: 28px; }
+      .build-icon {
+        font-size: 28px;
+      }
       .build-name {
         font-size: 12px;
         margin-bottom: 2px;
         overflow-wrap: anywhere;
       }
-      .build-description { font-size: 10px; line-height: 1.25; }
-      .build-cost { font-size: 12px; }
-      .build-cost-label { font-size: 9px; }
-      .build-count { font-size: 10px; }
-      .build-count-chip { padding: 1px 5px; }
+      .build-description {
+        font-size: 10px;
+        line-height: 1.25;
+      }
+      .build-cost {
+        font-size: 12px;
+      }
+      .build-cost-label {
+        font-size: 9px;
+      }
+      .build-count {
+        font-size: 10px;
+      }
+      .build-count-chip {
+        padding: 1px 5px;
+      }
     }
 
     @media (max-width: 480px) {
@@ -362,18 +375,38 @@ export class BuildMenu extends LitElement implements Controller {
         padding: 8px 5px;
         border-width: 1px;
       }
-      .build-icon { font-size: 24px; }
-      .build-name { font-size: 12px; }
-      .build-description { font-size: 9px; }
-      .build-cost { font-size: 12px; }
-      .build-count { font-size: 10px; }
-      .build-button img { width: 24px; height: 24px; }
-      .build-cost img { width: 12px; height: 12px; }
+      .build-icon {
+        font-size: 24px;
+      }
+      .build-name {
+        font-size: 12px;
+      }
+      .build-description {
+        font-size: 9px;
+      }
+      .build-cost {
+        font-size: 12px;
+      }
+      .build-count {
+        font-size: 10px;
+      }
+      .build-button img {
+        width: 24px;
+        height: 24px;
+      }
+      .build-cost img {
+        width: 12px;
+        height: 12px;
+      }
     }
 
     @media (pointer: coarse) {
-      .build-button:not(:disabled):hover { transform: none; }
-      .build-button:not(:disabled):active { transform: none; }
+      .build-button:not(:disabled):hover {
+        transform: none;
+      }
+      .build-button:not(:disabled):active {
+        transform: none;
+      }
     }
   `;
 
@@ -454,72 +487,85 @@ export class BuildMenu extends LitElement implements Controller {
       >
         ${
           this.playerBuildables === null
-            ? html`<div class="build-loading">${translateText("build_menu.loading")}</div>`
+            ? html`<div class="build-loading">
+                ${translateText("build_menu.loading")}
+              </div>`
             : this.filteredBuildTable.map(
-          (row) => html`
-            <div class="build-row">
-              ${row.map((item) => {
-                const buildableUnit = this.playerBuildables?.find(
-                  (bu) => bu.type === item.unitType,
-                );
-                if (buildableUnit === undefined) {
-                  return html``;
-                }
-                const enabled = this.canBuildOrUpgrade(item);
-                return html`
-                  <button
-                    class="build-button"
-                    @click=${() =>
-                      this.sendBuildOrUpgrade(buildableUnit, this.clickedTile)}
-                    ?disabled=${!enabled}
-                    title=${
-                      !enabled
-                        ? translateText("build_menu.not_enough_money")
-                        : ""
-                    }
-                  >
-                    <img
-                      src=${item.icon}
-                      alt="${item.unitType}"
-                      width="40"
-                      height="40"
-                    />
-                    <span class="build-name">
-                      ${item.key && translateText(item.key)}
-                    </span>
-                    <span class="build-description"
-                      >${
-                        item.description && translateText(item.description)
-                      }</span
-                    >
-                    <span class="build-cost">
-                      <span class="build-cost-label">${this.costLabel(item)}</span>
-                      <span class="build-cost-value" translate="no">
-                        ${renderNumber(
-                          this.game && this.game.myPlayer() ? this.cost(item) : 0,
-                        )}
-                        <img
-                          src=${goldCoinIcon}
-                          alt="gold"
-                          width="12"
-                          height="12"
-                          class="align-middle"
-                        />
-                      </span>
-                    </span>
-                    ${
-                      item.countable
-                        ? html`<div class="build-count-chip">
-                            <span class="build-count">${this.count(item)}</span>
-                          </div>`
-                        : ""
-                    }
-                  </button>
-                `;
-              })}
-            </div>
-          `,
-        )}
+                (row) => html`
+                  <div class="build-row">
+                    ${row.map((item) => {
+                      const buildableUnit = this.playerBuildables?.find(
+                        (bu) => bu.type === item.unitType,
+                      );
+                      if (buildableUnit === undefined) {
+                        return html``;
+                      }
+                      const enabled = this.canBuildOrUpgrade(item);
+                      return html`
+                        <button
+                          class="build-button"
+                          @click=${() =>
+                            this.sendBuildOrUpgrade(
+                              buildableUnit,
+                              this.clickedTile,
+                            )}
+                          ?disabled=${!enabled}
+                          title=${
+                            !enabled
+                              ? translateText("build_menu.not_enough_money")
+                              : ""
+                          }
+                        >
+                          <img
+                            src=${item.icon}
+                            alt="${item.unitType}"
+                            width="40"
+                            height="40"
+                          />
+                          <span class="build-name">
+                            ${item.key && translateText(item.key)}
+                          </span>
+                          <span class="build-description"
+                            >${
+                              item.description &&
+                              translateText(item.description)
+                            }</span
+                          >
+                          <span class="build-cost">
+                            <span class="build-cost-label"
+                              >${this.costLabel(item)}</span
+                            >
+                            <span class="build-cost-value" translate="no">
+                              ${renderNumber(
+                                this.game && this.game.myPlayer()
+                                  ? this.cost(item)
+                                  : 0,
+                              )}
+                              <img
+                                src=${goldCoinIcon}
+                                alt="gold"
+                                width="12"
+                                height="12"
+                                class="align-middle"
+                              />
+                            </span>
+                          </span>
+                          ${
+                            item.countable
+                              ? html`<div class="build-count-chip">
+                                  <span class="build-count"
+                                    >${this.count(item)}</span
+                                  >
+                                </div>`
+                              : ""
+                          }
+                        </button>
+                      `;
+                    })}
+                  </div>
+                `,
+              )
+        }
       </div>
     `;
   }

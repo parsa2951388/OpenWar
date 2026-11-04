@@ -9,8 +9,9 @@ import { ServerEnv } from "./ServerEnv";
 export function registerSelfHostedAuthStatusRoute(app: Express): void {
   app.get("/auth/status", async (_req, res) => {
     const configured = authDatabaseConfigured();
-    let database: "ready" | "not_configured" | "unavailable" =
-      configured ? "unavailable" : "not_configured";
+    let database: "ready" | "not_configured" | "unavailable" = configured
+      ? "unavailable"
+      : "not_configured";
 
     if (configured) {
       try {
@@ -37,9 +38,7 @@ export function registerSelfHostedAuthStatusRoute(app: Express): void {
           ServerEnv.discordClientId() && ServerEnv.discordClientSecret(),
         ),
       },
-      emailDelivery: Boolean(
-        ServerEnv.emailApiKey() && ServerEnv.emailFrom(),
-      ),
+      emailDelivery: Boolean(ServerEnv.emailApiKey() && ServerEnv.emailFrom()),
       authOrigin: ServerEnv.authOrigin(),
     });
   });
