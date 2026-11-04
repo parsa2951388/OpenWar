@@ -4,6 +4,7 @@ import "../../src/client/components/DesktopNavBar";
 import "../../src/client/components/NavUtilityIcons";
 import "../../src/client/components/PlayPage";
 import { initNavigation } from "../../src/client/Navigation";
+import { ClientEnv } from "../../src/client/ClientEnv";
 
 // jsdom has no ResizeObserver, and the mobile top bar shares a subtree with
 // <steam-wishlist>, which constructs one on first update.
@@ -29,6 +30,18 @@ async function mount(tag: string): Promise<Mountable> {
 const settingsButton = (root: ParentNode) =>
   root.querySelector<HTMLElement>('.nav-menu-item[data-page="page-settings"]');
 
+function setupBrowserBootstrap(): void {
+  window.BOOTSTRAP_CONFIG = {
+    gameEnv: "prod",
+    turnstileSiteKey: "",
+    jwtAudience: "localhost",
+    apiBaseUrl: "http://localhost:8787",
+    gitCommit: "test",
+    numWorkers: 1,
+  };
+  ClientEnv.reset();
+}
+
 // Settings is reachable from the nav again (OPE-173): it used to be found only
 // in the account dropdown, which renders as "Sign in" when logged out. It is a
 // cogwheel icon button in the utility cluster, paired with the help "?".
@@ -38,6 +51,7 @@ describe("nav-utility-icons settings cogwheel", () => {
   beforeEach(async () => {
     document.body.innerHTML = "";
     window.currentPageId = "page-play";
+    setupBrowserBootstrap();
     icons = await mount("nav-utility-icons");
   });
 
@@ -99,6 +113,7 @@ describe("the nav bars that host the cluster", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
     window.currentPageId = "page-play";
+    setupBrowserBootstrap();
   });
 
   it("puts the cogwheel in the desktop bar, immediately left of the avatar", async () => {
