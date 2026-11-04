@@ -34,12 +34,12 @@ For this topology, use these server settings:
 | `GAME_ENV`                                           | `prod`                                                                                                                          |
 | `DOMAIN`                                             | `open-war-8o2.pages.dev` (hostname only; JWT audience)                                                                          |
 | `API_BASE_URL`                                       | `https://open-war-8o2.pages.dev` (no trailing slash)                                                                            |
-| `AUTH_ORIGIN`                                        | `https://open-war-8o2.pages.dev` (canonical origin for OAuth callbacks and email links)                                          |
-| `DATABASE_URL`                                       | PostgreSQL connection string for permanent accounts, sessions and migrations; secret manager only                              |
+| `AUTH_ORIGIN`                                        | `https://open-war-8o2.pages.dev` (canonical origin for OAuth callbacks and email links)                                         |
+| `DATABASE_URL`                                       | PostgreSQL connection string for permanent accounts, sessions and migrations; secret manager only                               |
 | `AUTH_ENCRYPTION_KEY`                                | 32-byte hexadecimal key used to encrypt OAuth PKCE verifiers at rest; secret manager only                                       |
-| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`          | Optional Google OAuth client credentials; register the exact callback URL documented below                                     |
+| `GOOGLE_CLIENT_ID` / `GOOGLE_CLIENT_SECRET`          | Optional Google OAuth client credentials; register the exact callback URL documented below                                      |
 | `DISCORD_CLIENT_ID` / `DISCORD_CLIENT_SECRET`        | Optional Discord OAuth client credentials                                                                                       |
-| `RESEND_API_KEY` / `EMAIL_FROM`                      | Required together for email verification, resend and password-recovery messages                                                |
+| `RESEND_API_KEY` / `EMAIL_FROM`                      | Required together for email verification, resend and password-recovery messages                                                 |
 | `MAP_WEIGHTS_API_ENABLED`                            | Set to `false` when no upstream `/map_weights` endpoint exists; omitted defaults to enabled for upstream-compatible deployments |
 | `SELF_HOSTED_AUTH`                                   | `true`                                                                                                                          |
 | `GIT_COMMIT`                                         | Full commit SHA built into the server                                                                                           |
