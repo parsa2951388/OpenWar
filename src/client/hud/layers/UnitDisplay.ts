@@ -125,20 +125,41 @@ export class UnitDisplay extends LitElement implements Controller {
     if (!player) return;
 
     let changed = false;
-    const counts: [keyof this, number][] = [
-      ["_cities", player.totalUnitLevels(UnitType.City)],
-      ["_missileSilo", player.totalUnitLevels(UnitType.MissileSilo)],
-      ["_port", player.totalUnitLevels(UnitType.Port)],
-      ["_defensePost", player.totalUnitLevels(UnitType.DefensePost)],
-      ["_samLauncher", player.totalUnitLevels(UnitType.SAMLauncher)],
-      ["_factories", player.totalUnitLevels(UnitType.Factory)],
-      ["_warships", player.totalUnitLevels(UnitType.Warship)],
-    ];
-    for (const [key, value] of counts) {
-      if (this[key] !== value) {
-        (this[key] as number) = value;
-        changed = true;
-      }
+    const cities = player.totalUnitLevels(UnitType.City);
+    const missileSilos = player.totalUnitLevels(UnitType.MissileSilo);
+    const ports = player.totalUnitLevels(UnitType.Port);
+    const defensePosts = player.totalUnitLevels(UnitType.DefensePost);
+    const samLaunchers = player.totalUnitLevels(UnitType.SAMLauncher);
+    const factories = player.totalUnitLevels(UnitType.Factory);
+    const warships = player.totalUnitLevels(UnitType.Warship);
+
+    if (this._cities !== cities) {
+      this._cities = cities;
+      changed = true;
+    }
+    if (this._missileSilo !== missileSilos) {
+      this._missileSilo = missileSilos;
+      changed = true;
+    }
+    if (this._port !== ports) {
+      this._port = ports;
+      changed = true;
+    }
+    if (this._defensePost !== defensePosts) {
+      this._defensePost = defensePosts;
+      changed = true;
+    }
+    if (this._samLauncher !== samLaunchers) {
+      this._samLauncher = samLaunchers;
+      changed = true;
+    }
+    if (this._factories !== factories) {
+      this._factories = factories;
+      changed = true;
+    }
+    if (this._warships !== warships) {
+      this._warships = warships;
+      changed = true;
     }
 
     // Avoid queuing overlapping worker requests; refresh again on the next
