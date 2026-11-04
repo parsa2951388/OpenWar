@@ -230,7 +230,7 @@ export class AccountModal extends BaseModal {
   private isStandaloneGuestMode(): boolean {
     return (
       typeof ClientEnv.selfHostedAuthEnabled === "function" &&
-      this.isStandaloneGuestMode()
+      ClientEnv.selfHostedAuthEnabled()
     );
   }
 
