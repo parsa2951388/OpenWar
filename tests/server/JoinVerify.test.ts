@@ -19,8 +19,7 @@ function jsonResponse(body: unknown, status = 200) {
 
 describe("verifyJoin", () => {
   beforeEach(() => {
-    // The verifier is enabled only when both Turnstile credentials exist.
-    // These tests exercise the enabled siteverify path.
+    // The game server verifies the single-use token directly with Cloudflare.
     vi.stubEnv("TURNSTILE_SITE_KEY", "site-key");
     vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-key");
   });
@@ -31,41 +30,31 @@ describe("verifyJoin", () => {
     _clearInFlightTokens();
   });
 
-  it("returns the display-ready pair on approval and posts the identity", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse({
-        status: "approved",
-        username: "SnugglePuppy",
-        clanTag: "COOL",
-      }),
-    );
+  it("verifies a token with Cloudflare and locally screens the supplied identity", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ success: true }));
     vi.stubGlobal("fetch", fetchMock);
 
     const verdict = await verifyJoin("1.2.3.4", "tok", "xXblackxX", "CoOl");
 
     expect(verdict).toEqual({
       status: "approved",
-      username: "SnugglePuppy",
+      username: "xXblackxX",
       clanTag: "COOL",
     });
-    const [, init] = fetchMock.mock.calls[0];
-    expect(JSON.parse(init.body)).toEqual({
-      ip: "1.2.3.4",
-      token: "tok",
-      username: "xXblackxX",
-      clanTag: "CoOl",
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+    const [url, init] = fetchMock.mock.calls[0];
+    expect(url).toBe("https://challenges.cloudflare.com/turnstile/v0/siteverify");
+    expect(init.method).toBe("POST");
+    expect(init.headers["Content-Type"]).toBe("application/x-www-form-urlencoded");
+    expect(Object.fromEntries(new URLSearchParams(String(init.body)))).toEqual({
+      secret: "secret-key",
+      response: "tok",
+      remoteip: "1.2.3.4",
     });
   });
 
-  it("normalizes an absent clanTag to null on approval", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi
-        .fn()
-        .mockResolvedValue(
-          jsonResponse({ status: "approved", username: "Alice" }),
-        ),
-    );
+  it("normalizes a missing clan tag to null", async () => {
+    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ success: true })));
     expect(await verifyJoin("ip", "tok", "Alice", null)).toEqual({
       status: "approved",
       username: "Alice",
@@ -73,44 +62,25 @@ describe("verifyJoin", () => {
     });
   });
 
-  it("passes a rejection through (extra identity fields are stripped)", async () => {
+  it("rejects an invalid Turnstile token and preserves Cloudflare error codes", async () => {
     vi.stubGlobal(
       "fetch",
       vi.fn().mockResolvedValue(
         jsonResponse({
-          status: "rejected",
-          reason: "token invalid",
-          username: "SnugglePuppy",
-          clanTag: null,
+          success: false,
+          "error-codes": ["timeout-or-duplicate"],
         }),
       ),
     );
-    expect(await verifyJoin("ip", "tok", "xXblackxX", null)).toEqual({
+    expect(await verifyJoin("ip", "tok", "Alice", null)).toEqual({
       status: "rejected",
-      reason: "token invalid",
-    });
-  });
-
-  it("preserves structured errorCodes on rejection", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        jsonResponse({
-          status: "rejected",
-          reason: "duplicate",
-          errorCodes: ["timeout-or-duplicate"],
-        }),
-      ),
-    );
-    expect(await verifyJoin("ip", "tok-dup", "xXblackxX", null)).toEqual({
-      status: "rejected",
-      reason: "duplicate",
+      reason: "turnstile_failed",
       errorCodes: ["timeout-or-duplicate"],
     });
   });
 
-  it("coalesces concurrent in-flight verifyJoin calls for the same non-null token and identity", async () => {
-    let resolveFetch: (val: unknown) => void;
+  it("coalesces concurrent calls with the same token and identity", async () => {
+    let resolveFetch!: (value: unknown) => void;
     const fetchPromise = new Promise((resolve) => {
       resolveFetch = resolve;
     });
@@ -121,290 +91,42 @@ describe("verifyJoin", () => {
     const call2 = verifyJoin("ip2", "shared-tok", "User1", null);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
-
-    resolveFetch!(
-      jsonResponse({
-        status: "approved",
-        username: "User1",
-        clanTag: null,
-      }),
-    );
+    resolveFetch!(jsonResponse({ success: true }));
 
     const [v1, v2] = await Promise.all([call1, call2]);
-    expect(v1).toEqual({
-      status: "approved",
-      username: "User1",
-      clanTag: null,
-    });
-    expect(v2).toEqual(v1);
+    expect(v1).toEqual({ status: "approved", username: "User1", clanTag: null });
+    expect(v2).toBe(v1);
     expect(_inFlightTokenCount()).toBe(0);
   });
 
-  it("dispatches a subsequent verifyJoin call after previous in-flight finishes", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse({
-        status: "approved",
-        username: "User1",
-        clanTag: null,
-      }),
-    );
+  it("does not coalesce calls when identity or persistent ID differs", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ success: true }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const first = await verifyJoin("ip1", "shared-tok", "User1", null);
-    const second = await verifyJoin("ip2", "shared-tok", "User1", null);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(first.status).toBe("approved");
-    expect(second.status).toBe("approved");
-    expect(_inFlightTokenCount()).toBe(0);
-  });
-
-  it("does not coalesce concurrent calls with the same token but different username or clanTag", async () => {
-    let resolveFetch: (val: unknown) => void;
-    const fetchPromise = new Promise((resolve) => {
-      resolveFetch = resolve;
-    });
-    const fetchMock = vi.fn().mockImplementation(() => fetchPromise);
-    vi.stubGlobal("fetch", fetchMock);
-
-    const c1 = verifyJoin("ip1", "shared-tok", "Alice", "TAG");
-    const c2 = verifyJoin("ip2", "shared-tok", "Bob", "TAG");
-    const c3 = verifyJoin("ip3", "shared-tok", "Alice", "OTHER");
-    const c4 = verifyJoin("ip4", "shared-tok", "Alice", null);
-    const c1Retry = verifyJoin("ip5", "shared-tok", "Alice", "TAG");
-
-    expect(fetchMock).toHaveBeenCalledTimes(4);
-    expect(_inFlightTokenCount()).toBe(4);
-
-    resolveFetch!(
-      jsonResponse({
-        status: "approved",
-        username: "Mocked",
-        clanTag: null,
-      }),
-    );
-
-    const [r1, r2, r3, r4, rRetry] = await Promise.all([
-      c1,
-      c2,
-      c3,
-      c4,
-      c1Retry,
+    const [a, b, c] = await Promise.all([
+      verifyJoin("ip1", "shared-tok", "Alice", null, "pid-1"),
+      verifyJoin("ip2", "shared-tok", "Bob", null, "pid-1"),
+      verifyJoin("ip3", "shared-tok", "Alice", null, "pid-2"),
     ]);
-    expect(rRetry).toBe(r1);
-    expect([r1, r2, r3, r4].every((r) => r.status === "approved")).toBe(true);
+
+    expect(fetchMock).toHaveBeenCalledTimes(3);
+    expect([a, b, c].every((result) => result.status === "approved")).toBe(true);
     expect(_inFlightTokenCount()).toBe(0);
   });
 
-  it("does not coalesce concurrent calls with the same token and username but different persistentIds", async () => {
-    let resolveFetch: (val: unknown) => void;
-    const fetchPromise = new Promise((resolve) => {
-      resolveFetch = resolve;
-    });
-    const fetchMock = vi.fn().mockImplementation(() => fetchPromise);
+  it("does not call siteverify for reconnects without a token", async () => {
+    const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
-    const call1 = verifyJoin("ip1", "shared-tok", "User1", null, "pid-1");
-    const call2 = verifyJoin("ip2", "shared-tok", "User1", null, "pid-2");
-    const call1Dup = verifyJoin("ip3", "shared-tok", "User1", null, "pid-1");
-
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(_inFlightTokenCount()).toBe(2);
-
-    resolveFetch!(
-      jsonResponse({
-        status: "approved",
-        username: "User1",
-        clanTag: null,
-      }),
-    );
-
-    const [v1, v2, v1Dup] = await Promise.all([call1, call2, call1Dup]);
-    expect(v1.status).toBe("approved");
-    expect(v2.status).toBe("approved");
-    expect(v1Dup).toBe(v1);
-    expect(_inFlightTokenCount()).toBe(0);
-  });
-
-  it("treats omitted persistentId as distinct from defined persistentId", async () => {
-    let resolveFetch: (val: unknown) => void;
-    const fetchPromise = new Promise((resolve) => {
-      resolveFetch = resolve;
-    });
-    const fetchMock = vi.fn().mockImplementation(() => fetchPromise);
-    vi.stubGlobal("fetch", fetchMock);
-
-    const call1 = verifyJoin("ip1", "shared-tok", "User1", null);
-    const call2 = verifyJoin("ip2", "shared-tok", "User1", null, "pid-1");
-    const call1Dup = verifyJoin("ip3", "shared-tok", "User1", null);
-
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(_inFlightTokenCount()).toBe(2);
-
-    resolveFetch!(
-      jsonResponse({
-        status: "approved",
-        username: "User1",
-        clanTag: null,
-      }),
-    );
-
-    const [v1, v2, v1Dup] = await Promise.all([call1, call2, call1Dup]);
-    expect(v1.status).toBe("approved");
-    expect(v2.status).toBe("approved");
-    expect(v1Dup).toBe(v1);
-    expect(_inFlightTokenCount()).toBe(0);
-  });
-
-  it("coalesces concurrent in-flight verifyJoin calls on fetch failure and clears in-flight map", async () => {
-    let rejectFetch: (err: unknown) => void;
-    const fetchPromise = new Promise((_, reject) => {
-      rejectFetch = reject;
-    });
-    const fetchMock = vi.fn().mockImplementation(() => fetchPromise);
-    vi.stubGlobal("fetch", fetchMock);
-
-    const call1 = verifyJoin("ip1", "failing-tok", "User1", null);
-    const call2 = verifyJoin("ip2", "failing-tok", "User1", null);
-
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-    expect(_inFlightTokenCount()).toBe(1);
-
-    rejectFetch!(new Error("network failure"));
-
-    const [v1, v2] = await Promise.all([call1, call2]);
-    expect(v1.status).toBe("error");
-    expect(v2.status).toBe("error");
-    expect(v1).toEqual(v2);
-    expect(_inFlightTokenCount()).toBe(0);
-  });
-
-  it("does not coalesce calls when token is empty string", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse({
-        status: "approved",
-        username: "User",
-        clanTag: null,
-      }),
-    );
-    vi.stubGlobal("fetch", fetchMock);
-
-    const call1 = verifyJoin("ip1", "", "User1", null);
-    const call2 = verifyJoin("ip2", "", "User2", null);
-
-    await Promise.all([call1, call2]);
-    expect(fetchMock).toHaveBeenCalledTimes(2);
-    expect(_inFlightTokenCount()).toBe(0);
-  });
-
-  it("sends a null token for reconnects (API skips siteverify, runs the name check alone)", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse({
-        status: "approved",
-        username: "SnugglePuppy",
-        clanTag: null,
-      }),
-    );
-    vi.stubGlobal("fetch", fetchMock);
-
-    const verdict = await verifyJoin("ip", null, "xXblackxX", null);
-
-    expect(verdict).toEqual({
+    expect(await verifyJoin("ip", null, "Alice", null)).toEqual({
       status: "approved",
-      username: "SnugglePuppy",
+      username: "Alice",
       clanTag: null,
     });
-    const [, init] = fetchMock.mock.calls[0];
-    expect(JSON.parse(init.body).token).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  // The API answers 200 {status:"error"} when siteverify or the name check
-  // fails or runs past its budget; the name verdict rides along when the
-  // name check finished.
-  it("passes a degraded error verdict through with the API's identity", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        jsonResponse({
-          status: "error",
-          reason: "turnstile timed out",
-          username: "SnugglePuppy",
-          clanTag: "COOL",
-        }),
-      ),
-    );
-    expect(await verifyJoin("ip", "tok", "xXblackxX", "CoOl")).toEqual({
-      status: "error",
-      reason: "turnstile timed out",
-      degraded: true,
-      identity: { username: "SnugglePuppy", clanTag: "COOL" },
-    });
-  });
-
-  it("normalizes an absent clanTag to null on a degraded verdict", async () => {
-    vi.stubGlobal(
-      "fetch",
-      vi.fn().mockResolvedValue(
-        jsonResponse({
-          status: "error",
-          reason: "turnstile failed (TimeoutError)",
-          username: "Alice",
-        }),
-      ),
-    );
-    expect(await verifyJoin("ip", "tok", "Alice", null)).toEqual({
-      status: "error",
-      reason: "turnstile failed (TimeoutError)",
-      degraded: true,
-      identity: { username: "Alice", clanTag: null },
-    });
-  });
-
-  it("returns a degraded verdict without identity when the name check did not finish", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(
-        jsonResponse({ status: "error", reason: "name check timed out" }),
-      );
-    vi.stubGlobal("fetch", fetchMock);
-
-    expect(await verifyJoin("ip", "tok", "Alice", null)).toEqual({
-      status: "error",
-      reason: "name check timed out",
-      degraded: true,
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("returns error on a 4xx without retrying", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(jsonResponse({ message: "bad payload" }, 400));
-    vi.stubGlobal("fetch", fetchMock);
-
-    expect(await verifyJoin("ip", "tok", "Alice", null)).toMatchObject({
-      status: "error",
-      degraded: false,
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-
-  // Turnstile tokens are single-use: a retry could re-submit a token the
-  // first attempt already redeemed, turning an API hiccup into a hard
-  // rejection. Every failure mode must be a single attempt that fails open.
-  it("returns error on a 5xx without retrying", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(jsonResponse({ message: "boom" }, 500));
-    vi.stubGlobal("fetch", fetchMock);
-
-    expect(await verifyJoin("ip", "tok", "Alice", null)).toMatchObject({
-      status: "error",
-      degraded: false,
-    });
-    expect(fetchMock).toHaveBeenCalledTimes(1);
-  });
-
-  it("returns error on a network error / timeout without retrying", async () => {
+  it("fails open with a non-degraded error when siteverify is unavailable", async () => {
     const fetchMock = vi.fn().mockRejectedValue(new Error("network down"));
     vi.stubGlobal("fetch", fetchMock);
 
@@ -415,10 +137,14 @@ describe("verifyJoin", () => {
     expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
-  it("returns error on a malformed body without retrying", async () => {
-    const fetchMock = vi
-      .fn()
-      .mockResolvedValue(jsonResponse({ approved: true }));
+  it("fails open on a malformed siteverify response", async () => {
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      status: 200,
+      json: async () => {
+        throw new Error("malformed JSON");
+      },
+    });
     vi.stubGlobal("fetch", fetchMock);
 
     expect(await verifyJoin("ip", "tok", "Alice", null)).toMatchObject({
