@@ -61,7 +61,9 @@ describe("/auth/refresh failure handling", () => {
 
     expect(logoutCalls()).toHaveLength(0);
     expect(
-      fetchMock.mock.calls.some((call) => String(call[0]).includes("/auth/guest")),
+      fetchMock.mock.calls.some((call) =>
+        String(call[0]).includes("/auth/guest"),
+      ),
     ).toBe(true);
     expect(localStorage.getItem(PERSISTENT_ID_KEY)).toBe("persistent-id");
   });
