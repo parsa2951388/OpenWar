@@ -284,6 +284,7 @@ async function sendSession(
   accountId: string,
   persistentId: string,
   req: Request,
+  respondWithJson = true,
 ): Promise<void> {
   const refreshToken = randomToken();
   const refreshHash = sha256(refreshToken);
@@ -314,7 +315,9 @@ async function sendSession(
   const jwt = await signAccessToken(persistentId);
   setRefreshCookie(res, refreshToken);
   setNoStore(res);
-  res.json({ jwt, expiresIn: ACCESS_TTL_SECONDS });
+  if (respondWithJson) {
+    res.json({ jwt, expiresIn: ACCESS_TTL_SECONDS });
+  }
 }
 
 async function passwordHash(password: string): Promise<string> {
@@ -783,10 +786,16 @@ async function attachOAuthIdentity(
 
       if (identity.emailVerified && identity.email) {
         const normalized = normalizeEmail(identity.email);
-        await client.query(
-          "UPDATE auth_accounts SET email = COALESCE(email, $2), email_normalized = COALESCE(email_normalized, $3), email_verified_at = COALESCE(email_verified_at, now()), updated_at = now() WHERE id = $1 AND (email_normalized IS NULL OR email_normalized = $3)",
-          [accountId, identity.email, normalized],
+        const emailOwner = await client.query<{ id: string }>(
+          "SELECT id FROM auth_accounts WHERE email_normalized = $1 AND id <> $2 FOR UPDATE",
+          [normalized, accountId],
         );
+        if (!emailOwner.rows[0]) {
+          await client.query(
+            "UPDATE auth_accounts SET email = COALESCE(email, $2), email_normalized = COALESCE(email_normalized, $3), email_verified_at = COALESCE(email_verified_at, now()), updated_at = now() WHERE id = $1 AND (email_normalized IS NULL OR email_normalized = $3)",
+            [accountId, identity.email, normalized],
+          );
+        }
       }
     } else {
       // A verified provider email is not silently merged into a different
@@ -929,7 +938,7 @@ async function respondWithUserMe(
       const profile = row.provider_profile ?? {};
       user.discord = {
         id: row.provider_subject,
-        avatar: profile.avatar_url ?? profile.avatar ?? null,
+        avatar: row.avatar_url ?? null,
         username:
           typeof profile.username === "string"
             ? profile.username
@@ -1244,39 +1253,6 @@ function registerLegacyGuestRoutes(app: Express): void {
   });
 }
 
-export function registerSelfHostedApi(app: Express): void {
-  if (!ServerEnv.selfHostedAuthEnabled()) return;
-
-  app.get("/.well-known/jwks.json", async (_req, res) => {
-    try {
-      const key = await ServerEnv.jwkPublicKey();
-      res.setHeader("Cache-Control", "public, max-age=300");
-      res.json({
-        keys: [
-          {
-            ...key,
-            alg: "EdDSA",
-            use: "sig",
-            kid: ServerEnv.jwtKeyId(),
-          },
-        ],
-      });
-    } catch {
-      res.status(503).json({ error: "signing_key_unavailable" });
-    }
-  });
-
-  if (!ServerEnv.accountAuthEnabled()) {
-    registerLegacyGuestRoutes(app);
-  } else {
-    registerAccountAuthRoutes(app);
-  }
-
-  app.get("/cluster.json", (_req, res) => {
-    res.status(404).json({ error: "single_server_deployment" });
-  });
-}
-
 function registerAccountAuthRoutes(app: Express): void {
   const authLimiter = rateLimit({
     windowMs: 15 * 60 * 1000,
@@ -1528,7 +1504,7 @@ function registerAccountAuthRoutes(app: Express): void {
         req,
       );
 
-      await sendSession(res, result.accountId, result.persistentId, req);
+      await sendSession(res, result.accountId, result.persistentId, req, false);
       res.redirect(
         303,
         appendResult(
