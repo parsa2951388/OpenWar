@@ -1,5 +1,5 @@
 import type { TokenPayload } from "@openfront/shared/ApiSchemas";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   _clearInFlightTokens,
   _inFlightTokenCount,
@@ -18,8 +18,16 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 describe("verifyJoin", () => {
+  beforeEach(() => {
+    // The verifier is enabled only when both Turnstile credentials exist.
+    // These tests exercise the enabled siteverify path.
+    vi.stubEnv("TURNSTILE_SITE_KEY", "site-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-key");
+  });
+
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
     _clearInFlightTokens();
   });
 
