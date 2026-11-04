@@ -122,7 +122,7 @@ type AccountWorkerResult = {
 async function callAccountWorker(
   path: string,
   body?: Record<string, unknown>,
-): Promise<Response> {
+): Promise<globalThis.Response> {
   const baseUrl = ServerEnv.openWarAuthUrl();
   const secret = ServerEnv.openWarAuthSecret();
   if (!baseUrl || !secret) throw new Error("Open War account service is not configured");
