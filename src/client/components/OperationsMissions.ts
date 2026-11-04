@@ -6,7 +6,10 @@ import {
 } from "@openfront/engine-api/game/GameTypes";
 import type { TeamCountConfig } from "@openfront/engine-api/Schemas";
 
-export type OperationsMissionId = "iron-gate" | "tidebreaker" | "world-command";
+export type OperationsMissionId =
+  | "iron-gate"
+  | "tidebreaker"
+  | "world-command";
 
 /**
  * A playable Operations alpha scenario built from the deterministic rules
