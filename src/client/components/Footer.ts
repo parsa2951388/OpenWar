@@ -1,15 +1,44 @@
 import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
+import version from "resources/version.txt?raw";
 import { ClientEnv } from "../ClientEnv";
+import { composeGameVersion } from "../GameVersion";
 
 @customElement("page-footer")
 export class Footer extends LitElement {
+  private desktopVersion: string | null = null;
+
+  protected firstUpdated(): void {
+    const bridge = window.openfrontDesktop;
+    if (typeof bridge?.version !== "function") return;
+    void bridge
+      .version()
+      .then((value) => {
+        this.desktopVersion = value.trim();
+        this.requestUpdate();
+      })
+      .catch(() => {
+        // The footer still shows the game build when the shell cannot report
+        // its own version.
+      });
+  }
+
   createRenderRoot() {
     return this;
   }
 
   render() {
-    const commit = ClientEnv.gitCommit();
+    let commit = "";
+    try {
+      commit = ClientEnv.gitCommit();
+    } catch {
+      // A desktop shell may render the footer before bootstrap config arrives.
+    }
+    const gameVersion = composeGameVersion(version, commit);
+    const shellVersion = this.desktopVersion
+      ? ` (Steam ${this.desktopVersion.startsWith("v") ? this.desktopVersion : `v${this.desktopVersion}`})`
+      : "";
+    const showBuildVersion = window.openfrontDesktop !== undefined;
     const sourceUrl = /^[0-9a-f]{40}$/i.test(commit)
       ? `https://github.com/parsa2951388/OpenWar/tree/${commit}`
       : "https://github.com/parsa2951388/OpenWar";
@@ -55,6 +84,9 @@ export class Footer extends LitElement {
             >Upstream Project</a
           >
         </nav>
+        ${showBuildVersion
+          ? html`<p class="footer-version text-xs text-center">${gameVersion}${shellVersion}</p>`
+          : null}
         <p class="text-xs text-center">© OpenFront and Contributors</p>
       </footer>
     `;
