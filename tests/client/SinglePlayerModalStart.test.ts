@@ -3,6 +3,7 @@ import { describe, expect, it, vi } from "vitest";
 
 vi.mock("../../src/client/Cosmetics", () => ({
   getPlayerCosmetics: vi.fn(async () => ({})),
+  prewarmCosmetics: vi.fn(async () => {}),
 }));
 
 vi.mock("../../src/client/CrazyGamesSDK", () => ({
