@@ -1,4 +1,4 @@
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../../../src/client/components/EditionHub";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
@@ -16,6 +16,12 @@ describe("Open War edition hub", () => {
     return hub.querySelectorAll<HTMLButtonElement>(".ow-edition-tab");
   }
 
+  function classicSelector(): HTMLElement & { start: () => void } {
+    return hub.querySelector("game-mode-selector") as HTMLElement & {
+      start: () => void;
+    };
+  }
+
   beforeEach(() => {
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
     document.body.innerHTML = "";
@@ -27,31 +33,48 @@ describe("Open War edition hub", () => {
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
   });
 
-  it("unmounts Classic lobby feed in Operations mode", async () => {
+  it("pauses the Classic lobby feed while Operations is selected", async () => {
     await mountHub();
 
-    expect(hub.querySelector("game-mode-selector")).not.toBeNull();
+    const selector = classicSelector();
+    const openLobbyFeed = vi
+      .spyOn(selector as any, "openLobbyFeed")
+      .mockImplementation(() => {});
+
     tabs()[1].click();
     await hub.updateComplete;
 
-    expect(hub.querySelector("game-mode-selector")).toBeNull();
-    expect(hub.querySelector(".ow-classic-edition")).toBeNull();
-    const operationsDashboard = hub.querySelector(".ow-operations-dashboard");
-    expect(operationsDashboard?.hasAttribute("hidden")).toBe(false);
+    expect(hub.querySelector("game-mode-selector")).not.toBeNull();
+    expect(
+      hub.querySelector(".ow-classic-edition")?.hasAttribute("hidden"),
+    ).toBe(true);
+    expect(openLobbyFeed).not.toHaveBeenCalled();
+
+    // Main.ts calls start() when a game ends; it must stay gated in Operations.
+    selector.start();
+    expect(openLobbyFeed).not.toHaveBeenCalled();
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
-  it("remounts Classic lobby feed when returning to Classic", async () => {
+  it("resumes the Classic lobby feed when returning from Operations", async () => {
     await mountHub();
+
+    const selector = classicSelector();
+    const openLobbyFeed = vi
+      .spyOn(selector as any, "openLobbyFeed")
+      .mockImplementation(() => {});
 
     tabs()[1].click();
     await hub.updateComplete;
-    expect(hub.querySelector("game-mode-selector")).toBeNull();
+    expect(openLobbyFeed).not.toHaveBeenCalled();
 
     tabs()[0].click();
     await hub.updateComplete;
 
-    expect(hub.querySelector("game-mode-selector")).not.toBeNull();
+    expect(
+      hub.querySelector(".ow-classic-edition")?.hasAttribute("hidden"),
+    ).toBe(false);
+    expect(openLobbyFeed).toHaveBeenCalledTimes(1);
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("classic");
   });
 });
