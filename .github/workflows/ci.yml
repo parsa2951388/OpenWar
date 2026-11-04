@@ -6,7 +6,8 @@ on:
       - checks_requested
   pull_request:
   push:
-    # Recheck the final production source, generated maps, and release container.
+    # Recheck the bootstrap-safe lobby selector fix and the complete production release.
+# Recheck the final production source, generated maps, and release container.
 # Validate the production branch, including deterministic simulation and release packaging.
 # Validate the self-hosted production branch on every push.
     branches: [main, open-war/independent-self-host]
