@@ -6,6 +6,7 @@ import { importPKCS8, jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
 import { verifyClientToken } from "./jwt";
 import { registerSelfHostedAccountApi } from "./SelfHostedAccountApi";
+import { registerSelfHostedAuthStatusRoute } from "./SelfHostedAuthStatus";
 import { ServerEnv } from "./ServerEnv";
 
 const GUEST_INPUT = z.object({ persistentId: z.string().uuid() });
@@ -108,6 +109,9 @@ function bearerToken(req: Request): string | null {
  */
 export function registerSelfHostedApi(app: Express): void {
   if (!ServerEnv.selfHostedAuthEnabled()) return;
+
+  // Expose only provider/database readiness, never secret material.
+  registerSelfHostedAuthStatusRoute(app);
 
   // Register permanent-account endpoints before the guest fallbacks so the
   // same URL can serve both guest JWT refreshes and database-backed sessions.
