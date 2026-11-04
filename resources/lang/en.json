@@ -168,7 +168,8 @@
     "title": "Account Settings"
   },
   "auth_guest": {
-    "nav_label": "Guest"
+    "nav_label": "Guest",
+    "view_profile": "Guest session"
   },
   "ban_notice": {
     "appeal": "If you believe this is a mistake, contact us on Discord.",
