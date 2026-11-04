@@ -178,7 +178,7 @@
     "identity_guest": "Guest player",
     "identity_label": "Identity type",
     "nav_label": "Guest",
-    "recovery_note": "Google, Discord, Steam and email sign-in are not available in this build. Guest account recovery and identity or progress transfer between devices are not supported.",
+    "recovery_note": "Your guest identity is currently stored in this browser. Use the sign-in options below to protect your progress with email and password, Google, or Discord. Email verification and social sign-in depend on the corresponding provider configuration.",
     "retry_button": "Try again",
     "session_active": "Active and ready to play",
     "session_label": "Session status",
