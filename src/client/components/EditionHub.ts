@@ -1,4 +1,4 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import "../GameModeSelector";
 import type { HostLobbyModal } from "../HostLobbyModal";
@@ -386,17 +386,18 @@ export class EditionHub extends LitElement {
     return html`
       <main class="ow-edition-hub">
         ${this.renderEditionControl()}
-        <section
-          class="ow-classic-edition"
-          ?hidden=${this.edition !== "classic"}
-        >
-          <div class="ow-classic-heading">
-            <span class="ow-edition-eyebrow">${this.t("classic_eyebrow")}</span>
-            <h2>${this.t("classic_title")}</h2>
-            <p>${this.t("classic_description")}</p>
-          </div>
-          <game-mode-selector></game-mode-selector>
-        </section>
+        ${this.edition === "classic"
+          ? html`
+              <section class="ow-classic-edition">
+                <div class="ow-classic-heading">
+                  <span class="ow-edition-eyebrow">${this.t("classic_eyebrow")}</span>
+                  <h2>${this.t("classic_title")}</h2>
+                  <p>${this.t("classic_description")}</p>
+                </div>
+                <game-mode-selector></game-mode-selector>
+              </section>
+            `
+          : nothing}
         ${this.renderOperationsDashboard()}
       </main>
     `;
