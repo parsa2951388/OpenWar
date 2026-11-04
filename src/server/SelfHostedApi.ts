@@ -1,12 +1,12 @@
+import { UserMeResponseSchema } from "@openfront/shared/ApiSchemas";
+import { base64urlToUuid, uuidToBase64url } from "@openfront/shared/Base64";
 import { randomUUID } from "crypto";
 import type { Express, Request, Response } from "express";
 import { importPKCS8, jwtVerify, SignJWT } from "jose";
 import { z } from "zod";
-import { UserMeResponseSchema } from "@openfront/shared/ApiSchemas";
-import { base64urlToUuid, uuidToBase64url } from "@openfront/shared/Base64";
 import { verifyClientToken } from "./jwt";
-import { ServerEnv } from "./ServerEnv";
 import { registerSelfHostedAccountApi } from "./SelfHostedAccountApi";
+import { ServerEnv } from "./ServerEnv";
 
 const GUEST_INPUT = z.object({ persistentId: z.string().uuid() });
 const REFRESH_COOKIE = "__Host-openwar_refresh";
@@ -18,7 +18,8 @@ let signingKey: ReturnType<typeof importPKCS8> | null = null;
 function privateSigningKey() {
   if (signingKey === null) {
     const pem = ServerEnv.jwtPrivateKey();
-    if (!pem) throw new Error("JWT_PRIVATE_KEY is required for self-hosted auth");
+    if (!pem)
+      throw new Error("JWT_PRIVATE_KEY is required for self-hosted auth");
     signingKey = importPKCS8(pem, "EdDSA");
   }
   return signingKey;
@@ -151,11 +152,15 @@ export function registerSelfHostedApi(app: Express): void {
       return res.status(401).json({ error: "refresh_session_missing" });
     }
     try {
-      const { payload } = await jwtVerify(token, await ServerEnv.jwkPublicKey(), {
-        algorithms: ["EdDSA"],
-        issuer: ServerEnv.jwtIssuer(),
-        audience: ServerEnv.jwtAudience(),
-      });
+      const { payload } = await jwtVerify(
+        token,
+        await ServerEnv.jwkPublicKey(),
+        {
+          algorithms: ["EdDSA"],
+          issuer: ServerEnv.jwtIssuer(),
+          audience: ServerEnv.jwtAudience(),
+        },
+      );
       if (payload.token_use !== "refresh" || typeof payload.sub !== "string") {
         throw new Error("Invalid refresh token");
       }

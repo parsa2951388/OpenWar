@@ -103,7 +103,8 @@ export class AccountModal extends BaseModal {
   @state() private email: string = "";
   @state() private password: string = "";
   @state() private passwordConfirmation: string = "";
-  @state() private authMode: "login" | "register" | "forgot" | "reset" = "login";
+  @state() private authMode: "login" | "register" | "forgot" | "reset" =
+    "login";
   @state() private authBusy: boolean = false;
   @state() private authNotice: string | null = null;
   @state() private verificationPending: boolean = false;
@@ -236,58 +237,126 @@ export class AccountModal extends BaseModal {
 
   private renderStandaloneGuestPanel(active: boolean): TemplateResult {
     return html`
-      <div class="flex min-h-full flex-col items-center justify-center gap-5 p-4 sm:p-7">
-        <section class="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#071426]/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-8">
-          <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl"></div>
+      <div
+        class="flex min-h-full flex-col items-center justify-center gap-5 p-4 sm:p-7"
+      >
+        <section
+          class="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#071426]/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-8"
+        >
+          <div
+            class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl"
+          ></div>
           <div class="relative flex flex-col items-center text-center">
-            <div class="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 shadow-[0_0_35px_rgba(34,211,238,0.12)]">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="h-8 w-8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 19 6v5.2c0 4.6-2.9 8-7 9.8-4.1-1.8-7-5.2-7-9.8V6l7-3Z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/>
+            <div
+              class="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 shadow-[0_0_35px_rgba(34,211,238,0.12)]"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                class="h-8 w-8"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 3 19 6v5.2c0 4.6-2.9 8-7 9.8-4.1-1.8-7-5.2-7-9.8V6l7-3Z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m9 12 2 2 4-4"
+                />
               </svg>
             </div>
-            <span class="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-cyan-100">
-              <span class="h-1.5 w-1.5 rounded-full ${active ? "bg-emerald-400" : "bg-amber-400"}"></span>
+            <span
+              class="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-cyan-100"
+            >
+              <span
+                class="h-1.5 w-1.5 rounded-full ${active ? "bg-emerald-400" : "bg-amber-400"}"
+              ></span>
               ${translateText("auth_guest.badge")}
             </span>
-            <h2 class="text-2xl font-black tracking-tight text-white sm:text-3xl">
+            <h2
+              class="text-2xl font-black tracking-tight text-white sm:text-3xl"
+            >
               ${translateText(active ? "auth_guest.active_title" : "auth_guest.error_title")}
             </h2>
             <p class="mt-3 max-w-lg text-sm leading-7 text-slate-300/80">
               ${translateText(active ? "auth_guest.active_description" : "auth_guest.error_description")}
             </p>
 
-            <div class="mt-7 grid w-full grid-cols-1 gap-3 text-start sm:grid-cols-2">
-              <div class="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                <span class="text-xs font-semibold text-slate-400">${translateText("auth_guest.session_label")}</span>
-                <div class="mt-2 flex items-center gap-2 text-sm font-bold text-white">
-                  <span class="h-2 w-2 rounded-full ${active ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" : "bg-amber-400"}"></span>
+            <div
+              class="mt-7 grid w-full grid-cols-1 gap-3 text-start sm:grid-cols-2"
+            >
+              <div
+                class="rounded-2xl border border-white/10 bg-white/[0.045] p-4"
+              >
+                <span class="text-xs font-semibold text-slate-400"
+                  >${translateText("auth_guest.session_label")}</span
+                >
+                <div
+                  class="mt-2 flex items-center gap-2 text-sm font-bold text-white"
+                >
+                  <span
+                    class="h-2 w-2 rounded-full ${active ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" : "bg-amber-400"}"
+                  ></span>
                   ${translateText(active ? "auth_guest.session_active" : "auth_guest.session_unavailable")}
                 </div>
               </div>
-              <div class="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                <span class="text-xs font-semibold text-slate-400">${translateText("auth_guest.identity_label")}</span>
-                <div class="mt-2 text-sm font-bold text-white">${translateText("auth_guest.identity_guest")}</div>
+              <div
+                class="rounded-2xl border border-white/10 bg-white/[0.045] p-4"
+              >
+                <span class="text-xs font-semibold text-slate-400"
+                  >${translateText("auth_guest.identity_label")}</span
+                >
+                <div class="mt-2 text-sm font-bold text-white">
+                  ${translateText("auth_guest.identity_guest")}
+                </div>
               </div>
             </div>
 
-            <div class="mt-4 flex w-full items-start gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/[0.06] p-4 text-start">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" class="mt-0.5 h-5 w-5 shrink-0 text-amber-200" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 3h.01M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>
+            <div
+              class="mt-4 flex w-full items-start gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/[0.06] p-4 text-start"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                class="mt-0.5 h-5 w-5 shrink-0 text-amber-200"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v4m0 3h.01M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
+                />
               </svg>
-              <p class="text-xs leading-6 text-amber-50/75">${translateText(active ? "auth_guest.storage_note" : "auth_guest.failure_note")}</p>
+              <p class="text-xs leading-6 text-amber-50/75">
+                ${translateText(active ? "auth_guest.storage_note" : "auth_guest.failure_note")}
+              </p>
             </div>
 
-            ${active ? html`
-              <p class="mt-4 text-xs leading-6 text-slate-400">${translateText("auth_guest.recovery_note")}</p>
-            ` : nothing}
+            ${
+              active
+                ? html`
+                    <p class="mt-4 text-xs leading-6 text-slate-400">
+                      ${translateText("auth_guest.recovery_note")}
+                    </p>
+                  `
+                : nothing
+            }
 
             <button
               class="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-cyan-200/20 bg-gradient-to-l from-cyan-500 to-blue-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-cyan-200/60 sm:w-auto sm:min-w-56"
-              @click=${() => active ? this.close() : window.location.reload()}
+              @click=${() => (active ? this.close() : window.location.reload())}
             >
               ${translateText(active ? "auth_guest.continue_button" : "auth_guest.retry_button")}
-              <span aria-hidden="true">${this.currentDirectionIsRtl() ? "←" : "→"}</span>
+              <span aria-hidden="true"
+                >${this.currentDirectionIsRtl() ? "←" : "→"}</span
+              >
             </button>
           </div>
         </section>
@@ -354,7 +423,9 @@ export class AccountModal extends BaseModal {
       );
     }
     if (this.isStandaloneGuestMode() && !this.isLinkedAccount()) {
-      return this.renderStandaloneGuestPanel(!!this.userMeResponse?.player?.publicId);
+      return this.renderStandaloneGuestPanel(
+        !!this.userMeResponse?.player?.publicId,
+      );
     }
     if (!this.isLinkedAccount()) {
       return html`<div class="custom-scrollbar mr-1">
@@ -423,7 +494,10 @@ export class AccountModal extends BaseModal {
     }
 
     const needsEmail = this.authMode !== "reset";
-    const needsPassword = this.authMode === "login" || this.authMode === "register" || this.authMode === "reset";
+    const needsPassword =
+      this.authMode === "login" ||
+      this.authMode === "register" ||
+      this.authMode === "reset";
     return html`
       <div class="w-full space-y-3 text-left">
         <div class="flex rounded-xl border border-white/10 bg-black/20 p-1">
@@ -431,84 +505,141 @@ export class AccountModal extends BaseModal {
             type="button"
             class="flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${this.authMode === "login" ? "bg-cyan-500/20 text-cyan-100" : "text-white/55 hover:text-white"}"
             @click=${() => this.setAuthMode("login")}
-          >Sign in</button>
+          >
+            Sign in
+          </button>
           <button
             type="button"
             class="flex-1 rounded-lg px-3 py-2 text-xs font-bold transition ${this.authMode === "register" ? "bg-cyan-500/20 text-cyan-100" : "text-white/55 hover:text-white"}"
             @click=${() => this.setAuthMode("register")}
-          >Create account</button>
+          >
+            Create account
+          </button>
         </div>
-        ${needsEmail ? html`
-          <label class="block space-y-1.5">
-            <span class="text-xs font-semibold text-white/65">Email address</span>
-            <input
-              type="email"
-              autocomplete="email"
-              dir="ltr"
-              .value=${this.email}
-              @input=${this.handleEmailInput}
-              placeholder="you@example.com"
-              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
-            />
-          </label>
-        ` : html`
-          <p class="text-xs leading-5 text-cyan-100/75">Choose a new password for your Open War account.</p>
-        `}
-        ${needsPassword ? html`
-          <label class="block space-y-1.5">
-            <span class="text-xs font-semibold text-white/65">${this.authMode === "reset" ? "New password" : "Password"}</span>
-            <input
-              type="password"
-              autocomplete=${this.authMode === "login" ? "current-password" : "new-password"}
-              minlength="12"
-              maxlength="128"
-              .value=${this.password}
-              @input=${this.handlePasswordInput}
-              placeholder="At least 12 characters"
-              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
-            />
-          </label>
-        ` : nothing}
-        ${this.authMode === "register" || this.authMode === "reset" ? html`
-          <label class="block space-y-1.5">
-            <span class="text-xs font-semibold text-white/65">Confirm password</span>
-            <input
-              type="password"
-              autocomplete="new-password"
-              minlength="12"
-              maxlength="128"
-              .value=${this.passwordConfirmation}
-              @input=${this.handlePasswordConfirmationInput}
-              placeholder="Repeat your password"
-              class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
-            />
-          </label>
-        ` : nothing}
+        ${
+          needsEmail
+            ? html`
+                <label class="block space-y-1.5">
+                  <span class="text-xs font-semibold text-white/65"
+                    >Email address</span
+                  >
+                  <input
+                    type="email"
+                    autocomplete="email"
+                    dir="ltr"
+                    .value=${this.email}
+                    @input=${this.handleEmailInput}
+                    placeholder="you@example.com"
+                    class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
+                  />
+                </label>
+              `
+            : html`
+                <p class="text-xs leading-5 text-cyan-100/75">
+                  Choose a new password for your Open War account.
+                </p>
+              `
+        }
+        ${
+          needsPassword
+            ? html`
+                <label class="block space-y-1.5">
+                  <span class="text-xs font-semibold text-white/65"
+                    >${this.authMode === "reset" ? "New password" : "Password"}</span
+                  >
+                  <input
+                    type="password"
+                    autocomplete=${this.authMode === "login" ? "current-password" : "new-password"}
+                    minlength="12"
+                    maxlength="128"
+                    .value=${this.password}
+                    @input=${this.handlePasswordInput}
+                    placeholder="At least 12 characters"
+                    class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
+                  />
+                </label>
+              `
+            : nothing
+        }
+        ${
+          this.authMode === "register" || this.authMode === "reset"
+            ? html`
+                <label class="block space-y-1.5">
+                  <span class="text-xs font-semibold text-white/65"
+                    >Confirm password</span
+                  >
+                  <input
+                    type="password"
+                    autocomplete="new-password"
+                    minlength="12"
+                    maxlength="128"
+                    .value=${this.passwordConfirmation}
+                    @input=${this.handlePasswordConfirmationInput}
+                    placeholder="Repeat your password"
+                    class="w-full rounded-xl border border-white/10 bg-white/5 px-4 py-3 text-white placeholder-white/25 outline-none transition focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/15"
+                  />
+                </label>
+              `
+            : nothing
+        }
         <button
           type="button"
           ?disabled=${this.authBusy}
           @click=${this.handleSubmit}
           class="flex min-h-11 w-full items-center justify-center rounded-xl bg-gradient-to-r from-cyan-500 to-blue-600 px-4 py-3 text-sm font-extrabold text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-50"
-        >${this.authBusy ? "Please wait…" : this.authMode === "login" ? "Sign in with email" : this.authMode === "register" ? "Create account" : this.authMode === "forgot" ? "Send reset link" : "Save new password"}</button>
+        >
+          ${this.authBusy ? "Please wait…" : this.authMode === "login" ? "Sign in with email" : this.authMode === "register" ? "Create account" : this.authMode === "forgot" ? "Send reset link" : "Save new password"}
+        </button>
         <div class="flex justify-between gap-3 text-xs">
-          ${this.authMode === "login" ? html`
-            <button type="button" class="text-cyan-200/80 hover:text-cyan-100" @click=${() => this.setAuthMode("forgot")}>Forgot password?</button>
-            <span class="text-white/35">Secure account sign-in</span>
-          ` : html`
-            <button type="button" class="text-cyan-200/80 hover:text-cyan-100" @click=${() => this.setAuthMode("login")}>Back to sign in</button>
-            <span class="text-white/35">Email verification required</span>
-          `}
+          ${
+            this.authMode === "login"
+              ? html`
+                  <button
+                    type="button"
+                    class="text-cyan-200/80 hover:text-cyan-100"
+                    @click=${() => this.setAuthMode("forgot")}
+                  >
+                    Forgot password?
+                  </button>
+                  <span class="text-white/35">Secure account sign-in</span>
+                `
+              : html`
+                  <button
+                    type="button"
+                    class="text-cyan-200/80 hover:text-cyan-100"
+                    @click=${() => this.setAuthMode("login")}
+                  >
+                    Back to sign in
+                  </button>
+                  <span class="text-white/35">Email verification required</span>
+                `
+          }
         </div>
-        ${this.authNotice ? html`
-          <p role="status" class="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.06] px-3 py-2 text-xs leading-5 text-cyan-100/85">${this.authNotice}</p>
-        ` : nothing}
-        ${this.verificationPending ? html`
-          <button
-            type="button"
-            class="w-full py-2 text-xs font-semibold text-cyan-200/80 transition hover:text-cyan-100"
-            @click=${this.handleResendVerification}
-          >Resend verification email</button>
-        ` : nothing}
+        ${
+          this.authNotice
+            ? html`
+                <p
+                  role="status"
+                  class="rounded-lg border border-cyan-300/15 bg-cyan-300/[0.06] px-3 py-2 text-xs leading-5 text-cyan-100/85"
+                >
+                  ${this.authNotice}
+                </p>
+              `
+            : nothing
+        }
+        ${
+          this.verificationPending
+            ? html`
+                <button
+                  type="button"
+                  class="w-full py-2 text-xs font-semibold text-cyan-200/80 transition hover:text-cyan-100"
+                  @click=${this.handleResendVerification}
+                >
+                  Resend verification email
+                </button>
+              `
+            : nothing
+        }
       </div>
     `;
   }
@@ -524,10 +655,17 @@ export class AccountModal extends BaseModal {
 
   private renderStandaloneAuthMethods(): TemplateResult {
     return html`
-      <section class="w-full max-w-xl rounded-[24px] border border-white/10 bg-[#071426]/95 p-5 shadow-[0_20px_65px_rgba(0,0,0,0.35)] sm:p-7">
+      <section
+        class="w-full max-w-xl rounded-[24px] border border-white/10 bg-[#071426]/95 p-5 shadow-[0_20px_65px_rgba(0,0,0,0.35)] sm:p-7"
+      >
         <div class="mb-5 text-center">
-          <h3 class="text-xl font-black tracking-tight text-white">Protect your progress</h3>
-          <p class="mt-2 text-xs leading-6 text-slate-300/70">Create a permanent account to recover your player identity on another device.</p>
+          <h3 class="text-xl font-black tracking-tight text-white">
+            Protect your progress
+          </h3>
+          <p class="mt-2 text-xs leading-6 text-slate-300/70">
+            Create a permanent account to recover your player identity on
+            another device.
+          </p>
         </div>
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <button
@@ -535,7 +673,11 @@ export class AccountModal extends BaseModal {
             @click=${() => void this.handleDiscordLogin()}
             class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#4752C4]"
           >
-            <img src=${assetUrl("images/DiscordLogo.svg")} alt="" class="h-5 w-5" />
+            <img
+              src=${assetUrl("images/DiscordLogo.svg")}
+              alt=""
+              class="h-5 w-5"
+            />
             Continue with Discord
           </button>
           <button
@@ -543,13 +685,20 @@ export class AccountModal extends BaseModal {
             @click=${() => void this.handleGoogleLogin()}
             class="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dadce0] bg-white px-4 py-3 text-sm font-extrabold text-[#1f1f1f] transition hover:bg-[#f7f8f8]"
           >
-            <img src=${assetUrl("images/GoogleLogo.svg")} alt="" class="h-5 w-5" />
+            <img
+              src=${assetUrl("images/GoogleLogo.svg")}
+              alt=""
+              class="h-5 w-5"
+            />
             Continue with Google
           </button>
         </div>
         <div class="my-5 flex items-center gap-3">
           <span class="h-px flex-1 bg-white/10"></span>
-          <span class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35">or use email</span>
+          <span
+            class="text-[10px] font-bold uppercase tracking-[0.2em] text-white/35"
+            >or use email</span
+          >
           <span class="h-px flex-1 bg-white/10"></span>
         </div>
         ${this.renderEmailField()}
@@ -584,37 +733,83 @@ export class AccountModal extends BaseModal {
       const hasGoogle = !!user?.google;
       const hasDiscord = !!user?.discord;
       return html`
-        <section class="mx-auto flex w-full max-w-xl flex-col gap-5 rounded-2xl border border-white/10 bg-[#071426]/95 p-5 text-white sm:p-7">
+        <section
+          class="mx-auto flex w-full max-w-xl flex-col gap-5 rounded-2xl border border-white/10 bg-[#071426]/95 p-5 text-white sm:p-7"
+        >
           <div>
             <h3 class="text-xl font-black tracking-tight">Open War account</h3>
-            <p class="mt-1 text-sm leading-6 text-slate-300/70">Your player identity is now protected by a permanent account.</p>
+            <p class="mt-1 text-sm leading-6 text-slate-300/70">
+              Your player identity is now protected by a permanent account.
+            </p>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/[0.04] p-4">
-            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Email address</div>
-            <div class="mt-2 break-all text-sm font-semibold">${email || "No email address linked"}</div>
+            <div
+              class="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40"
+            >
+              Email address
+            </div>
+            <div class="mt-2 break-all text-sm font-semibold">
+              ${email || "No email address linked"}
+            </div>
           </div>
           <div class="rounded-xl border border-white/10 bg-white/[0.04] p-4">
-            <div class="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Connected sign-in methods</div>
+            <div
+              class="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/40"
+            >
+              Connected sign-in methods
+            </div>
             <div class="flex flex-col gap-2 text-sm">
               <div class="flex items-center justify-between gap-3">
                 <span>Google</span>
-                <span class="font-semibold ${hasGoogle ? "text-emerald-300" : "text-white/35"}">${hasGoogle ? "Connected" : "Not connected"}</span>
+                <span
+                  class="font-semibold ${hasGoogle ? "text-emerald-300" : "text-white/35"}"
+                  >${hasGoogle ? "Connected" : "Not connected"}</span
+                >
               </div>
               <div class="flex items-center justify-between gap-3">
                 <span>Discord</span>
-                <span class="font-semibold ${hasDiscord ? "text-emerald-300" : "text-white/35"}">${hasDiscord ? "Connected" : "Not connected"}</span>
+                <span
+                  class="font-semibold ${hasDiscord ? "text-emerald-300" : "text-white/35"}"
+                  >${hasDiscord ? "Connected" : "Not connected"}</span
+                >
               </div>
             </div>
           </div>
           <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
-            ${!hasGoogle ? html`
-              <button type="button" @click=${this.handleLinkGoogle} class="min-h-11 rounded-xl border border-white/15 bg-white px-4 py-3 text-sm font-extrabold text-slate-900 transition hover:bg-slate-100">Link Google</button>
-            ` : nothing}
-            ${!hasDiscord ? html`
-              <button type="button" @click=${() => void this.handleDiscordLogin()} class="min-h-11 rounded-xl bg-[#5865F2] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#4752C4]">Link Discord</button>
-            ` : nothing}
+            ${
+              !hasGoogle
+                ? html`
+                    <button
+                      type="button"
+                      @click=${this.handleLinkGoogle}
+                      class="min-h-11 rounded-xl border border-white/15 bg-white px-4 py-3 text-sm font-extrabold text-slate-900 transition hover:bg-slate-100"
+                    >
+                      Link Google
+                    </button>
+                  `
+                : nothing
+            }
+            ${
+              !hasDiscord
+                ? html`
+                    <button
+                      type="button"
+                      @click=${() => void this.handleDiscordLogin()}
+                      class="min-h-11 rounded-xl bg-[#5865F2] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#4752C4]"
+                    >
+                      Link Discord
+                    </button>
+                  `
+                : nothing
+            }
           </div>
-          <button type="button" @click=${() => void this.handleLogout()} class="min-h-11 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-sm font-bold text-red-200 transition hover:bg-red-400/10">Sign out</button>
+          <button
+            type="button"
+            @click=${() => void this.handleLogout()}
+            class="min-h-11 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-sm font-bold text-red-200 transition hover:bg-red-400/10"
+          >
+            Sign out
+          </button>
         </section>
       `;
     }
@@ -1443,7 +1638,9 @@ export class AccountModal extends BaseModal {
     // Preserve the upstream build's existing magic-link account flow.
     if (!this.isStandaloneGuestMode()) {
       if (!this.email) {
-        await showInGameAlert(translateText("account_modal.enter_email_address"));
+        await showInGameAlert(
+          translateText("account_modal.enter_email_address"),
+        );
         return;
       }
       const success = await sendMagicLink(this.email);
@@ -1465,9 +1662,7 @@ export class AccountModal extends BaseModal {
         this.authNotice = "Enter a valid email address.";
         return;
       }
-      if (
-        this.authMode === "register" || this.authMode === "reset"
-      ) {
+      if (this.authMode === "register" || this.authMode === "reset") {
         if (this.password.length < 12) {
           this.authNotice = "Use a password with at least 12 characters.";
           return;
@@ -1606,8 +1801,7 @@ export class AccountModal extends BaseModal {
   private consumePasswordResetTokenArg(
     args?: Record<string, unknown>,
   ): string | null {
-    const token =
-      typeof args?.resetToken === "string" ? args.resetToken : null;
+    const token = typeof args?.resetToken === "string" ? args.resetToken : null;
     if (!token) return null;
     const params = new URLSearchParams(window.location.hash.slice(1));
     params.delete("resetToken");
@@ -1635,7 +1829,8 @@ export class AccountModal extends BaseModal {
     this.passwordResetToken = this.consumePasswordResetTokenArg(args);
     this.setAuthMode(this.passwordResetToken ? "reset" : "login");
     if (args?.verified === "1" || args?.verified === 1) {
-      this.authNotice = "Email verified. You can now sign in with your password.";
+      this.authNotice =
+        "Email verified. You can now sign in with your password.";
     }
 
     this.refreshPortalUser();

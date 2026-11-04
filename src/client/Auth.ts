@@ -118,7 +118,10 @@ async function startSelfHostedOAuth(
       },
     );
     if (!response.ok) {
-      console.warn(`Failed to start ${provider} authentication:`, response.status);
+      console.warn(
+        `Failed to start ${provider} authentication:`,
+        response.status,
+      );
       return false;
     }
     const body = await response.json();
@@ -183,7 +186,10 @@ async function postAuthJson(
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(10_000),
     });
-    const result = (await response.json().catch(() => ({}))) as Record<string, unknown>;
+    const result = (await response.json().catch(() => ({}))) as Record<
+      string,
+      unknown
+    >;
     return { ok: response.ok, status: response.status, body: result };
   } catch (error) {
     console.warn(`Authentication request failed for ${path}:`, error);
@@ -195,7 +201,10 @@ export async function emailPasswordLogin(
   email: string,
   password: string,
 ): Promise<PasswordAuthResult> {
-  const result = await postAuthJson("/auth/login/password", { email, password });
+  const result = await postAuthJson("/auth/login/password", {
+    email,
+    password,
+  });
   if (result.ok) return "success";
   if (result.body.error === "email_not_verified") return "email_not_verified";
   if (result.body.error === "invalid_credentials") return "invalid_credentials";
@@ -218,9 +227,7 @@ export async function registerEmailPassword(
   return "error";
 }
 
-export async function resendVerificationEmail(
-  email: string,
-): Promise<boolean> {
+export async function resendVerificationEmail(email: string): Promise<boolean> {
   const result = await postAuthJson("/auth/email/resend", { email });
   return result.status === 202;
 }
@@ -236,7 +243,10 @@ export async function completePasswordReset(
   token: string,
   password: string,
 ): Promise<PasswordAuthResult> {
-  const result = await postAuthJson("/auth/password/reset", { token, password });
+  const result = await postAuthJson("/auth/password/reset", {
+    token,
+    password,
+  });
   return result.ok ? "success" : "error";
 }
 

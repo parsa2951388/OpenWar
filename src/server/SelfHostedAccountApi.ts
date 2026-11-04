@@ -1,3 +1,7 @@
+import { uuidToBase64url } from "@openfront/shared/Base64";
+import type { Express, NextFunction, Request, Response } from "express";
+import rateLimit from "express-rate-limit";
+import { createRemoteJWKSet, importPKCS8, jwtVerify, SignJWT } from "jose";
 import {
   createCipheriv,
   createDecipheriv,
@@ -7,17 +11,13 @@ import {
   scrypt as scryptCallback,
   timingSafeEqual,
 } from "node:crypto";
-import type { Express, NextFunction, Request, Response } from "express";
-import rateLimit from "express-rate-limit";
-import {
-  createRemoteJWKSet,
-  importPKCS8,
-  jwtVerify,
-  SignJWT,
-} from "jose";
 import { z } from "zod";
-import { uuidToBase64url } from "@openfront/shared/Base64";
-import { authDatabaseConfigured, authPool, authTransaction, ensureAuthDatabase } from "./AuthDatabase";
+import {
+  authDatabaseConfigured,
+  authPool,
+  authTransaction,
+  ensureAuthDatabase,
+} from "./AuthDatabase";
 import { verifyClientToken } from "./jwt";
 import { ServerEnv } from "./ServerEnv";
 
@@ -214,7 +214,10 @@ async function hashPassword(password: string): Promise<string> {
   ].join("$");
 }
 
-async function verifyPassword(stored: string | null, password: string): Promise<boolean> {
+async function verifyPassword(
+  stored: string | null,
+  password: string,
+): Promise<boolean> {
   const parts = stored?.split("$") ?? [];
   if (
     parts.length !== 6 ||
@@ -335,7 +338,10 @@ async function sendResendEmail(args: {
     });
     return response.ok;
   } catch (error) {
-    console.warn("Open War email delivery failed:", error instanceof Error ? error.message : "unknown error");
+    console.warn(
+      "Open War email delivery failed:",
+      error instanceof Error ? error.message : "unknown error",
+    );
     return false;
   }
 }
@@ -350,13 +356,7 @@ async function createEmailChallenge(
     `INSERT INTO auth_email_challenges
       (id, account_id, purpose, token_hash, target_email, expires_at)
      VALUES ($1, $2, $3, $4, $5, now() + interval '30 minutes')`,
-    [
-      randomUUID(),
-      accountId,
-      purpose,
-      sha256(token),
-      targetEmail,
-    ],
+    [randomUUID(), accountId, purpose, sha256(token), targetEmail],
   );
   return token;
 }
@@ -403,10 +403,9 @@ function decryptVerifier(value: Buffer): string {
   const encrypted = value.subarray(28);
   const decipher = createDecipheriv("aes-256-gcm", oauthEncryptionKey(), iv);
   decipher.setAuthTag(tag);
-  return Buffer.concat([
-    decipher.update(encrypted),
-    decipher.final(),
-  ]).toString("utf8");
+  return Buffer.concat([decipher.update(encrypted), decipher.final()]).toString(
+    "utf8",
+  );
 }
 
 function validReturnPath(value: string | undefined): string {
@@ -603,15 +602,11 @@ async function exchangeGoogle(
   if (typeof tokenResponse.id_token !== "string") {
     throw new Error("Google returned no ID token");
   }
-  const { payload } = await jwtVerify(
-    tokenResponse.id_token,
-    GOOGLE_JWKS,
-    {
-      algorithms: ["RS256"],
-      issuer: ["https://accounts.google.com", "accounts.google.com"],
-      audience: config.clientId,
-    },
-  );
+  const { payload } = await jwtVerify(tokenResponse.id_token, GOOGLE_JWKS, {
+    algorithms: ["RS256"],
+    issuer: ["https://accounts.google.com", "accounts.google.com"],
+    audience: config.clientId,
+  });
   if (
     typeof payload.sub !== "string" ||
     typeof payload.nonce !== "string" ||
@@ -662,7 +657,10 @@ async function exchangeDiscord(
     signal: AbortSignal.timeout(10_000),
   });
   if (!tokenResponse.ok) throw new Error("Discord token exchange failed");
-  const token = (await tokenResponse.json()) as { access_token?: string; token_type?: string };
+  const token = (await tokenResponse.json()) as {
+    access_token?: string;
+    token_type?: string;
+  };
   if (typeof token.access_token !== "string") {
     throw new Error("Discord returned no access token");
   }
@@ -690,7 +688,10 @@ async function exchangeDiscord(
       : `https://cdn.discordapp.com/avatars/${user.id}/${user.avatar}.png`;
   return {
     subject: user.id,
-    email: user.verified === true && typeof user.email === "string" ? user.email : null,
+    email:
+      user.verified === true && typeof user.email === "string"
+        ? user.email
+        : null,
     emailVerified: user.verified === true,
     displayName: user.global_name ?? user.username,
     avatarUrl,
@@ -712,9 +713,7 @@ async function completeOAuth(
   const returnFallback = "/#modal=account";
   const state = typeof req.query.state === "string" ? req.query.state : "";
   const code = typeof req.query.code === "string" ? req.query.code : "";
-  const tx = state
-    ? await consumeOAuthTransaction(req, provider, state)
-    : null;
+  const tx = state ? await consumeOAuthTransaction(req, provider, state) : null;
   if (!tx || typeof tx.return_path !== "string") {
     redirectAfterOAuth(res, returnFallback, "error");
     return;
@@ -865,7 +864,10 @@ async function completeOAuth(
 function authErrorCode(error: unknown): string {
   const message = error instanceof Error ? error.message : "";
   if (message === "email_exists") return "email_exists";
-  if (message === "identity_already_linked" || message === "provider_already_linked") {
+  if (
+    message === "identity_already_linked" ||
+    message === "provider_already_linked"
+  ) {
     return "identity_already_linked";
   }
   return "account_auth_failed";
@@ -924,11 +926,7 @@ async function registerEmailAccount(
       );
     });
 
-    const token = await createEmailChallenge(
-      accountId,
-      "verify_email",
-      email,
-    );
+    const token = await createEmailChallenge(accountId, "verify_email", email);
     const verifyUrl = emailLink("/auth/email/verify", token);
     const sent = await sendResendEmail({
       to: email,
@@ -944,15 +942,15 @@ async function registerEmailAccount(
       status: "verification_required",
     });
   } catch (error) {
-    res.status(error instanceof Error && error.message === "email_exists" ? 409 : 400)
+    res
+      .status(
+        error instanceof Error && error.message === "email_exists" ? 409 : 400,
+      )
       .json({ error: authErrorCode(error) });
   }
 }
 
-async function passwordLogin(
-  req: Request,
-  res: Response,
-): Promise<void> {
+async function passwordLogin(req: Request, res: Response): Promise<void> {
   if (!requireOrigin(req, res)) return;
   if (!authDatabaseConfigured()) {
     res.status(503).json({ error: "account_auth_not_configured" });
@@ -974,7 +972,12 @@ async function passwordLogin(
     [emailNormalized],
   );
   const account = result.rows[0] as
-    | { account_id: string; password_hash: string | null; status: string; persistent_id: string }
+    | {
+        account_id: string;
+        password_hash: string | null;
+        status: string;
+        persistent_id: string;
+      }
     | undefined;
   const passwordValid = await verifyPassword(
     account?.password_hash ?? null,
@@ -1007,13 +1010,20 @@ async function resendVerificationEmail(
   res: Response,
 ): Promise<void> {
   if (!requireOrigin(req, res)) return;
-  if (!authDatabaseConfigured() || !ServerEnv.emailApiKey() || !ServerEnv.emailFrom()) {
+  if (
+    !authDatabaseConfigured() ||
+    !ServerEnv.emailApiKey() ||
+    !ServerEnv.emailFrom()
+  ) {
     res.status(503).json({ error: "email_delivery_not_configured" });
     return;
   }
   const parsed = EmailResendInput.safeParse(req.body);
   if (!parsed.success) {
-    res.status(202).setHeader("Cache-Control", "no-store").json({ status: "accepted" });
+    res
+      .status(202)
+      .setHeader("Cache-Control", "no-store")
+      .json({ status: "accepted" });
     return;
   }
   await ensureAuthDatabase();
@@ -1041,10 +1051,15 @@ async function resendVerificationEmail(
       text: `Verify your Open War email: ${verificationUrl}\nThis link expires in 30 minutes.`,
     });
     if (!sent) {
-      console.warn("Verification resend was not accepted by the email provider.");
+      console.warn(
+        "Verification resend was not accepted by the email provider.",
+      );
     }
   }
-  res.status(202).setHeader("Cache-Control", "no-store").json({ status: "accepted" });
+  res
+    .status(202)
+    .setHeader("Cache-Control", "no-store")
+    .json({ status: "accepted" });
 }
 
 async function requestPasswordReset(
@@ -1073,7 +1088,11 @@ async function requestPasswordReset(
   );
   const account = result.rows[0] as { id: string; email: string } | undefined;
   if (account) {
-    const token = await createEmailChallenge(account.id, "reset_password", account.email);
+    const token = await createEmailChallenge(
+      account.id,
+      "reset_password",
+      account.email,
+    );
     const resetUrl = emailLink("/auth/password/reset", token);
     const sent = await sendResendEmail({
       to: account.email,
@@ -1082,17 +1101,19 @@ async function requestPasswordReset(
       text: `Reset your Open War password: ${resetUrl}\nThis link expires in 30 minutes.`,
     });
     if (!sent) {
-      console.warn("Password reset email was not accepted by the email provider.");
+      console.warn(
+        "Password reset email was not accepted by the email provider.",
+      );
     }
   }
   // Same answer for existing and unknown addresses to reduce account enumeration.
-  res.status(202).setHeader("Cache-Control", "no-store").json({ status: "accepted" });
+  res
+    .status(202)
+    .setHeader("Cache-Control", "no-store")
+    .json({ status: "accepted" });
 }
 
-async function resetPassword(
-  req: Request,
-  res: Response,
-): Promise<void> {
+async function resetPassword(req: Request, res: Response): Promise<void> {
   if (!requireOrigin(req, res)) return;
   if (!authDatabaseConfigured()) {
     res.status(503).json({ error: "account_auth_not_configured" });
@@ -1141,10 +1162,7 @@ async function resetPassword(
   res.json({ status: "password_reset" });
 }
 
-async function verifyEmail(
-  req: Request,
-  res: Response,
-): Promise<void> {
+async function verifyEmail(req: Request, res: Response): Promise<void> {
   if (!requireOrigin(req, res)) return;
   if (!authDatabaseConfigured()) {
     res.status(503).json({ error: "account_auth_not_configured" });
@@ -1359,7 +1377,9 @@ async function rotateAccountRefreshToken(
   if (!outcome || outcome.reuse) {
     clearRefreshCookie(res);
     res.status(401).json({
-      error: outcome?.reuse ? "refresh_token_reuse_detected" : "refresh_session_invalid",
+      error: outcome?.reuse
+        ? "refresh_token_reuse_detected"
+        : "refresh_session_invalid",
     });
     return true;
   }
@@ -1508,8 +1528,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await registerEmailAccount(req, res);
     } catch (error) {
-      console.error("Account registration failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+      console.error(
+        "Account registration failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "account_auth_unavailable" });
     }
   });
 
@@ -1517,8 +1541,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await passwordLogin(req, res);
     } catch (error) {
-      console.error("Password login failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+      console.error(
+        "Password login failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "account_auth_unavailable" });
     }
   });
 
@@ -1526,8 +1554,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await resendVerificationEmail(req, res);
     } catch (error) {
-      console.error("Email verification resend failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+      console.error(
+        "Email verification resend failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "account_auth_unavailable" });
     }
   });
 
@@ -1535,8 +1567,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await requestPasswordReset(req, res);
     } catch (error) {
-      console.error("Password reset request failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+      console.error(
+        "Password reset request failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "account_auth_unavailable" });
     }
   });
 
@@ -1544,8 +1580,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await resetPassword(req, res);
     } catch (error) {
-      console.error("Password reset failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+      console.error(
+        "Password reset failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "account_auth_unavailable" });
     }
   });
 
@@ -1568,8 +1608,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await verifyEmail(req, res);
     } catch (error) {
-      console.error("Email verification failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "email_verification_unavailable" });
+      console.error(
+        "Email verification failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "email_verification_unavailable" });
     }
   });
 
@@ -1597,8 +1641,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await startOAuth(req, res, provider);
     } catch (error) {
-      console.error("OAuth start failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "oauth_unavailable" });
+      console.error(
+        "OAuth start failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "oauth_unavailable" });
     }
   });
 
@@ -1606,7 +1654,10 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await completeOAuth(req, res, "google");
     } catch (error) {
-      console.error("Google callback failed:", error instanceof Error ? error.message : "unknown error");
+      console.error(
+        "Google callback failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
       if (!res.headersSent) redirectAfterOAuth(res, "/#modal=account", "error");
     }
   });
@@ -1615,15 +1666,22 @@ export function registerSelfHostedAccountApi(app: Express): void {
     try {
       await completeOAuth(req, res, "discord");
     } catch (error) {
-      console.error("Discord callback failed:", error instanceof Error ? error.message : "unknown error");
+      console.error(
+        "Discord callback failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
       if (!res.headersSent) redirectAfterOAuth(res, "/#modal=account", "error");
     }
   });
 
   app.get("/users/@me", (req, res, next) => {
     accountUserMe(req, res, next).catch((error) => {
-      console.error("Account profile lookup failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+      console.error(
+        "Account profile lookup failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "account_auth_unavailable" });
     });
   });
 
@@ -1634,8 +1692,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
       const handled = await rotateAccountRefreshToken(res, token);
       if (!handled) return next();
     } catch (error) {
-      console.error("Account refresh failed:", error instanceof Error ? error.message : "unknown error");
-      if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+      console.error(
+        "Account refresh failed:",
+        error instanceof Error ? error.message : "unknown error",
+      );
+      if (!res.headersSent)
+        res.status(503).json({ error: "account_auth_unavailable" });
     }
   });
 
@@ -1652,8 +1714,12 @@ export function registerSelfHostedAccountApi(app: Express): void {
         res.setHeader("Cache-Control", "no-store");
         res.status(204).end();
       } catch (error) {
-        console.error("Account logout failed:", error instanceof Error ? error.message : "unknown error");
-        if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+        console.error(
+          "Account logout failed:",
+          error instanceof Error ? error.message : "unknown error",
+        );
+        if (!res.headersSent)
+          res.status(503).json({ error: "account_auth_unavailable" });
       }
     });
   }

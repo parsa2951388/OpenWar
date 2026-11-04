@@ -62,7 +62,9 @@ export async function ensureAuthDatabase(): Promise<void> {
       }
     }
     if (root === null) {
-      throw new Error("Open War authentication migration directory was not found");
+      throw new Error(
+        "Open War authentication migration directory was not found",
+      );
     }
     const migrations = [
       ["0001_authentication_foundation", "0001_authentication_foundation.sql"],
@@ -78,9 +80,10 @@ export async function ensureAuthDatabase(): Promise<void> {
       // poolers such as Neon PgBouncer; a session-level advisory lock would
       // not survive separate pooled statements.
       await client.query("BEGIN");
-      await client.query("SELECT pg_advisory_xact_lock(hashtextextended($1, 0))", [
-        "open-war-auth-schema",
-      ]);
+      await client.query(
+        "SELECT pg_advisory_xact_lock(hashtextextended($1, 0))",
+        ["open-war-auth-schema"],
+      );
       await client.query(
         "CREATE TABLE IF NOT EXISTS schema_migrations (version TEXT PRIMARY KEY, applied_at TIMESTAMPTZ NOT NULL DEFAULT now())",
       );

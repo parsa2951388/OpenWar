@@ -10,8 +10,8 @@ import {
 import { customElement, property, state } from "lit/decorators.js";
 import { ifDefined } from "lit/directives/if-defined.js";
 import { hasLinkedIdentity } from "../AccountIdentity";
-import { ClientEnv } from "../ClientEnv";
 import { logOut } from "../Auth";
+import { ClientEnv } from "../ClientEnv";
 import { gamePortal, type PortalUser } from "../GamePortal";
 import { showInGameConfirm } from "../InGameModal";
 import {
@@ -333,7 +333,9 @@ export class NavAccountMenu extends LitElement {
    */
   private isSignedIn(): boolean {
     if (ClientEnv.selfHostedAuthEnabled()) {
-      return this.userMeResponse !== false && !!this.userMeResponse?.player?.publicId;
+      return (
+        this.userMeResponse !== false && !!this.userMeResponse?.player?.publicId
+      );
     }
     if (this.userMeResponse === false) return false;
     return (
@@ -370,12 +372,14 @@ export class NavAccountMenu extends LitElement {
 
   private items(): MenuItem[] {
     if (ClientEnv.selfHostedAuthEnabled()) {
-      return [{
-        key: "guest-account",
-        labelKey: "auth_guest.view_profile",
-        icon: iconUser,
-        onSelect: () => window.showPage?.("page-account"),
-      }];
+      return [
+        {
+          key: "guest-account",
+          labelKey: "auth_guest.view_profile",
+          icon: iconUser,
+          onSelect: () => window.showPage?.("page-account"),
+        },
+      ];
     }
     // Signed out there is only the sign-in route for this platform: settings
     // are reached from the navbar, in every signed-in state and out of it.

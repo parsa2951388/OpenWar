@@ -33,10 +33,12 @@
 ### Task 1: Restore a visible language selector in shared navigation
 
 **Files:**
+
 - Modify: `src/client/components/NavUtilityIcons.ts`
 - Create: `tests/client/NavUtilityIcons.language.test.ts`
 
 **Interfaces:**
+
 - Consumes: the already registered `lang-selector` custom element from `src/client/Main.ts`.
 - Produces: one visible `<lang-selector>` control inside the shared `nav-utility-icons` cluster, used by both desktop and mobile navigation.
 
@@ -68,10 +70,12 @@ git commit -m "fix: expose language selector in shared navigation"
 ### Task 2: Wait for Lit navigation to render before boot-time lookups
 
 **Files:**
+
 - Modify: `src/client/Main.ts`
 - Modify: `tests/client/MainInitialize.test.ts`
 
 **Interfaces:**
+
 - Consumes: `LitElement.updateComplete` from the rendered navigation components.
 - Produces: the language selector and game-version elements are mounted before `Main.initialize()` queries them.
 
@@ -103,10 +107,12 @@ git commit -m "fix: await navigation rendering during client startup"
 ### Task 3: Remove the false untagged version placeholder
 
 **Files:**
+
 - Modify: `src/client/GameVersion.ts`
 - Modify: `tests/client/GameVersion.test.ts`
 
 **Interfaces:**
+
 - Consumes: `resources/version.txt` and the existing `taggedGameVersion(rawVersion: string)` helper.
 - Produces: a valid tagged semantic version or an empty label; never the fake `vx.xx.xx` placeholder.
 
@@ -138,11 +144,13 @@ git commit -m "fix: hide placeholder version on untagged builds"
 ### Task 4: Make map-weight polling explicitly optional
 
 **Files:**
+
 - Modify: `src/server/ServerEnv.ts`
 - Modify: `src/server/Master.ts`
 - Create: `tests/MapWeightsPollingConfig.test.ts`
 
 **Interfaces:**
+
 - Produces: `ServerEnv.mapWeightsApiEnabled(): boolean`.
 - The setting is opt-out: the upstream-compatible default is enabled; the Render self-hosted service will set `MAP_WEIGHTS_API_ENABLED=false`.
 - When disabled, public-lobby scheduling continues with `MapPlaylist.DEFAULT_MAP_WEIGHT`.
@@ -175,9 +183,11 @@ git commit -m "fix: make map weight API polling configurable"
 ### Task 5: Verify and deploy the quality-7 candidate safely
 
 **Files:**
+
 - No additional source changes unless a verification step exposes a regression.
 
 **Interfaces:**
+
 - Consumes: the code from Tasks 1–4 and GitHub CI.
 - Produces: a reviewed pull request, passing automated checks, a manual Render environment setting, and a deployment on the existing public proxy only after checks pass.
 
@@ -188,13 +198,14 @@ Set `MAP_WEIGHTS_API_ENABLED=false` on Render service `open-war-game`. Do not re
 - [ ] **Step 2: Run the complete CI suite on GitHub**
 
 Require the workflow to pass:
-  - `npm run typecheck`
-  - `npm run build-prod`
-  - `npm test`
-  - `npm run lint:github`
-  - `npm run format:check`
-  - `npm run gen-maps`
-  - Docker image build
+
+- `npm run typecheck`
+- `npm run build-prod`
+- `npm test`
+- `npm run lint:github`
+- `npm run format:check`
+- `npm run gen-maps`
+- Docker image build
 
 - [ ] **Step 3: Review the pull request diff**
 
@@ -211,11 +222,12 @@ The Render service has auto-deploy disabled. Trigger one manual deploy after the
 - [ ] **Step 6: Smoke-check the existing public URL**
 
 Check `https://parsaoj.pages.dev` for:
-  - resolved English strings and a working language-picker control;
-  - Persian selection and `html[dir="rtl"]`;
-  - no `vx.xx.xx` placeholder;
-  - no repeated map-weight polling errors after the new deployment;
-  - HTTP health status 200.
+
+- resolved English strings and a working language-picker control;
+- Persian selection and `html[dir="rtl"]`;
+- no `vx.xx.xx` placeholder;
+- no repeated map-weight polling errors after the new deployment;
+- HTTP health status 200.
 
 - [ ] **Step 7: Keep the requested new hostname as a separate cutover**
 
