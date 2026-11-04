@@ -390,8 +390,7 @@ export class GameModeSelector extends LitElement {
       "username-input",
     ) as UsernameInput | null;
     return (
-      typeof usernameInput?.canPlay !== "function" ||
-      usernameInput.canPlay()
+      typeof usernameInput?.canPlay !== "function" || usernameInput.canPlay()
     );
   }
 
