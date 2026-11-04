@@ -314,6 +314,13 @@ export class AccountModal extends BaseModal {
     if (this.isLoadingUser || !this.isLinkedAccount()) {
       return {};
     }
+    if (this.isStandaloneGuestMode()) {
+      return {
+        tabs: [
+          { key: "account", label: translateText("account_modal.tab_account") },
+        ],
+      };
+    }
     return {
       tabs: [
         { key: "account", label: translateText("account_modal.tab_account") },
@@ -357,6 +364,13 @@ export class AccountModal extends BaseModal {
             : this.renderLoginOptions()
         }
       </div>`;
+    }
+    if (this.isStandaloneGuestMode()) {
+      return html`
+        <div class="custom-scrollbar mr-1">
+          <div class="p-6">${this.renderTab("account")}</div>
+        </div>
+      `;
     }
     return html`
       <div class="custom-scrollbar mr-1">
@@ -564,6 +578,46 @@ export class AccountModal extends BaseModal {
   }
 
   private renderAccountTab(): TemplateResult {
+    if (this.isStandaloneGuestMode()) {
+      const user = this.userMeResponse?.user;
+      const email = user?.email ?? user?.google?.email ?? "";
+      const hasGoogle = !!user?.google;
+      const hasDiscord = !!user?.discord;
+      return html`
+        <section class="mx-auto flex w-full max-w-xl flex-col gap-5 rounded-2xl border border-white/10 bg-[#071426]/95 p-5 text-white sm:p-7">
+          <div>
+            <h3 class="text-xl font-black tracking-tight">Open War account</h3>
+            <p class="mt-1 text-sm leading-6 text-slate-300/70">Your player identity is now protected by a permanent account.</p>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+            <div class="text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Email address</div>
+            <div class="mt-2 break-all text-sm font-semibold">${email || "No email address linked"}</div>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/[0.04] p-4">
+            <div class="mb-3 text-[10px] font-bold uppercase tracking-[0.18em] text-white/40">Connected sign-in methods</div>
+            <div class="flex flex-col gap-2 text-sm">
+              <div class="flex items-center justify-between gap-3">
+                <span>Google</span>
+                <span class="font-semibold ${hasGoogle ? "text-emerald-300" : "text-white/35"}">${hasGoogle ? "Connected" : "Not connected"}</span>
+              </div>
+              <div class="flex items-center justify-between gap-3">
+                <span>Discord</span>
+                <span class="font-semibold ${hasDiscord ? "text-emerald-300" : "text-white/35"}">${hasDiscord ? "Connected" : "Not connected"}</span>
+              </div>
+            </div>
+          </div>
+          <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
+            ${!hasGoogle ? html`
+              <button type="button" @click=${this.handleLinkGoogle} class="min-h-11 rounded-xl border border-white/15 bg-white px-4 py-3 text-sm font-extrabold text-slate-900 transition hover:bg-slate-100">Link Google</button>
+            ` : nothing}
+            ${!hasDiscord ? html`
+              <button type="button" @click=${() => void this.handleDiscordLogin()} class="min-h-11 rounded-xl bg-[#5865F2] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#4752C4]">Link Discord</button>
+            ` : nothing}
+          </div>
+          <button type="button" @click=${() => void this.handleLogout()} class="min-h-11 rounded-xl border border-red-400/20 bg-red-400/[0.06] px-4 py-3 text-sm font-bold text-red-200 transition hover:bg-red-400/10">Sign out</button>
+        </section>
+      `;
+    }
     if (this.portalUser) {
       return this.renderPortalAccount(this.portalUser);
     }
