@@ -1,5 +1,5 @@
 import type { TokenPayload } from "@openfront/shared/ApiSchemas";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   _clearInFlightTokens,
   _inFlightTokenCount,
@@ -18,7 +18,13 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 describe("verifyJoin", () => {
+  beforeEach(() => {
+    vi.stubEnv("TURNSTILE_SITE_KEY", "test-site-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "test-secret-key");
+  });
+
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
     _clearInFlightTokens();
   });
