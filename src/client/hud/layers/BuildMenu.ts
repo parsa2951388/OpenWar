@@ -160,8 +160,9 @@ export class BuildMenu extends LitElement implements Controller {
   }
 
   getTickIntervalMs(): number {
-    // The menu's worker snapshot only needs occasional refreshes while open.
-    return 500;
+    // This snapshot is not frame-critical; avoid repeated worker calculations
+    // while the menu is open on mobile.
+    return 1000;
   }
 
   tick() {
@@ -250,7 +251,31 @@ export class BuildMenu extends LitElement implements Controller {
       text-align: center;
     }
     .build-cost {
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      gap: 2px;
       font-size: 14px;
+      line-height: 1.15;
+      font-variant-numeric: tabular-nums;
+    }
+    .build-cost-label {
+      color: #cbd5e1;
+      font-size: 10px;
+      font-weight: 600;
+      opacity: 0.9;
+    }
+    .build-cost-value {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      gap: 4px;
+      white-space: nowrap;
+    }
+    .build-loading {
+      padding: 20px;
+      color: #cbd5e1;
+      font-size: 13px;
     }
     .hidden {
       display: none !important;
@@ -289,81 +314,66 @@ export class BuildMenu extends LitElement implements Controller {
 
     @media (max-width: 768px) {
       .build-menu {
+        width: min(92vw, 680px);
         padding: 10px;
-        max-height: 80vh;
-        width: 80vw;
+        max-height: min(88dvh, 760px);
+        overscroll-behavior: contain;
+      }
+      .build-row {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
       }
       .build-button {
-        width: 140px;
-        height: 120px;
-        margin: 4px;
-        padding: 6px;
+        width: 100%;
+        min-width: 0;
+        min-height: 124px;
+        height: auto;
+        margin: 0;
+        padding: 8px 6px;
         gap: 5px;
+        touch-action: manipulation;
       }
-      .build-icon {
-        font-size: 28px;
-      }
+      .build-icon { font-size: 28px; }
       .build-name {
         font-size: 12px;
-        margin-bottom: 3px;
+        margin-bottom: 2px;
+        overflow-wrap: anywhere;
       }
-      .build-cost {
-        font-size: 11px;
-      }
-      .build-count {
-        font-weight: bold;
-        font-size: 10px;
-      }
-      .build-count-chip {
-        padding: 1px 5px;
-      }
+      .build-description { font-size: 10px; line-height: 1.25; }
+      .build-cost { font-size: 12px; }
+      .build-cost-label { font-size: 9px; }
+      .build-count { font-size: 10px; }
+      .build-count-chip { padding: 1px 5px; }
     }
 
     @media (max-width: 480px) {
       .build-menu {
         width: min(94vw, 520px);
-        padding: 10px;
-        max-height: min(82dvh, 640px);
-        overflow-y: auto;
-        overscroll-behavior: contain;
+        padding: 9px;
+        max-height: min(86dvh, 720px);
+      }
+      .build-row {
+        grid-template-columns: repeat(2, minmax(0, 1fr));
+        gap: 7px;
       }
       .build-button {
-        width: calc(50% - 8px);
-        min-height: 108px;
-        height: auto;
-        margin: 4px;
-        padding: 8px 6px;
+        min-height: 126px;
+        padding: 8px 5px;
         border-width: 1px;
-        touch-action: manipulation;
       }
-      .build-icon {
-        font-size: 24px;
-      }
-      .build-name {
-        font-size: 12px;
-        margin-bottom: 2px;
-      }
-      .build-description {
-        font-size: 10px;
-      }
-      .build-cost {
-        font-size: 12px;
-      }
-      .build-count {
-        font-weight: bold;
-        font-size: 10px;
-      }
-      .build-count-chip {
-        padding: 0 3px;
-      }
-      .build-button img {
-        width: 24px;
-        height: 24px;
-      }
-      .build-cost img {
-        width: 10px;
-        height: 10px;
-      }
+      .build-icon { font-size: 24px; }
+      .build-name { font-size: 12px; }
+      .build-description { font-size: 9px; }
+      .build-cost { font-size: 12px; }
+      .build-count { font-size: 10px; }
+      .build-button img { width: 24px; height: 24px; }
+      .build-cost img { width: 12px; height: 12px; }
+    }
+
+    @media (pointer: coarse) {
+      .build-button:not(:disabled):hover { transform: none; }
+      .build-button:not(:disabled):active { transform: none; }
     }
   `;
 
@@ -380,12 +390,30 @@ export class BuildMenu extends LitElement implements Controller {
   }
 
   public cost(item: BuildItemDisplay): Gold {
-    for (const bu of this.playerBuildables ?? []) {
-      if (bu.type === item.unitType) {
-        return bu.cost;
-      }
+    const buildableUnit = this.playerBuildables?.find(
+      (unit) => unit.type === item.unitType,
+    );
+    if (!buildableUnit) return 0n;
+
+    // When the click upgrades an existing structure, show the next actual
+    // upgrade cost rather than the general new-build cost.
+    if (buildableUnit.canUpgrade !== false && !this.uiState.preventStacking) {
+      return buildableUnit.upgradeCosts?.[0] ?? buildableUnit.cost;
     }
-    return 0n;
+    return buildableUnit.cost;
+  }
+
+  public costLabel(item: BuildItemDisplay): string {
+    const buildableUnit = this.playerBuildables?.find(
+      (unit) => unit.type === item.unitType,
+    );
+    const isUpgrade =
+      buildableUnit !== undefined &&
+      buildableUnit.canUpgrade !== false &&
+      !this.uiState.preventStacking;
+    return translateText(
+      isUpgrade ? "build_menu.upgrade_cost_label" : "build_menu.cost_label",
+    );
   }
 
   public count(item: BuildItemDisplay): string {
@@ -424,7 +452,10 @@ export class BuildMenu extends LitElement implements Controller {
         class="build-menu ${this._hidden ? "hidden" : ""}"
         @contextmenu=${(e: MouseEvent) => e.preventDefault()}
       >
-        ${this.filteredBuildTable.map(
+        ${
+          this.playerBuildables === null
+            ? html`<div class="build-loading">${translateText("build_menu.loading")}</div>`
+            : this.filteredBuildTable.map(
           (row) => html`
             <div class="build-row">
               ${row.map((item) => {
@@ -461,17 +492,20 @@ export class BuildMenu extends LitElement implements Controller {
                         item.description && translateText(item.description)
                       }</span
                     >
-                    <span class="build-cost" translate="no">
-                      ${renderNumber(
-                        this.game && this.game.myPlayer() ? this.cost(item) : 0,
-                      )}
-                      <img
-                        src=${goldCoinIcon}
-                        alt="gold"
-                        width="12"
-                        height="12"
-                        class="align-middle"
-                      />
+                    <span class="build-cost">
+                      <span class="build-cost-label">${this.costLabel(item)}</span>
+                      <span class="build-cost-value" translate="no">
+                        ${renderNumber(
+                          this.game && this.game.myPlayer() ? this.cost(item) : 0,
+                        )}
+                        <img
+                          src=${goldCoinIcon}
+                          alt="gold"
+                          width="12"
+                          height="12"
+                          class="align-middle"
+                        />
+                      </span>
                     </span>
                     ${
                       item.countable
