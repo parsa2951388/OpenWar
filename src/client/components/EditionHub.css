@@ -536,3 +536,99 @@
     transform: none;
   }
 }
+
+
+/* Playable Operations alpha mission selection. */
+.ow-mission-section {
+  display: grid;
+  gap: 0.85rem;
+}
+.ow-mission-section .ow-operations-section-heading p {
+  max-width: 48rem;
+  margin: 0.45rem 0 0;
+  color: #9eada6;
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+.ow-mission-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.8rem;
+}
+.ow-mission-card {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  padding: 1.2rem;
+  border: 1px solid rgba(205, 181, 132, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(197, 163, 110, 0.1), transparent 45%),
+    linear-gradient(145deg, rgba(23, 38, 35, 0.98), rgba(11, 21, 21, 0.98));
+}
+.ow-mission-card-topline,
+.ow-mission-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.ow-mission-number {
+  color: #d0b27b;
+  font: 800 0.62rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.1em;
+}
+.ow-mission-difficulty {
+  color: #aebdb6;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.ow-mission-card h4 {
+  margin: 0.9rem 0 0.35rem;
+  color: #f0f4ef;
+  font-size: 1rem;
+  font-weight: 850;
+}
+.ow-mission-brief {
+  min-height: 3.4rem;
+  margin: 0;
+  color: #a6b5ae;
+  font-size: 0.76rem;
+  line-height: 1.7;
+}
+.ow-mission-meta {
+  justify-content: flex-start;
+  margin-top: 0.9rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid rgba(169, 191, 182, 0.12);
+  border-bottom: 1px solid rgba(169, 191, 182, 0.12);
+  color: #d8c59f;
+  font: 700 0.58rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.04em;
+}
+.ow-mission-objective {
+  flex: 1;
+  margin: 0.8rem 0 1rem;
+  color: #d0d8d1;
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
+.ow-mission-launch {
+  width: 100%;
+  margin-top: auto;
+}
+@media (max-width: 900px) {
+  .ow-mission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .ow-mission-grid {
+    grid-template-columns: 1fr;
+  }
+  .ow-mission-brief {
+    min-height: 0;
+  }
+}
