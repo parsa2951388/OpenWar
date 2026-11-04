@@ -31,7 +31,9 @@ describe("verifyJoin", () => {
   });
 
   it("verifies a token with Cloudflare and locally screens the supplied identity", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ success: true }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ success: true }));
     vi.stubGlobal("fetch", fetchMock);
 
     const verdict = await verifyJoin("1.2.3.4", "tok", "xXblackxX", "CoOl");
@@ -43,9 +45,13 @@ describe("verifyJoin", () => {
     });
     expect(fetchMock).toHaveBeenCalledTimes(1);
     const [url, init] = fetchMock.mock.calls[0];
-    expect(url).toBe("https://challenges.cloudflare.com/turnstile/v0/siteverify");
+    expect(url).toBe(
+      "https://challenges.cloudflare.com/turnstile/v0/siteverify",
+    );
     expect(init.method).toBe("POST");
-    expect(init.headers["Content-Type"]).toBe("application/x-www-form-urlencoded");
+    expect(init.headers["Content-Type"]).toBe(
+      "application/x-www-form-urlencoded",
+    );
     expect(Object.fromEntries(new URLSearchParams(String(init.body)))).toEqual({
       secret: "secret-key",
       response: "tok",
@@ -54,7 +60,10 @@ describe("verifyJoin", () => {
   });
 
   it("normalizes a missing clan tag to null", async () => {
-    vi.stubGlobal("fetch", vi.fn().mockResolvedValue(jsonResponse({ success: true })));
+    vi.stubGlobal(
+      "fetch",
+      vi.fn().mockResolvedValue(jsonResponse({ success: true })),
+    );
     expect(await verifyJoin("ip", "tok", "Alice", null)).toEqual({
       status: "approved",
       username: "Alice",
@@ -94,13 +103,19 @@ describe("verifyJoin", () => {
     resolveFetch!(jsonResponse({ success: true }));
 
     const [v1, v2] = await Promise.all([call1, call2]);
-    expect(v1).toEqual({ status: "approved", username: "User1", clanTag: null });
+    expect(v1).toEqual({
+      status: "approved",
+      username: "User1",
+      clanTag: null,
+    });
     expect(v2).toBe(v1);
     expect(_inFlightTokenCount()).toBe(0);
   });
 
   it("does not coalesce calls when identity or persistent ID differs", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ success: true }));
+    const fetchMock = vi
+      .fn()
+      .mockResolvedValue(jsonResponse({ success: true }));
     vi.stubGlobal("fetch", fetchMock);
 
     const [a, b, c] = await Promise.all([
@@ -110,7 +125,9 @@ describe("verifyJoin", () => {
     ]);
 
     expect(fetchMock).toHaveBeenCalledTimes(3);
-    expect([a, b, c].every((result) => result.status === "approved")).toBe(true);
+    expect([a, b, c].every((result) => result.status === "approved")).toBe(
+      true,
+    );
     expect(_inFlightTokenCount()).toBe(0);
   });
 
