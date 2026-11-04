@@ -1524,7 +1524,6 @@
     "copyright": "© OpenFront and Contributors",
     "create": "Create Lobby",
     "discord_avatar_alt": "Discord profile avatar",
-    "github": "GitHub",
     "go_to_troubleshooting": "Go to our troubleshooting page",
     "help": "Help",
     "inventory": "Inventory",
@@ -1536,18 +1535,15 @@
     "menu": "Menu",
     "news": "News",
     "play": "Play",
-    "privacy_policy": "Privacy Policy",
     "quit": "Exit game",
     "settings": "Settings",
     "sign_in": "Sign in",
     "solo": "Solo",
     "store": "Store",
-    "terms_of_service": "Terms of Service",
     "title": "Open War",
     "troubleshooting": "Troubleshooting",
     "tutorial": "Tutorial",
-    "user_avatar_alt": "{username}'s avatar",
-    "wiki": "Wiki"
+    "user_avatar_alt": "{username}'s avatar"
   },
   "map": {
     "achiran": "Achiran",
