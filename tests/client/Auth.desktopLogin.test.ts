@@ -209,7 +209,7 @@ describe("provider login on the desktop shell", () => {
 
   // The failure mode this exists to log is an IPC rejection; it must not
   // become an unhandled rejection out of a click handler.
-  it("discordLogin survives the bridge rejecting", async async () => {
+  it("discordLogin survives the bridge rejecting", async () => {
     showLinkGate.mockRejectedValue(new Error("no window"));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
