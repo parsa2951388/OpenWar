@@ -1,7 +1,7 @@
 const encoder = new TextEncoder();
 const ACCESS_WINDOW_MS = 15 * 60 * 1000;
 const MAX_ATTEMPTS = 10;
-const PASSWORD_ITERATIONS = 210_000;
+const PASSWORD_ITERATIONS = 600_000;
 const PASSWORD_BYTES = 32;
 const DUMMY_SALT = new Uint8Array(16).fill(0x5a);
 const DUMMY_HASH = new Uint8Array(32).fill(0x3c);
