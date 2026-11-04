@@ -27,12 +27,25 @@ vi.stubGlobal(
   },
 );
 
+import { ClientEnv } from "../../src/client/ClientEnv";
 import { PlayPage } from "../../src/client/components/PlayPage";
 
 describe("play-page mobile top bar", () => {
   let el: PlayPage;
 
   async function mount() {
+    // GameModeSelector asks ClientEnv for the default lobby duration as soon
+    // as it connects. This test exercises layout, not application bootstrap,
+    // so give it the minimal valid environment explicitly.
+    (window as any).BOOTSTRAP_CONFIG = {
+      gameEnv: "prod",
+      numWorkers: 1,
+      turnstileSiteKey: "",
+      jwtAudience: "openfront.dev",
+      instanceId: "test",
+      gitCommit: "test",
+    };
+    ClientEnv.reset();
     if (!customElements.get("play-page")) {
       customElements.define("play-page", PlayPage);
     }
@@ -43,7 +56,10 @@ describe("play-page mobile top bar", () => {
 
   afterEach(() => {
     el?.remove();
+    vi.restoreAllMocks();
     vi.clearAllMocks();
+    ClientEnv.reset();
+    delete (window as any).BOOTSTRAP_CONFIG;
     isOnCrazyGames.mockReturnValue(false);
   });
 
