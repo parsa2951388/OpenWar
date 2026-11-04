@@ -85,6 +85,21 @@ export class ServerEnv {
   static selfHostedAuthEnabled(): boolean {
     return process.env.SELF_HOSTED_AUTH === "true" && Boolean(ServerEnv.jwtPrivateKey());
   }
+  // Private Cloudflare Worker used only for Open War email/password account persistence.
+  // The secret is server-to-server only and must never be copied into BOOTSTRAP_CONFIG.
+  static openWarAuthUrl(): string | undefined {
+    const raw = process.env.OPENWAR_AUTH_URL?.trim();
+    if (!raw) return undefined;
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "https:") {
+      throw new Error("OPENWAR_AUTH_URL must use HTTPS");
+    }
+    return parsed.toString().replace(/\/+$/, "");
+  }
+  static openWarAuthSecret(): string {
+    return process.env.OPENWAR_AUTH_SECRET ?? "";
+  }
+
   static jwtPrivateKey(): string {
     return (process.env.JWT_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
   }
