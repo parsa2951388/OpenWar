@@ -38,8 +38,6 @@ describe("Open War edition hub", () => {
     expect(hub.querySelector(".ow-classic-edition")).toBeNull();
     const operationsDashboard = hub.querySelector(".ow-operations-dashboard");
     expect(operationsDashboard?.hasAttribute("hidden")).toBe(false);
-      false,
-    );
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
