@@ -53,6 +53,7 @@ jobs:
           tests/client/MainInitialize.test.ts
           tests/client/NavUtilityIcons.language.test.ts
           tests/client/ApiPlayerLeaderboard.test.ts
+          tests/server/RenderHtml.test.ts
           vite.config.ts
       - name: Commit formatter changes
         run: |
@@ -83,6 +84,7 @@ jobs:
             tests/client/MainInitialize.test.ts \
             tests/client/NavUtilityIcons.language.test.ts \
             tests/client/ApiPlayerLeaderboard.test.ts \
+            tests/server/RenderHtml.test.ts \
             vite.config.ts
           if git diff --cached --quiet; then
             echo "All selected files are already formatted."
