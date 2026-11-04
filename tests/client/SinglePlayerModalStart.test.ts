@@ -25,6 +25,33 @@ function createModal(): any {
 }
 
 describe("SinglePlayerModal start", () => {
+
+  it("starts an Operations mission with its map, timer, difficulty and territory threshold", async () => {
+    const modal = createModal();
+    const events: any[] = [];
+    modal.addEventListener("join-lobby", (e: Event) =>
+      events.push((e as CustomEvent).detail),
+    );
+
+    const { getOperationsMission } = await import(
+      "../../src/client/components/OperationsMissions"
+    );
+    const mission = getOperationsMission("iron-gate");
+    expect(mission).toBeDefined();
+    modal.openForOperation(mission);
+
+    await modal.startGame();
+
+    expect(events).toHaveLength(1);
+    const config = events[0].gameStartInfo.config;
+    expect(config.gameMap).toBe(mission.map);
+    expect(config.difficulty).toBe(mission.difficulty);
+    expect(config.maxTimerValue).toBe(mission.timeLimitMinutes);
+    expect(config.winThresholdTenths).toBe(mission.winThresholdTenths);
+    expect(config.disabledUnits).toContain(UnitType.AtomBomb);
+    expect(config.disabledUnits).toContain(UnitType.MissileSilo);
+  });
+
   it("carries the selected team count and validated disabled units into the join-lobby config", async () => {
     const modal = createModal();
     const events: any[] = [];
