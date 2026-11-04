@@ -1,4 +1,4 @@
-import { readFile } from "node:fs/promises";
+import { access, readFile } from "node:fs/promises";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { Pool, type PoolClient } from "pg";
@@ -43,10 +43,27 @@ export async function ensureAuthDatabase(): Promise<void> {
   migrationPromise = (async () => {
     const db = authPool();
     const client = await db.connect();
-    const root = path.resolve(
-      path.dirname(fileURLToPath(import.meta.url)),
-      "../../database/migrations",
-    );
+    const moduleDirectory = path.dirname(fileURLToPath(import.meta.url));
+    const migrationRoots = [
+      // Production Docker image: compiled server lives in dist/src/server,
+      // while the SQL directory is copied to the application root.
+      path.resolve(moduleDirectory, "../../../database/migrations"),
+      // Development/tsx: source server lives in src/server.
+      path.resolve(moduleDirectory, "../../database/migrations"),
+    ];
+    let root: string | null = null;
+    for (const candidate of migrationRoots) {
+      try {
+        await access(candidate);
+        root = candidate;
+        break;
+      } catch {
+        // Try the source-layout fallback.
+      }
+    }
+    if (root === null) {
+      throw new Error("Open War authentication migration directory was not found");
+    }
     const migrations = [
       ["0001_authentication_foundation", "0001_authentication_foundation.sql"],
       [
