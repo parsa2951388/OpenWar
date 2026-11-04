@@ -222,8 +222,8 @@ export class AccountModal extends BaseModal {
 
   private isStandaloneGuestMode(): boolean {
     return (
-      ClientEnv.selfHostedAuthEnabled() &&
-      !Boolean(this.userMeResponse?.user?.email)
+      ClientEnv.selfHostedAuthEnabled?.() === true &&
+      !this.userMeResponse?.user?.email
     );
   }
 
