@@ -92,7 +92,7 @@ browser never talks to D1 and never receives the service secret.
 - Login on another device restores the persistent ID stored on the account.
   The game still receives the same Ed25519 JWT format and continues to use the
   existing guest-provider token contract.
-- Passwords are stored as salted PBKDF2-HMAC-SHA-256 hashes (210,000 rounds),
+- Passwords are stored as salted PBKDF2-HMAC-SHA-256 hashes (600,000 rounds),
   not plaintext. Registration and login are rate-limited by email and source IP.
 - The current Pages hostname is a `pages.dev` address and this Cloudflare
   account has no onboarded sending domain. Email verification and password
