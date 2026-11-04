@@ -49,6 +49,7 @@ jobs:
           src/client/components/Footer.ts
           src/client/components/MobileNavBar.ts
           src/client/components/NavAccountMenu.ts
+          src/client/components/CosmeticBackground.ts
           src/client/styles.css
           src/server/AuthDatabase.ts
           src/server/RenderHtml.ts
@@ -85,6 +86,7 @@ jobs:
             src/client/components/Footer.ts \
             src/client/components/MobileNavBar.ts \
             src/client/components/NavAccountMenu.ts \
+            src/client/components/CosmeticBackground.ts \
             src/client/styles.css \
             src/server/AuthDatabase.ts \
             src/server/RenderHtml.ts \
