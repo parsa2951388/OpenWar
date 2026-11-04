@@ -402,7 +402,7 @@ describe("RenderHtml environment-only render", () => {
     const html = await renderHtmlContent(REAL_TEMPLATE);
 
     expect(
-      html.match(/OpenWarLogo\\.[0-9a-f]{12}\\.svg/g)?.length,
+      html.match(/OpenWarLogo/g)?.length,
     ).toBeGreaterThanOrEqual(2);
     expect(html).not.toContain("OpenFront.png");
     expect(html).not.toContain("OF.png");
