@@ -261,9 +261,9 @@ export class EditionHub extends LitElement {
                       ${mission.difficulty}
                     </span>
                   </div>
-                  <h4>${this.t(`mission_${mission.id}_title`)}</h4>
+                  <h4>${this.t(`mission_${mission.translationKey}_title`)}</h4>
                   <p class="ow-mission-brief">
-                    ${this.t(`mission_${mission.id}_brief`)}
+                    ${this.t(`mission_${mission.translationKey}_brief`)}
                   </p>
                   <div class="ow-mission-meta">
                     <span>${mission.map}</span>
@@ -271,7 +271,7 @@ export class EditionHub extends LitElement {
                     <span> ${mission.winThresholdTenths / 10}% TERRITORY </span>
                   </div>
                   <p class="ow-mission-objective">
-                    ${this.t(`mission_${mission.id}_objective`)}
+                    ${this.t(`mission_${mission.translationKey}_objective`)}
                   </p>
                   <button
                     class="ow-action-primary ow-mission-launch"
