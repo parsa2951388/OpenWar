@@ -21,7 +21,10 @@ test("every PWA icon path resolves to a shipped asset", () => {
       ? icon.src.slice(1)
       : icon.src;
     const assetPath = path.join(ROOT, "resources", relativePath);
-    expect(fs.existsSync(assetPath), `Missing PWA icon asset: ${icon.src}`).toBe(true);
+    expect(
+      fs.existsSync(assetPath),
+      `Missing PWA icon asset: ${icon.src}`,
+    ).toBe(true);
   }
 });
 
@@ -30,6 +33,8 @@ test("the browser favicon points to the shipped Open War mark", () => {
   const renderHtml = fs.readFileSync(renderHtmlPath, "utf8");
   const markPath = path.join(ROOT, "resources", "images", "OpenWarMark.svg");
 
-  expect(renderHtml).toContain('buildAssetUrl("images/OpenWarMark.svg"');
+  expect(renderHtml).toContain(
+    'buildAssetUrl("images/OpenWarMark.svg"',
+  );
   expect(fs.existsSync(markPath)).toBe(true);
 });
