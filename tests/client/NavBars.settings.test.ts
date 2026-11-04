@@ -38,6 +38,7 @@ describe("nav-utility-icons settings cogwheel", () => {
 
   beforeEach(async () => {
     document.body.innerHTML = "";
+    vi.spyOn(ClientEnv, "apiBaseUrl").mockReturnValue("http://localhost:8787");
     vi.spyOn(ClientEnv, "gameCreationRate").mockReturnValue(120_000);
     window.currentPageId = "page-play";
     icons = await mount("nav-utility-icons");
@@ -105,7 +106,13 @@ describe("nav-utility-icons settings cogwheel", () => {
 describe("the nav bars that host the cluster", () => {
   beforeEach(() => {
     document.body.innerHTML = "";
+    vi.spyOn(ClientEnv, "apiBaseUrl").mockReturnValue("http://localhost:8787");
+    vi.spyOn(ClientEnv, "gameCreationRate").mockReturnValue(120_000);
     window.currentPageId = "page-play";
+  });
+
+  afterEach(() => {
+    vi.restoreAllMocks();
   });
 
   it("puts the cogwheel in the desktop bar, immediately left of the avatar", async () => {
