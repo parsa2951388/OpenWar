@@ -1,5 +1,7 @@
 name: Format production branch once
 
+# One-time repair for the six files identified by the CI formatter check.
+
 on:
   push:
     branches:
