@@ -536,3 +536,72 @@
     transform: none;
   }
 }
+
+
+/* Consistent input feedback across mouse, keyboard, and touch. */
+.ow-edition-hub button {
+  -webkit-tap-highlight-color: transparent;
+  touch-action: manipulation;
+}
+
+.ow-classic-edition button:focus-visible {
+  outline: 3px solid #f0bd72;
+  outline-offset: 3px;
+}
+
+.ow-edition-tab:not(.is-active):hover {
+  border-color: rgba(137, 179, 164, 0.2);
+  background: rgba(255, 255, 255, 0.045);
+  color: #edf3ef;
+}
+
+.ow-action-primary:active,
+.ow-action-secondary:active {
+  transform: translateY(1px) scale(0.99);
+}
+
+@media (hover: none) {
+  .ow-edition-tab:not(.is-active):hover {
+    border-color: transparent;
+    background: transparent;
+    color: #aab8b5;
+  }
+
+  .ow-action-primary:hover,
+  .ow-action-secondary:hover {
+    transform: none;
+  }
+
+  .ow-system-card:hover {
+    transform: none;
+  }
+}
+
+@media (max-width: 420px) {
+  .ow-edition-heading p,
+  .ow-classic-heading p {
+    font-size: 0.82rem;
+    line-height: 1.65;
+  }
+
+  .ow-edition-tab {
+    min-height: 56px;
+    padding-inline: 0.4rem;
+  }
+
+  .ow-edition-tab > span:nth-child(2) {
+    font-size: 0.72rem;
+  }
+
+  .ow-edition-tab small {
+    font-size: 0.6rem;
+  }
+
+  .ow-operations-actions {
+    width: 100%;
+  }
+
+  .ow-operations-actions > button {
+    flex: 1 1 100%;
+  }
+}
