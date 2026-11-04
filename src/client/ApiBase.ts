@@ -5,7 +5,13 @@ import { ClientEnv } from "./ClientEnv";
 // import cycle; Api.ts re-exports both for its existing importers.
 
 export function getApiBase() {
-  const configured = ClientEnv.apiBaseUrl();
+  // Older and isolated test shells may expose only the audience accessor.
+  // Production bootstrap always provides apiBaseUrl, but keep the fallback
+  // compatible with lightweight ClientEnv mocks and desktop shells.
+  const configured =
+    typeof ClientEnv.apiBaseUrl === "function"
+      ? ClientEnv.apiBaseUrl()
+      : undefined;
   if (configured) return configured;
 
   const domainname = getAudience();
