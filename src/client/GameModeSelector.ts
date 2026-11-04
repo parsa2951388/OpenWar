@@ -382,16 +382,31 @@ export class GameModeSelector extends LitElement {
     return this;
   }
 
-  // Silent backstop; the buttons are already disabled while input is invalid.
-  private validateUsername(): boolean {
+  // Tests and early DOM previews can render the page before its custom
+  // elements have upgraded. Treat an absent/unupgraded username input as
+  // neutral; the real UsernameInput publishes validity once it is ready.
+  private usernameCanPlay(): boolean {
     const usernameInput = document.querySelector(
       "username-input",
     ) as UsernameInput | null;
-    return usernameInput ? usernameInput.canPlay() : true;
+    return (
+      typeof usernameInput?.canPlay !== "function" ||
+      usernameInput.canPlay()
+    );
+  }
+
+  // Silent backstop; the buttons are already disabled while input is invalid.
+  private validateUsername(): boolean {
+    return this.usernameCanPlay();
   }
 
   connectedCallback() {
     super.connectedCallback();
+    // The real page receives BOOTSTRAP_CONFIG synchronously from index.html
+    // before Main renders this element. DOM-only tests and isolated previews
+    // may mount <play-page> without a server environment; do not start sockets
+    // or ask ClientEnv for server settings in that case.
+    if (window.BOOTSTRAP_CONFIG === undefined) return;
     this.defaultLobbyTime = ClientEnv.gameCreationRate() / 1000;
     window.addEventListener(
       "username-validity-change",
@@ -433,12 +448,7 @@ export class GameModeSelector extends LitElement {
     document.addEventListener("join-lobby", this.onJoinLobby);
     document.addEventListener("leave-lobby", this.onLeaveLobby);
     // Pick up the current value in case username-input validated before us.
-    const usernameInput = document.querySelector(
-      "username-input",
-    ) as UsernameInput | null;
-    if (usernameInput) {
-      this.inputValid = usernameInput.canPlay();
-    }
+    this.inputValid = this.usernameCanPlay();
   }
 
   disconnectedCallback() {
