@@ -282,6 +282,99 @@ export async function getAuthHeader(): Promise<string> {
   return `Bearer ${jwt}`;
 }
 
+export type SelfHostedAccountMode = "register" | "login";
+export type SelfHostedAccountResult =
+  | { ok: true; email: string; emailVerified: boolean }
+  | {
+      ok: false;
+      error:
+        | "email_in_use"
+        | "invalid_credentials"
+        | "invalid_registration"
+        | "rate_limited"
+        | "guest_session_required"
+        | "account_service_unavailable";
+    };
+
+/**
+ * Registers the current guest as an email account or signs into an existing
+ * account. The game JWT is issued by the same server that already owns the
+ * guest session; only registration sends the current verified guest token.
+ */
+export async function signInToSelfHostedAccount(
+  email: string,
+  password: string,
+  mode: SelfHostedAccountMode,
+): Promise<SelfHostedAccountResult> {
+  const headers: Record<string, string> = {
+    "Content-Type": "application/json",
+  };
+  if (mode === "register") {
+    const current = await userAuth();
+    if (current === false) {
+      return { ok: false, error: "guest_session_required" };
+    }
+    headers.Authorization = `Bearer ${current.jwt}`;
+  }
+
+  try {
+    const response = await fetch(`${getApiBase()}/auth/account/${mode}`, {
+      method: "POST",
+      headers,
+      credentials: "include",
+      body: JSON.stringify({ email, password }),
+      signal: AbortSignal.timeout(10_000),
+    });
+    const body = (await response.json().catch(() => null)) as
+      | {
+          jwt?: unknown;
+          expiresIn?: unknown;
+          email?: unknown;
+          emailVerified?: unknown;
+          error?: unknown;
+        }
+      | null;
+
+    if (!response.ok) {
+      const error = body?.error;
+      if (
+        error === "email_in_use" ||
+        error === "invalid_credentials" ||
+        error === "invalid_registration" ||
+        error === "rate_limited" ||
+        error === "guest_session_required"
+      ) {
+        return { ok: false, error };
+      }
+      return { ok: false, error: "account_service_unavailable" };
+    }
+
+    if (
+      typeof body?.jwt !== "string" ||
+      typeof body.expiresIn !== "number" ||
+      typeof body.email !== "string"
+    ) {
+      console.error("Account sign-in response was malformed");
+      return { ok: false, error: "account_service_unavailable" };
+    }
+
+    __jwt = body.jwt;
+    __expiresAt = Date.now() + body.expiresIn * 1000;
+    updateUserSettingsForJwt(body.jwt);
+    return {
+      ok: true,
+      email: body.email,
+      emailVerified: body.emailVerified === true,
+    };
+  } catch (error) {
+    console.warn(
+      "Open War account sign-in failed",
+      error instanceof Error ? error.name : "unknown",
+    );
+    return { ok: false, error: "account_service_unavailable" };
+  }
+}
+
 export async function logOut(allSessions: boolean = false): Promise<boolean> {
   try {
     const response = await fetch(
