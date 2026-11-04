@@ -50,7 +50,10 @@ export class CosmeticBackground extends LitElement {
       // torn down (for example during page/test cleanup). The decoration is
       // optional, so keep the base background and avoid an unhandled promise.
       if (gen !== this.loadGen || !this.isConnected) return;
-      console.warn("CosmeticBackground: failed to load player cosmetics", error);
+      console.warn(
+        "CosmeticBackground: failed to load player cosmetics",
+        error,
+      );
       this.pattern = null;
       this.skin = null;
     }
