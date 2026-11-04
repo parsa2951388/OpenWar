@@ -56,7 +56,7 @@ async function call(env, path, body, auth = SECRET) {
 }
 const credentials = (extra = {}) => ({ email: "player@example.com", password: "Correct Horse Battery Staple 47!", persistentId: PERSISTENT_ID, ip: "203.0.113.10", ...extra });
 
-test("registration preserves the verified guest persistent ID", async () => {
+void test("registration preserves the verified guest persistent ID", async () => {
   const env = makeEnv();
   const response = await call(env, "/internal/register", credentials({ email: " Player@Example.com " }));
   assert.equal(response.status, 201);
@@ -66,7 +66,7 @@ test("registration preserves the verified guest persistent ID", async () => {
   assert.equal(body.emailVerified, false);
 });
 
-test("duplicate registration is case-insensitive and does not create a second account", async () => {
+void test("duplicate registration is case-insensitive and does not create a second account", async () => {
   const env = makeEnv();
   assert.equal((await call(env, "/internal/register", credentials())).status, 201);
   const second = await call(env, "/internal/register", credentials({ email: " PLAYER@EXAMPLE.COM ", persistentId: "f8ee2ac5-324a-4e06-9a7d-4d137fa5bba1", ip: "203.0.113.11" }));
@@ -74,7 +74,7 @@ test("duplicate registration is case-insensitive and does not create a second ac
   assert.equal(env.DB.accounts.length, 1);
 });
 
-test("login restores the account persistent ID and wrong passwords are generic", async () => {
+void test("login restores the account persistent ID and wrong passwords are generic", async () => {
   const env = makeEnv();
   assert.equal((await call(env, "/internal/register", credentials())).status, 201);
   const login = await call(env, "/internal/login", { email: "PLAYER@example.com", password: "Correct Horse Battery Staple 47!", ip: "203.0.113.12" });
@@ -85,7 +85,7 @@ test("login restores the account persistent ID and wrong passwords are generic",
   assert.deepEqual(await wrong.json(), { error: "invalid_credentials" });
 });
 
-test("identity lookup returns only the account associated with the persistent ID", async () => {
+void test("identity lookup returns only the account associated with the persistent ID", async () => {
   const env = makeEnv();
   await call(env, "/internal/register", credentials());
   const found = await call(env, "/internal/identity?persistentId=" + PERSISTENT_ID);
@@ -95,13 +95,13 @@ test("identity lookup returns only the account associated with the persistent ID
   assert.equal(missing.status, 404);
 });
 
-test("internal routes reject missing or incorrect service credentials", async () => {
+void test("internal routes reject missing or incorrect service credentials", async () => {
   const env = makeEnv();
   assert.equal((await call(env, "/internal/login", { email: "x@example.com", password: "not-a-valid-password", ip: "203.0.113.8" }, null)).status, 401);
   assert.equal((await call(env, "/internal/login", { email: "x@example.com", password: "not-a-valid-password", ip: "203.0.113.8" }, "wrong")).status, 401);
 });
 
-test("failed logins are rate limited per normalized email and source IP", async () => {
+void test("failed logins are rate limited per normalized email and source IP", async () => {
   const env = makeEnv();
   const payload = { email: "player@example.com", password: "wrong password value", ip: "203.0.113.12" };
   let last;
@@ -109,7 +109,7 @@ test("failed logins are rate limited per normalized email and source IP", async 
   assert.equal(last.status, 429);
 });
 
-test("registration throttles an abusive source IP even when it varies email addresses", async () => {
+void test("registration throttles an abusive source IP even when it varies email addresses", async () => {
   const env = makeEnv();
   let last;
   for (let i = 0; i < 12; i++) {
