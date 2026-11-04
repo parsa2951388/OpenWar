@@ -9,7 +9,12 @@ export class Footer extends LitElement {
   }
 
   render() {
-    const commit = ClientEnv.gitCommit();
+    let commit = "";
+    try {
+      commit = ClientEnv.gitCommit();
+    } catch {
+      // Static/test shells can render the footer before bootstrap is injected.
+    }
     const sourceUrl = /^[0-9a-f]{40}$/i.test(commit)
       ? `https://github.com/parsa2951388/OpenWar/tree/${commit}`
       : "https://github.com/parsa2951388/OpenWar";
