@@ -1,0 +1,95 @@
+name: Format authentication branch
+
+on:
+  push:
+    branches:
+      - open-war/auth-foundation
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: ${{ !startsWith(github.event.head_commit.message, 'style: format authentication branch') }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: open-war/auth-foundation
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24.15.0
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format the changed files in this branch
+        run: >
+          npx oxfmt --write
+          .github/workflows/ci.yml
+          .github/workflows/format-auth-branch.yml
+          docs/AUTHENTICATION_DESIGN.md
+          docs/SELF_HOSTING.md
+          docs/superpowers/plans/2026-11-03-quality-7-plan.md
+          docs/superpowers/plans/2026-11-03-quality-7-progress.md
+          index.html
+          resources/public/asset-credits.html
+          src/client/AccountModal.ts
+          src/client/Auth.ts
+          src/client/LangSelector.ts
+          src/client/Main.ts
+          src/client/components/DesktopNavBar.ts
+          src/client/components/Footer.ts
+          src/client/components/MobileNavBar.ts
+          src/client/components/NavAccountMenu.ts
+          src/client/styles.css
+          src/server/AuthDatabase.ts
+          src/server/RenderHtml.ts
+          src/server/SelfHostedAccountApi.ts
+          src/server/SelfHostedApi.ts
+          src/server/ServerEnv.ts
+          tests/client/MainInitialize.test.ts
+          tests/client/NavUtilityIcons.language.test.ts
+          tests/client/ApiPlayerLeaderboard.test.ts
+          vite.config.ts
+      - name: Commit formatter changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            .github/workflows/ci.yml \
+            .github/workflows/format-auth-branch.yml \
+            docs/AUTHENTICATION_DESIGN.md \
+            docs/SELF_HOSTING.md \
+            docs/superpowers/plans/2026-11-03-quality-7-plan.md \
+            docs/superpowers/plans/2026-11-03-quality-7-progress.md \
+            index.html \
+            resources/public/asset-credits.html \
+            src/client/AccountModal.ts \
+            src/client/Auth.ts \
+            src/client/LangSelector.ts \
+            src/client/Main.ts \
+            src/client/components/DesktopNavBar.ts \
+            src/client/components/Footer.ts \
+            src/client/components/MobileNavBar.ts \
+            src/client/components/NavAccountMenu.ts \
+            src/client/styles.css \
+            src/server/AuthDatabase.ts \
+            src/server/RenderHtml.ts \
+            src/server/SelfHostedAccountApi.ts \
+            src/server/SelfHostedApi.ts \
+            src/server/ServerEnv.ts \
+            tests/client/MainInitialize.test.ts \
+            tests/client/NavUtilityIcons.language.test.ts \
+            tests/client/ApiPlayerLeaderboard.test.ts \
+            vite.config.ts
+          if git diff --cached --quiet; then
+            echo "All selected files are already formatted."
+            exit 0
+          fi
+          git commit -m "style: format authentication branch"
+          git push origin HEAD:open-war/auth-foundation
