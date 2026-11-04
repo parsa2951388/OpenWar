@@ -9,7 +9,9 @@ export class Footer extends LitElement {
   private desktopVersion: string | null = null;
 
   protected firstUpdated(): void {
-    const bridge = window.openfrontDesktop;
+    const bridge = window.openfrontDesktop as
+      | { version?: () => Promise<string> }
+      | undefined;
     if (typeof bridge?.version !== "function") return;
     void bridge
       .version()
