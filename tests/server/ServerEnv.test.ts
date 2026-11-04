@@ -110,16 +110,16 @@ describe("ServerEnv.turnstileSiteKey", () => {
     vi.unstubAllEnvs();
   });
 
-  test("returns value when set", () => {
+  test("returns the site key only when both Turnstile credentials are set", () => {
     vi.stubEnv("TURNSTILE_SITE_KEY", "site-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-key");
     expect(ServerEnv.turnstileSiteKey()).toBe("site-key");
   });
 
-  test("throws when unset", () => {
-    vi.stubEnv("TURNSTILE_SITE_KEY", "");
-    expect(() => ServerEnv.turnstileSiteKey()).toThrow(
-      /TURNSTILE_SITE_KEY not set/,
-    );
+  test("does not expose a site key without its server secret", () => {
+    vi.stubEnv("TURNSTILE_SITE_KEY", "site-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "");
+    expect(ServerEnv.turnstileSiteKey()).toBe("");
   });
 });
 
