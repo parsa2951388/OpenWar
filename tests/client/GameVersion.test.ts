@@ -152,7 +152,6 @@ describe("renderNavVersion", () => {
     for (const el of document.querySelectorAll(
       "#game-version, .game-version-display",
     )) {
-      expect(el.textContent).toBe(taggedGameVersion(version));
       // Untagged builds deliberately leave this navigation label empty.
       expect(el.textContent).toBe(taggedGameVersion(version));
     }
