@@ -235,139 +235,6 @@ export class AccountModal extends BaseModal {
     );
   }
 
-  private renderStandaloneGuestPanel(active: boolean): TemplateResult {
-    return html`
-      <div
-        class="flex min-h-full flex-col items-center justify-center gap-5 p-4 sm:p-7"
-      >
-        <section
-          class="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#071426]/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-8"
-        >
-          <div
-            class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl"
-          ></div>
-          <div class="relative flex flex-col items-center text-center">
-            <div
-              class="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 shadow-[0_0_35px_rgba(34,211,238,0.12)]"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.6"
-                class="h-8 w-8"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 3 19 6v5.2c0 4.6-2.9 8-7 9.8-4.1-1.8-7-5.2-7-9.8V6l7-3Z"
-                />
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="m9 12 2 2 4-4"
-                />
-              </svg>
-            </div>
-            <span
-              class="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-cyan-100"
-            >
-              <span
-                class="h-1.5 w-1.5 rounded-full ${active ? "bg-emerald-400" : "bg-amber-400"}"
-              ></span>
-              ${translateText("auth_guest.badge")}
-            </span>
-            <h2
-              class="text-2xl font-black tracking-tight text-white sm:text-3xl"
-            >
-              ${translateText(active ? "auth_guest.active_title" : "auth_guest.error_title")}
-            </h2>
-            <p class="mt-3 max-w-lg text-sm leading-7 text-slate-300/80">
-              ${translateText(active ? "auth_guest.active_description" : "auth_guest.error_description")}
-            </p>
-
-            <div
-              class="mt-7 grid w-full grid-cols-1 gap-3 text-start sm:grid-cols-2"
-            >
-              <div
-                class="rounded-2xl border border-white/10 bg-white/[0.045] p-4"
-              >
-                <span class="text-xs font-semibold text-slate-400"
-                  >${translateText("auth_guest.session_label")}</span
-                >
-                <div
-                  class="mt-2 flex items-center gap-2 text-sm font-bold text-white"
-                >
-                  <span
-                    class="h-2 w-2 rounded-full ${active ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" : "bg-amber-400"}"
-                  ></span>
-                  ${translateText(active ? "auth_guest.session_active" : "auth_guest.session_unavailable")}
-                </div>
-              </div>
-              <div
-                class="rounded-2xl border border-white/10 bg-white/[0.045] p-4"
-              >
-                <span class="text-xs font-semibold text-slate-400"
-                  >${translateText("auth_guest.identity_label")}</span
-                >
-                <div class="mt-2 text-sm font-bold text-white">
-                  ${translateText("auth_guest.identity_guest")}
-                </div>
-              </div>
-            </div>
-
-            <div
-              class="mt-4 flex w-full items-start gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/[0.06] p-4 text-start"
-            >
-              <svg
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-width="1.7"
-                class="mt-0.5 h-5 w-5 shrink-0 text-amber-200"
-                aria-hidden="true"
-              >
-                <path
-                  stroke-linecap="round"
-                  stroke-linejoin="round"
-                  d="M12 9v4m0 3h.01M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
-                />
-              </svg>
-              <p class="text-xs leading-6 text-amber-50/75">
-                ${translateText(active ? "auth_guest.storage_note" : "auth_guest.failure_note")}
-              </p>
-            </div>
-
-            ${
-              active
-                ? html`
-                    <p class="mt-4 text-xs leading-6 text-slate-400">
-                      ${translateText("auth_guest.recovery_note")}
-                    </p>
-                  `
-                : nothing
-            }
-
-            <button
-              class="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-cyan-200/20 bg-gradient-to-l from-cyan-500 to-blue-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-cyan-200/60 sm:w-auto sm:min-w-56"
-              @click=${() => (active ? this.close() : window.location.reload())}
-            >
-              ${translateText(active ? "auth_guest.continue_button" : "auth_guest.retry_button")}
-              <span aria-hidden="true"
-                >${this.currentDirectionIsRtl() ? "←" : "→"}</span
-              >
-            </button>
-          </div>
-        </section>
-        ${this.renderStandaloneAuthMethods()}
-      </div>
-    `;
-  }
-
-  private currentDirectionIsRtl(): boolean {
-    return document.documentElement.dir === "rtl";
-  }
 
   private isLinkedAccount(): boolean {
     // The portal identity only counts once the backend token exchange
@@ -423,9 +290,17 @@ export class AccountModal extends BaseModal {
       );
     }
     if (this.isStandaloneGuestMode() && !this.isLinkedAccount()) {
-      return this.renderStandaloneGuestPanel(
-        !!this.userMeResponse?.player?.publicId,
-      );
+      // Self-hosted users keep playing under the browser guest identity, but
+      // the account screen should present only the permanent-account options.
+      // The guest-session status panel duplicated the auth card and is not
+      // needed here because the guest session remains active in the background.
+      return html`
+        <div class="custom-scrollbar mr-1">
+          <div class="mx-auto w-full max-w-xl p-4 sm:p-6">
+            ${this.renderStandaloneAuthMethods()}
+          </div>
+        </div>
+      `;
     }
     if (!this.isLinkedAccount()) {
       return html`<div class="custom-scrollbar mr-1">
