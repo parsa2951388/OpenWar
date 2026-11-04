@@ -97,8 +97,8 @@ export async function ensureAuthDatabase(): Promise<void> {
         // wrappers here so all migrations participate in the outer advisory-
         // locked transaction and either all commit or all roll back.
         const transactionalSql = sql
-          .replace(/^\s*BEGIN\s*;\s*/i, "")
-          .replace(/\s*COMMIT\s*;\s*$/i, "");
+          .replace(/^\s*BEGIN\s*;\s*/im, "")
+          .replace(/^\s*COMMIT\s*;\s*$/im, "");
         await client.query(transactionalSql);
         const confirmed = await client.query(
           "SELECT 1 FROM schema_migrations WHERE version = $1",
