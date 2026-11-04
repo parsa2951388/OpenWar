@@ -168,23 +168,7 @@
     "title": "Account Settings"
   },
   "auth_guest": {
-    "active_description": "Your guest session is active. You can play instantly without creating an account or entering a password.",
-    "active_title": "Welcome to the battlefield",
-    "badge": "GUEST MODE",
-    "continue_button": "Return to game",
-    "error_description": "We couldn't connect to the identity service. Check your connection and try again.",
-    "error_title": "Guest session unavailable",
-    "failure_note": "Multiplayer matches are unavailable until a guest session can be created.",
-    "identity_guest": "Guest player",
-    "identity_label": "Identity type",
-    "nav_label": "Guest",
-    "recovery_note": "Your guest identity is currently stored in this browser. Use the sign-in options below to protect your progress with email and password, Google, or Discord. Email verification and social sign-in depend on the corresponding provider configuration.",
-    "retry_button": "Try again",
-    "session_active": "Active and ready to play",
-    "session_label": "Session status",
-    "session_unavailable": "Unavailable",
-    "storage_note": "Your guest identity is stored in this browser's local data. Clearing site data or switching devices may permanently remove access to this identity.",
-    "view_profile": "Guest session"
+    "nav_label": "Guest"
   },
   "ban_notice": {
     "appeal": "If you believe this is a mistake, contact us on Discord.",
@@ -208,6 +192,7 @@
     "until": "Banned until {date}."
   },
   "build_menu": {
+    "cost_label": "Build cost",
     "desc": {
       "atom_bomb": "Small explosion",
       "city": "Increases max population",
@@ -220,11 +205,10 @@
       "sam_launcher": "Defends against incoming nukes",
       "warship": "Captures trade ships, destroys ships and boats"
     },
-    "cost_label": "Build cost",
-    "upgrade_cost_label": "Upgrade cost",
     "loading": "Loading build options...",
     "not_enough_money": "Not enough money",
     "upgrade_amount": "x{amount}",
+    "upgrade_cost_label": "Upgrade cost",
     "warship_shift_hint": "Hold Shift and drag to select multiple warships at once"
   },
   "change_username_modal": {
