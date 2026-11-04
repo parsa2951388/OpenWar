@@ -1,20 +1,10 @@
-import version from "resources/version.txt?raw";
-import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it } from "vitest";
 import { ClientEnv } from "../../../src/client/ClientEnv";
 import { Footer } from "../../../src/client/components/Footer";
-import { composeGameVersion } from "../../../src/client/GameVersion";
 
 const SHA = "bf739f86c4e1d2a3b5c6d7e8f90123456789abcd";
 
-// version.txt is a build-time placeholder in the repo, so derive the expected
-// label from the same source the component reads rather than hardcoding it.
-// These mount tests set no BOOTSTRAP_CONFIG, so composeGameVersion has no
-// commit to fall back to and returns the file's value -- which keeps this
-// the right expectation for the mounted component below. The choice itself is
-// covered in tests/client/GameVersion.test.ts.
-const gameVersion = `v${version.trim().replace(/^v/, "")}`;
-
-describe("page-footer version line", () => {
+describe("page footer", () => {
   let footer: Footer;
 
   beforeEach(() => {
@@ -26,7 +16,6 @@ describe("page-footer version line", () => {
 
   afterEach(() => {
     footer?.remove();
-    window.openfrontDesktop = undefined;
     delete (window as { BOOTSTRAP_CONFIG?: unknown }).BOOTSTRAP_CONFIG;
     ClientEnv.reset();
   });
@@ -38,66 +27,57 @@ describe("page-footer version line", () => {
     return footer;
   }
 
-  it("renders no version line on the web", async () => {
-    window.openfrontDesktop = undefined;
+  it("renders the project disclaimer and upstream attribution", async () => {
     await mount();
 
+    expect(footer.textContent).toContain(
+      "Open War is an unofficial community fork based on OpenFront.",
+    );
+    expect(footer.textContent).toContain("© OpenFront and Contributors");
     expect(footer.querySelector(".footer-version")).toBeNull();
   });
 
-  it("renders the game version alone when the shell reports no version", async () => {
-    window.openfrontDesktop = {};
+  it("links to the project, license, asset credits and upstream source", async () => {
     await mount();
 
-    const line = footer.querySelector(".footer-version");
-    expect(line?.textContent?.trim()).toBe(gameVersion);
-  });
-
-  it("appends the shell version inside the desktop shell", async () => {
-    window.openfrontDesktop = {
-      version: () => Promise.resolve("0.2.0"),
-    };
-    await mount();
-
-    await vi.waitFor(async () => {
-      await footer.updateComplete;
-      const line = footer.querySelector(".footer-version");
-      expect(line?.textContent?.trim()).toBe(`${gameVersion} (Steam v0.2.0)`);
+    const links = Array.from(footer.querySelectorAll("a")).map((link) => ({
+      label: link.textContent?.trim(),
+      href: link.getAttribute("href"),
+    }));
+    expect(links).toContainEqual({
+      label: "Source Code",
+      href: "https://github.com/parsa2951388/OpenWar",
+    });
+    expect(links).toContainEqual({
+      label: "License",
+      href: "https://github.com/parsa2951388/OpenWar/blob/open-war/independent-self-host/LICENSE",
+    });
+    expect(links).toContainEqual({
+      label: "Asset Credits",
+      href: "/asset-credits.html",
+    });
+    expect(links).toContainEqual({
+      label: "Upstream Project",
+      href: "https://github.com/openfrontio/OpenFrontIO",
     });
   });
 
-  // End to end through the component: with a real BOOTSTRAP_CONFIG in the
-  // page and the placeholder still in version.txt, the line must name the
-  // commit rather than "vx.xx.xx". Expectation derived from the same helper
-  // so committing a real version.txt does not turn this red.
-  it("shows the commit rather than the placeholder on an untagged build", async () => {
+  it("pins the source-code link to the current commit when bootstrap exists", async () => {
     (window as { BOOTSTRAP_CONFIG?: unknown }).BOOTSTRAP_CONFIG = {
       gameEnv: "prod",
-      numWorkers: 1,
-      turnstileSiteKey: "1x00000000000000000000AA",
-      jwtAudience: "openfront.io",
-      instanceId: "test",
+      turnstileSiteKey: "",
+      jwtAudience: "open-war-8o2.pages.dev",
       gitCommit: SHA,
     };
-    window.openfrontDesktop = {};
     await mount();
 
-    const line = footer.querySelector(".footer-version");
-    expect(line?.textContent?.trim()).toBe(composeGameVersion(version, SHA));
+    expect(footer.querySelector<HTMLAnchorElement>('a[target="_blank"]')?.href).toBe(
+      `https://github.com/parsa2951388/OpenWar/tree/${SHA}`,
+    );
   });
 
-  // The bridge lives in a separate private repo, so the footer must degrade to
-  // the game version alone rather than render a broken label.
-  it("falls back to the game version when the bridge rejects", async () => {
-    window.openfrontDesktop = {
-      version: () => Promise.reject(new Error("boom")),
-    };
-    await mount();
-
-    await vi.waitFor(async () => {
-      await footer.updateComplete;
-      const line = footer.querySelector(".footer-version");
-      expect(line?.textContent?.trim()).toBe(gameVersion);
-    });
+  it("renders safely before bootstrap is injected", async () => {
+    delete (window as { BOOTSTRAP_CONFIG?: unknown }).BOOTSTRAP_CONFIG;
+    await expect(mount()).resolves.toBeInstanceOf(Footer);
   });
 });
