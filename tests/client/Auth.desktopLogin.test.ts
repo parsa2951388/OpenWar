@@ -111,16 +111,16 @@ describe("provider login on the desktop shell", () => {
       .mockReturnValue(null as unknown as Window);
   });
 
-  it("discordLogin opens the shell's link flow and never builds an app:// redirect", () => {
-    discordLogin();
+  it("discordLogin opens the shell's link flow and never builds an app:// redirect", async () => {
+    await discordLogin();
 
     expect(showLinkGate).toHaveBeenCalledTimes(1);
     expect(location.href).toBe(DESKTOP_HREF);
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
-  it("googleLogin opens the shell's link flow and never builds an app:// redirect", () => {
-    googleLogin();
+  it("googleLogin opens the shell's link flow and never builds an app:// redirect", async () => {
+    await googleLogin();
 
     expect(showLinkGate).toHaveBeenCalledTimes(1);
     expect(location.href).toBe(DESKTOP_HREF);
@@ -209,7 +209,7 @@ describe("provider login on the desktop shell", () => {
 
   // The failure mode this exists to log is an IPC rejection; it must not
   // become an unhandled rejection out of a click handler.
-  it("discordLogin survives the bridge rejecting", async () => {
+  it("discordLogin survives the bridge rejecting", async async () => {
     showLinkGate.mockRejectedValue(new Error("no window"));
     const errorSpy = vi.spyOn(console, "error").mockImplementation(() => {});
 
@@ -233,8 +233,8 @@ describe("provider login on the desktop shell", () => {
       };
     });
 
-    it("discordLogin shows the update prompt and never navigates", () => {
-      discordLogin();
+    it("discordLogin shows the update prompt and never navigates", async () => {
+      await discordLogin();
 
       expect(showInGameAlert).toHaveBeenCalledTimes(1);
       expect(vi.mocked(showInGameAlert).mock.calls[0][0]).toContain(
@@ -244,8 +244,8 @@ describe("provider login on the desktop shell", () => {
       expect(fetchMock).not.toHaveBeenCalled();
     });
 
-    it("googleLogin shows the update prompt and never navigates", () => {
-      googleLogin();
+    it("googleLogin shows the update prompt and never navigates", async () => {
+      await googleLogin();
 
       expect(showInGameAlert).toHaveBeenCalledTimes(1);
       expect(location.href).toBe(DESKTOP_HREF);
@@ -261,16 +261,16 @@ describe("provider login on the web", () => {
     location = stubLocation(WEB_HREF);
   });
 
-  it("discordLogin navigates to the API's Discord login with the page as redirect_uri", () => {
-    discordLogin();
+  it("discordLogin navigates to the API's Discord login with the page as redirect_uri", async () => {
+    await discordLogin();
 
     expect(location.href).toBe(
       `https://api.openfront.dev/auth/login/discord?redirect_uri=${encodeURIComponent(WEB_HREF)}`,
     );
   });
 
-  it("googleLogin navigates to the API's Google login with the page as redirect_uri", () => {
-    googleLogin();
+  it("googleLogin navigates to the API's Google login with the page as redirect_uri", async () => {
+    await googleLogin();
 
     expect(location.href).toBe(
       `https://api.openfront.dev/auth/login/google?redirect_uri=${encodeURIComponent(WEB_HREF)}`,
