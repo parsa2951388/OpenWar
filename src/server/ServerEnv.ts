@@ -85,6 +85,38 @@ export class ServerEnv {
   static selfHostedAuthEnabled(): boolean {
     return process.env.SELF_HOSTED_AUTH === "true" && Boolean(ServerEnv.jwtPrivateKey());
   }
+  // Dedicated Neon database for player accounts, provider identities and
+  // refresh-token families. This value must remain server-only.
+  static authDatabaseUrl(): string {
+    return process.env.DATABASE_URL ?? "";
+  }
+  static accountAuthEnabled(): boolean {
+    return ServerEnv.selfHostedAuthEnabled() && Boolean(ServerEnv.authDatabaseUrl());
+  }
+  // Public browser origin used for OAuth callbacks and the __Host cookies.
+  // In the Pages deployment this is the public pages.dev origin, not Render's
+  // internal service hostname.
+  static authPublicOrigin(): string {
+    const configured = process.env.AUTH_PUBLIC_ORIGIN?.trim();
+    const candidate = configured || ServerEnv.jwtIssuer();
+    const parsed = new URL(candidate);
+    if (parsed.protocol !== "https:" && parsed.hostname !== "localhost") {
+      throw new Error("AUTH_PUBLIC_ORIGIN must use HTTPS");
+    }
+    return parsed.origin;
+  }
+  static googleOAuthClientId(): string {
+    return process.env.GOOGLE_CLIENT_ID ?? "";
+  }
+  static googleOAuthClientSecret(): string {
+    return process.env.GOOGLE_CLIENT_SECRET ?? "";
+  }
+  static discordOAuthClientId(): string {
+    return process.env.DISCORD_CLIENT_ID ?? "";
+  }
+  static discordOAuthClientSecret(): string {
+    return process.env.DISCORD_CLIENT_SECRET ?? "";
+  }
   static jwtPrivateKey(): string {
     return (process.env.JWT_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
   }
