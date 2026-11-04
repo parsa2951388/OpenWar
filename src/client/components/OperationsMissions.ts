@@ -6,10 +6,7 @@ import {
 } from "@openfront/engine-api/game/GameTypes";
 import type { TeamCountConfig } from "@openfront/engine-api/Schemas";
 
-export type OperationsMissionId =
-  | "iron-gate"
-  | "tidebreaker"
-  | "world-command";
+export type OperationsMissionId = "iron-gate" | "tidebreaker" | "world-command";
 
 /**
  * A playable Operations alpha scenario built from the deterministic rules
@@ -90,8 +87,8 @@ export function isValidOperationsMissionPreset(
     Object.values(GameMapType).includes(mission.map) &&
     Object.values(Difficulty).includes(mission.difficulty) &&
     Object.values(GameMode).includes(mission.gameMode) &&
-    (typeof mission.disableNukes === "boolean") &&
-    (typeof mission.disableAlliances === "boolean") &&
+    typeof mission.disableNukes === "boolean" &&
+    typeof mission.disableAlliances === "boolean" &&
     typeof mission.id === "string" &&
     mission.id.length > 0
   );

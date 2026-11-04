@@ -8,14 +8,14 @@ import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
 import {
+  normalizeOpenWarEdition,
+  type OpenWarEdition,
+} from "./EditionPreference";
+import {
   getOperationsMission,
   OPERATIONS_MISSIONS,
   type OperationsMissionId,
 } from "./OperationsMissions";
-import {
-  normalizeOpenWarEdition,
-  type OpenWarEdition,
-} from "./EditionPreference";
 import "./EditionHub.css";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
@@ -268,9 +268,7 @@ export class EditionHub extends LitElement {
                   <div class="ow-mission-meta">
                     <span>${mission.map}</span>
                     <span>${mission.timeLimitMinutes} MIN</span>
-                    <span>
-                      ${mission.winThresholdTenths / 10}% TERRITORY
-                    </span>
+                    <span> ${mission.winThresholdTenths / 10}% TERRITORY </span>
                   </div>
                   <p class="ow-mission-objective">
                     ${this.t(`mission_${mission.id}_objective`)}
