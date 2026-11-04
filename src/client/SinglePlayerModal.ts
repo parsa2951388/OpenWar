@@ -23,6 +23,8 @@ import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
 import "./components/GameConfigSettings";
 import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
+import type { OperationsMissionPreset } from "./components/OperationsMissions";
+import { OPERATIONS_NON_NUCLEAR_UNITS } from "./components/OperationsMissions";
 import {
   type LoadSavedGameDetail,
   savedGameIdFrom,
@@ -130,6 +132,7 @@ const DEFAULT_OPTIONS = {
   compactMap: false,
   maxTimer: false,
   maxTimerValue: undefined as number | undefined,
+  winThresholdTenths: undefined as number | undefined,
   instantBuild: false,
   randomSpawn: false,
   useRandomMap: false,
@@ -207,6 +210,8 @@ export class SinglePlayerModal extends BaseModal {
   @state() private maxTimer: boolean = DEFAULT_OPTIONS.maxTimer;
   @state() private maxTimerValue: number | undefined =
     DEFAULT_OPTIONS.maxTimerValue;
+  @state() private winThresholdTenths: number | undefined =
+    DEFAULT_OPTIONS.winThresholdTenths;
   @state() private instantBuild: boolean = DEFAULT_OPTIONS.instantBuild;
   @state() private randomSpawn: boolean = DEFAULT_OPTIONS.randomSpawn;
   @state() private useRandomMap: boolean = DEFAULT_OPTIONS.useRandomMap;
@@ -776,6 +781,7 @@ export class SinglePlayerModal extends BaseModal {
     this.compactMap = DEFAULT_OPTIONS.compactMap;
     this.maxTimer = DEFAULT_OPTIONS.maxTimer;
     this.maxTimerValue = DEFAULT_OPTIONS.maxTimerValue;
+    this.winThresholdTenths = DEFAULT_OPTIONS.winThresholdTenths;
     this.instantBuild = DEFAULT_OPTIONS.instantBuild;
     this.randomSpawn = DEFAULT_OPTIONS.randomSpawn;
     this.teamCount = DEFAULT_OPTIONS.teamCount;
@@ -791,6 +797,29 @@ export class SinglePlayerModal extends BaseModal {
     this.doomsdayClockSpeed = DEFAULT_OPTIONS.doomsdayClockSpeed;
     this.overtime = DEFAULT_OPTIONS.overtime;
     this.overtimeStartMinutes = DEFAULT_OPTIONS.overtimeStartMinutes;
+  }
+
+  /**
+   * Opens the standard solo lobby with a curated Operations scenario preset.
+   * The scenario reuses existing deterministic game rules and only configures
+   * map, difficulty, mode, timer, victory threshold, AI count, and unit bans.
+   */
+  public openForOperation(mission: OperationsMissionPreset): void {
+    this.resetOptions();
+    this.selectedMap = mission.map;
+    this.selectedDifficulty = mission.difficulty;
+    this.gameMode = mission.gameMode;
+    this.teamCount = mission.teamCount;
+    this.maxTimer = true;
+    this.maxTimerValue = mission.timeLimitMinutes;
+    this.winThresholdTenths = mission.winThresholdTenths;
+    this.bots = mission.bots;
+    this.disabledUnits = mission.disableNukes
+      ? [...OPERATIONS_NON_NUCLEAR_UNITS]
+      : [];
+    this.customAlliances = mission.disableAlliances;
+    this.customAllianceMinutes = mission.disableAlliances ? 0 : undefined;
+    this.open({ operation: mission.id });
   }
 
   protected onOpen(args?: Record<string, unknown>): void {
@@ -1194,6 +1223,9 @@ export class SinglePlayerModal extends BaseModal {
             playerTeams: this.teamCount,
             difficulty: this.selectedDifficulty,
             maxTimerValue: finalMaxTimerValue,
+            ...(this.winThresholdTenths !== undefined
+              ? { winThresholdTenths: this.winThresholdTenths }
+              : {}),
             bots: this.bots,
             infiniteGold: this.infiniteGold,
             donateGold: this.gameMode === GameMode.Team,
