@@ -705,7 +705,7 @@ export class ControlPanel extends LitElement implements Controller {
             .value=${String(Math.round(this.attackRatio * 100))}
             @input=${(e: Event) => this.handleRatioSliderInput(e)}
             @pointerup=${(e: Event) => this.handleRatioSliderPointerUp(e)}
-            class="w-full h-1.5 accent-aquarius cursor-pointer"
+            class="w-full h-8 py-3 accent-aquarius cursor-pointer touch-manipulation"
           />
         </div>
       </div>
