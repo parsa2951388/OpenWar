@@ -10,7 +10,6 @@ permissions:
 
 jobs:
   format:
-    if: ${{ !startsWith(github.event.head_commit.message, 'style: format authentication branch') }}
     runs-on: ubuntu-latest
     timeout-minutes: 15
     steps:
