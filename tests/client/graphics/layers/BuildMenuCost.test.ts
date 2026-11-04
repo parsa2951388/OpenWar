@@ -5,12 +5,50 @@ import { describe, expect, it, vi } from "vitest";
 import { BuildableUnit, UnitType } from "@openfront/engine-api/game/GameTypes";
 import "../../../../src/client/hud/layers/BuildMenu";
 import type { BuildMenu } from "../../../../src/client/hud/layers/BuildMenu";
+import "../../../../src/client/hud/layers/UnitDisplay";
 
 function makeMenu(): BuildMenu {
   return document.createElement("build-menu") as BuildMenu;
 }
 
 const item = (unitType: UnitType) => ({ unitType, icon: "" }) as any;
+
+
+describe("UnitDisplay visible structure prices", () => {
+  it("shows city and factory prices without relying on hover", async () => {
+    const display = document.createElement("unit-display") as any;
+    const player = {
+      isAlive: () => true,
+      gold: () => 1000n,
+      units: () => [],
+      totalUnitLevels: () => 0,
+    };
+    display.game = {
+      myPlayer: () => player,
+      inSpawnPhase: () => false,
+      config: () => ({ isUnitDisabled: () => false }),
+    };
+    display.uiState = { ghostStructure: null };
+    display.playerBuildables = [
+      ...Object.values(UnitType).filter((value) => typeof value === "string").map((type: any) => ({
+        type,
+        cost: type === UnitType.City ? 125n : type === UnitType.Factory ? 450n : 10n,
+        canBuild: true,
+        canUpgrade: false,
+      })),
+    ];
+    document.body.appendChild(display);
+    try {
+      await display.updateComplete;
+      const city = display.querySelectorAll(".unit-cost")[0];
+      const factory = display.querySelectorAll(".unit-cost")[1];
+      expect(city?.textContent).toContain("125");
+      expect(factory?.textContent).toContain("450");
+    } finally {
+      display.remove();
+    }
+  });
+});
 
 describe("BuildMenu.cost", () => {
   it("returns the buildable's cost for a matching unit type", () => {
