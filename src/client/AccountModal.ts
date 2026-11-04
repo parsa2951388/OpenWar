@@ -230,148 +230,251 @@ export class AccountModal extends BaseModal {
   private renderStandaloneGuestPanel(active: boolean): TemplateResult {
     return html`
       <div class="flex min-h-full items-center justify-center p-4 sm:p-7">
-        <section class="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#071426]/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-8">
-          <div class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl"></div>
+        <section
+          class="relative w-full max-w-xl overflow-hidden rounded-[28px] border border-cyan-300/20 bg-[#071426]/95 p-5 shadow-[0_24px_80px_rgba(0,0,0,0.45)] sm:p-8"
+        >
+          <div
+            class="pointer-events-none absolute -right-16 -top-20 h-56 w-56 rounded-full bg-cyan-400/10 blur-3xl"
+          ></div>
           <div class="relative flex flex-col items-center text-center">
-            <div class="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 shadow-[0_0_35px_rgba(34,211,238,0.12)]">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6" class="h-8 w-8" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 3 19 6v5.2c0 4.6-2.9 8-7 9.8-4.1-1.8-7-5.2-7-9.8V6l7-3Z"/>
-                <path stroke-linecap="round" stroke-linejoin="round" d="m9 12 2 2 4-4"/>
+            <div
+              class="mb-5 flex h-16 w-16 items-center justify-center rounded-2xl border border-cyan-300/25 bg-cyan-300/10 text-cyan-200 shadow-[0_0_35px_rgba(34,211,238,0.12)]"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.6"
+                class="h-8 w-8"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 3 19 6v5.2c0 4.6-2.9 8-7 9.8-4.1-1.8-7-5.2-7-9.8V6l7-3Z"
+                />
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="m9 12 2 2 4-4"
+                />
               </svg>
             </div>
-            <span class="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-cyan-100">
-              <span class="h-1.5 w-1.5 rounded-full ${active ? "bg-emerald-400" : "bg-amber-400"}"></span>
+            <span
+              class="mb-3 inline-flex items-center gap-2 rounded-full border border-cyan-300/20 bg-cyan-300/10 px-3 py-1 text-[11px] font-bold tracking-[0.16em] text-cyan-100"
+            >
+              <span
+                class="h-1.5 w-1.5 rounded-full ${active ? "bg-emerald-400" : "bg-amber-400"}"
+              ></span>
               ${translateText("auth_guest.badge")}
             </span>
-            <h2 class="text-2xl font-black tracking-tight text-white sm:text-3xl">
+            <h2
+              class="text-2xl font-black tracking-tight text-white sm:text-3xl"
+            >
               ${translateText(active ? "auth_guest.active_title" : "auth_guest.error_title")}
             </h2>
             <p class="mt-3 max-w-lg text-sm leading-7 text-slate-300/80">
               ${translateText(active ? "auth_guest.active_description" : "auth_guest.error_description")}
             </p>
 
-            <div class="mt-7 grid w-full grid-cols-1 gap-3 text-start sm:grid-cols-2">
-              <div class="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                <span class="text-xs font-semibold text-slate-400">${translateText("auth_guest.session_label")}</span>
-                <div class="mt-2 flex items-center gap-2 text-sm font-bold text-white">
-                  <span class="h-2 w-2 rounded-full ${active ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" : "bg-amber-400"}"></span>
+            <div
+              class="mt-7 grid w-full grid-cols-1 gap-3 text-start sm:grid-cols-2"
+            >
+              <div
+                class="rounded-2xl border border-white/10 bg-white/[0.045] p-4"
+              >
+                <span class="text-xs font-semibold text-slate-400"
+                  >${translateText("auth_guest.session_label")}</span
+                >
+                <div
+                  class="mt-2 flex items-center gap-2 text-sm font-bold text-white"
+                >
+                  <span
+                    class="h-2 w-2 rounded-full ${active ? "bg-emerald-400 shadow-[0_0_10px_rgba(52,211,153,0.7)]" : "bg-amber-400"}"
+                  ></span>
                   ${translateText(active ? "auth_guest.session_active" : "auth_guest.session_unavailable")}
                 </div>
               </div>
-              <div class="rounded-2xl border border-white/10 bg-white/[0.045] p-4">
-                <span class="text-xs font-semibold text-slate-400">${translateText("auth_guest.identity_label")}</span>
-                <div class="mt-2 text-sm font-bold text-white">${translateText("auth_guest.identity_guest")}</div>
+              <div
+                class="rounded-2xl border border-white/10 bg-white/[0.045] p-4"
+              >
+                <span class="text-xs font-semibold text-slate-400"
+                  >${translateText("auth_guest.identity_label")}</span
+                >
+                <div class="mt-2 text-sm font-bold text-white">
+                  ${translateText("auth_guest.identity_guest")}
+                </div>
               </div>
             </div>
 
-            <div class="mt-4 flex w-full items-start gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/[0.06] p-4 text-start">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" class="mt-0.5 h-5 w-5 shrink-0 text-amber-200" aria-hidden="true">
-                <path stroke-linecap="round" stroke-linejoin="round" d="M12 9v4m0 3h.01M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"/>
+            <div
+              class="mt-4 flex w-full items-start gap-3 rounded-2xl border border-amber-300/15 bg-amber-300/[0.06] p-4 text-start"
+            >
+              <svg
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-width="1.7"
+                class="mt-0.5 h-5 w-5 shrink-0 text-amber-200"
+                aria-hidden="true"
+              >
+                <path
+                  stroke-linecap="round"
+                  stroke-linejoin="round"
+                  d="M12 9v4m0 3h.01M10.3 3.9 2.7 17a2 2 0 0 0 1.7 3h15.2a2 2 0 0 0 1.7-3L13.7 3.9a2 2 0 0 0-3.4 0Z"
+                />
               </svg>
-              <p class="text-xs leading-6 text-amber-50/75">${translateText(active ? "auth_guest.storage_note" : "auth_guest.failure_note")}</p>
+              <p class="text-xs leading-6 text-amber-50/75">
+                ${translateText(active ? "auth_guest.storage_note" : "auth_guest.failure_note")}
+              </p>
             </div>
 
-            ${active ? html`
-              <p class="mt-4 text-xs leading-6 text-slate-400">${translateText("auth_guest.recovery_note")}</p>
-            ` : nothing}
+            ${
+              active
+                ? html`
+                    <p class="mt-4 text-xs leading-6 text-slate-400">
+                      ${translateText("auth_guest.recovery_note")}
+                    </p>
+                  `
+                : nothing
+            }
 
             <button
               class="mt-7 inline-flex min-h-12 w-full items-center justify-center gap-2 rounded-xl border border-cyan-200/20 bg-gradient-to-l from-cyan-500 to-blue-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 focus:outline-none focus:ring-2 focus:ring-cyan-200/60 sm:w-auto sm:min-w-56"
-              @click=${() => active ? this.close() : window.location.reload()}
+              @click=${() => (active ? this.close() : window.location.reload())}
             >
               ${translateText(active ? "auth_guest.continue_button" : "auth_guest.retry_button")}
-              <span aria-hidden="true">${this.currentDirectionIsRtl() ? "←" : "→"}</span>
+              <span aria-hidden="true"
+                >${this.currentDirectionIsRtl() ? "←" : "→"}</span
+              >
             </button>
 
-            ${active ? html`
-              <div class="mt-8 w-full border-t border-white/10 pt-7 text-start">
-                <div class="mb-4 flex items-center justify-between gap-3">
-                  <div>
-                    <h3 class="text-lg font-extrabold text-white">
-                      ${this.authMode === "register" ? "Create your Open War account" : "Sign in to Open War"}
-                    </h3>
-                    <p class="mt-1 text-xs text-slate-400">
-                      ${this.authMode === "register" ? "Keep this player identity across devices." : "Continue with your saved player identity."}
-                    </p>
-                  </div>
-                  <span class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-100">
-                    Email
-                  </span>
-                </div>
+            ${
+              active
+                ? html`
+                    <div
+                      class="mt-8 w-full border-t border-white/10 pt-7 text-start"
+                    >
+                      <div class="mb-4 flex items-center justify-between gap-3">
+                        <div>
+                          <h3 class="text-lg font-extrabold text-white">
+                            ${this.authMode === "register" ? "Create your Open War account" : "Sign in to Open War"}
+                          </h3>
+                          <p class="mt-1 text-xs text-slate-400">
+                            ${this.authMode === "register" ? "Keep this player identity across devices." : "Continue with your saved player identity."}
+                          </p>
+                        </div>
+                        <span
+                          class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-100"
+                        >
+                          Email
+                        </span>
+                      </div>
 
-                <form class="flex flex-col gap-3" @submit=${this.handleSelfHostedAuthSubmit}>
-                  <label class="flex flex-col gap-1.5 text-xs font-semibold text-slate-300">
-                    Email address
-                    <input
-                      type="email"
-                      dir="ltr"
-                      .value=${this.email}
-                      @input=${this.handleEmailInput}
-                      autocomplete="email"
-                      maxlength="254"
-                      required
-                      class="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
-                      placeholder="you@example.com"
-                    />
-                  </label>
-                  <label class="flex flex-col gap-1.5 text-xs font-semibold text-slate-300">
-                    Password
-                    <input
-                      type="password"
-                      dir="ltr"
-                      .value=${this.authPassword}
-                      @input=${this.handleSelfHostedPasswordInput}
-                      autocomplete=${this.authMode === "register" ? "new-password" : "current-password"}
-                      minlength=${this.authMode === "register" ? 12 : 1}
-                      maxlength="128"
-                      required
-                      class="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
-                      placeholder=${this.authMode === "register" ? "At least 12 characters" : "Your password"}
-                    />
-                  </label>
+                      <form
+                        class="flex flex-col gap-3"
+                        @submit=${this.handleSelfHostedAuthSubmit}
+                      >
+                        <label
+                          class="flex flex-col gap-1.5 text-xs font-semibold text-slate-300"
+                        >
+                          Email address
+                          <input
+                            type="email"
+                            dir="ltr"
+                            .value=${this.email}
+                            @input=${this.handleEmailInput}
+                            autocomplete="email"
+                            maxlength="254"
+                            required
+                            class="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+                            placeholder="you@example.com"
+                          />
+                        </label>
+                        <label
+                          class="flex flex-col gap-1.5 text-xs font-semibold text-slate-300"
+                        >
+                          Password
+                          <input
+                            type="password"
+                            dir="ltr"
+                            .value=${this.authPassword}
+                            @input=${this.handleSelfHostedPasswordInput}
+                            autocomplete=${this.authMode === "register" ? "new-password" : "current-password"}
+                            minlength=${this.authMode === "register" ? 12 : 1}
+                            maxlength="128"
+                            required
+                            class="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+                            placeholder=${this.authMode === "register" ? "At least 12 characters" : "Your password"}
+                          />
+                        </label>
 
-                  ${this.authError ? html`
-                    <p class="rounded-lg border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs leading-5 text-red-200" role="alert">
-                      ${this.authError}
-                    </p>
-                  ` : nothing}
+                        ${
+                          this.authError
+                            ? html`
+                                <p
+                                  class="rounded-lg border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs leading-5 text-red-200"
+                                  role="alert"
+                                >
+                                  ${this.authError}
+                                </p>
+                              `
+                            : nothing
+                        }
 
-                  <button
-                    type="submit"
-                    ?disabled=${this.authBusy}
-                    class="mt-1 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-gradient-to-l from-cyan-500 to-blue-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
-                  >
-                    ${this.authBusy ? "Please wait…" : this.authMode === "register" ? "Create account" : "Sign in"}
-                  </button>
-                </form>
+                        <button
+                          type="submit"
+                          ?disabled=${this.authBusy}
+                          class="mt-1 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-gradient-to-l from-cyan-500 to-blue-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
+                        >
+                          ${this.authBusy ? "Please wait…" : this.authMode === "register" ? "Create account" : "Sign in"}
+                        </button>
+                      </form>
 
-                <button
-                  type="button"
-                  class="mt-4 w-full text-center text-xs font-semibold text-cyan-200 transition hover:text-cyan-100"
-                  ?disabled=${this.authBusy}
-                  @click=${this.toggleSelfHostedAuthMode}
-                >
-                  ${this.authMode === "register" ? "Already have an account? Sign in" : "New to Open War? Create an account"}
-                </button>
+                      <button
+                        type="button"
+                        class="mt-4 w-full text-center text-xs font-semibold text-cyan-200 transition hover:text-cyan-100"
+                        ?disabled=${this.authBusy}
+                        @click=${this.toggleSelfHostedAuthMode}
+                      >
+                        ${this.authMode === "register" ? "Already have an account? Sign in" : "New to Open War? Create an account"}
+                      </button>
 
-                <div class="my-5 flex items-center gap-3">
-                  <span class="h-px flex-1 bg-white/10"></span>
-                  <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Other sign-in methods</span>
-                  <span class="h-px flex-1 bg-white/10"></span>
-                </div>
-                <div class="grid grid-cols-2 gap-3">
-                  <button type="button" disabled class="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-white/35">
-                    Google · unavailable
-                  </button>
-                  <button type="button" disabled class="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-white/35">
-                    Discord · unavailable
-                  </button>
-                </div>
-                <p class="mt-3 text-center text-[11px] leading-5 text-slate-500">
-                  Google and Discord require OAuth app credentials. Email verification and password reset also require a configured sending domain.
-                </p>
-              </div>
-            ` : nothing}
+                      <div class="my-5 flex items-center gap-3">
+                        <span class="h-px flex-1 bg-white/10"></span>
+                        <span
+                          class="text-[10px] font-bold uppercase tracking-widest text-slate-500"
+                          >Other sign-in methods</span
+                        >
+                        <span class="h-px flex-1 bg-white/10"></span>
+                      </div>
+                      <div class="grid grid-cols-2 gap-3">
+                        <button
+                          type="button"
+                          disabled
+                          class="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-white/35"
+                        >
+                          Google · unavailable
+                        </button>
+                        <button
+                          type="button"
+                          disabled
+                          class="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-white/35"
+                        >
+                          Discord · unavailable
+                        </button>
+                      </div>
+                      <p
+                        class="mt-3 text-center text-[11px] leading-5 text-slate-500"
+                      >
+                        Google and Discord require OAuth app credentials. Email
+                        verification and password reset also require a
+                        configured sending domain.
+                      </p>
+                    </div>
+                  `
+                : nothing
+            }
           </div>
         </section>
       </div>
@@ -408,10 +511,13 @@ export class AccountModal extends BaseModal {
         const messages: Record<typeof result.error, string> = {
           email_in_use: "An account already uses this email. Sign in instead.",
           invalid_credentials: "The email or password is incorrect.",
-          invalid_registration: "Enter a valid email and a password with at least 12 characters.",
+          invalid_registration:
+            "Enter a valid email and a password with at least 12 characters.",
           rate_limited: "Too many attempts. Try again in about 15 minutes.",
-          guest_session_required: "Your guest session is not ready. Refresh the page and try again.",
-          account_service_unavailable: "Account sign-in is temporarily unavailable. Please try again later.",
+          guest_session_required:
+            "Your guest session is not ready. Refresh the page and try again.",
+          account_service_unavailable:
+            "Account sign-in is temporarily unavailable. Please try again later.",
         };
         this.authError = messages[result.error];
         return;
@@ -420,7 +526,8 @@ export class AccountModal extends BaseModal {
       this.authPassword = "";
       const profile = await this.refreshUserMe();
       if (profile === false) {
-        this.authError = "Your session was created, but the account profile did not load. Reopen the account panel.";
+        this.authError =
+          "Your session was created, but the account profile did not load. Reopen the account panel.";
         return;
       }
       this.requestUpdate();
@@ -450,7 +557,11 @@ export class AccountModal extends BaseModal {
   }
 
   protected modalConfig() {
-    if (this.isLoadingUser || this.isStandaloneGuestMode() || !this.isLinkedAccount()) {
+    if (
+      this.isLoadingUser ||
+      this.isStandaloneGuestMode() ||
+      !this.isLinkedAccount()
+    ) {
       return {};
     }
     return {
@@ -486,7 +597,9 @@ export class AccountModal extends BaseModal {
       );
     }
     if (this.isStandaloneGuestMode()) {
-      return this.renderStandaloneGuestPanel(!!this.userMeResponse?.player?.publicId);
+      return this.renderStandaloneGuestPanel(
+        !!this.userMeResponse?.player?.publicId,
+      );
     }
     if (!this.isLinkedAccount()) {
       return html`<div class="custom-scrollbar mr-1">

@@ -71,9 +71,9 @@ describe("page footer", () => {
     };
     await mount();
 
-    expect(footer.querySelector<HTMLAnchorElement>('a[target="_blank"]')?.href).toBe(
-      `https://github.com/parsa2951388/OpenWar/tree/${SHA}`,
-    );
+    expect(
+      footer.querySelector<HTMLAnchorElement>('a[target="_blank"]')?.href,
+    ).toBe(`https://github.com/parsa2951388/OpenWar/tree/${SHA}`);
   });
 
   it("renders safely before bootstrap is injected", async () => {

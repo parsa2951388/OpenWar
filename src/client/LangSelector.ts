@@ -271,12 +271,17 @@ export class LangSelector extends LitElement {
   }
 
   private applyAutoDirection(root: ParentNode): void {
-    if (root instanceof HTMLInputElement || root instanceof HTMLTextAreaElement) {
+    if (
+      root instanceof HTMLInputElement ||
+      root instanceof HTMLTextAreaElement
+    ) {
       if (!root.hasAttribute("dir")) root.setAttribute("dir", "auto");
     }
-    root.querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
-      "input:not([dir]), textarea:not([dir])",
-    ).forEach((element) => element.setAttribute("dir", "auto"));
+    root
+      .querySelectorAll<HTMLInputElement | HTMLTextAreaElement>(
+        "input:not([dir]), textarea:not([dir])",
+      )
+      .forEach((element) => element.setAttribute("dir", "auto"));
   }
 
   private applyDocumentLanguage(): void {
@@ -289,14 +294,23 @@ export class LangSelector extends LitElement {
     } catch {
       script = "";
     }
-    const rtlScripts = new Set(["Arab", "Hebr", "Thaa", "Nkoo", "Adlm", "Syrc"]);
+    const rtlScripts = new Set([
+      "Arab",
+      "Hebr",
+      "Thaa",
+      "Nkoo",
+      "Adlm",
+      "Syrc",
+    ]);
     root.dir = rtlScripts.has(script) ? "rtl" : "ltr";
     this.applyAutoDirection(root);
   }
 
   private applyTranslation() {
     this.applyDocumentLanguage();
-    document.dispatchEvent(new CustomEvent("language-changed", { detail: this.currentLang }));
+    document.dispatchEvent(
+      new CustomEvent("language-changed", { detail: this.currentLang }),
+    );
     const components = [
       "single-player-modal",
       "host-lobby-modal",

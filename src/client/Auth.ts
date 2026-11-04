@@ -325,15 +325,13 @@ export async function signInToSelfHostedAccount(
       body: JSON.stringify({ email, password }),
       signal: AbortSignal.timeout(10_000),
     });
-    const body = (await response.json().catch(() => null)) as
-      | {
-          jwt?: unknown;
-          expiresIn?: unknown;
-          email?: unknown;
-          emailVerified?: unknown;
-          error?: unknown;
-        }
-      | null;
+    const body = (await response.json().catch(() => null)) as {
+      jwt?: unknown;
+      expiresIn?: unknown;
+      email?: unknown;
+      emailVerified?: unknown;
+      error?: unknown;
+    } | null;
 
     if (!response.ok) {
       const error = body?.error;

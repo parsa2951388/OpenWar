@@ -29,23 +29,23 @@ normally enter the game through the Pages URL.
 
 For this topology, use these server settings:
 
-| Variable | Value / purpose |
-| --- | --- |
-| `GAME_ENV` | `prod` |
-| `DOMAIN` | `open-war-8o2.pages.dev` (hostname only; JWT audience) |
-| `API_BASE_URL` | `https://open-war-8o2.pages.dev` (no trailing slash) |
-| `MAP_WEIGHTS_API_ENABLED` | Set to `false` when no upstream `/map_weights` endpoint exists; omitted defaults to enabled for upstream-compatible deployments |
-| `SELF_HOSTED_AUTH` | `true` |
-| `GIT_COMMIT` | Full commit SHA built into the server |
-| `NUM_WORKERS` | Positive number of game workers |
-| `INSTANCE_LETTER` | One lowercase letter reserved for the standalone server |
-| `JWT_PRIVATE_KEY` | Persistent Ed25519 PKCS#8 private key; secret manager only |
-| `JWT_KEY_ID` | Stable key identifier |
-| `OPENWAR_AUTH_URL` | HTTPS URL of the private account Worker; keep it server-side |
-| `OPENWAR_AUTH_SECRET` | Shared Worker-to-Render secret; secret manager only |
-| `SUBDOMAIN`, `GAME_HOST`, `SITE_HOST`, `GAME_DOMAIN` | Leave unset for the same-origin Pages proxy mode |
-| `CDN_BASE` | May be empty when assets are served through the same origin |
-| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY` | Optional pair; set both to enable Cloudflare Turnstile |
+| Variable                                             | Value / purpose                                                                                                                 |
+| ---------------------------------------------------- | ------------------------------------------------------------------------------------------------------------------------------- |
+| `GAME_ENV`                                           | `prod`                                                                                                                          |
+| `DOMAIN`                                             | `open-war-8o2.pages.dev` (hostname only; JWT audience)                                                                          |
+| `API_BASE_URL`                                       | `https://open-war-8o2.pages.dev` (no trailing slash)                                                                            |
+| `MAP_WEIGHTS_API_ENABLED`                            | Set to `false` when no upstream `/map_weights` endpoint exists; omitted defaults to enabled for upstream-compatible deployments |
+| `SELF_HOSTED_AUTH`                                   | `true`                                                                                                                          |
+| `GIT_COMMIT`                                         | Full commit SHA built into the server                                                                                           |
+| `NUM_WORKERS`                                        | Positive number of game workers                                                                                                 |
+| `INSTANCE_LETTER`                                    | One lowercase letter reserved for the standalone server                                                                         |
+| `JWT_PRIVATE_KEY`                                    | Persistent Ed25519 PKCS#8 private key; secret manager only                                                                      |
+| `JWT_KEY_ID`                                         | Stable key identifier                                                                                                           |
+| `OPENWAR_AUTH_URL`                                   | HTTPS URL of the private account Worker; keep it server-side                                                                    |
+| `OPENWAR_AUTH_SECRET`                                | Shared Worker-to-Render secret; secret manager only                                                                             |
+| `SUBDOMAIN`, `GAME_HOST`, `SITE_HOST`, `GAME_DOMAIN` | Leave unset for the same-origin Pages proxy mode                                                                                |
+| `CDN_BASE`                                           | May be empty when assets are served through the same origin                                                                     |
+| `TURNSTILE_SITE_KEY` / `TURNSTILE_SECRET_KEY`        | Optional pair; set both to enable Cloudflare Turnstile                                                                          |
 
 Do not set `GAME_HOST` or `SITE_HOST` in the current full-proxy topology.
 With those unset, the page shell injects a one-server cluster entry using
@@ -75,8 +75,6 @@ guest identity; Google, Discord and Steam OAuth, purchases, clans, hosted
 progression, paid cosmetics and a cross-server registry are not provided by
 this self-hosted deployment. Guest identities remain anonymous until attached
 to an email/password account.
-
-
 
 ### Email/password accounts
 

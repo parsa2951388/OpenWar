@@ -17,21 +17,25 @@
 ## Task status
 
 ### Task 1 — shared desktop/mobile language picker
+
 - Implemented: `NavUtilityIcons` contains the desktop language selector; `MobileNavBar` now renders it beside the Open War logo.
 - Regression test added: `tests/client/NavUtilityIcons.language.test.ts` mounts the actual desktop and mobile navigation components and checks a visible language picker.
 - Verification: NOT RUN. GitHub Actions returned zero runs/checks; there is no local test runner in this environment.
 
 ### Task 2 — wait for Lit navigation rendering
+
 - Implemented: `Main.initialize()` awaits the mobile and desktop navigation `updateComplete`, then the utility cluster and language selector before querying version/locale nodes.
 - Regression test updated: `tests/client/MainInitialize.test.ts` now asserts the language selector exists, translated play text is not empty, and the version-node warning is absent.
 - Verification: NOT RUN. No fresh CI output is available.
 
 ### Task 3 — hide false untagged version
+
 - Implemented: `taggedGameVersion()` now returns an empty label for non-version placeholders; tagged semantic versions remain unchanged.
 - Regression test updated: `tests/client/GameVersion.test.ts`.
 - Verification: NOT RUN. No fresh CI output is available.
 
 ### Task 4 — make upstream map-weight polling optional
+
 - Implemented: `ServerEnv.mapWeightsApiEnabled()` defaults to true and only disables the integration for the explicit string `false`; `Master` skips only the map-weight poll when disabled and logs the fallback.
 - Regression test added: `tests/MapWeightsPollingConfig.test.ts`.
 - Documented: `docs/SELF_HOSTING.md` describes `MAP_WEIGHTS_API_ENABLED=false` and default-weight behavior.
@@ -39,6 +43,7 @@
 - Verification: NOT RUN. The Render environment variable has not been applied; the new code has not been deployed.
 
 ### Task 5 — release verification
+
 - Pending: no merge, environment update, Render deployment, Pages hostname change, or two-client multiplayer test has been performed.
 - Reason: no fresh CI or executable build/test evidence is available; do not modify the production service on an unverified candidate.
 

@@ -14,7 +14,6 @@ html[lang="fa"] body kbd {
   font-family: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas, monospace;
 }
 
-
 html[dir="rtl"] [dir="auto"] {
   unicode-bidi: plaintext;
 }

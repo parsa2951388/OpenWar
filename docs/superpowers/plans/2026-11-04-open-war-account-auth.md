@@ -33,11 +33,13 @@
 ### Task 1: D1 Worker API and password security
 
 **Files:**
+
 - Create: cloudflare-pages/openwar-auth-worker.mjs
 - Create: tests/auth/openwar-auth-worker.test.mjs
 - Modify: no existing files in this task.
 
 **Interfaces:**
+
 - Produces internal routes: POST /internal/register, POST /internal/login, and GET /internal/identity?persistentId=<uuid>.
 - Requires Authorization: Bearer <INTERNAL_AUTH_SECRET> on every internal route.
 - Uses D1 binding DB; exposes no public unauthenticated account endpoints.
@@ -51,11 +53,13 @@
 ### Task 2: Node game-server integration
 
 **Files:**
+
 - Modify: src/server/SelfHostedApi.ts
 - Modify: src/server/ServerEnv.ts
 - Test: tests/server/SelfHostedApi.test.ts
 
 **Interfaces:**
+
 - ServerEnv.openWarAuthUrl(): string | undefined
 - ServerEnv.openWarAuthSecret(): string
 - POST /auth/account/register and POST /auth/account/login accept JSON { email, password } and require a valid guest Bearer token for registration.
@@ -70,11 +74,13 @@
 ### Task 3: Account UI and client session handling
 
 **Files:**
+
 - Modify: src/client/Auth.ts
 - Modify: src/client/AccountModal.ts
 - Test: tests/client/AccountModal.test.ts (or the nearest existing account-modal test file).
 
 **Interfaces:**
+
 - signInToSelfHostedAccount(email: string, password: string, mode: "register" | "login"): Promise<{ok: true; email: string} | {ok: false; error: string}>
 - The client sends its current guest JWT only for registration; the browser never receives the Worker shared secret.
 - On success, update the in-memory JWT, user settings and userMeResponse without a full reload.
@@ -88,6 +94,7 @@
 ### Task 4: Deployment configuration and documentation
 
 **Files:**
+
 - Modify: docs/SELF_HOSTING.md
 - Create: docs/superpowers/specs/2026-11-04-open-war-account-auth-design.md
 - Create: docs/superpowers/plans/2026-11-04-open-war-account-auth.md

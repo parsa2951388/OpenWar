@@ -16,9 +16,9 @@ async function mountNavigation(): Promise<{
   document.body.append(desktop, mobile);
   await Promise.all([desktop.updateComplete, mobile.updateComplete]);
 
-  const utilityIcons = desktop.querySelector("nav-utility-icons") as
-    | Mountable
-    | null;
+  const utilityIcons = desktop.querySelector(
+    "nav-utility-icons",
+  ) as Mountable | null;
   await utilityIcons?.updateComplete;
 
   const selector = document.querySelector("lang-selector") as

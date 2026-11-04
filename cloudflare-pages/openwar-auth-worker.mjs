@@ -5,7 +5,8 @@ const PASSWORD_ITERATIONS = 600_000;
 const PASSWORD_BYTES = 32;
 const DUMMY_SALT = new Uint8Array(16).fill(0x5a);
 const DUMMY_HASH = new Uint8Array(32).fill(0x3c);
-const UUID_RE = /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
+const UUID_RE =
+  /^[0-9a-f]{8}-[0-9a-f]{4}-[1-8][0-9a-f]{3}-[89ab][0-9a-f]{3}-[0-9a-f]{12}$/i;
 
 function json(body, status = 200) {
   return new Response(JSON.stringify(body), {
@@ -13,7 +14,7 @@ function json(body, status = 200) {
     headers: {
       "content-type": "application/json; charset=utf-8",
       "cache-control": "no-store, max-age=0",
-      "pragma": "no-cache",
+      pragma: "no-cache",
       "x-content-type-options": "nosniff",
     },
   });
@@ -43,8 +44,12 @@ function fromBase64(value) {
 }
 
 async function sha256Hex(value) {
-  const digest = new Uint8Array(await crypto.subtle.digest("SHA-256", encoder.encode(value)));
-  return Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join("");
+  const digest = new Uint8Array(
+    await crypto.subtle.digest("SHA-256", encoder.encode(value)),
+  );
+  return Array.from(digest, (byte) => byte.toString(16).padStart(2, "0")).join(
+    "",
+  );
 }
 
 function constantTimeEqual(left, right) {
@@ -94,7 +99,9 @@ async function incrementRateLimit(env, keyHash) {
       "attempts = CASE WHEN excluded.updated_at - auth_rate_limits.window_started_at >= ? THEN 1 ELSE auth_rate_limits.attempts + 1 END, " +
       "window_started_at = CASE WHEN excluded.updated_at - auth_rate_limits.window_started_at >= ? THEN excluded.updated_at ELSE auth_rate_limits.window_started_at END, " +
       "updated_at = excluded.updated_at RETURNING attempts, window_started_at",
-  ).bind(keyHash, now, now, ACCESS_WINDOW_MS, ACCESS_WINDOW_MS).first();
+  )
+    .bind(keyHash, now, now, ACCESS_WINDOW_MS, ACCESS_WINDOW_MS)
+    .first();
   return Number(row?.attempts ?? MAX_ATTEMPTS + 1);
 }
 
@@ -103,12 +110,20 @@ async function recordAttempt(env, scope, email, ip) {
     await rateLimitKey(scope, email, ip),
     await rateLimitKey(scope, "ip", ip),
   ];
-  const counts = await Promise.all(keys.map((key) => incrementRateLimit(env, key)));
-  return { emailKey: keys[0], ipKey: keys[1], allowed: counts.every((count) => count <= MAX_ATTEMPTS) };
+  const counts = await Promise.all(
+    keys.map((key) => incrementRateLimit(env, key)),
+  );
+  return {
+    emailKey: keys[0],
+    ipKey: keys[1],
+    allowed: counts.every((count) => count <= MAX_ATTEMPTS),
+  };
 }
 
 async function clearAttempts(env, keyHash) {
-  await env.DB.prepare("DELETE FROM auth_rate_limits WHERE key_hash = ?").bind(keyHash).run();
+  await env.DB.prepare("DELETE FROM auth_rate_limits WHERE key_hash = ?")
+    .bind(keyHash)
+    .run();
 }
 
 async function parseJson(request) {
@@ -121,9 +136,9 @@ async function parseJson(request) {
 
 function authorized(request, env) {
   const header = request.headers.get("authorization") ?? "";
-  return Boolean(env.INTERNAL_AUTH_SECRET) && constantTimeEqual(
-    header,
-    `Bearer ${env.INTERNAL_AUTH_SECRET}`,
+  return (
+    Boolean(env.INTERNAL_AUTH_SECRET) &&
+    constantTimeEqual(header, `Bearer ${env.INTERNAL_AUTH_SECRET}`)
   );
 }
 
@@ -132,9 +147,16 @@ async function register(request, env) {
   const email = normalizeEmail(body?.email);
   const password = body?.password;
   const persistentId = body?.persistentId;
-  const ip = typeof body?.ip === "string" && body.ip.length <= 128 ? body.ip : "unknown";
+  const ip =
+    typeof body?.ip === "string" && body.ip.length <= 128 ? body.ip : "unknown";
 
-  if (!email || typeof password !== "string" || password.length < 12 || password.length > 128 || !isUuid(persistentId)) {
+  if (
+    !email ||
+    typeof password !== "string" ||
+    password.length < 12 ||
+    password.length > 128 ||
+    !isUuid(persistentId)
+  ) {
     return json({ error: "invalid_registration" }, 400);
   }
 
@@ -143,7 +165,9 @@ async function register(request, env) {
 
   const existing = await env.DB.prepare(
     "SELECT account_id FROM auth_accounts WHERE email = ?",
-  ).bind(email).first();
+  )
+    .bind(email)
+    .first();
   if (existing) return json({ error: "email_in_use" }, 409);
 
   const passwordRecord = await makePasswordRecord(password);
@@ -151,16 +175,18 @@ async function register(request, env) {
   try {
     await env.DB.prepare(
       "INSERT INTO auth_accounts (account_id, email, persistent_id, password_salt, password_hash, password_iterations, email_verified, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)",
-    ).bind(
-      accountId,
-      email,
-      persistentId,
-      passwordRecord.salt,
-      passwordRecord.hash,
-      passwordRecord.iterations,
-      0,
-      new Date().toISOString(),
-    ).run();
+    )
+      .bind(
+        accountId,
+        email,
+        persistentId,
+        passwordRecord.salt,
+        passwordRecord.hash,
+        passwordRecord.iterations,
+        0,
+        new Date().toISOString(),
+      )
+      .run();
   } catch (error) {
     // The unique constraint is the final protection against concurrent claims.
     if (/unique|constraint/i.test(String(error))) {
@@ -177,9 +203,15 @@ async function login(request, env) {
   const body = await parseJson(request);
   const email = normalizeEmail(body?.email);
   const password = body?.password;
-  const ip = typeof body?.ip === "string" && body.ip.length <= 128 ? body.ip : "unknown";
+  const ip =
+    typeof body?.ip === "string" && body.ip.length <= 128 ? body.ip : "unknown";
 
-  if (!email || typeof password !== "string" || password.length < 1 || password.length > 128) {
+  if (
+    !email ||
+    typeof password !== "string" ||
+    password.length < 1 ||
+    password.length > 128
+  ) {
     return json({ error: "invalid_credentials" }, 401);
   }
 
@@ -188,15 +220,20 @@ async function login(request, env) {
 
   const account = await env.DB.prepare(
     "SELECT account_id, email, persistent_id, password_salt, password_hash, password_iterations, email_verified FROM auth_accounts WHERE email = ?",
-  ).bind(email).first();
+  )
+    .bind(email)
+    .first();
 
   // Perform the same expensive derivation for unknown email addresses to reduce
   // account-enumeration timing differences.
   const salt = account ? fromBase64(account.password_salt) : DUMMY_SALT;
-  const iterations = account ? account.password_iterations : PASSWORD_ITERATIONS;
+  const iterations = account
+    ? account.password_iterations
+    : PASSWORD_ITERATIONS;
   const actual = await derivePassword(password, salt, iterations);
   const expected = account ? fromBase64(account.password_hash) : DUMMY_HASH;
-  const valid = constantTimeEqual(toBase64(actual), toBase64(expected)) && Boolean(account);
+  const valid =
+    constantTimeEqual(toBase64(actual), toBase64(expected)) && Boolean(account);
 
   if (!valid) return json({ error: "invalid_credentials" }, 401);
 
@@ -211,13 +248,19 @@ async function login(request, env) {
 async function identity(request, env) {
   const url = new URL(request.url);
   const persistentId = url.searchParams.get("persistentId");
-  if (!isUuid(persistentId)) return json({ error: "invalid_persistent_id" }, 400);
+  if (!isUuid(persistentId))
+    return json({ error: "invalid_persistent_id" }, 400);
 
   const account = await env.DB.prepare(
     "SELECT email, email_verified FROM auth_accounts WHERE persistent_id = ?",
-  ).bind(persistentId).first();
+  )
+    .bind(persistentId)
+    .first();
   if (!account) return json({ error: "account_not_found" }, 404);
-  return json({ email: account.email, emailVerified: account.email_verified === 1 });
+  return json({
+    email: account.email,
+    emailVerified: account.email_verified === 1,
+  });
 }
 
 export default {
@@ -228,7 +271,8 @@ export default {
       if (db?.ok !== 1) return json({ status: "database_unavailable" }, 503);
       return json({ status: "ok", database: "connected" });
     }
-    if (!url.pathname.startsWith("/internal/")) return json({ error: "not_found" }, 404);
+    if (!url.pathname.startsWith("/internal/"))
+      return json({ error: "not_found" }, 404);
     if (!authorized(request, env)) return json({ error: "unauthorized" }, 401);
 
     try {
@@ -247,7 +291,10 @@ export default {
       return json({ error: "not_found" }, 404);
     } catch (error) {
       // Keep database and cryptographic details out of public responses.
-      console.error("Open War auth Worker error", error instanceof Error ? error.message : "unknown");
+      console.error(
+        "Open War auth Worker error",
+        error instanceof Error ? error.message : "unknown",
+      );
       return json({ error: "auth_service_unavailable" }, 503);
     }
   },
