@@ -862,6 +862,15 @@ async function completeOAuth(
   }
 }
 
+function authErrorCode(error: unknown): string {
+  const message = error instanceof Error ? error.message : "";
+  if (message === "email_exists") return "email_exists";
+  if (message === "identity_already_linked" || message === "provider_already_linked") {
+    return "identity_already_linked";
+  }
+  return "account_auth_failed";
+}
+
 async function registerEmailAccount(
   req: Request,
   res: Response,
@@ -1509,6 +1518,15 @@ export function registerSelfHostedAccountApi(app: Express): void {
       await passwordLogin(req, res);
     } catch (error) {
       console.error("Password login failed:", error instanceof Error ? error.message : "unknown error");
+      if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
+    }
+  });
+
+  app.post("/auth/email/resend", verificationResendLimit, async (req, res) => {
+    try {
+      await resendVerificationEmail(req, res);
+    } catch (error) {
+      console.error("Email verification resend failed:", error instanceof Error ? error.message : "unknown error");
       if (!res.headersSent) res.status(503).json({ error: "account_auth_unavailable" });
     }
   });
