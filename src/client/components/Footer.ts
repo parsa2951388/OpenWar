@@ -84,9 +84,13 @@ export class Footer extends LitElement {
             >Upstream Project</a
           >
         </nav>
-        ${showBuildVersion
-          ? html`<p class="footer-version text-xs text-center">${gameVersion}${shellVersion}</p>`
-          : null}
+        ${
+          showBuildVersion
+            ? html`<p class="footer-version text-xs text-center">
+                ${gameVersion}${shellVersion}
+              </p>`
+            : null
+        }
         <p class="text-xs text-center">© OpenFront and Contributors</p>
       </footer>
     `;
