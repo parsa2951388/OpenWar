@@ -537,7 +537,6 @@
   }
 }
 
-
 /* Playable Operations alpha mission selection. */
 .ow-mission-section {
   display: grid;
@@ -563,8 +562,16 @@
   border: 1px solid rgba(205, 181, 132, 0.2);
   border-radius: 14px;
   background:
-    radial-gradient(ellipse at 100% 0%, rgba(197, 163, 110, 0.1), transparent 45%),
-    linear-gradient(145deg, rgba(23, 38, 35, 0.98), rgba(11, 21, 21, 0.98));
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(197, 163, 110, 0.1),
+      transparent 45%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(23, 38, 35, 0.98),
+      rgba(11, 21, 21, 0.98)
+    );
 }
 .ow-mission-card-topline,
 .ow-mission-meta {
