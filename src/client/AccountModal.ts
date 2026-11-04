@@ -228,7 +228,10 @@ export class AccountModal extends BaseModal {
   }
 
   private isStandaloneGuestMode(): boolean {
-    return ClientEnv.selfHostedAuthEnabled();
+    return (
+      typeof ClientEnv.selfHostedAuthEnabled === "function" &&
+      this.isStandaloneGuestMode()
+    );
   }
 
   private renderStandaloneGuestPanel(active: boolean): TemplateResult {
@@ -385,7 +388,7 @@ export class AccountModal extends BaseModal {
   // Legacy upstream builds still use the existing magic-link flow. The
   // standalone Open War deployment uses database-backed password accounts.
   private renderEmailField(): TemplateResult {
-    if (!ClientEnv.selfHostedAuthEnabled()) {
+    if (!this.isStandaloneGuestMode()) {
       return html`
         <input
           type="email"
@@ -1384,7 +1387,7 @@ export class AccountModal extends BaseModal {
 
   private async handleSubmit() {
     // Preserve the upstream build's existing magic-link account flow.
-    if (!ClientEnv.selfHostedAuthEnabled()) {
+    if (!this.isStandaloneGuestMode()) {
       if (!this.email) {
         await showInGameAlert(translateText("account_modal.enter_email_address"));
         return;
