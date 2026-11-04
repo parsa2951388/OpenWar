@@ -17,7 +17,7 @@ test("PWA manifest uses the Open War product identity", () => {
 
 test("every PWA icon path resolves to a shipped asset", () => {
   for (const icon of manifest.icons) {
-    const relativePath = icon.src.replace(/^\\/+/, "");
+    const relativePath = icon.src.startsWith("/") ? icon.src.slice(1) : icon.src;
     const assetPath = path.join(ROOT, "resources", relativePath);
     expect(fs.existsSync(assetPath), `Missing PWA icon asset: ${icon.src}`).toBe(true);
   }
