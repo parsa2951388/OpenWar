@@ -313,7 +313,8 @@ describe("Client.initialize() booted from Main.ts module scope", () => {
     expect(document.querySelector("lang-selector")).not.toBeNull();
     expect(document.documentElement.lang).toBe("en");
     expect(
-      document.querySelector<HTMLButtonElement>('[data-i18n="main.play"]')
+      document
+        .querySelector<HTMLButtonElement>('[data-i18n="main.play"]')
         ?.textContent?.trim(),
     ).not.toBe("");
     // userAuth() === false → onUserMe(false), which enables signed-out web ads.

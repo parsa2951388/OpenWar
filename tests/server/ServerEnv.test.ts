@@ -110,16 +110,25 @@ describe("ServerEnv.turnstileSiteKey", () => {
     vi.unstubAllEnvs();
   });
 
-  test("returns value when set", () => {
+  test("returns the site key only when both Turnstile keys are configured", () => {
     vi.stubEnv("TURNSTILE_SITE_KEY", "site-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-key");
+    expect(ServerEnv.turnstileEnabled()).toBe(true);
     expect(ServerEnv.turnstileSiteKey()).toBe("site-key");
   });
 
-  test("throws when unset", () => {
+  test("disables Turnstile when either key is absent", () => {
+    vi.stubEnv("TURNSTILE_SITE_KEY", "site-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "");
+    expect(ServerEnv.turnstileEnabled()).toBe(false);
+    expect(ServerEnv.turnstileSiteKey()).toBe("");
+  });
+
+  test("keeps Turnstile disabled when the site key is absent", () => {
     vi.stubEnv("TURNSTILE_SITE_KEY", "");
-    expect(() => ServerEnv.turnstileSiteKey()).toThrow(
-      /TURNSTILE_SITE_KEY not set/,
-    );
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "secret-key");
+    expect(ServerEnv.turnstileEnabled()).toBe(false);
+    expect(ServerEnv.turnstileSiteKey()).toBe("");
   });
 });
 

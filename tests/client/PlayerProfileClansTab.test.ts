@@ -37,6 +37,8 @@ vi.mock("../../src/client/ProgressionAccount", () => ({
 vi.mock("src/client/ClientEnv", () => ({
   ClientEnv: {
     workerPath: vi.fn(() => "w0"),
+    apiBaseUrl: vi.fn(() => undefined),
+    jwtAudience: vi.fn(() => "localhost"),
     // The profile header's copy-link button builds its URL from this; the web
     // answer is the document itself (see deriveShareBase).
     shareOrigin: vi.fn(() => window.location.origin),

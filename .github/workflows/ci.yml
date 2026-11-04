@@ -147,7 +147,6 @@ jobs:
             exit 1
           fi
 
-
   # Validate the actual production container, not only Vite's static bundle.
   # This catches missing files and Docker-stage regressions before a deploy.
   docker-build:

@@ -1,25 +1,37 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 import {
-  apiMockFactory,
-  authMockFactory,
-  clanApiMockFactory,
-  crazyGamesSdkMockFactory,
   flushAsync,
   getElState,
   stubGameEnv,
   stubLocalStorage,
-  utilsMockFactory,
-  virtualizerMockFactory,
   waitForSubComponent,
 } from "./ClanModalTestUtils";
 
-vi.mock("@lit-labs/virtualizer/virtualize.js", () => virtualizerMockFactory());
-vi.mock("../../../src/client/Api", () => apiMockFactory());
-vi.mock("../../../src/client/ClanApi", () => clanApiMockFactory());
-vi.mock("../../../src/client/Utils", () => utilsMockFactory());
-vi.mock("../../../src/client/Auth", () => authMockFactory());
-vi.mock("../../../src/client/CrazyGamesSDK", () => crazyGamesSdkMockFactory());
+vi.mock("@lit-labs/virtualizer/virtualize.js", async () => {
+  const { virtualizerMockFactory } = await import("./ClanModalTestUtils");
+  return virtualizerMockFactory();
+});
+vi.mock("../../../src/client/Api", async () => {
+  const { apiMockFactory } = await import("./ClanModalTestUtils");
+  return apiMockFactory();
+});
+vi.mock("../../../src/client/ClanApi", async () => {
+  const { clanApiMockFactory } = await import("./ClanModalTestUtils");
+  return clanApiMockFactory();
+});
+vi.mock("../../../src/client/Utils", async () => {
+  const { utilsMockFactory } = await import("./ClanModalTestUtils");
+  return utilsMockFactory();
+});
+vi.mock("../../../src/client/Auth", async () => {
+  const { authMockFactory } = await import("./ClanModalTestUtils");
+  return authMockFactory();
+});
+vi.mock("../../../src/client/CrazyGamesSDK", async () => {
+  const { crazyGamesSdkMockFactory } = await import("./ClanModalTestUtils");
+  return crazyGamesSdkMockFactory();
+});
 
 stubLocalStorage();
 

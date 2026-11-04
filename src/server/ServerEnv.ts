@@ -1,4 +1,3 @@
-import { createPrivateKey, createPublicKey } from "crypto";
 import { GameID } from "@openfront/engine-api/Schemas";
 import { simpleHash } from "@openfront/engine-lib/Util";
 import {
@@ -7,6 +6,7 @@ import {
 } from "@openfront/shared/ClusterConfig";
 import { GameEnv, parseGameEnv } from "@openfront/shared/configuration/Env";
 import { generateGameID } from "@openfront/shared/SharedUtil";
+import { createPrivateKey, createPublicKey } from "crypto";
 import { JWK } from "jose";
 import { z } from "zod";
 
@@ -74,7 +74,9 @@ export class ServerEnv {
   // it directly with Cloudflare; when either is absent, the local name filter
   // and connection/game rate limits remain active.
   static turnstileEnabled(): boolean {
-    return Boolean(process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY);
+    return Boolean(
+      process.env.TURNSTILE_SITE_KEY && process.env.TURNSTILE_SECRET_KEY,
+    );
   }
   static turnstileSiteKey(): string {
     return ServerEnv.turnstileEnabled() ? process.env.TURNSTILE_SITE_KEY! : "";
@@ -83,8 +85,26 @@ export class ServerEnv {
     return process.env.TURNSTILE_SECRET_KEY ?? "";
   }
   static selfHostedAuthEnabled(): boolean {
-    return process.env.SELF_HOSTED_AUTH === "true" && Boolean(ServerEnv.jwtPrivateKey());
+    return (
+      process.env.SELF_HOSTED_AUTH === "true" &&
+      Boolean(ServerEnv.jwtPrivateKey())
+    );
   }
+  // Private Cloudflare Worker used only for Open War email/password account persistence.
+  // The secret is server-to-server only and must never be copied into BOOTSTRAP_CONFIG.
+  static openWarAuthUrl(): string | undefined {
+    const raw = process.env.OPENWAR_AUTH_URL?.trim();
+    if (!raw) return undefined;
+    const parsed = new URL(raw);
+    if (parsed.protocol !== "https:") {
+      throw new Error("OPENWAR_AUTH_URL must use HTTPS");
+    }
+    return parsed.toString().replace(/\/+$/, "");
+  }
+  static openWarAuthSecret(): string {
+    return process.env.OPENWAR_AUTH_SECRET ?? "";
+  }
+
   static jwtPrivateKey(): string {
     return (process.env.JWT_PRIVATE_KEY ?? "").replace(/\\n/g, "\n");
   }

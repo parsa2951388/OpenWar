@@ -587,16 +587,12 @@ class Client {
       (element): element is RenderReadyElement =>
         element !== null && "updateComplete" in element,
     );
-    await Promise.all(
-      navigationRoots.map((element) => element.updateComplete),
-    );
+    await Promise.all(navigationRoots.map((element) => element.updateComplete));
 
     const utilityIcons = Array.from(
       document.querySelectorAll("nav-utility-icons"),
     ) as RenderReadyElement[];
-    await Promise.all(
-      utilityIcons.map((element) => element.updateComplete),
-    );
+    await Promise.all(utilityIcons.map((element) => element.updateComplete));
 
     const languageSelectors = Array.from(
       document.querySelectorAll("lang-selector"),

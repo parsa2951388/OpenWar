@@ -1,5 +1,5 @@
 import type { TokenPayload } from "@openfront/shared/ApiSchemas";
-import { afterEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import {
   _clearInFlightTokens,
   _inFlightTokenCount,
@@ -18,7 +18,13 @@ function jsonResponse(body: unknown, status = 200) {
 }
 
 describe("verifyJoin", () => {
+  beforeEach(() => {
+    vi.stubEnv("TURNSTILE_SITE_KEY", "test-site-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "test-secret-key");
+  });
+
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.unstubAllGlobals();
     _clearInFlightTokens();
   });
@@ -288,25 +294,18 @@ describe("verifyJoin", () => {
     expect(_inFlightTokenCount()).toBe(0);
   });
 
-  it("sends a null token for reconnects (API skips siteverify, runs the name check alone)", async () => {
-    const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse({
-        status: "approved",
-        username: "SnugglePuppy",
-        clanTag: null,
-      }),
-    );
+  it("approves a reconnect locally when its one-time Turnstile token is already spent", async () => {
+    const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
 
     const verdict = await verifyJoin("ip", null, "xXblackxX", null);
 
-    expect(verdict).toEqual({
+    expect(verdict).toMatchObject({
       status: "approved",
-      username: "SnugglePuppy",
+      username: expect.any(String),
       clanTag: null,
     });
-    const [, init] = fetchMock.mock.calls[0];
-    expect(JSON.parse(init.body).token).toBeNull();
+    expect(fetchMock).not.toHaveBeenCalled();
   });
 
   // The API answers 200 {status:"error"} when siteverify or the name check

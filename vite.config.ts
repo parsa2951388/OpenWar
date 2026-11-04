@@ -224,7 +224,11 @@ export default defineConfig(({ mode }) => {
       : undefined,
     instanceId: JSON.stringify(env.INSTANCE_ID ?? "DEV_ID"),
     manifestHref: buildAssetUrl("manifest.json", assetManifest, cdnBase),
-    faviconHref: buildAssetUrl("images/OpenWarMark.svg", assetManifest, cdnBase),
+    faviconHref: buildAssetUrl(
+      "images/OpenWarMark.svg",
+      assetManifest,
+      cdnBase,
+    ),
     gameplayScreenshotUrl: buildAssetUrl(
       "images/GameplayScreenshot.png",
       assetManifest,
@@ -240,7 +244,11 @@ export default defineConfig(({ mode }) => {
       assetManifest,
       cdnBase,
     ),
-    mobileLogoImageUrl: buildAssetUrl("images/OpenWarLogo.svg", assetManifest, cdnBase),
+    mobileLogoImageUrl: buildAssetUrl(
+      "images/OpenWarLogo.svg",
+      assetManifest,
+      cdnBase,
+    ),
   };
 
   // Vite's HTML transform replaces the source <script src="/src/client/Main.ts">

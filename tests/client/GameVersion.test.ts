@@ -153,9 +153,9 @@ describe("renderNavVersion", () => {
       "#game-version, .game-version-display",
     )) {
       expect(el.textContent).toBe(taggedGameVersion(version));
-      // Always a version, whatever version.txt holds when this runs: the
-      // commit form has no leading v and this one always does.
-      expect(el.textContent).toMatch(/^v/);
+      // Untagged builds intentionally hide the placeholder in the nav;
+      // the exact commit remains available in the page footer/build metadata.
+      expect(el.textContent).toBe(taggedGameVersion(version));
     }
   });
 

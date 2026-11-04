@@ -1,7 +1,7 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 
 vi.mock("../../src/client/ClientEnv", () => ({
-  ClientEnv: { jwtAudience: () => "localhost" },
+  ClientEnv: { jwtAudience: () => "localhost", apiBaseUrl: () => undefined },
 }));
 
 // fetchPlayerLeaderboard is unauthenticated; Auth is only mocked because
