@@ -1,4 +1,5 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ClientEnv } from "../../src/client/ClientEnv";
 
 import "../../src/client/components/DesktopNavBar";
 import "../../src/client/components/NavUtilityIcons";
@@ -37,8 +38,14 @@ describe("nav-utility-icons settings cogwheel", () => {
 
   beforeEach(async () => {
     document.body.innerHTML = "";
+    vi.spyOn(ClientEnv, "gameCreationRate").mockReturnValue(120_000);
     window.currentPageId = "page-play";
     icons = await mount("nav-utility-icons");
+  });
+
+  afterEach(() => {
+    icons?.remove();
+    vi.restoreAllMocks();
   });
 
   it("renders a settings button the delegated router can route", () => {
