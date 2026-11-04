@@ -40,10 +40,20 @@ export class CosmeticBackground extends LitElement {
 
   private async load() {
     const gen = ++this.loadGen; // overlapping loads: only the newest may apply
-    const c = await getPlayerCosmetics();
-    if (gen !== this.loadGen || !this.isConnected) return;
-    this.pattern = c.pattern ?? null;
-    this.skin = c.skin ?? null;
+    try {
+      const c = await getPlayerCosmetics();
+      if (gen !== this.loadGen || !this.isConnected) return;
+      this.pattern = c.pattern ?? null;
+      this.skin = c.skin ?? null;
+    } catch (error) {
+      // A cosmetic cache or storage read can fail while the element is being
+      // torn down (for example during page/test cleanup). The decoration is
+      // optional, so keep the base background and avoid an unhandled promise.
+      if (gen !== this.loadGen || !this.isConnected) return;
+      console.warn("CosmeticBackground: failed to load player cosmetics", error);
+      this.pattern = null;
+      this.skin = null;
+    }
   }
 
   render() {
