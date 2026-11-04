@@ -21,6 +21,7 @@ import {
   logOut,
   reauthAfterPortalChange,
   sendMagicLink,
+  signInToSelfHostedAccount,
   steamLogin,
 } from "./Auth";
 import "./components/baseComponents/stats/DiscordUserHeader";
@@ -97,6 +98,10 @@ export class AccountModal extends BaseModal {
 
   @state() private email: string = "";
   @state() private isLoadingUser: boolean = false;
+  @state() private authPassword: string = "";
+  @state() private authMode: "register" | "login" = "register";
+  @state() private authBusy: boolean = false;
+  @state() private authError: string | null = null;
   // Counts openings, to key the profile card's and the Progression tab's
   // once-per-open flourish.
   private openCount = 0;
@@ -216,7 +221,10 @@ export class AccountModal extends BaseModal {
   }
 
   private isStandaloneGuestMode(): boolean {
-    return ClientEnv.selfHostedAuthEnabled();
+    return (
+      ClientEnv.selfHostedAuthEnabled() &&
+      !Boolean(this.userMeResponse?.user?.email)
+    );
   }
 
   private renderStandaloneGuestPanel(active: boolean): TemplateResult {
@@ -274,11 +282,158 @@ export class AccountModal extends BaseModal {
               ${translateText(active ? "auth_guest.continue_button" : "auth_guest.retry_button")}
               <span aria-hidden="true">${this.currentDirectionIsRtl() ? "←" : "→"}</span>
             </button>
+
+            ${active ? html`
+              <div class="mt-8 w-full border-t border-white/10 pt-7 text-start">
+                <div class="mb-4 flex items-center justify-between gap-3">
+                  <div>
+                    <h3 class="text-lg font-extrabold text-white">
+                      ${this.authMode === "register" ? "Create your Open War account" : "Sign in to Open War"}
+                    </h3>
+                    <p class="mt-1 text-xs text-slate-400">
+                      ${this.authMode === "register" ? "Keep this player identity across devices." : "Continue with your saved player identity."}
+                    </p>
+                  </div>
+                  <span class="rounded-full border border-cyan-300/20 bg-cyan-300/10 px-2.5 py-1 text-[10px] font-bold uppercase tracking-wider text-cyan-100">
+                    Email
+                  </span>
+                </div>
+
+                <form class="flex flex-col gap-3" @submit=${this.handleSelfHostedAuthSubmit}>
+                  <label class="flex flex-col gap-1.5 text-xs font-semibold text-slate-300">
+                    Email address
+                    <input
+                      type="email"
+                      dir="ltr"
+                      .value=${this.email}
+                      @input=${this.handleEmailInput}
+                      autocomplete="email"
+                      maxlength="254"
+                      required
+                      class="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+                      placeholder="you@example.com"
+                    />
+                  </label>
+                  <label class="flex flex-col gap-1.5 text-xs font-semibold text-slate-300">
+                    Password
+                    <input
+                      type="password"
+                      dir="ltr"
+                      .value=${this.authPassword}
+                      @input=${this.handleSelfHostedPasswordInput}
+                      autocomplete=${this.authMode === "register" ? "new-password" : "current-password"}
+                      minlength=${this.authMode === "register" ? 12 : 1}
+                      maxlength="128"
+                      required
+                      class="w-full rounded-xl border border-white/10 bg-white/[0.06] px-4 py-3 text-sm text-white outline-none transition placeholder:text-white/25 focus:border-cyan-300/50 focus:ring-2 focus:ring-cyan-300/10"
+                      placeholder=${this.authMode === "register" ? "At least 12 characters" : "Your password"}
+                    />
+                  </label>
+
+                  ${this.authError ? html`
+                    <p class="rounded-lg border border-red-400/20 bg-red-400/10 px-3 py-2 text-xs leading-5 text-red-200" role="alert">
+                      ${this.authError}
+                    </p>
+                  ` : nothing}
+
+                  <button
+                    type="submit"
+                    ?disabled=${this.authBusy}
+                    class="mt-1 inline-flex min-h-12 w-full items-center justify-center rounded-xl bg-gradient-to-l from-cyan-500 to-blue-600 px-5 py-3 text-sm font-extrabold text-white shadow-lg shadow-cyan-950/30 transition hover:brightness-110 disabled:cursor-wait disabled:opacity-60"
+                  >
+                    ${this.authBusy ? "Please wait…" : this.authMode === "register" ? "Create account" : "Sign in"}
+                  </button>
+                </form>
+
+                <button
+                  type="button"
+                  class="mt-4 w-full text-center text-xs font-semibold text-cyan-200 transition hover:text-cyan-100"
+                  ?disabled=${this.authBusy}
+                  @click=${this.toggleSelfHostedAuthMode}
+                >
+                  ${this.authMode === "register" ? "Already have an account? Sign in" : "New to Open War? Create an account"}
+                </button>
+
+                <div class="my-5 flex items-center gap-3">
+                  <span class="h-px flex-1 bg-white/10"></span>
+                  <span class="text-[10px] font-bold uppercase tracking-widest text-slate-500">Other sign-in methods</span>
+                  <span class="h-px flex-1 bg-white/10"></span>
+                </div>
+                <div class="grid grid-cols-2 gap-3">
+                  <button type="button" disabled class="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-white/35">
+                    Google · unavailable
+                  </button>
+                  <button type="button" disabled class="rounded-xl border border-white/10 bg-white/[0.04] px-3 py-3 text-xs font-bold text-white/35">
+                    Discord · unavailable
+                  </button>
+                </div>
+                <p class="mt-3 text-center text-[11px] leading-5 text-slate-500">
+                  Google and Discord require OAuth app credentials. Email verification and password reset also require a configured sending domain.
+                </p>
+              </div>
+            ` : nothing}
           </div>
         </section>
       </div>
     `;
   }
+
+  private handleSelfHostedPasswordInput = (event: Event): void => {
+    this.authPassword = (event.target as HTMLInputElement).value;
+  };
+
+  private toggleSelfHostedAuthMode = (): void => {
+    this.authMode = this.authMode === "register" ? "login" : "register";
+    this.authError = null;
+  };
+
+  private handleSelfHostedAuthSubmit = async (event: Event): Promise<void> => {
+    event.preventDefault();
+    if (this.authBusy) return;
+
+    if (this.authMode === "register" && this.authPassword.length < 12) {
+      this.authError = "Use a password with at least 12 characters.";
+      return;
+    }
+
+    this.authBusy = true;
+    this.authError = null;
+    try {
+      const result = await signInToSelfHostedAccount(
+        this.email,
+        this.authPassword,
+        this.authMode,
+      );
+      if (!result.ok) {
+        const messages: Record<typeof result.error, string> = {
+          email_in_use: "An account already uses this email. Sign in instead.",
+          invalid_credentials: "The email or password is incorrect.",
+          invalid_registration: "Enter a valid email and a password with at least 12 characters.",
+          rate_limited: "Too many attempts. Try again in about 15 minutes.",
+          guest_session_required: "Your guest session is not ready. Refresh the page and try again.",
+          account_service_unavailable: "Account sign-in is temporarily unavailable. Please try again later.",
+        };
+        this.authError = messages[result.error];
+        return;
+      }
+
+      this.authPassword = "";
+      const profile = await this.refreshUserMe();
+      if (profile === false) {
+        this.authError = "Your session was created, but the account profile did not load. Reopen the account panel.";
+        return;
+      }
+      this.requestUpdate();
+      await showInGameAlert(
+        result.emailVerified
+          ? "You are signed in to your Open War account."
+          : "You are signed in. Your email is not verified yet; email verification is not configured on this deployment.",
+      );
+    } finally {
+      this.authBusy = false;
+      this.requestUpdate();
+    }
+  };
 
   private currentDirectionIsRtl(): boolean {
     return document.documentElement.dir === "rtl";
