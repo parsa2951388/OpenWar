@@ -131,6 +131,7 @@ export class BuildMenu extends LitElement implements Controller {
   private clickedTile: TileRef;
   public playerBuildables: BuildableUnit[] | null = null;
   private filteredBuildTable: BuildItemDisplay[][] = buildTable;
+  private refreshRequestId = 0;
   public transformHandler: TransformHandler;
 
   init() {
@@ -156,6 +157,11 @@ export class BuildMenu extends LitElement implements Controller {
     this.eventBus.on(CloseViewEvent, () => this.hideMenu());
     this.eventBus.on(ShowEmojiMenuEvent, () => this.hideMenu());
     this.eventBus.on(MouseDownEvent, () => this.hideMenu());
+  }
+
+  getTickIntervalMs(): number {
+    // The menu's worker snapshot only needs occasional refreshes while open.
+    return 500;
   }
 
   tick() {
@@ -315,29 +321,37 @@ export class BuildMenu extends LitElement implements Controller {
 
     @media (max-width: 480px) {
       .build-menu {
-        padding: 8px;
-        max-height: 70vh;
+        width: min(94vw, 520px);
+        padding: 10px;
+        max-height: min(82dvh, 640px);
+        overflow-y: auto;
+        overscroll-behavior: contain;
       }
       .build-button {
-        width: calc(50% - 6px);
-        height: 100px;
-        margin: 3px;
-        padding: 4px;
+        width: calc(50% - 8px);
+        min-height: 108px;
+        height: auto;
+        margin: 4px;
+        padding: 8px 6px;
         border-width: 1px;
+        touch-action: manipulation;
       }
       .build-icon {
         font-size: 24px;
       }
       .build-name {
-        font-size: 10px;
+        font-size: 12px;
         margin-bottom: 2px;
       }
+      .build-description {
+        font-size: 10px;
+      }
       .build-cost {
-        font-size: 9px;
+        font-size: 12px;
       }
       .build-count {
         font-weight: bold;
-        font-size: 8px;
+        font-size: 10px;
       }
       .build-count-chip {
         padding: 0 3px;
@@ -478,6 +492,7 @@ export class BuildMenu extends LitElement implements Controller {
 
   hideMenu() {
     this._hidden = true;
+    this.refreshRequestId++;
     this.requestUpdate();
   }
 
@@ -488,10 +503,12 @@ export class BuildMenu extends LitElement implements Controller {
   }
 
   private refresh() {
+    const requestId = ++this.refreshRequestId;
     const refresh = this.game
       .myPlayer()
       ?.buildables(this.clickedTile, BuildMenus.types)
       .then((buildables) => {
+        if (requestId !== this.refreshRequestId) return;
         this.playerBuildables = buildables;
         this.requestUpdate();
       })
