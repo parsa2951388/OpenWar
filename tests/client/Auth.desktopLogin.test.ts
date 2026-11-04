@@ -68,7 +68,13 @@ const DESKTOP_HREF = "app://openfront/index.html#modal=account";
 const WEB_HREF = "https://openfront.dev/#modal=account";
 
 function stubLocation(href: string): { href: string } {
-  const stub = { href, hash: new URL(href).hash };
+  const stub = {
+    href,
+    hash: new URL(href).hash,
+    assign(nextHref: string) {
+      stub.href = nextHref;
+    },
+  };
   Object.defineProperty(window, "location", {
     configurable: true,
     value: stub,
