@@ -13,8 +13,14 @@ export type OperationsMissionId = "iron-gate" | "tidebreaker" | "world-command";
  * already supported by the core game. It does not pretend to enable
  * unimplemented logistics, fog-of-war, convoy, or capture-point systems.
  */
+export type OperationsMissionTranslationKey =
+  | "iron_gate"
+  | "tidebreaker"
+  | "world_command";
+
 export interface OperationsMissionPreset {
   id: OperationsMissionId;
+  translationKey: OperationsMissionTranslationKey;
   map: GameMapType;
   difficulty: Difficulty;
   gameMode: GameMode;
@@ -29,6 +35,7 @@ export interface OperationsMissionPreset {
 export const OPERATIONS_MISSIONS: readonly OperationsMissionPreset[] = [
   {
     id: "iron-gate",
+    translationKey: "iron_gate",
     map: GameMapType.Europe,
     difficulty: Difficulty.Hard,
     gameMode: GameMode.FFA,
@@ -41,6 +48,7 @@ export const OPERATIONS_MISSIONS: readonly OperationsMissionPreset[] = [
   },
   {
     id: "tidebreaker",
+    translationKey: "tidebreaker",
     map: GameMapType.Asia,
     difficulty: Difficulty.Hard,
     gameMode: GameMode.Team,
@@ -53,6 +61,7 @@ export const OPERATIONS_MISSIONS: readonly OperationsMissionPreset[] = [
   },
   {
     id: "world-command",
+    translationKey: "world_command",
     map: GameMapType.World,
     difficulty: Difficulty.Impossible,
     gameMode: GameMode.FFA,
