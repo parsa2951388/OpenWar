@@ -48,6 +48,7 @@ export class UnitDisplay extends LitElement implements Controller {
   private _defensePost = 0;
   private _samLauncher = 0;
   private allDisabled = false;
+  private buildablesRefreshPending = false;
   private _hoveredUnit: PlayerBuildableUnitType | null = null;
   private tutorialHighlight: PlayerBuildableUnitType | null = null;
 
@@ -114,23 +115,52 @@ export class UnitDisplay extends LitElement implements Controller {
     }
   }
 
+  getTickIntervalMs(): number {
+    // Structure counts and prices do not need to be recomputed at the 10 Hz game tick.
+    return 500;
+  }
+
   tick() {
     const player = this.game?.myPlayer();
     if (!player) return;
-    player
-      .buildables(undefined, BuildMenus.types)
-      .then((buildables) => {
-        this.playerBuildables = buildables;
-      })
-      .catch((error) => console.warn("Failed to refresh unit costs", error));
-    this._cities = player.totalUnitLevels(UnitType.City);
-    this._missileSilo = player.totalUnitLevels(UnitType.MissileSilo);
-    this._port = player.totalUnitLevels(UnitType.Port);
-    this._defensePost = player.totalUnitLevels(UnitType.DefensePost);
-    this._samLauncher = player.totalUnitLevels(UnitType.SAMLauncher);
-    this._factories = player.totalUnitLevels(UnitType.Factory);
-    this._warships = player.totalUnitLevels(UnitType.Warship);
-    this.requestUpdate();
+
+    let changed = false;
+    const counts: [keyof this, number][] = [
+      ["_cities", player.totalUnitLevels(UnitType.City)],
+      ["_missileSilo", player.totalUnitLevels(UnitType.MissileSilo)],
+      ["_port", player.totalUnitLevels(UnitType.Port)],
+      ["_defensePost", player.totalUnitLevels(UnitType.DefensePost)],
+      ["_samLauncher", player.totalUnitLevels(UnitType.SAMLauncher)],
+      ["_factories", player.totalUnitLevels(UnitType.Factory)],
+      ["_warships", player.totalUnitLevels(UnitType.Warship)],
+    ];
+    for (const [key, value] of counts) {
+      if (this[key] !== value) {
+        (this[key] as number) = value;
+        changed = true;
+      }
+    }
+
+    // Avoid queuing overlapping worker requests; refresh again on the next
+    // interval after the current snapshot has completed.
+    if (!this.buildablesRefreshPending) {
+      this.buildablesRefreshPending = true;
+      void player
+        .buildables(undefined, BuildMenus.types)
+        .then((buildables) => {
+          if (this.game?.myPlayer() !== player) return;
+          this.playerBuildables = buildables;
+          this.requestUpdate();
+        })
+        .catch((error) =>
+          console.warn("Failed to refresh unit costs", error),
+        )
+        .finally(() => {
+          this.buildablesRefreshPending = false;
+        });
+    }
+
+    if (changed) this.requestUpdate();
   }
 
   render() {
@@ -149,7 +179,7 @@ export class UnitDisplay extends LitElement implements Controller {
 
     return html`
       <div class="border-t border-white/10 p-0.5 w-full">
-        <div class="grid grid-rows-1 grid-flow-col gap-0.5 w-fit mx-auto">
+        <div class="grid grid-cols-5 sm:grid-cols-10 grid-flow-row gap-1 w-full max-w-full px-1 mx-auto">
           ${this.renderUnitItem(
             cityIcon,
             this._cities,
@@ -252,7 +282,7 @@ export class UnitDisplay extends LitElement implements Controller {
 
     return html`
       <div
-        class="flex flex-col items-center relative"
+        class="flex min-w-0 w-full flex-col items-center relative"
         @mouseenter=${() => {
           this._hoveredUnit = unitType;
           this.requestUpdate();
@@ -298,7 +328,7 @@ export class UnitDisplay extends LitElement implements Controller {
         <div
           class="${
             this.canBuild(unitType) ? "" : "opacity-40"
-          } border border-slate-500 rounded-sm px-0.5 pb-0.5 flex items-center gap-0.5 cursor-pointer
+          } min-h-11 min-w-0 w-full border border-slate-500 rounded-sm px-1 py-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer touch-manipulation
              ${selected ? "hover:bg-gray-400/10" : "hover:bg-gray-800"}
              rounded-sm text-white ${selected ? "bg-slate-400/20" : ""}
              ${this.tutorialHighlight === unitType ? "tutorial-highlight" : ""}"
@@ -334,19 +364,23 @@ export class UnitDisplay extends LitElement implements Controller {
           ${
             hotkey
               ? html`<div
-                  class="ml-0.5 text-[10px] relative -top-1 text-gray-400"
+                  class="hidden sm:block ml-0.5 text-[10px] relative -top-1 text-gray-400"
                 >
                   ${displayHotkey}
                 </div>`
               : nothing
           }
-          <div class="flex items-center gap-0.5 pt-0.5">
+          <div class="flex items-center justify-center gap-0.5 pt-0.5">
             <img src=${icon} alt=${structureKey} class="align-middle size-5" />
             ${
               number !== null
                 ? html`<span class="text-xs">${renderNumber(number)}</span>`
                 : null
             }
+          </div>
+          <div class="unit-cost inline-flex items-center justify-center gap-0.5 text-[10px] leading-3 font-semibold text-amber-300 whitespace-nowrap tabular-nums" translate="no">
+            <img src=${goldCoinIcon} alt="" aria-hidden="true" class="size-3" />
+            <span>${this.playerBuildables === null ? "…" : renderNumber(this.cost(unitType))}</span>
           </div>
         </div>
       </div>
