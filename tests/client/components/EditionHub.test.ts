@@ -56,7 +56,7 @@ describe("Open War edition hub", () => {
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
-  it("resumes the Classic lobby feed when returning from Operations", async () => {
+  it("resumes the Classic lobby feed on returning to Classic", async () => {
     await mountHub();
 
     const selector = classicSelector();
