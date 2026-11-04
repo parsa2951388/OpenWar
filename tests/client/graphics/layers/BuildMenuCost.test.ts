@@ -29,14 +29,17 @@ describe("UnitDisplay visible structure prices", () => {
       config: () => ({ isUnitDisabled: () => false }),
     };
     display.uiState = { ghostStructure: null };
-    display.playerBuildables = [
-      ...Object.values(UnitType).filter((value) => typeof value === "string").map((type: any) => ({
-        type,
-        cost: type === UnitType.City ? 125n : type === UnitType.Factory ? 450n : 10n,
-        canBuild: true,
-        canUpgrade: false,
-      })),
-    ];
+    display.playerBuildables = Object.values(UnitType).map((type) => ({
+      type,
+      cost:
+        type === UnitType.City
+          ? 125n
+          : type === UnitType.Factory
+            ? 450n
+            : 10n,
+      canBuild: true,
+      canUpgrade: false,
+    }));
     document.body.appendChild(display);
     try {
       await display.updateComplete;
