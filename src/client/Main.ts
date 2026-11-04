@@ -1833,6 +1833,11 @@ class Client {
     // above its own lobbyHandle guard precisely because this window exists.
     this.joinInFlight = true;
 
+    // Begin loading the gameplay runtime while authentication and lobby
+    // preparation are in progress, so the player does not wait for its chunk.
+    const gameClientPromise = loadGameClient();
+    void gameClientPromise.catch(() => {});
+
     console.log(`joining lobby ${lobby.gameID}`);
     // Entering a lobby. Singleplayer, public lobbies and replays know their
     // config up front; everything else is filled in by the lobby_info
@@ -1917,7 +1922,7 @@ class Client {
       this.usernameInput?.resolvedName() ?? fallbackPlayerName();
     let joinLobby: typeof import("./ClientGameRunner").joinLobby;
     try {
-      ({ joinLobby } = await loadGameClient());
+      ({ joinLobby } = await gameClientPromise);
     } catch (err) {
       // The game's chunk didn't load (a network error, or a deploy that
       // replaced it). A full page load also picks up a new deploy, unless the
@@ -2294,6 +2299,8 @@ class Client {
     event: CustomEvent<{ mode?: MatchmakingMode } | undefined>,
   ) {
     if (!this.matchmakingModal) return;
+    // Load the game runtime while the player is choosing match settings.
+    void loadGameClient().catch(() => {});
     whenModalLoaded("matchmaking-modal", () => {
       // A game that started while it loaded has the screen now, and the
       // game-start teardown couldn't close a modal that hadn't loaded.
