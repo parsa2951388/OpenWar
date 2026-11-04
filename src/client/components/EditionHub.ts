@@ -233,40 +233,59 @@ export class EditionHub extends LitElement {
           </div>
         </div>
 
-        <section class="ow-mission-section" aria-label=${this.t("mission_selection_title")}>
+        <section
+          class="ow-mission-section"
+          aria-label=${this.t("mission_selection_title")}
+        >
           <div class="ow-operations-section-heading">
             <div>
-              <span class="ow-edition-eyebrow">${this.t("mission_selection_eyebrow")}</span>
+              <span class="ow-edition-eyebrow">
+                ${this.t("mission_selection_eyebrow")}
+              </span>
               <h3>${this.t("mission_selection_title")}</h3>
               <p>${this.t("mission_selection_description")}</p>
             </div>
-            <span class="ow-roadmap-status">${this.t("alpha_scenarios")}</span>
+            <span class="ow-roadmap-status">
+              ${this.t("alpha_scenarios")}
+            </span>
           </div>
           <div class="ow-mission-grid">
-            ${OPERATIONS_MISSIONS.map((mission, index) => html`
-              <article class="ow-mission-card">
-                <div class="ow-mission-card-topline">
-                  <span class="ow-mission-number">OPERATION 0${index + 1}</span>
-                  <span class="ow-mission-difficulty">${mission.difficulty}</span>
-                </div>
-                <h4>${this.t(`mission_${mission.id}_title`)}</h4>
-                <p class="ow-mission-brief">${this.t(`mission_${mission.id}_brief`)}</p>
-                <div class="ow-mission-meta">
-                  <span>${mission.map}</span>
-                  <span>${mission.timeLimitMinutes} MIN</span>
-                  <span>${mission.winThresholdTenths / 10}% TERRITORY</span>
-                </div>
-                <p class="ow-mission-objective">${this.t(`mission_${mission.id}_objective`)}</p>
-                <button
-                  class="ow-action-primary ow-mission-launch"
-                  type="button"
-                  @click=${() => this.openMission(mission.id)}
-                >
-                  ${this.t("mission_start_action")}
-                  <span aria-hidden="true">↗</span>
-                </button>
-              </article>
-            `)}
+            ${OPERATIONS_MISSIONS.map(
+              (mission, index) => html`
+                <article class="ow-mission-card">
+                  <div class="ow-mission-card-topline">
+                    <span class="ow-mission-number">
+                      OPERATION 0${index + 1}
+                    </span>
+                    <span class="ow-mission-difficulty">
+                      ${mission.difficulty}
+                    </span>
+                  </div>
+                  <h4>${this.t(`mission_${mission.id}_title`)}</h4>
+                  <p class="ow-mission-brief">
+                    ${this.t(`mission_${mission.id}_brief`)}
+                  </p>
+                  <div class="ow-mission-meta">
+                    <span>${mission.map}</span>
+                    <span>${mission.timeLimitMinutes} MIN</span>
+                    <span>
+                      ${mission.winThresholdTenths / 10}% TERRITORY
+                    </span>
+                  </div>
+                  <p class="ow-mission-objective">
+                    ${this.t(`mission_${mission.id}_objective`)}
+                  </p>
+                  <button
+                    class="ow-action-primary ow-mission-launch"
+                    type="button"
+                    @click=${() => this.openMission(mission.id)}
+                  >
+                    ${this.t("mission_start_action")}
+                    <span aria-hidden="true">↗</span>
+                  </button>
+                </article>
+              `,
+            )}
           </div>
         </section>
 
