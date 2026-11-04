@@ -1,0 +1,46 @@
+name: Format game mode selector once
+
+on:
+  push:
+    branches:
+      - open-war/independent-self-host
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out production branch
+        uses: actions/checkout@v7
+        with:
+          ref: open-war/independent-self-host
+          persist-credentials: true
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format GameModeSelector
+        run: npx oxfmt --write src/client/GameModeSelector.ts
+      - name: Commit formatted source and remove this workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/client/GameModeSelector.ts
+          if [ -f .github/workflows/format-game-mode-selector.yml ]; then
+            git rm .github/workflows/format-game-mode-selector.yml
+          fi
+          if git diff --cached --quiet; then
+            echo "GameModeSelector is already formatted."
+            exit 0
+          fi
+          git commit -m "style: format game mode selector"
+          git push origin HEAD:open-war/independent-self-host
