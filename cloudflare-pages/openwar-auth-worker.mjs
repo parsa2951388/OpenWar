@@ -223,7 +223,11 @@ async function identity(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
-    if (url.pathname === "/health" && request.method === "GET") return json({ status: "ok" });
+    if (url.pathname === "/health" && request.method === "GET") {
+      const db = await env.DB.prepare("SELECT 1 AS ok").first();
+      if (db?.ok !== 1) return json({ status: "database_unavailable" }, 503);
+      return json({ status: "ok", database: "connected" });
+    }
     if (!url.pathname.startsWith("/internal/")) return json({ error: "not_found" }, 404);
     if (!authorized(request, env)) return json({ error: "unauthorized" }, 401);
 
