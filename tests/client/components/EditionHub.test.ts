@@ -27,7 +27,7 @@ describe("Open War edition hub", () => {
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
   });
 
-  it("unmounts the Classic lobby feed while Operations is selected", async () => {
+  it("unmounts Classic lobby feed in Operations mode", async () => {
     await mountHub();
 
     expect(hub.querySelector("game-mode-selector")).not.toBeNull();
@@ -36,13 +36,14 @@ describe("Open War edition hub", () => {
 
     expect(hub.querySelector("game-mode-selector")).toBeNull();
     expect(hub.querySelector(".ow-classic-edition")).toBeNull();
-    expect(hub.querySelector(".ow-operations-dashboard")?.hasAttribute("hidden")).toBe(
+    const operationsDashboard = hub.querySelector(".ow-operations-dashboard");
+    expect(operationsDashboard?.hasAttribute("hidden")).toBe(false);
       false,
     );
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
-  it("recreates the Classic lobby feed when returning from Operations", async () => {
+  it("remounts Classic lobby feed when returning to Classic", async () => {
     await mountHub();
 
     tabs()[1].click();
