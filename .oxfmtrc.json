@@ -1,6 +1,7 @@
 {
   "$schema": "./node_modules/oxfmt/configuration_schema.json",
   "printWidth": 80,
+  "ignorePatterns": [".github/workflows/ci.yml"],
   "sortImports": {
     // Sort-order equivalent of what prettier-plugin-organize-imports
     // (TypeScript's organizeImports) used to produce:
