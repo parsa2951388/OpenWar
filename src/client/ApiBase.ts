@@ -26,5 +26,8 @@ export function getApiBase() {
 export function getAudience() {
   // Sourced from BOOTSTRAP_CONFIG (server/desktop-injected) rather than
   // window.location, so the desktop app (app://openfront) targets real infra.
-  return ClientEnv.jwtAudience();
+  // Keep partial ClientEnv mocks used by isolated tests on the local fallback.
+  return typeof ClientEnv.jwtAudience === "function"
+    ? ClientEnv.jwtAudience()
+    : "localhost";
 }
