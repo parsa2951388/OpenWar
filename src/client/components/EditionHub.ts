@@ -1,6 +1,6 @@
-import { html, LitElement, nothing } from "lit";
+import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import "../GameModeSelector";
+import { GameModeSelector } from "../GameModeSelector";
 import type { HostLobbyModal } from "../HostLobbyModal";
 import type { JoinLobbyModal } from "../JoinLobbyModal";
 import { whenModalLoaded } from "../LazyModals";
@@ -41,6 +41,13 @@ export class EditionHub extends LitElement {
   disconnectedCallback() {
     document.removeEventListener("language-changed", this.onLanguageChanged);
     super.disconnectedCallback();
+  }
+
+  protected updated(): void {
+    const selector = this.querySelector(
+      "game-mode-selector",
+    ) as GameModeSelector | null;
+    selector?.setEditionActive(this.edition === "classic");
   }
 
   private onLanguageChanged = () => {
@@ -386,20 +393,19 @@ export class EditionHub extends LitElement {
     return html`
       <main class="ow-edition-hub">
         ${this.renderEditionControl()}
-        ${this.edition === "classic"
-          ? html`
-              <section class="ow-classic-edition">
-                <div class="ow-classic-heading">
-                  <span class="ow-edition-eyebrow"
-                    >${this.t("classic_eyebrow")}</span
-                  >
-                  <h2>${this.t("classic_title")}</h2>
-                  <p>${this.t("classic_description")}</p>
-                </div>
-                <game-mode-selector></game-mode-selector>
-              </section>
-            `
-          : nothing}
+        <section
+          class="ow-classic-edition"
+          ?hidden=${this.edition !== "classic"}
+        >
+          <div class="ow-classic-heading">
+            <span class="ow-edition-eyebrow"
+              >${this.t("classic_eyebrow")}</span
+            >
+            <h2>${this.t("classic_title")}</h2>
+            <p>${this.t("classic_description")}</p>
+          </div>
+          <game-mode-selector></game-mode-selector>
+        </section>
         ${this.renderOperationsDashboard()}
       </main>
     `;
