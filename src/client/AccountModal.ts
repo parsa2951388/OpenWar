@@ -515,7 +515,7 @@ export class AccountModal extends BaseModal {
         <div class="grid grid-cols-1 gap-3 sm:grid-cols-2">
           <button
             type="button"
-            @click=${this.handleDiscordLogin}
+            @click=${() => void this.handleDiscordLogin()}
             class="flex min-h-12 items-center justify-center gap-2 rounded-xl bg-[#5865F2] px-4 py-3 text-sm font-extrabold text-white transition hover:bg-[#4752C4]"
           >
             <img src=${assetUrl("images/DiscordLogo.svg")} alt="" class="h-5 w-5" />
@@ -523,7 +523,7 @@ export class AccountModal extends BaseModal {
           </button>
           <button
             type="button"
-            @click=${this.handleGoogleLogin}
+            @click=${() => void this.handleGoogleLogin()}
             class="flex min-h-12 items-center justify-center gap-2 rounded-xl border border-[#dadce0] bg-white px-4 py-3 text-sm font-extrabold text-[#1f1f1f] transition hover:bg-[#f7f8f8]"
           >
             <img src=${assetUrl("images/GoogleLogo.svg")} alt="" class="h-5 w-5" />
