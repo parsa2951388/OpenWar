@@ -390,7 +390,9 @@ export class EditionHub extends LitElement {
           ? html`
               <section class="ow-classic-edition">
                 <div class="ow-classic-heading">
-                  <span class="ow-edition-eyebrow">${this.t("classic_eyebrow")}</span>
+                  <span class="ow-edition-eyebrow"
+                    >${this.t("classic_eyebrow")}</span
+                  >
                   <h2>${this.t("classic_title")}</h2>
                   <p>${this.t("classic_description")}</p>
                 </div>
