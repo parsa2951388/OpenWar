@@ -25,8 +25,9 @@ function createModal(): any {
 }
 
 describe("SinglePlayerModal start", () => {
-
-  it("starts an Operations mission with its map, timer, difficulty and territory threshold", async () => {
+  it(
+    "starts an Operations mission with its map, timer, difficulty and territory threshold",
+    async () => {
     const modal = createModal();
     const events: any[] = [];
     modal.addEventListener("join-lobby", (e: Event) =>
@@ -50,9 +51,12 @@ describe("SinglePlayerModal start", () => {
     expect(config.winThresholdTenths).toBe(mission.winThresholdTenths);
     expect(config.disabledUnits).toContain(UnitType.AtomBomb);
     expect(config.disabledUnits).toContain(UnitType.MissileSilo);
-  });
+    },
+  );
 
-  it("carries the selected team count and validated disabled units into the join-lobby config", async () => {
+  it(
+    "carries the selected team count and validated disabled units into the join-lobby config",
+    async () => {
     const modal = createModal();
     const events: any[] = [];
     modal.addEventListener("join-lobby", (e: Event) =>
@@ -72,7 +76,8 @@ describe("SinglePlayerModal start", () => {
     expect(events).toHaveLength(1);
     expect(events[0].source).toBe("singleplayer");
     const config = events[0].gameStartInfo.config;
-    expect(config.playerTeams).toBe(4);
-    expect(config.disabledUnits).toEqual([UnitType.Warship]);
-  });
+      expect(config.playerTeams).toBe(4);
+      expect(config.disabledUnits).toEqual([UnitType.Warship]);
+    },
+  );
 });
