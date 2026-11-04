@@ -33,8 +33,6 @@ test("the browser favicon points to the shipped Open War mark", () => {
   const renderHtml = fs.readFileSync(renderHtmlPath, "utf8");
   const markPath = path.join(ROOT, "resources", "images", "OpenWarMark.svg");
 
-  expect(renderHtml).toContain(
-    'buildAssetUrl("images/OpenWarMark.svg"',
-  );
+  expect(renderHtml).toContain('buildAssetUrl("images/OpenWarMark.svg"');
   expect(fs.existsSync(markPath)).toBe(true);
 });
