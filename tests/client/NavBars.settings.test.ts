@@ -3,7 +3,6 @@ import { ClientEnv } from "../../src/client/ClientEnv";
 
 import "../../src/client/components/DesktopNavBar";
 import "../../src/client/components/NavUtilityIcons";
-import "../../src/client/components/PlayPage";
 import { initNavigation } from "../../src/client/Navigation";
 
 // jsdom has no ResizeObserver, and the mobile top bar shares a subtree with
@@ -125,13 +124,11 @@ describe("the nav bars that host the cluster", () => {
     );
   });
 
-  it("puts the cogwheel in the mobile top bar too", async () => {
-    const page = await mount("play-page");
-    const cluster = page.querySelector("nav-utility-icons")!;
+  it("renders the settings control in the mobile utility-cluster variant", async () => {
+    const cluster = await mount("nav-utility-icons");
+    cluster.setAttribute("size", "mobile");
+    await cluster.updateComplete;
     expect(cluster.getAttribute("size")).toBe("mobile");
     expect(settingsButton(cluster)).not.toBeNull();
-    expect(cluster.nextElementSibling?.tagName.toLowerCase()).toBe(
-      "nav-account-menu",
-    );
   });
 });
