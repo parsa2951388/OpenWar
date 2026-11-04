@@ -60,6 +60,7 @@ jobs:
           tests/client/AuthRefreshFailure.test.ts
           tests/client/NavUtilityIcons.language.test.ts
           tests/client/ApiPlayerLeaderboard.test.ts
+          tests/client/PlayPageTopBar.test.ts
           tests/server/JoinVerify.test.ts
           tests/server/RenderHtml.test.ts
           vite.config.ts
@@ -95,6 +96,7 @@ jobs:
             tests/client/AuthRefreshFailure.test.ts \
             tests/client/NavUtilityIcons.language.test.ts \
             tests/client/ApiPlayerLeaderboard.test.ts \
+            tests/client/PlayPageTopBar.test.ts \
             tests/server/JoinVerify.test.ts \
             tests/server/RenderHtml.test.ts \
             vite.config.ts
