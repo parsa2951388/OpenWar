@@ -6,7 +6,7 @@ on:
       - checks_requested
   pull_request:
   push:
-    branches: [main]
+    branches: [main, open-war/independent-self-host]
 
 permissions:
   contents: read
