@@ -51,6 +51,7 @@ import {
 } from "./InputHandler";
 import { rememberLobbyRoster } from "./LobbyRosterLevels";
 import { pagePin } from "./PagePin";
+import { Platform } from "./Platform";
 import { groupTokenOf, loggableStartMessage } from "./PresenceGroup";
 import {
   applyGraphicsOverrides,
@@ -165,7 +166,7 @@ export function joinLobby(
   // clicking through map selections changes the config every broadcast, so
   // debouncing avoids downloading (and permanently caching) a map that was
   // only shown transiently.
-  const MAP_PRELOAD_DEBOUNCE_STREAK = 3;
+  const MAP_PRELOAD_DEBOUNCE_STREAK = 2;
   // In-flight terrain loads keyed by `map:mapSize`, so re-requesting a map
   // that began loading earlier (even after another map superseded it) reuses
   // the original promise instead of starting a duplicate download/parse while
@@ -174,6 +175,8 @@ export function joinLobby(
   // The load the authoritative start gate consumes (createClientGame) — always
   // the most recent request; dedup makes it the map that actually starts.
   let terrainLoad: Promise<TerrainMapData> | null = null;
+  // Fetch the font atlas during the lobby countdown in parallel with terrain.
+  let preloadedAtlasData: ReturnType<typeof preloadAtlasData> | null = null;
   // Map key (map:mapSize) most recently seen in lobby_info and how many
   // consecutive broadcasts it has held. The preload is only triggered once
   // the streak reaches the debounce threshold.
@@ -264,6 +267,7 @@ export function joinLobby(
       console.log(
         `lobby: game prestarting: ${JSON.stringify(message, replacer)}`,
       );
+      preloadedAtlasData ??= preloadAtlasData();
       void requestTerrainLoad(message.gameMap, message.gameMapSize);
       resolvePrestart();
     }
@@ -293,6 +297,7 @@ export function joinLobby(
         userSettings,
         terrainLoad,
         terrainMapFileLoader,
+        preloadedAtlasData,
       )
         .then((r) => {
           currentGameRunner = r;
@@ -688,6 +693,7 @@ async function createClientGame(
   userSettings: UserSettings,
   terrainLoad: Promise<TerrainMapData> | null,
   mapLoader: GameMapLoader,
+  preloadedAtlasData: ReturnType<typeof preloadAtlasData> | null = null,
 ): Promise<ClientGameRunner> {
   if (lobbyConfig.gameStartInfo === undefined) {
     throw new Error("missing gameStartInfo");
@@ -710,7 +716,7 @@ async function createClientGame(
   }
   // Kick off the font-atlas fetch so it overlaps with worker init; the
   // render passes need it parsed before createWebGLView runs.
-  const atlasDataLoad = preloadAtlasData();
+  const atlasDataLoad = preloadedAtlasData ?? preloadAtlasData();
   const worker = new WorkerClient(
     lobbyConfig.gameStartInfo,
     clientID,
@@ -756,7 +762,20 @@ async function createClientGame(
     // right colors on the first build.
     const resolveRenderSettings = (): RenderSettings => {
       const settings = createRenderSettings();
-      applyGraphicsOverrides(settings, userSettings.graphicsOverrides());
+      const graphicsOverrides = userSettings.graphicsOverrides();
+      applyGraphicsOverrides(settings, graphicsOverrides);
+
+      // On Android, disable heavier visual-only passes by default.
+      // Explicit choices in Graphics settings always take precedence.
+      if (Platform.isAndroid) {
+        if (graphicsOverrides.passEnabled?.fx === undefined) {
+          settings.passEnabled.fx = false;
+        }
+        if (graphicsOverrides.passEnabled?.fallout === undefined) {
+          settings.passEnabled.falloutBloom = false;
+          settings.passEnabled.falloutLight = false;
+        }
+      }
       return settings;
     };
 
