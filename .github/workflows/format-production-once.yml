@@ -1,0 +1,57 @@
+name: Format production branch once
+
+on:
+  push:
+    branches:
+      - open-war/independent-self-host
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out production branch
+        uses: actions/checkout@v7
+        with:
+          ref: open-war/independent-self-host
+          persist-credentials: true
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format only files identified by CI
+        run: |
+          npx oxfmt --write \
+            src/client/AccountModal.ts \
+            src/client/hud/layers/BuildMenu.ts \
+            src/client/hud/layers/GameRightSidebar.ts \
+            src/client/hud/layers/UnitDisplay.ts \
+            src/server/SelfHostedAuthStatus.ts \
+            tests/client/graphics/layers/BuildMenuCost.test.ts
+      - name: Commit formatted files and remove this one-off workflow
+        shell: bash
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/client/AccountModal.ts \
+            src/client/hud/layers/BuildMenu.ts \
+            src/client/hud/layers/GameRightSidebar.ts \
+            src/client/hud/layers/UnitDisplay.ts \
+            src/server/SelfHostedAuthStatus.ts \
+            tests/client/graphics/layers/BuildMenuCost.test.ts
+          git rm .github/workflows/format-production-once.yml
+          if git diff --cached --quiet; then
+            echo "No formatting changes were needed."
+            exit 0
+          fi
+          git commit -m "style: fix production branch formatting"
+          git push origin HEAD:open-war/independent-self-host
