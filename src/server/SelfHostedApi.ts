@@ -104,8 +104,9 @@ function bearerToken(req: Request): string | null {
 }
 
 /**
- * Adds a small, independent guest-auth API to the same origin as the game.
- * It deliberately does not pretend to provide OAuth, purchases, or accounts.
+ * Registers Open War's self-hosted identity APIs on the game origin.
+ * Guest JWT issuance and database-backed permanent accounts share this
+ * surface; it remains separate from upstream commerce and cross-server APIs.
  */
 export function registerSelfHostedApi(app: Express): void {
   if (!ServerEnv.selfHostedAuthEnabled()) return;
