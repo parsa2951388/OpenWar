@@ -37,7 +37,7 @@ describe("SinglePlayerModal start", () => {
       "../../src/client/components/OperationsMissions"
     );
     const mission = getOperationsMission("iron-gate");
-    expect(mission).toBeDefined();
+    if (!mission) throw new Error("Iron Gate mission preset is missing");
     modal.openForOperation(mission);
 
     await modal.startGame();
