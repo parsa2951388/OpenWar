@@ -223,6 +223,7 @@ async function identity(request, env) {
 export default {
   async fetch(request, env) {
     const url = new URL(request.url);
+    if (url.pathname === "/health" && request.method === "GET") return json({ status: "ok" });
     if (!url.pathname.startsWith("/internal/")) return json({ error: "not_found" }, 404);
     if (!authorized(request, env)) return json({ error: "unauthorized" }, 401);
 
