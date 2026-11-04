@@ -376,14 +376,14 @@ export class GameRightSidebar extends LitElement implements Controller {
         <!-- Buttons -->
         ${this.maybeRenderReplayButtons()}
 
-        <div class="cursor-pointer" @click=${this.onSettingsButtonClick}>
+        <div class="max-lg:min-h-10 max-lg:min-w-10 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:touch-manipulation cursor-pointer" @click=${this.onSettingsButtonClick}>
           <img src=${settingsIcon} alt="settings" width="20" height="20" />
         </div>
 
         ${
           document.fullscreenEnabled && !this.hideFullscreenButton
             ? html`<div
-                class="cursor-pointer"
+                class="max-lg:min-h-10 max-lg:min-w-10 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:touch-manipulation cursor-pointer"
                 @click=${this.onFullscreenButtonClick}
               >
                 <img
@@ -400,7 +400,7 @@ export class GameRightSidebar extends LitElement implements Controller {
             : ""
         }
 
-        <div class="cursor-pointer" @click=${this.onExitButtonClick}>
+        <div class="max-lg:min-h-10 max-lg:min-w-10 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:touch-manipulation cursor-pointer" @click=${this.onExitButtonClick}>
           <img src=${exitIcon} alt="exit" width="20" height="20" />
         </div>
       </aside>
@@ -431,7 +431,7 @@ export class GameRightSidebar extends LitElement implements Controller {
       ${
         isReplayOrSingleplayer
           ? html`
-              <div class="cursor-pointer" @click=${this.toggleReplayPanel}>
+              <div class="max-lg:min-h-10 max-lg:min-w-10 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:touch-manipulation cursor-pointer" @click=${this.toggleReplayPanel}>
                 <img
                   src=${FastForwardIconSolid}
                   alt="replay"
@@ -445,7 +445,7 @@ export class GameRightSidebar extends LitElement implements Controller {
       ${
         showPauseButton
           ? html`
-              <div class="cursor-pointer" @click=${this.onPauseButtonClick}>
+              <div class="max-lg:min-h-10 max-lg:min-w-10 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:touch-manipulation cursor-pointer" @click=${this.onPauseButtonClick}>
                 <img
                   src=${this.isPaused ? playIcon : pauseIcon}
                   alt="play/pause"
@@ -460,7 +460,7 @@ export class GameRightSidebar extends LitElement implements Controller {
         showNewLobbyButton
           ? html`
               <div
-                class="cursor-pointer ${
+                class="max-lg:min-h-10 max-lg:min-w-10 max-lg:flex max-lg:items-center max-lg:justify-center max-lg:touch-manipulation cursor-pointer ${
                   this.newLobbyRequested ? "opacity-50 pointer-events-none" : ""
                 }"
                 @click=${this.onNewLobbyButtonClick}
