@@ -1554,12 +1554,12 @@ export class AccountModal extends BaseModal {
     this.requestUpdate();
   }
 
-  private handleDiscordLogin() {
-    discordLogin();
+  private async handleDiscordLogin(): Promise<void> {
+    await discordLogin();
   }
 
-  private handleGoogleLogin() {
-    googleLogin();
+  private async handleGoogleLogin(): Promise<void> {
+    await googleLogin();
   }
 
   private handleSteamLogin() {
