@@ -28,6 +28,7 @@ describe("RenderHtml", () => {
   beforeEach(() => {
     stubIdentity();
     vi.stubEnv("TURNSTILE_SITE_KEY", "test-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "test-secret");
     vi.stubEnv("DOMAIN", "localhost");
   });
 
@@ -103,6 +104,7 @@ describe("RenderHtml serverHost pinning", () => {
   beforeEach(() => {
     stubIdentity();
     vi.stubEnv("TURNSTILE_SITE_KEY", "test-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "test-secret");
     vi.stubEnv("GIT_COMMIT", "abc");
   });
 
@@ -145,6 +147,7 @@ describe("RenderHtml siteHost injection", () => {
   beforeEach(() => {
     stubIdentity();
     vi.stubEnv("TURNSTILE_SITE_KEY", "test-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "test-secret");
     vi.stubEnv("GIT_COMMIT", "abc");
     vi.stubEnv("DOMAIN", "openfront.io");
     vi.stubEnv("SUBDOMAIN", "blue");
@@ -187,6 +190,7 @@ describe("RenderHtml stripePublishableKey injection", () => {
   beforeEach(() => {
     stubIdentity();
     vi.stubEnv("TURNSTILE_SITE_KEY", "test-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "test-secret");
     vi.stubEnv("GIT_COMMIT", "abc");
     vi.stubEnv("DOMAIN", "openfront.io");
     vi.stubEnv("SUBDOMAIN", "blue");
@@ -227,6 +231,7 @@ describe("RenderHtml faroCollectorUrl injection", () => {
   beforeEach(() => {
     stubIdentity();
     vi.stubEnv("TURNSTILE_SITE_KEY", "test-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "test-secret");
     vi.stubEnv("GIT_COMMIT", "abc");
     vi.stubEnv("DOMAIN", "openfront.io");
     vi.stubEnv("SUBDOMAIN", "blue");
@@ -272,6 +277,7 @@ describe("RenderHtml environment-only render", () => {
   beforeEach(() => {
     stubIdentity();
     vi.stubEnv("TURNSTILE_SITE_KEY", "test-key");
+    vi.stubEnv("TURNSTILE_SECRET_KEY", "test-secret");
     vi.stubEnv("DOMAIN", "openfront.io");
     vi.stubEnv("SUBDOMAIN", "blue");
     vi.stubEnv("SITE_HOST", "openfront.io");
@@ -359,6 +365,8 @@ describe("RenderHtml environment-only render", () => {
         '        instanceLetter: "a",',
         '        turnstileSiteKey: "test-key",',
         '        jwtAudience: "openfront.io",',
+        '        apiBaseUrl: "https://api.openfront.io",',
+        "        selfHostedAuth: false,",
         '        stripePublishableKey: "pk_test_abc",',
         '        faroCollectorUrl: "https://faro.example/collect/k",',
         '        instanceId: "i-1",',
@@ -393,7 +401,7 @@ describe("RenderHtml environment-only render", () => {
   it("uses original Open War artwork for desktop and mobile shell logos", async () => {
     const html = await renderHtmlContent(REAL_TEMPLATE);
 
-    expect(html.match(/OpenWarLogo\\.svg/g)?.length).toBeGreaterThanOrEqual(2);
+    expect(html.match(/OpenWarLogo\\.[0-9a-f]{12}\\.svg/g)?.length).toBeGreaterThanOrEqual(2);
     expect(html).not.toContain("OpenFront.png");
     expect(html).not.toContain("OF.png");
   });
