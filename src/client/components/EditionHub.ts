@@ -1,6 +1,6 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
-import { GameModeSelector } from "../GameModeSelector";
+import "../GameModeSelector";
 import type { HostLobbyModal } from "../HostLobbyModal";
 import type { JoinLobbyModal } from "../JoinLobbyModal";
 import { whenModalLoaded } from "../LazyModals";
@@ -14,6 +14,10 @@ import {
 import "./EditionHub.css";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
+
+type EditionGameModeSelector = HTMLElement & {
+  setEditionActive(active: boolean): void;
+};
 
 function readEditionPreference(): OpenWarEdition {
   try {
@@ -46,7 +50,7 @@ export class EditionHub extends LitElement {
   protected updated(): void {
     const selector = this.querySelector(
       "game-mode-selector",
-    ) as GameModeSelector | null;
+    ) as EditionGameModeSelector | null;
     selector?.setEditionActive(this.edition === "classic");
   }
 
@@ -398,9 +402,7 @@ export class EditionHub extends LitElement {
           ?hidden=${this.edition !== "classic"}
         >
           <div class="ow-classic-heading">
-            <span class="ow-edition-eyebrow"
-              >${this.t("classic_eyebrow")}</span
-            >
+            <span class="ow-edition-eyebrow">${this.t("classic_eyebrow")}</span>
             <h2>${this.t("classic_title")}</h2>
             <p>${this.t("classic_description")}</p>
           </div>
