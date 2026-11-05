@@ -6,8 +6,8 @@ import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
 import {
-  OPEN_WAR_EDITION_STORAGE_KEY,
-  normalizeOpenWarEdition,
+  readOpenWarEditionPreference,
+  setOpenWarEditionPreference,
   type OpenWarEdition,
 } from "./EditionPreference";
 import {
@@ -31,13 +31,7 @@ type EditionGameModeSelector = HTMLElement & {
 type OperationsMissionFilter = "all" | "ready" | "cleared" | "locked";
 
 function readEditionPreference(): OpenWarEdition {
-  try {
-    return normalizeOpenWarEdition(
-      window.localStorage.getItem(OPEN_WAR_EDITION_STORAGE_KEY),
-    );
-  } catch {
-    return "classic";
-  }
+  return readOpenWarEditionPreference();
 }
 
 @customElement("openwar-edition-hub")
@@ -95,11 +89,7 @@ export class EditionHub extends LitElement {
   private selectEdition = (edition: OpenWarEdition) => {
     if (this.edition === edition) return;
     this.edition = edition;
-    try {
-      window.localStorage.setItem(OPEN_WAR_EDITION_STORAGE_KEY, edition);
-    } catch {
-      // The selector still works for this page load when browser storage is unavailable.
-    }
+    setOpenWarEditionPreference(edition);
     this.dispatchEvent(
       new CustomEvent("openwar-edition-changed", {
         detail: { edition },
@@ -151,11 +141,7 @@ export class EditionHub extends LitElement {
   public showOnlineUnderConstruction(): void {
     this.edition = "operations";
     this.onlineNoticeOpen = true;
-    try {
-      window.localStorage.setItem(OPEN_WAR_EDITION_STORAGE_KEY, "operations");
-    } catch {
-      // The gate remains active for this page instance when storage is unavailable.
-    }
+    setOpenWarEditionPreference("operations");
   }
 
   private closeOnlineNotice = () => {
