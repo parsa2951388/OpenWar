@@ -1523,6 +1523,8 @@
     "ranked_tab": "1v1 Ranked",
     "ratio": "Ratio",
     "refresh_time": "Refreshed every 1 hour",
+    "self_hosted_unavailable": "Leaderboards unavailable on this server",
+    "self_hosted_unavailable_body": "Player, clan and tribe rankings need the central leaderboard service, which is not connected to this standalone server.",
     "title": "Leaderboard",
     "tribes_boost": "Boosts",
     "tribes_boost_tooltip": "Boosted names appear more often in other players' games",
