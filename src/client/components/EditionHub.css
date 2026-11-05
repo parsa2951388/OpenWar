@@ -1198,3 +1198,203 @@
     min-height: 0;
   }
 }
+
+
+/* Live multiplayer hub: clear hierarchy, live counts and tactile entry points. */
+.ow-online-battle-hub {
+  --ow-live-border: rgba(166, 193, 179, 0.18);
+  --ow-live-text: #edf4ee;
+  --ow-live-muted: #a8b8af;
+}
+
+.ow-online-hub-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+  padding: clamp(1.05rem, 2.1vw, 1.65rem);
+  overflow: hidden;
+  border: 1px solid var(--ow-live-border);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      ellipse at 8% 0%,
+      rgba(47, 117, 111, 0.22),
+      transparent 48%
+    ),
+    linear-gradient(110deg, rgba(20, 39, 36, 0.98), rgba(11, 21, 23, 0.98));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.17);
+}
+
+.ow-online-hub-header::after {
+  position: absolute;
+  top: -4.5rem;
+  right: -2rem;
+  width: 15rem;
+  height: 15rem;
+  border: 1px solid rgba(166, 193, 179, 0.08);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 26px rgba(166, 193, 179, 0.025),
+    0 0 0 52px rgba(166, 193, 179, 0.02);
+  content: "";
+  pointer-events: none;
+}
+
+.ow-online-hub-copy,
+.ow-online-hub-metrics {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.ow-online-hub-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+  color: #9fc9b7;
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.15em;
+}
+
+.ow-online-hub-mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #79c69c;
+  box-shadow: 0 0 0 4px rgba(121, 198, 156, 0.12);
+}
+
+.ow-online-hub-copy h2 {
+  margin: 0;
+  color: var(--ow-live-text);
+  font-size: clamp(1.2rem, 2vw, 1.75rem);
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.ow-online-hub-copy p {
+  max-width: 42rem;
+  margin: 0.45rem 0 0;
+  color: var(--ow-live-muted);
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.ow-online-hub-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+.ow-online-hub-metric {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(166, 193, 179, 0.13);
+  border-radius: 10px;
+  background: rgba(3, 12, 14, 0.32);
+}
+
+.ow-online-hub-metric span {
+  color: #91a69d;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.ow-online-hub-metric strong {
+  color: #f0d19c;
+  font:
+    850 1.35rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ow-online-hub-connection {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+  color: #9eafa6;
+  font-size: 0.67rem;
+  font-weight: 750;
+}
+
+.ow-online-hub-connection-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #d3aa6a;
+}
+
+.ow-online-hub-connection-dot.is-live {
+  background: #78c99c;
+  box-shadow: 0 0 0 4px rgba(120, 201, 156, 0.12);
+}
+
+.ow-online-hub-connection-dot.is-offline {
+  background: #d97979;
+  box-shadow: 0 0 0 4px rgba(217, 121, 121, 0.1);
+}
+
+.ow-selector-action {
+  min-height: 3.4rem;
+  border: 1px solid rgba(193, 211, 201, 0.17);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+  letter-spacing: 0.075em;
+}
+
+.ow-selector-action:not(:disabled):hover {
+  border-color: rgba(193, 211, 201, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.ow-online-battle-hub openfront-lobby-card {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .ow-online-hub-header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.95rem;
+  }
+  .ow-online-hub-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-online-hub-header {
+    padding: 1rem;
+    border-radius: 13px;
+  }
+  .ow-online-hub-copy h2 {
+    font-size: 1.22rem;
+  }
+  .ow-online-hub-copy p {
+    font-size: 0.74rem;
+  }
+  .ow-online-hub-metric {
+    padding: 0.6rem;
+  }
+  .ow-selector-action {
+    min-height: 3.2rem;
+    padding: 0.4rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.035em;
+  }
+}
