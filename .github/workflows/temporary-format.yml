@@ -1,0 +1,43 @@
+name: Temporary Operations formatter
+
+on:
+  push:
+    branches:
+      - open-war/new-operations-hardening
+  pull_request:
+    branches:
+      - open-war/operations-missions-alpha
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.ref || github.ref_name }}
+          repository: ${{ github.event.pull_request.head.repo.full_name || github.repository }}
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format touched files
+        run: npx oxfmt --write src/client/components/EditionHub.ts src/client/components/EditionHub.css tests/client/components/EditionHub.test.ts tests/server/SocketIngress.test.ts src/client/components/WebGLGate.ts
+      - name: Commit formatting
+        shell: bash
+        run: |
+          if ! git diff --quiet; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add src/client/components/EditionHub.ts src/client/components/EditionHub.css tests/client/components/EditionHub.test.ts tests/server/SocketIngress.test.ts src/client/components/WebGLGate.ts
+            git commit -m "style(operations): apply repository formatting"
+            target_branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
+            git push origin "HEAD:$target_branch"
+          fi
