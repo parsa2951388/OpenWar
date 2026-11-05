@@ -174,6 +174,47 @@ jobs:
           fi
 
 
+  gen-maps-repair:
+    name: 🧰 Regenerate map schemas for this audit PR
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'audit/operations-ux-refresh-2026-11' && github.event.pull_request.head.repo.full_name == github.repository
+    permissions:
+      contents: write
+      actions: write
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          submodules: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: "24"
+          cache: "npm"
+      - name: Setup npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - uses: actions/setup-go@v7
+        with:
+          go-version-file: map-generator/go.mod
+          cache-dependency-path: map-generator/go.sum
+      - run: npm ci
+      - run: npm run gen-maps
+      - name: Commit generated artifacts and validate again
+        env:
+          GH_TOKEN: ${{ github.token }}
+          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add map-generator/info.schema.json resources/lang/en.json
+          if git diff --cached --quiet; then
+            echo "Generated artifacts are already current."
+            exit 0
+          fi
+          git commit -m "chore(generated): refresh map schema and locale artifacts"
+          git push origin "HEAD:${BRANCH_NAME}"
+          gh workflow run ci.yml --ref "${BRANCH_NAME}"
+
   # Validate the actual production container, not only Vite's static bundle.
   # This catches missing files and Docker-stage regressions before a deploy.
   docker-build:
