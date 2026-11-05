@@ -2,6 +2,7 @@ import { assetUrl } from "@openfront/shared/AssetUrls";
 import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
 import "./CosmeticBackground";
+import "./EditionHub";
 import "./NavAccountMenu";
 import "./NavUtilityIcons";
 import "./NewsBox";
@@ -118,7 +119,7 @@ export class PlayPage extends LitElement {
           ></streaming-now>
         </div>
 
-        <game-mode-selector></game-mode-selector>
+        <openwar-edition-hub></openwar-edition-hub>
 
         <!-- Desktop gets the compact footer button instead. -->
         <steam-wishlist

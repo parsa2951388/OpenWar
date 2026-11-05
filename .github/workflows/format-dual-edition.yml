@@ -1,0 +1,56 @@
+name: Format dual-edition files
+
+on:
+  push:
+    branches:
+      - open-war/classic-operations-experience
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7.0.1
+        with:
+          ref: open-war/classic-operations-experience
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24.15.0
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format only the dual-edition files
+        run: >
+          npx oxfmt --write
+          src/client/components/EditionHub.ts
+          src/client/components/EditionHub.css
+          resources/lang/en.json
+          resources/lang/fa.json
+          src/client/components/EditionPreference.ts
+          src/client/components/PlayPage.ts
+          tests/client/EditionHub.test.ts
+      - name: Commit formatter changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/client/components/EditionHub.ts \
+            src/client/components/EditionHub.css \
+            src/client/components/EditionPreference.ts \
+            src/client/components/PlayPage.ts \
+            tests/client/EditionHub.test.ts \
+            resources/lang/en.json \
+            resources/lang/fa.json
+          if git diff --cached --quiet; then
+            echo "The dual-edition files are already formatted."
+            exit 0
+          fi
+          git commit -m "style: format dual-edition files"
+          git push origin HEAD:open-war/classic-operations-experience

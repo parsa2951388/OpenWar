@@ -1,0 +1,55 @@
+name: Open War quality gates
+
+on:
+  push:
+    branches:
+      - open-war/classic-operations-experience
+  pull_request:
+    branches:
+      - main
+
+permissions:
+  contents: read
+
+concurrency:
+  group: open-war-quality-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  quality:
+    name: Typecheck, build, tests, lint and container
+    runs-on: ubuntu-latest
+    timeout-minutes: 45
+    steps:
+      - name: Check out source
+        uses: actions/checkout@v7.0.1
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v7.1.0
+        with:
+          node-version: 24.15.0
+          package-manager-cache: false
+
+      - name: Install the repository-pinned npm version
+        run: npm install --global npm@12.1.0
+
+      - name: Install locked dependencies
+        run: npm run inst
+
+      - name: Type check
+        run: npm run typecheck
+
+      - name: Build production assets
+        run: npm run build-prod
+
+      - name: Run automated tests
+        run: npm test
+
+      - name: Lint
+        run: npm run lint
+
+      - name: Check formatting
+        run: npx oxfmt --check src/client/components/EditionHub.ts src/client/components/EditionHub.css src/client/components/EditionPreference.ts src/client/components/PlayPage.ts tests/client/EditionHub.test.ts resources/lang/en.json resources/lang/fa.json
+
+      - name: Build production container
+        run: docker build --tag open-war:ci .
