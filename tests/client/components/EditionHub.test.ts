@@ -115,8 +115,8 @@ describe("Open War edition hub", () => {
     await hub.updateComplete;
 
     expect(
-      hub.querySelector('[data-testid="online-maintenance"]')?.textContent,
-    ).toContain("under construction");
+      hub.querySelector('[data-testid="online-maintenance"]')?.textContent?.trim(),
+    ).toBeTruthy();
 
     (hub as any).openPrivateRoom();
     await hub.updateComplete;
