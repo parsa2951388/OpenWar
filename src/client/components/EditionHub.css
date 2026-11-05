@@ -848,3 +848,25 @@
     margin-left: 0;
   }
 }
+
+@media (max-width: 900px) {
+  .ow-campaign-completion {
+    width: min(100%, 260px);
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-mission-toolbar {
+    align-items: stretch;
+  }
+  .ow-mission-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-mission-filter {
+    width: 100%;
+  }
+  .ow-campaign-completion {
+    width: 100%;
+  }
+}
