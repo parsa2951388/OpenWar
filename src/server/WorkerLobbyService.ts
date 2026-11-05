@@ -321,7 +321,7 @@ export class WorkerLobbyService {
           path: (request.url ?? "").split("?")[0].slice(0, 120),
         });
         socket.write(
-          "HTTP/1.1 403 Forbidden\\r\\nConnection: close\\r\\nContent-Length: 0\\r\\n\\r\\n",
+          "HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
         );
         socket.destroy();
         return;
