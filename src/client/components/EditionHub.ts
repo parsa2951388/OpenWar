@@ -8,6 +8,7 @@ import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
 import {
+  OPEN_WAR_OPEN_WAR_EDITION_STORAGE_KEY,
   normalizeOpenWarEdition,
   type OpenWarEdition,
 } from "./EditionPreference";
@@ -25,16 +26,16 @@ import {
 } from "./OperationsMissions";
 import "./EditionHub.css";
 
-const EDITION_STORAGE_KEY = "openwar.edition";
-
 type EditionGameModeSelector = HTMLElement & {
   setEditionActive(active: boolean): void;
 };
 
+type OperationsMissionFilter = "all" | "ready" | "cleared" | "locked";
+
 function readEditionPreference(): OpenWarEdition {
   try {
     return normalizeOpenWarEdition(
-      window.localStorage.getItem(EDITION_STORAGE_KEY),
+      window.localStorage.getItem(OPEN_WAR_EDITION_STORAGE_KEY),
     );
   } catch {
     return "classic";
@@ -45,6 +46,7 @@ function readEditionPreference(): OpenWarEdition {
 export class EditionHub extends LitElement {
   @state() private edition: OpenWarEdition = readEditionPreference();
   @state() private campaignProgress = readOperationsCampaignProgress();
+  @state() private missionFilter: OperationsMissionFilter = "all";
 
   createRenderRoot() {
     return this;
@@ -83,6 +85,10 @@ export class EditionHub extends LitElement {
     this.campaignProgress = readOperationsCampaignProgress();
   };
 
+  private selectMissionFilter = (filter: OperationsMissionFilter) => {
+    this.missionFilter = filter;
+  };
+
   private t(key: string): string {
     return translateText(`edition_hub.${key}`);
   }
@@ -91,7 +97,7 @@ export class EditionHub extends LitElement {
     if (this.edition === edition) return;
     this.edition = edition;
     try {
-      window.localStorage.setItem(EDITION_STORAGE_KEY, edition);
+      window.localStorage.setItem(OPEN_WAR_EDITION_STORAGE_KEY, edition);
     } catch {
       // The selector still works for this page load when browser storage is unavailable.
     }
@@ -202,6 +208,26 @@ export class EditionHub extends LitElement {
 
   private renderOperationsDashboard() {
     const campaignSummary = getOperationsCampaignSummary(this.campaignProgress);
+    const completionPercent = Math.round(
+      (campaignSummary.clearedMissions / campaignSummary.totalMissions) * 100,
+    );
+    const visibleMissions = OPERATIONS_MISSIONS.map((mission, index) => {
+      const record = getOperationsMissionProgress(mission.id, this.campaignProgress);
+      const unlocked = isOperationsMissionUnlocked(mission, this.campaignProgress);
+      const cleared = record.wins > 0;
+      return { mission, index, record, unlocked, cleared };
+    }).filter(({unlocked, cleared}) => {
+      switch (this.missionFilter) {
+        case "ready":
+          return unlocked && !cleared;
+        case "cleared":
+          return cleared;
+        case "locked":
+          return !unlocked;
+        default:
+          return true;
+      }
+    });
     return html`
       <section
         class="ow-operations-dashboard"
@@ -293,22 +319,67 @@ export class EditionHub extends LitElement {
               ><span>${this.t("campaign_stars")}</span>
             </div>
           </div>
-          <div class="ow-mission-grid">
-            ${OPERATIONS_MISSIONS.map((mission, index) => {
-              const record = getOperationsMissionProgress(
-                mission.id,
-                this.campaignProgress,
-              );
-              const unlocked = isOperationsMissionUnlocked(
-                  mission,
-                  this.campaignProgress,
-                ),
-                cleared = record.wins > 0;
-              const remainingWins = Math.max(
-                0,
-                mission.unlockWins - campaignSummary.wins,
-              );
-              return html` <article
+          <div class="ow-mission-toolbar">
+            <div
+              class="ow-mission-filters"
+              role="group"
+              aria-label=${this.t("mission_filters")}
+            >
+              ${(["all", "ready", "cleared", "locked"] as const).map(
+                (filter) => html`
+                  <button
+                    class="ow-mission-filter ${this.missionFilter === filter ? "is-active" : ""}"
+                    type="button"
+                    data-mission-filter=${filter}
+                    aria-pressed=${this.missionFilter === filter ? "true" : "false"}
+                    @click=${() => this.selectMissionFilter(filter)}
+                  >
+                    ${this.t(`mission_filter_${filter}`)}
+                  </button>
+                `,
+              )}
+            </div>
+            <div class="ow-campaign-completion">
+              <div class="ow-campaign-completion-copy">
+                <span>${this.t("campaign_completion")}</span>
+                <strong>${campaignSummary.clearedMissions}/${campaignSummary.totalMissions}</strong>
+              </div>
+              <div
+                class="ow-campaign-progress-track"
+                role="progressbar"
+                aria-label=${this.t("campaign_completion")}
+                aria-valuemin="0"
+                aria-valuemax="100"
+                aria-valuenow=${completionPercent}
+                data-testid="campaign-progress"
+              >
+                <span
+                  class="ow-campaign-progress-fill"
+                  style=${`width: ${completionPercent}%`}
+                ></span>
+              </div>
+            </div>
+          </div>
+          ${
+            visibleMissions.length === 0
+              ? html`
+                  <p
+                    class="ow-mission-filter-empty"
+                    role="status"
+                    data-testid="mission-filter-empty"
+                  >
+                    ${this.t("mission_filter_empty")}
+                  </p>
+                `
+              : html`
+                  <div class="ow-mission-grid">
+                    ${visibleMissions.map(
+                      ({ mission, index, record, unlocked, cleared }) => {
+                        const remainingWins = Math.max(
+                          0,
+                          mission.unlockWins - campaignSummary.wins,
+                        );
+                        return html` <article
                 class="ow-mission-card ${unlocked ? "" : "is-locked"}"
               >
                 <div class="ow-mission-card-topline">
@@ -351,9 +422,12 @@ export class EditionHub extends LitElement {
                   ${unlocked ? this.t("mission_start_action") : this.t("mission_locked_action")}
                   <span aria-hidden="true">${unlocked ? "↗" : "🔒"}</span>
                 </button>
-              </article>`;
-            })}
-          </div>
+                      </article>`;
+                      },
+                    )}
+                  </div>
+                `
+          }
         </section>
 
         <div class="ow-operations-section-heading">
