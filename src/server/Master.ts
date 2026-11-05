@@ -28,12 +28,15 @@ import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
 import { registerSelfHostedApi } from "./SelfHostedApi";
 import { ServerEnv } from "./ServerEnv";
+import { createSecurityHeaders } from "./SecurityHeaders";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
 
 const playlist = new MapPlaylist();
 let lobbyService: MasterLobbyService;
 
 const app = express();
+  app.disable("x-powered-by");
+  app.use(createSecurityHeaders());
 const server = http.createServer(app);
 
 const log = logger.child({ comp: "m" });
