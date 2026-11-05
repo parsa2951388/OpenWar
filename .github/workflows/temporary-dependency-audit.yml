@@ -4,6 +4,9 @@ on:
   push:
     branches:
       - open-war/new-operations-hardening
+  pull_request:
+    branches:
+      - open-war/operations-missions-alpha
 
 permissions:
   contents: read
