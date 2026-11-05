@@ -1,5 +1,5 @@
 import EventEmitter from "events";
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { WebSocket } from "ws";
 import { WorkerLobbyService } from "../../src/server/WorkerLobbyService";
 import { mockLogger } from "../util/GameServerHarness";
@@ -11,6 +11,7 @@ describe("WorkerLobbyService.connectedClients", () => {
   let server: EventEmitter;
 
   beforeEach(() => {
+    vi.stubEnv("DOMAIN", "open-war-game.onrender.com");
     const gm = {
       publicLobbies: vi.fn().mockReturnValue([]),
       listedLobbies: vi.fn().mockReturnValue([]),
@@ -25,6 +26,10 @@ describe("WorkerLobbyService.connectedClients", () => {
       mockLogger(),
     );
     (service as any).sendToMaster = vi.fn();
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
   });
 
   function connectClient(url?: string) {
