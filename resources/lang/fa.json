@@ -1848,7 +1848,16 @@
     "teams_count": "{teamCount} تیم",
     "teams_of": "{teamCount} تیم {playersPerTeam} نفره",
     "teams_preset": "{preset} ({teams})",
-    "teams_title": "تیم ها"
+    "teams_title": "تیم ها",
+    "battle_hub_aria": "مرکز نبردهای آنلاین",
+    "battle_hub_eyebrow": "شبکهٔ نبرد زنده",
+    "battle_hub_title": "میدان نبرد آنلاین",
+    "battle_hub_description": "نبردهای عمومی را بررسی کن، وارد رتبه‌بندی شو یا با دوستانت اتاق خصوصی بساز.",
+    "battle_hub_public": "نبردهای عمومی",
+    "battle_hub_private": "اتاق‌های خصوصی",
+    "battle_hub_live": "فهرست نبردها به‌روز است",
+    "battle_hub_connecting": "در حال دریافت فهرست نبردها…",
+    "battle_hub_offline": "فهرست نبردها فعلاً در دسترس نیست"
   },
   "multi_tab": {
     "detected": "چندین تب بازی باز شناسایی شد.",
