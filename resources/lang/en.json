@@ -908,11 +908,11 @@
     "mission_world_command_title": "Operation World Command",
     "objectives_description": "Command centres, strategic locations, convoy escort and multi-stage missions.",
     "objectives_title": "Operational objectives",
-    "operations_description": "The new edition is designed around more than territorial expansion. Supply lines, battlefield intelligence, multi-stage objectives and team decisions are planned as core gameplay systems.",
-    "operations_eyebrow": "COMMAND DESK · PRODUCT PREVIEW",
+    "operations_description": "Play six solo scenarios today on Open War's existing conquest engine. Supply networks, reconnaissance fog, convoy objectives and dedicated Operations multiplayer are still on the roadmap.",
+    "operations_eyebrow": "LIVE CAMPAIGN · 6 SOLO SCENARIOS",
     "operations_headline": "Every battle is a strategic operation",
     "operations_label": "New · Operations",
-    "operations_subtitle": "Command and logistics",
+    "operations_subtitle": "Solo campaign · six scenarios",
     "practice_action": "Launch Iron Gate",
     "private_room_description": "Private rooms still use the standard lobby rules. Dedicated Operations multiplayer is not enabled yet.",
     "private_room_title": "Set up a private room for your group",
@@ -922,8 +922,12 @@
     "supply_title": "Supply network",
     "systems_eyebrow": "SIGNATURE SYSTEMS",
     "systems_title": "Beyond territorial control",
-    "theatre_map_alt": "Conceptual theatre map with contour lines and supply routes",
-    "top_eyebrow": "TWO WAYS TO COMMAND"
+    "theatre_map_alt": "Illustrative Operations concept map. Its route markers are not live game data.",
+    "top_eyebrow": "TWO WAYS TO COMMAND",
+    "continue_campaign": "Continue campaign",
+    "replay_campaign": "Replay first operation",
+    "campaign_storage_note": "Campaign progress is saved locally in this browser and does not sync across devices.",
+    "map_concept_label": "CONCEPT MAP · ROADMAP"
   },
   "effects": {
     "nukeType": {
