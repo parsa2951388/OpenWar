@@ -1,11 +1,8 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../../../src/client/components/EditionHub";
-import {
-  OPERATIONS_CAMPAIGN_STORAGE_KEY,
-  recordOperationsMissionResult,
-} from "../../../src/client/components/OperationsCampaign";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
+const CAMPAIGN_STORAGE_KEY = "openwar.operations.campaign.v1";
 
 describe("Open War edition hub", () => {
   let hub: HTMLElement & { updateComplete: Promise<unknown> };
@@ -26,9 +23,28 @@ describe("Open War edition hub", () => {
     };
   }
 
+  function setCampaignWins(wins: number): void {
+    window.localStorage.setItem(
+      CAMPAIGN_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        missions: {
+          "iron-gate": {
+            attempts: wins,
+            wins,
+            bestStars: 3,
+            bestTimeSeconds: 300,
+            lastPlayedAt: 1,
+          },
+        },
+      }),
+    );
+    window.dispatchEvent(new CustomEvent("operations-campaign-updated"));
+  }
+
   beforeEach(() => {
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
-    window.localStorage.removeItem(OPERATIONS_CAMPAIGN_STORAGE_KEY);
+    window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY);
     document.body.innerHTML = "";
   });
 
@@ -36,7 +52,7 @@ describe("Open War edition hub", () => {
     hub?.remove();
     document.body.innerHTML = "";
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
-    window.localStorage.removeItem(OPERATIONS_CAMPAIGN_STORAGE_KEY);
+    window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY);
   });
 
   it("pauses the Classic lobby feed while Operations is selected", async () => {
@@ -87,22 +103,15 @@ describe("Open War edition hub", () => {
   it("shows remaining victories needed to unlock each mission", async () => {
     await mountHub();
 
-    recordOperationsMissionResult("iron-gate", true, 300);
+    const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");
+    setCampaignWins(1);
     await hub.updateComplete;
-    const northernBastion = hub.querySelectorAll<HTMLElement>(
-      ".ow-mission-card",
-    )[4];
-    expect(
-      northernBastion.querySelector(".ow-mission-unlock")?.textContent,
-    ).toContain("1");
+    const northernUnlock = cards[4].querySelector(".ow-mission-unlock");
+    expect(northernUnlock?.textContent).toContain("1");
 
-    recordOperationsMissionResult("tidebreaker", true, 300);
+    setCampaignWins(2);
     await hub.updateComplete;
-    const pacificAscendant = hub.querySelectorAll<HTMLElement>(
-      ".ow-mission-card",
-    )[5];
-    expect(
-      pacificAscendant.querySelector(".ow-mission-unlock")?.textContent,
-    ).toContain("1");
+    const pacificUnlock = cards[5].querySelector(".ow-mission-unlock");
+    expect(pacificUnlock?.textContent).toContain("1");
   });
 });
