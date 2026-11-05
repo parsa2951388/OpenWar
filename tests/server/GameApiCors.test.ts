@@ -60,6 +60,8 @@ describe("isAllowedGameApiOrigin", () => {
     expect(isAllowedGameApiOrigin("http://127.0.0.1:5173")).toBe(true);
     expect(isAllowedGameApiOrigin("https://evil.example")).toBe(false);
   });
+
+  afterEach(() => vi.unstubAllEnvs());
 });
 
 describe("applyGameApiCorsHeaders", () => {
