@@ -23,11 +23,12 @@ export function readOpenWarEditionPreference(): OpenWarEdition {
 
 /** Persist the selection and keep a session fallback if storage is blocked. */
 export function setOpenWarEditionPreference(edition: OpenWarEdition): void {
-  sessionEdition = edition;
   try {
     window.localStorage.setItem(OPEN_WAR_EDITION_STORAGE_KEY, edition);
+    sessionEdition = null;
   } catch {
-    // The current page session still remembers the selected edition.
+    // Keep the selection for this page session when browser storage is blocked.
+    sessionEdition = edition;
   }
 }
 
