@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { initNavigation } from "../../src/client/Navigation";
 import {
   isOperationsEditionSelected,
   setOpenWarEditionPreference,
 } from "../../src/client/components/EditionPreference";
+import { initNavigation } from "../../src/client/Navigation";
 
 const editionKey = "openwar.edition";
 
