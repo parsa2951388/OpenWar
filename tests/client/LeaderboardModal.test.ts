@@ -874,7 +874,7 @@ describe("LeaderboardModal", () => {
 
   describe("Standalone deployment support", () => {
     it(
-      "shows an explicit unavailable state without requesting unsupported leaderboards",
+      "shows standalone unavailability without fetching",
       async () => {
         const standalone = vi
           .spyOn(ClientEnv, "selfHostedAuthEnabled")
