@@ -1,0 +1,33 @@
+name: Temporary Operations schema formatter
+
+on:
+  push:
+    branches:
+      - open-war/new-operations-hardening
+
+permissions:
+  contents: read
+
+jobs:
+  format-schema:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Generate and format map schema
+        run: npm run gen-map-schema
+      - name: Verify schema diff
+        run: git --no-pager diff -- map-generator/info.schema.json
+      - uses: actions/upload-artifact@v7
+        with:
+          name: formatted-map-schema
+          path: map-generator/info.schema.json
+          retention-days: 1
