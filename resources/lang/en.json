@@ -930,7 +930,11 @@
     "systems_eyebrow": "SIGNATURE SYSTEMS",
     "systems_title": "Beyond territorial control",
     "theatre_map_alt": "Conceptual theatre map with contour lines and supply routes",
-    "top_eyebrow": "TWO WAYS TO COMMAND"
+    "top_eyebrow": "TWO WAYS TO COMMAND",
+    "online_maintenance_status": "SERVICE STATUS · COMING SOON",
+    "online_maintenance_title": "Online Operations is under construction",
+    "online_maintenance_description": "Public battles, room creation and room joining are temporarily unavailable while we finish and test the online service. Your solo Operations missions remain playable.",
+    "online_maintenance_close": "Close service notice"
   },
   "effects": {
     "nukeType": {
