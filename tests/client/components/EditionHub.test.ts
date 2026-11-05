@@ -89,12 +89,12 @@ describe("Open War edition hub", () => {
 
     expect(dashboard?.hasAttribute("hidden")).toBe(false);
     const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");
-    expect(cards).toHaveLength(6);
+    expect(cards).toHaveLength(8);
     expect(cards[0].querySelector(".ow-mission-number")?.textContent).toContain(
       "01",
     );
-    expect(cards[5].querySelector(".ow-mission-number")?.textContent).toContain(
-      "06",
+    expect(cards[7].querySelector(".ow-mission-number")?.textContent).toContain(
+      "08",
     );
     expect(
       cards[0].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
@@ -102,6 +102,24 @@ describe("Open War edition hub", () => {
     expect(
       cards[3].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
     ).toBe(true);
+  });
+
+  it("blocks Operations online entry points and shows the construction notice", async () => {
+    await mountHub();
+    tabs()[1].click();
+    await hub.updateComplete;
+
+    hub.querySelector<HTMLButtonElement>('[data-testid="operations-online-entry"]')!.click();
+    await hub.updateComplete;
+    expect(hub.querySelector('[data-testid="operations-online-notice"]')).toBeTruthy();
+
+    hub.querySelector<HTMLButtonElement>('[data-testid="operations-private-create"]')!.click();
+    await hub.updateComplete;
+    expect(hub.querySelector('[data-testid="operations-online-notice"]')).toBeTruthy();
+
+    hub.querySelector<HTMLButtonElement>('[data-testid="operations-private-join"]')!.click();
+    await hub.updateComplete;
+    expect(hub.querySelector('[data-testid="operations-online-notice"]')).toBeTruthy();
   });
 
   it("resumes the Classic lobby feed on returning to Classic", async () => {
@@ -135,7 +153,7 @@ describe("Open War edition hub", () => {
     expect(locked).not.toBeNull();
     locked!.click();
     await hub.updateComplete;
-    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(3);
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(5);
     expect(
       [...hub.querySelectorAll(".ow-mission-card")].every((card) =>
         card.classList.contains("is-locked"),
@@ -184,7 +202,7 @@ describe("Open War edition hub", () => {
       hub
         .querySelector('[data-testid="campaign-progress"]')
         ?.getAttribute("aria-valuenow"),
-    ).toBe("17");
+    ).toBe("13");
   });
 
   it("shows remaining victories needed to unlock each mission", async () => {
