@@ -1,0 +1,50 @@
+name: Format maintenance gate branch
+
+on:
+  push:
+    branches:
+      - open-war/maintenance-gate-and-ui-expansion
+    paths:
+      - ".github/workflows/format-maintenance-gate.yml"
+      - "src/client/components/EditionHub.ts"
+      - "src/client/components/EditionHub.css"
+      - "tests/client/components/EditionHub.test.ts"
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v7
+        with:
+          ref: open-war/maintenance-gate-and-ui-expansion
+      - name: Setup Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format changed files
+        run: >
+          npx oxfmt --write
+          src/client/components/EditionHub.ts
+          src/client/components/EditionHub.css
+          tests/client/components/EditionHub.test.ts
+      - name: Commit formatter changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add src/client/components/EditionHub.ts src/client/components/EditionHub.css tests/client/components/EditionHub.test.ts
+          if git diff --cached --quiet; then
+            echo "Already formatted."
+            exit 0
+          fi
+          git commit -m "style: format maintenance gate files"
+          git push origin HEAD:open-war/maintenance-gate-and-ui-expansion
