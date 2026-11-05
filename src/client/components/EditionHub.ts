@@ -2,6 +2,8 @@ import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import "../GameModeSelector";
 import { whenModalLoaded } from "../LazyModals";
+import type { HelpModal } from "../HelpModal";
+import type { InventoryModal } from "../InventoryModal";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
@@ -145,6 +147,31 @@ export class EditionHub extends LitElement {
 
   private joinRoom = () => this.showOnlineMaintenance();
 
+  private openSoloSetup = () => {
+    if (!this.validateUsername()) return;
+    whenModalLoaded("single-player-modal", () => {
+      (
+        document.querySelector(
+          "single-player-modal",
+        ) as SinglePlayerModal | null
+      )?.open();
+    });
+  };
+
+  private openLoadout = () => {
+    whenModalLoaded("inventory-modal", () => {
+      (
+        document.querySelector("inventory-modal") as InventoryModal | null
+      )?.open();
+    });
+  };
+
+  private openFieldManual = () => {
+    whenModalLoaded("help-modal", () => {
+      (document.querySelector("help-modal") as HelpModal | null)?.open();
+    });
+  };
+
   private renderEditionControl() {
     return html`
       <section
@@ -275,6 +302,67 @@ export class EditionHub extends LitElement {
             <span class="ow-map-compass" aria-hidden="true">N</span>
           </div>
         </div>
+
+        <section
+          class="ow-quick-access"
+          aria-label=${this.t("quick_access_title")}
+          data-testid="quick-access"
+        >
+          <div class="ow-quick-access-heading">
+            <div>
+              <span class="ow-edition-eyebrow">${this.t("quick_access_eyebrow")}</span>
+              <h3>${this.t("quick_access_title")}</h3>
+            </div>
+            <span class="ow-roadmap-status">${this.t("solo_ready_status")}</span>
+          </div>
+          <div class="ow-quick-access-grid">
+            <article class="ow-quick-access-card">
+              <span class="ow-quick-access-icon" aria-hidden="true">⚔</span>
+              <div>
+                <h4>${this.t("custom_solo_title")}</h4>
+                <p>${this.t("custom_solo_description")}</p>
+              </div>
+              <button
+                class="ow-action-primary"
+                type="button"
+                @click=${this.openSoloSetup}
+              >
+                ${this.t("custom_solo_action")}
+                <span aria-hidden="true">↗</span>
+              </button>
+            </article>
+            <article class="ow-quick-access-card">
+              <span class="ow-quick-access-icon" aria-hidden="true">✦</span>
+              <div>
+                <h4>${this.t("loadout_title")}</h4>
+                <p>${this.t("loadout_description")}</p>
+              </div>
+              <button
+                class="ow-action-secondary"
+                type="button"
+                @click=${this.openLoadout}
+              >
+                ${this.t("loadout_action")}
+                <span aria-hidden="true">↗</span>
+              </button>
+            </article>
+            <article class="ow-quick-access-card">
+              <span class="ow-quick-access-icon" aria-hidden="true">⌘</span>
+              <div>
+                <h4>${this.t("field_manual_title")}</h4>
+                <p>${this.t("field_manual_description")}</p>
+              </div>
+              <button
+                class="ow-action-secondary"
+                type="button"
+                @click=${this.openFieldManual}
+              >
+                ${this.t("field_manual_action")}
+                <span aria-hidden="true">↗</span>
+              </button>
+            </article>
+          </div>
+        </section>
 
         ${
           this.onlineMaintenanceOpen
