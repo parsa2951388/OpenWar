@@ -276,36 +276,37 @@ export class EditionHub extends LitElement {
           </div>
         </div>
 
-        ${this.onlineMaintenanceOpen
-          ? html`
-              <aside
-                class="ow-online-maintenance"
-                role="status"
-                aria-live="polite"
-                data-testid="online-maintenance"
-              >
-                <span
-                  class="ow-online-maintenance-icon"
-                  aria-hidden="true"
+        ${
+          this.onlineMaintenanceOpen
+            ? html`
+                <aside
+                  class="ow-online-maintenance"
+                  role="status"
+                  aria-live="polite"
+                  data-testid="online-maintenance"
                 >
-                  ⚒
-                </span>
-                <div class="ow-online-maintenance-copy">
-                  <span class="ow-online-maintenance-eyebrow">
-                    ${this.t("online_maintenance_status")}
+                  <span class="ow-online-maintenance-icon" aria-hidden="true">
+                    ⚒
                   </span>
-                  <h3>${this.t("online_maintenance_title")}</h3>
-                  <p>${this.t("online_maintenance_description")}</p>
-                </div>
-                <button
-                  class="ow-online-maintenance-close"
-                  type="button"
-                  aria-label=${this.t("online_maintenance_close")}
-                  @click=${() => (this.onlineMaintenanceOpen = false)}
-                >×</button>
-              </aside>
-            `
-          : ""}
+                  <div class="ow-online-maintenance-copy">
+                    <span class="ow-online-maintenance-eyebrow">
+                      ${this.t("online_maintenance_status")}
+                    </span>
+                    <h3>${this.t("online_maintenance_title")}</h3>
+                    <p>${this.t("online_maintenance_description")}</p>
+                  </div>
+                  <button
+                    class="ow-online-maintenance-close"
+                    type="button"
+                    aria-label=${this.t("online_maintenance_close")}
+                    @click=${() => (this.onlineMaintenanceOpen = false)}
+                  >
+                    ×
+                  </button>
+                </aside>
+              `
+            : ""
+        }
         <section
           class="ow-mission-section"
           aria-label=${this.t("mission_selection_title")}

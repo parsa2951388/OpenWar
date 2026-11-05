@@ -109,9 +109,11 @@ describe("Open War edition hub", () => {
     tabs()[1].click();
     await hub.updateComplete;
 
-    hub.querySelector<HTMLButtonElement>(
-      ".ow-operations-actions .ow-action-secondary",
-    )!.click();
+    hub
+      .querySelector<HTMLButtonElement>(
+        ".ow-operations-actions .ow-action-secondary",
+      )!
+      .click();
     await hub.updateComplete;
 
     expect(
