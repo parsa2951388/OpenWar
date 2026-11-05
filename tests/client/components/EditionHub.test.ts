@@ -78,6 +78,32 @@ describe("Open War edition hub", () => {
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
+  it("renders all six mission cards when Operations is selected", async () => {
+    await mountHub();
+
+    const dashboard = hub.querySelector(".ow-operations-dashboard");
+    expect(dashboard?.hasAttribute("hidden")).toBe(true);
+
+    tabs()[1].click();
+    await hub.updateComplete;
+
+    expect(dashboard?.hasAttribute("hidden")).toBe(false);
+    const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");
+    expect(cards).toHaveLength(6);
+    expect(cards[0].querySelector(".ow-mission-number")?.textContent).toContain(
+      "01",
+    );
+    expect(cards[5].querySelector(".ow-mission-number")?.textContent).toContain(
+      "06",
+    );
+    expect(
+      cards[0].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
+    ).toBe(false);
+    expect(
+      cards[3].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
+    ).toBe(true);
+  });
+
   it("resumes the Classic lobby feed on returning to Classic", async () => {
     await mountHub();
 
