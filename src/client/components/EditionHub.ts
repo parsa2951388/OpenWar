@@ -234,6 +234,7 @@ export class EditionHub extends LitElement {
               <button
                 class="ow-action-primary"
                 type="button"
+                data-recommended-mission=${recommendedMission?.id ?? "none"}
                 @click=${this.openTraining}
               >
                 ${this.t(primaryActionKey)}
