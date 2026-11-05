@@ -32,6 +32,13 @@ const PLAYER_TABS: Record<string, PlayerLadder> = {
   playersFfa: RankedType.FreeForAll,
 };
 
+function isStandaloneServer(): boolean {
+  return (
+    typeof ClientEnv.selfHostedAuthEnabled === "function" &&
+    ClientEnv.selfHostedAuthEnabled()
+  );
+}
+
 @customElement("leaderboard-modal")
 export class LeaderboardModal extends BaseModal {
   protected routerName = "leaderboard";
@@ -50,7 +57,7 @@ export class LeaderboardModal extends BaseModal {
   private lastRankedType: PlayerLadder = RankedType.OneVOne;
 
   protected modalConfig() {
-    if (ClientEnv.selfHostedAuthEnabled()) return { tabs: [] };
+    if (isStandaloneServer()) return { tabs: [] };
     return {
       tabs: [
         {
@@ -94,7 +101,7 @@ export class LeaderboardModal extends BaseModal {
   }
 
   private loadActiveTabData() {
-    if (ClientEnv.selfHostedAuthEnabled()) return;
+    if (isStandaloneServer()) return;
     const token = ++this.loadToken;
 
     const active = this.activeTab;
@@ -147,7 +154,7 @@ export class LeaderboardModal extends BaseModal {
       >(${translateText("leaderboard_modal.refresh_time")})</span
     >`;
     const showRefreshTime =
-      !ClientEnv.selfHostedAuthEnabled() &&
+      !isStandaloneServer() &&
       (this.rankedTypeFor(this.activeTab) !== null ||
         this.activeTab === "tribes");
 
@@ -169,7 +176,7 @@ export class LeaderboardModal extends BaseModal {
   }
 
   protected renderBody() {
-    if (ClientEnv.selfHostedAuthEnabled()) {
+    if (isStandaloneServer()) {
       return html`
         <div class="flex h-full items-center justify-center p-8">
           <div class="max-w-xl text-center" role="status" aria-live="polite">
