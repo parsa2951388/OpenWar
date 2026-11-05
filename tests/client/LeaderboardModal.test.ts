@@ -872,29 +872,26 @@ describe("LeaderboardModal", () => {
   });
 
   describe("Standalone deployment support", () => {
-    it(
-      "shows standalone unavailability without fetching",
-      async () => {
-        const { ClientEnv } = await import("../../src/client/ClientEnv");
-        const standalone = vi
-          .spyOn(ClientEnv, "selfHostedAuthEnabled")
-          .mockReturnValue(true);
-        try {
-          modal.open();
-          await modal.updateComplete;
+    it("shows standalone unavailability without fetching", async () => {
+      const { ClientEnv } = await import("../../src/client/ClientEnv");
+      const standalone = vi
+        .spyOn(ClientEnv, "selfHostedAuthEnabled")
+        .mockReturnValue(true);
+      try {
+        modal.open();
+        await modal.updateComplete;
 
-          expect(modal.textContent).toContain(
-            "leaderboard_modal.self_hosted_unavailable",
-          );
-          expect(modal.querySelector("leaderboard-player-list")).toBeNull();
-          expect(modal.querySelector("leaderboard-clan-table")).toBeNull();
-          expect(modal.querySelector("leaderboard-tribe-table")).toBeNull();
-          expect(global.fetch).not.toHaveBeenCalled();
-        } finally {
-          standalone.mockRestore();
-        }
-      },
-    );
+        expect(modal.textContent).toContain(
+          "leaderboard_modal.self_hosted_unavailable",
+        );
+        expect(modal.querySelector("leaderboard-player-list")).toBeNull();
+        expect(modal.querySelector("leaderboard-clan-table")).toBeNull();
+        expect(modal.querySelector("leaderboard-tribe-table")).toBeNull();
+        expect(global.fetch).not.toHaveBeenCalled();
+      } finally {
+        standalone.mockRestore();
+      }
+    });
   });
 
   describe("Modal Functionality", () => {
