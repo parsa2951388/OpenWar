@@ -28,11 +28,15 @@ The key distinction is **code presence versus verified production behavior**. A 
 
 ### OpenBattle-specific observations
 
-- The public interface exposes solo play, private-room creation/joining and ranked 1v1.
-- Ranked 2v2 is labelled as upcoming, not a confirmed live mode.
+- The public interface exposes solo play, private-room creation/joining and ranked 1v1. Ranked 2v2 is labelled as upcoming, not a confirmed live mode.
+- During one live homepage inspection, the header displayed 691 players in match. This is a point-in-time observation, not a stable or guaranteed concurrent-player metric.
+- The home screen has a tag/name field, separate skin and flag selectors, and quick-match cards for Italy FFA, Halkidiki FFA (player-only), Europe (4 teams of 22, peace timer and random spawn), and World (6 teams of 5 with starting gold).
+- Solo configuration is available without signing in. Observed controls include featured/all/favourite map tabs, map search, random map, four AI difficulty levels, FFA/Teams, tribe and nation counts, instant build, random spawn, infinite gold/troops, compact map, water nukes, Doomsday Clock, match length, gold multiplier, starting gold and alliance duration.
+- The solo unit-ban grid lists City, Defense Post, Port, Warship, Boat, Missile Silo, SAM Launcher, Atom Bomb, Hydrogen Bomb, MIRV, Factory, Airport, Aircraft Carrier, Commercial Aircraft, Stealth Fighter, Air Fighter and Ground Attacker. Listing a toggle does not prove that every listed aircraft is fully implemented in live gameplay.
+- Settings observed include colorblind mode, graphics settings, emojis, betrayal alert frame, cursor build-cost display, left-click menu behavior, hidden names/lobby IDs, territory skins, start-on-player zoom, performance overlay and attack ratio.
 - Airport appears in the build menu. Public observation does not establish that its complete gameplay mechanics are operational.
-- A store section exists, but it displayed an empty-catalog message during inspection.
-- The public experience advertises SMS-based sign-in, a Persian community presence, replay/history features and an Android web-app/download path. Authenticated panel details could not be fully inspected.
+- A store section exists, but it displayed an empty-catalog message during inspection. Multiplayer/team matchmaking requires sign-in; replay/history and Android web-app/download features are advertised publicly.
+- The public experience advertises SMS-based sign-in and a Persian community presence. Authenticated panel details could not be fully inspected.
 
 ### OpenFront-specific systems worth retaining or validating
 
