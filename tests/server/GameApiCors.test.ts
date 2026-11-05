@@ -6,6 +6,7 @@ import {
   DESKTOP_APP_ORIGIN,
   applyGameApiCorsHeaders,
   gameApiCors,
+  isAllowedGameApiOrigin,
 } from "../../src/server/GameApiCors";
 import { stripWorkerPrefix } from "../../src/server/WorkerPathPrefix";
 
@@ -23,6 +24,43 @@ function collect() {
     },
   };
 }
+
+describe("isAllowedGameApiOrigin", () => {
+  test("accepts the configured standalone browser origin", () => {
+    vi.stubEnv("DOMAIN", "open-war-8o2.pages.dev");
+    vi.stubEnv("SITE_HOST", "");
+    vi.stubEnv("SUBDOMAIN", "");
+    vi.stubEnv("GAME_DOMAIN", "");
+    vi.stubEnv("GAME_HOST", "");
+    expect(isAllowedGameApiOrigin("https://open-war-8o2.pages.dev")).toBe(true);
+  });
+
+  test("rejects null, malformed and lookalike origins", () => {
+    vi.stubEnv("DOMAIN", "open-war-8o2.pages.dev");
+    vi.stubEnv("SITE_HOST", "");
+    vi.stubEnv("SUBDOMAIN", "");
+    vi.stubEnv("GAME_DOMAIN", "");
+    vi.stubEnv("GAME_HOST", "");
+    for (const origin of [
+      "null",
+      "https://open-war-8o2.pages.dev.evil.example",
+      "https://evil.example",
+    ]) {
+      expect(isAllowedGameApiOrigin(origin)).toBe(false);
+    }
+  });
+
+  test("allows localhost Vite origins only for the localhost audience", () => {
+    vi.stubEnv("DOMAIN", "localhost");
+    vi.stubEnv("SITE_HOST", "");
+    vi.stubEnv("SUBDOMAIN", "");
+    vi.stubEnv("GAME_DOMAIN", "");
+    vi.stubEnv("GAME_HOST", "");
+    expect(isAllowedGameApiOrigin("http://localhost:5173")).toBe(true);
+    expect(isAllowedGameApiOrigin("http://127.0.0.1:5173")).toBe(true);
+    expect(isAllowedGameApiOrigin("https://evil.example")).toBe(false);
+  });
+});
 
 describe("applyGameApiCorsHeaders", () => {
   test("allows the desktop app origin", () => {
