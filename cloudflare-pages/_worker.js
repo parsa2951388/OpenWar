@@ -5,7 +5,7 @@
  * This Pages advanced-mode worker proxies the same path and request through
  * to that origin, so parsaoj.pages.dev can be used as the public game address.
  */
-const ORIGIN = "https://open-war-game.onrender.com";
+const ORIGIN = "https://open-war-new-alpha.onrender.com";
 
 export default {
   async fetch(request) {

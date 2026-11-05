@@ -22,6 +22,10 @@ interface ClientBucket {
 export class ClientMsgRateLimiter {
   private buckets = new Map<ClientID, ClientBucket>();
 
+  forget(clientID: ClientID): void {
+    this.buckets.delete(clientID);
+  }
+
   check(clientID: ClientID, type: string, bytes: number): RateLimitResult {
     const bucket = this.getOrCreate(clientID);
     bucket.totalBytes += bytes;

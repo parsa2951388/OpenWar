@@ -6,6 +6,7 @@ import {
   requestDesktopQuit,
 } from "../DesktopShell";
 import { translateText } from "../Utils";
+import { OPEN_WAR_EDITION_STORAGE_KEY } from "./EditionPreference";
 
 export type WebGLGateStatus = "software" | "unsupported" | "limited";
 
@@ -100,6 +101,16 @@ const DESKTOP_STEP_KEYS = [
 export class WebGLGate extends LitElement {
   @property() status: WebGLGateStatus = "software";
 
+  private returnToMenu = (): void => {
+    // The Edition Hub restores the last selected edition on the root route.
+    // A hard WebGL failure must not send players straight back to the same gate.
+    try {
+      window.localStorage.setItem(OPEN_WAR_EDITION_STORAGE_KEY, "classic");
+    } catch {
+      // Navigation still works when storage is unavailable.
+    }
+  };
+
   // Render into light DOM so global styles (Tailwind utilities, bg-surface) apply.
   createRenderRoot() {
     return this;
@@ -145,6 +156,7 @@ export class WebGLGate extends LitElement {
           </p>
           <a
             href="/"
+            @click=${this.returnToMenu}
             data-testid="webgl-return-menu"
             class="mb-5 block w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
           >

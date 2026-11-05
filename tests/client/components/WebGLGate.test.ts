@@ -11,6 +11,7 @@ describe("webgl-gate", () => {
   afterEach(() => {
     gate?.remove();
     window.openfrontDesktop = undefined;
+    window.localStorage.removeItem("openwar.edition");
   });
 
   async function mount(status: WebGLGateStatus): Promise<WebGLGate> {
@@ -20,6 +21,25 @@ describe("webgl-gate", () => {
     await gate.updateComplete;
     return gate;
   }
+
+  it.each<WebGLGateStatus>(["software", "unsupported"])(
+    "returns to Classic instead of reopening Operations after the %s gate",
+    async (status) => {
+      window.localStorage.setItem("openwar.edition", "operations");
+      await mount(status);
+
+      const backToMenu = gate!.querySelector<HTMLAnchorElement>(
+        '[data-testid="webgl-return-menu"]',
+      );
+      expect(backToMenu).not.toBeNull();
+      backToMenu!.addEventListener("click", (event) => event.preventDefault(), {
+        once: true,
+      });
+      backToMenu!.click();
+
+      expect(window.localStorage.getItem("openwar.edition")).toBe("classic");
+    },
+  );
 
   it("shows browser instructions on the web", async () => {
     await mount("unsupported");

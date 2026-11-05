@@ -10,6 +10,7 @@ import {
 import { encodeLobbyMessage } from "@openfront/shared/ZbinWire";
 import http from "http";
 import { WebSocket, WebSocketServer } from "ws";
+import { isAllowedWebSocketOrigin } from "./GameApiCors";
 import { GameManager } from "./GameManager";
 import {
   InternalGameInfo,
@@ -307,6 +308,17 @@ export class WorkerLobbyService {
 
   private setupUpgradeHandler() {
     this.server.on("upgrade", (request, socket, head) => {
+      const origin = request.headers.origin;
+      if (!isAllowedWebSocketOrigin(origin, request.headers.host)) {
+        this.log.warn("Rejected WebSocket handshake from untrusted origin", {
+          origin,
+          host: request.headers.host,
+        });
+        socket.end(
+          "HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
+        );
+        return;
+      }
       const pathname = (request.url ?? "").split("?")[0];
       if (pathname === "/lobbies" || pathname.endsWith("/lobbies")) {
         this.lobbiesWss.handleUpgrade(request, socket, head, (ws) => {

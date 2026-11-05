@@ -126,6 +126,67 @@ describe("Open War edition hub", () => {
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("classic");
   });
 
+  it("filters missions by their real unlock and completion state", async () => {
+    await mountHub();
+
+    const locked = hub.querySelector<HTMLButtonElement>(
+      '[data-mission-filter="locked"]',
+    );
+    expect(locked).not.toBeNull();
+    locked!.click();
+    await hub.updateComplete;
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(3);
+    expect(
+      [...hub.querySelectorAll(".ow-mission-card")].every((card) =>
+        card.classList.contains("is-locked"),
+      ),
+    ).toBe(true);
+
+    hub
+      .querySelector<HTMLButtonElement>('[data-mission-filter="ready"]')!
+      .click();
+    await hub.updateComplete;
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(3);
+    expect(
+      [...hub.querySelectorAll(".ow-mission-card")].every(
+        (card) => !card.classList.contains("is-locked"),
+      ),
+    ).toBe(true);
+  });
+
+  it("shows a useful empty state when a filter has no completed missions", async () => {
+    await mountHub();
+    hub
+      .querySelector<HTMLButtonElement>('[data-mission-filter="cleared"]')!
+      .click();
+    await hub.updateComplete;
+
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(0);
+    const emptyState = hub.querySelector<HTMLElement>(
+      '[data-testid="mission-filter-empty"]',
+    );
+    expect(emptyState?.getAttribute("role")).toBe("status");
+    expect(emptyState?.textContent?.trim()).toBeTruthy();
+  });
+
+  it("exposes accessible campaign completion progress", async () => {
+    await mountHub();
+    const progress = hub.querySelector<HTMLElement>(
+      '[data-testid="campaign-progress"]',
+    );
+    expect(progress?.getAttribute("role")).toBe("progressbar");
+    expect(progress?.getAttribute("aria-valuenow")).toBe("0");
+
+    setCampaignWins(1);
+    await hub.updateComplete;
+
+    expect(
+      hub
+        .querySelector('[data-testid="campaign-progress"]')
+        ?.getAttribute("aria-valuenow"),
+    ).toBe("17");
+  });
+
   it("shows remaining victories needed to unlock each mission", async () => {
     await mountHub();
 

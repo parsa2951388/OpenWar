@@ -166,3 +166,59 @@ jobs:
           submodules: false
       - name: Build production image
         run: docker build --pull --tag open-war:ci .
+
+
+  dependency-audit:
+    name: 🔐 npm dependency audit (all and production)
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Setup pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --no-audit --no-fund
+      - name: Generate all and production-only audit reports
+        shell: bash
+        run: |
+          npm audit --json > npm-audit-all.json || true
+          npm audit --omit=dev --json > npm-audit-production.json || true
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          for (const [label, file] of [
+            ["All dependencies", "npm-audit-all.json"],
+            ["Production dependencies", "npm-audit-production.json"],
+          ]) {
+            const report = JSON.parse(fs.readFileSync(file, "utf8"));
+            const counts = report.metadata?.vulnerabilities ?? {};
+            console.log(`\n${label}: ${JSON.stringify(counts)}`);
+            for (const [name, item] of Object.entries(report.vulnerabilities ?? {})) {
+              const via = (item.via ?? []).map((entry) =>
+                typeof entry === "string"
+                  ? entry
+                  : `${entry.name ?? name}: ${entry.title ?? "advisory"} [${entry.url ?? "no advisory URL"}]`,
+              );
+              console.log(JSON.stringify({
+                package: name,
+                severity: item.severity,
+                direct: item.isDirect,
+                range: item.range,
+                via,
+                fixAvailable: item.fixAvailable,
+              }));
+            }
+          }
+          NODE
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-dependency-audit
+          path: npm-audit-*.json
+          retention-days: 14

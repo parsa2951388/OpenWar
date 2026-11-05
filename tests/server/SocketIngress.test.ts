@@ -35,11 +35,12 @@ function setup(rate: Rate = "ok") {
     kick: vi.fn(),
   };
   const check = vi.fn((): Rate => rate);
+  const forget = vi.fn();
   const log = mockLogger();
   const ingress = new SocketIngress(
     log,
     view,
-    { check },
+    { check, forget },
     { ...noopMatchGatekeeper, intentObserved },
   );
   const observed = () =>
@@ -47,7 +48,7 @@ function setup(rate: Rate = "ok") {
       ...o,
       client: o.client.clientID,
     }));
-  return { ingress, view, check, observed, log };
+  return { ingress, view, check, forget, observed, log };
 }
 
 const P1 = cid("p1");
@@ -213,6 +214,30 @@ describe("SocketIngress.receive", () => {
 });
 
 describe("SocketIngress.attach", () => {
+  it("releases the rate-limit bucket when a client socket closes", async () => {
+    const { ingress, view, forget } = setup();
+    const client = makeClient({ clientID: P1 });
+    ingress.attach(client);
+
+    await mockWsOf(client).trigger("close");
+
+    expect(forget).toHaveBeenCalledOnce();
+    expect(forget).toHaveBeenCalledWith(P1);
+    expect(view.onClose).toHaveBeenCalledWith(client);
+  });
+
+  it("releases the bucket when the socket is already closed before attach", () => {
+    const { ingress, view, forget } = setup();
+    const client = makeClient({ clientID: P1 });
+    mockWsOf(client).readyState = 3;
+
+    ingress.attach(client);
+
+    expect(forget).toHaveBeenCalledOnce();
+    expect(forget).toHaveBeenCalledWith(P1);
+    expect(view.onClose).toHaveBeenCalledWith(client);
+  });
+
   it("routes the socket's frames through receive and its close to the game", async () => {
     const { ingress, view } = setup();
     const client = makeClient({ clientID: P1 });

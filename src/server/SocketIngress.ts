@@ -50,7 +50,7 @@ export class SocketIngress {
     private readonly view: SocketIngressView,
     private readonly rateLimiter: Pick<
       ClientMsgRateLimiter,
-      "check"
+      "check" | "forget"
     > = new ClientMsgRateLimiter(),
     private readonly gatekeeper: MatchGatekeeper = noopMatchGatekeeper,
   ) {}
@@ -74,6 +74,7 @@ export class SocketIngress {
         clientID: client.clientID,
         persistentID: client.persistentID,
       });
+      this.rateLimiter.forget(client.clientID);
       this.view.onClose(client);
     });
     client.ws.on("error", (error: Error) => {
@@ -90,6 +91,7 @@ export class SocketIngress {
         clientID: client.clientID,
         readyState: client.ws.readyState,
       });
+      this.rateLimiter.forget(client.clientID);
       this.view.onClose(client);
     }
   }
