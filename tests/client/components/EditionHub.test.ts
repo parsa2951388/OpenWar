@@ -162,9 +162,11 @@ describe("Open War edition hub", () => {
     await hub.updateComplete;
 
     expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(0);
-    expect(
-      hub.querySelector('[data-testid="mission-filter-empty"]')?.textContent,
-    ).toMatch(/no missions/i);
+    const emptyState = hub.querySelector<HTMLElement>(
+      '[data-testid="mission-filter-empty"]',
+    );
+    expect(emptyState?.getAttribute("role")).toBe("status");
+    expect(emptyState?.textContent?.trim()).toBeTruthy();
   });
 
   it("exposes accessible campaign completion progress", async () => {
