@@ -26,8 +26,8 @@ import { MasterLobbyService } from "./MasterLobbyService";
 import { setNoStoreHeaders } from "./NoStoreHeaders";
 import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
-import { registerSelfHostedApi } from "./SelfHostedApi";
 import { securityHeaders } from "./SecurityHeaders";
+import { registerSelfHostedApi } from "./SelfHostedApi";
 import { ServerEnv } from "./ServerEnv";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
 

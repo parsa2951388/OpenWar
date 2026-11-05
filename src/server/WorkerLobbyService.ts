@@ -10,6 +10,7 @@ import {
 import { encodeLobbyMessage } from "@openfront/shared/ZbinWire";
 import http from "http";
 import { WebSocket, WebSocketServer } from "ws";
+import { isAllowedGameApiOrigin } from "./GameApiCors";
 import { GameManager } from "./GameManager";
 import {
   InternalGameInfo,
@@ -19,7 +20,6 @@ import {
   WorkerReady,
 } from "./IPCBridgeSchema";
 import { logger } from "./Logger";
-import { isAllowedGameApiOrigin } from "./GameApiCors";
 import { ServerEnv } from "./ServerEnv";
 
 // The game config advertised for a listed private lobby: everything the

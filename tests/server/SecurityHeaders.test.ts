@@ -26,7 +26,9 @@ describe("security headers", () => {
     app.use(securityHeaders);
     app.get("/health", (_req, res) => res.json({ ok: true }));
     const server = http.createServer(app);
-    await new Promise<void>((resolve) => server.listen(0, "127.0.0.1", resolve));
+    await new Promise<void>((resolve) =>
+      server.listen(0, "127.0.0.1", resolve),
+    );
     try {
       const address = server.address() as AddressInfo;
       const response = await fetch(`http://127.0.0.1:${address.port}/health`);
@@ -34,9 +36,7 @@ describe("security headers", () => {
       expect(response.headers.get("referrer-policy")).toBe(
         "strict-origin-when-cross-origin",
       );
-      expect(response.headers.get("permissions-policy")).toContain(
-        "camera=()",
-      );
+      expect(response.headers.get("permissions-policy")).toContain("camera=()");
     } finally {
       await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),

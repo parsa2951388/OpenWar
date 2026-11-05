@@ -764,12 +764,7 @@
       rgba(197, 163, 110, 0.12),
       transparent 34%
     ),
-    linear-gradient(
-      125deg,
-      #1a2b28 0%,
-      #101b1b 54%,
-      #172522 100%
-    );
+    linear-gradient(125deg, #1a2b28 0%, #101b1b 54%, #172522 100%);
 }
 
 .ow-operations-hero-content {
@@ -804,11 +799,7 @@
       rgba(197, 163, 110, 0.13),
       transparent 48%
     ),
-    linear-gradient(
-      145deg,
-      rgba(25, 42, 38, 0.99),
-      rgba(10, 20, 20, 0.99)
-    );
+    linear-gradient(145deg, rgba(25, 42, 38, 0.99), rgba(10, 20, 20, 0.99));
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
