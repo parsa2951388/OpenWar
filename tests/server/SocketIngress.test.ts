@@ -238,7 +238,6 @@ describe("SocketIngress.attach", () => {
     expect(view.onClose).toHaveBeenCalledWith(client);
   });
 
-
   it("routes the socket's frames through receive and its close to the game", async () => {
     const { ingress, view } = setup();
     const client = makeClient({ clientID: P1 });
