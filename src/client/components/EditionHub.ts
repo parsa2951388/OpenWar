@@ -190,8 +190,8 @@ export class EditionHub extends LitElement {
             </article>
             <article class="ow-coming-soon-card">
               <span class="ow-coming-soon-card-icon" aria-hidden="true">◉</span>
-              <h4>${this.t("coming_soon_battle_royale_title")}</h4>
-              <p>${this.t("coming_soon_battle_royale_body")}</p>
+              <h4>${this.t("coming_soon_coop_campaign_title")}</h4>
+              <p>${this.t("coming_soon_coop_campaign_body")}</p>
               <span class="ow-coming-soon-card-status">${this.t("coming_soon_planned")}</span>
             </article>
           </div>
