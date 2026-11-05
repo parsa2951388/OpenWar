@@ -1,0 +1,64 @@
+name: Repair security and formatting PR
+
+on:
+  push:
+    branches:
+      - open-war/security-ops-polish-2026-11
+
+permissions:
+  contents: write
+
+concurrency:
+  group: repair-security-ops-pr
+  cancel-in-progress: false
+
+jobs:
+  repair:
+    if: "!contains(github.event.head_commit.message, 'chore: auto-fix production advisories and formatting')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 30
+    steps:
+      - name: Checkout PR branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.ref }}
+          persist-credentials: true
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Setup npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install dependencies
+        run: npm ci --no-audit
+      - name: Apply non-breaking production dependency security fixes
+        run: npm audit fix --omit=dev
+      - name: Format changed source files
+        run: |
+          npx oxfmt --write \
+            src/client/components/EditionHub.css \
+            src/server/GameApiCors.ts \
+            src/server/Master.ts \
+            src/server/SecurityHeaders.ts \
+            src/server/Worker.ts \
+            src/server/WorkerLobbyService.ts \
+            tests/server/GameApiCors.test.ts \
+            tests/server/SecurityHeaders.test.ts \
+            .github/workflows/ci.yml
+      - name: Verify production dependency security
+        run: npm audit --omit=dev --audit-level=high
+      - name: Verify formatting and lint
+        run: |
+          npm run format:check
+          npm run lint
+      - name: Commit safe fixes to this PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add package-lock.json src/client/components/EditionHub.css src/server/GameApiCors.ts src/server/Master.ts src/server/SecurityHeaders.ts src/server/Worker.ts src/server/WorkerLobbyService.ts tests/server/GameApiCors.test.ts tests/server/SecurityHeaders.test.ts .github/workflows/ci.yml
+          if git diff --cached --quiet; then
+            echo "No automatic fixes were needed."
+          else
+            git commit -m "chore: auto-fix production advisories and formatting"
+            git push origin HEAD:${{ github.ref_name }}
+          fi
