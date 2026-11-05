@@ -876,23 +876,23 @@ describe("LeaderboardModal", () => {
     it(
       "shows an explicit unavailable state without requesting unsupported leaderboards",
       async () => {
-      const standalone = vi
-        .spyOn(ClientEnv, "selfHostedAuthEnabled")
-        .mockReturnValue(true);
-      try {
-        modal.open();
-        await modal.updateComplete;
+        const standalone = vi
+          .spyOn(ClientEnv, "selfHostedAuthEnabled")
+          .mockReturnValue(true);
+        try {
+          modal.open();
+          await modal.updateComplete;
 
-        expect(modal.textContent).toContain(
-          "leaderboard_modal.self_hosted_unavailable",
-        );
-        expect(modal.querySelector("leaderboard-player-list")).toBeNull();
-        expect(modal.querySelector("leaderboard-clan-table")).toBeNull();
-        expect(modal.querySelector("leaderboard-tribe-table")).toBeNull();
-        expect(global.fetch).not.toHaveBeenCalled();
-      } finally {
-        standalone.mockRestore();
-      }
+          expect(modal.textContent).toContain(
+            "leaderboard_modal.self_hosted_unavailable",
+          );
+          expect(modal.querySelector("leaderboard-player-list")).toBeNull();
+          expect(modal.querySelector("leaderboard-clan-table")).toBeNull();
+          expect(modal.querySelector("leaderboard-tribe-table")).toBeNull();
+          expect(global.fetch).not.toHaveBeenCalled();
+        } finally {
+          standalone.mockRestore();
+        }
       },
     );
   });
