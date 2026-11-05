@@ -1136,7 +1136,9 @@
   color: #e7c88e;
   font-size: 1.35rem;
 }
-.ow-online-maintenance-copy { min-width: 0; }
+.ow-online-maintenance-copy {
+  min-width: 0;
+}
 .ow-online-maintenance-eyebrow {
   color: #d8b77d;
   font-size: 0.62rem;
@@ -1177,11 +1179,16 @@
     gap: 0.75rem;
     padding: 1rem;
   }
-  .ow-online-maintenance-icon { width: 38px; height: 38px; }
+  .ow-online-maintenance-icon {
+    width: 38px;
+    height: 38px;
+  }
   .ow-online-maintenance-close {
     position: absolute;
     top: 0.7rem;
     right: 0.7rem;
   }
-  .ow-online-maintenance-copy { padding-right: 2rem; }
+  .ow-online-maintenance-copy {
+    padding-right: 2rem;
+  }
 }
