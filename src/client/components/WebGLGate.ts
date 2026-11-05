@@ -128,12 +128,16 @@ export class WebGLGate extends LitElement {
     return html`
       <div
         class="fixed inset-0 z-[10000] flex items-center justify-center bg-black/85 p-5"
+        role="dialog"
+        aria-modal="true"
+        aria-labelledby="webgl-gate-title"
+        aria-describedby="webgl-gate-description"
       >
         <div
           class="w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 sm:p-8 rounded-xl bg-surface text-white shadow-2xl"
         >
-          <h2 class="text-xl font-bold mb-3">${title}</h2>
-          <p class="text-sm leading-relaxed text-white/85 mb-5">${intro}</p>
+          <h2 id="webgl-gate-title" class="text-xl font-bold mb-3">${title}</h2>
+          <p id="webgl-gate-description" class="text-sm leading-relaxed text-white/85 mb-5">${intro}</p>
           ${sections.map(
             (section) => html`
               <section class="mb-5">
@@ -160,6 +164,7 @@ export class WebGLGate extends LitElement {
             limited
               ? html`
                   <button
+                    data-testid="webgl-continue-anyway"
                     class="mt-5 w-full py-2.5 rounded-lg bg-white/10 hover:bg-white/20 text-sm font-bold text-white transition-colors"
                     @click=${() => this.remove()}
                   >
@@ -168,6 +173,13 @@ export class WebGLGate extends LitElement {
                 `
               : null
           }
+          <a
+            href="/"
+            data-testid="webgl-return-menu"
+            class="mt-5 block w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            ${translateText("webgl_gate.return_to_menu")}
+          </a>
         </div>
       </div>
     `;
