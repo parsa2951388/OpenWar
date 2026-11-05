@@ -1097,3 +1097,81 @@
     transform: none;
   }
 }
+
+
+/* Online Operations is intentionally gated while its multiplayer service is
+   under construction. Keep the notice visible, calm and readable on mobile. */
+.ow-online-maintenance {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: clamp(1.1rem, 2.2vw, 1.55rem);
+  border: 1px solid rgba(224, 190, 127, 0.42);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 0 50%, rgba(179, 137, 72, 0.15), transparent 55%),
+    linear-gradient(120deg, rgba(28, 38, 34, 0.98), rgba(12, 22, 22, 0.98));
+  box-shadow: inset 0 1px 0 rgba(245, 225, 190, 0.06), 0 14px 36px rgba(0, 0, 0, 0.18);
+}
+.ow-online-maintenance-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgba(224, 190, 127, 0.32);
+  border-radius: 13px;
+  background: rgba(224, 190, 127, 0.1);
+  color: #e7c88e;
+  font-size: 1.35rem;
+}
+.ow-online-maintenance-copy { min-width: 0; }
+.ow-online-maintenance-eyebrow {
+  color: #d8b77d;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ow-online-maintenance h3 {
+  margin: 0.25rem 0;
+  color: #f1eadc;
+  font-size: clamp(1rem, 1.7vw, 1.25rem);
+}
+.ow-online-maintenance p {
+  margin: 0;
+  color: #aebbb3;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+.ow-online-maintenance-close {
+  align-self: start;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(224, 230, 220, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #dce4db;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.ow-online-maintenance-close:focus-visible {
+  outline: 3px solid #f0bd72;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .ow-online-maintenance {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .ow-online-maintenance-icon { width: 38px; height: 38px; }
+  .ow-online-maintenance-close {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+  }
+  .ow-online-maintenance-copy { padding-right: 2rem; }
+}
