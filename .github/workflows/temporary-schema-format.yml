@@ -6,7 +6,7 @@ on:
       - open-war/new-operations-hardening
 
 permissions:
-  contents: read
+  contents: write
 
 jobs:
   format-schema:
@@ -24,8 +24,13 @@ jobs:
         run: npm ci
       - name: Run the exact schema generator and formatter
         run: npm run gen-map-schema
-      - uses: actions/upload-artifact@v7
-        with:
-          name: generated-map-schema
-          path: map-generator/info.schema.json
-          retention-days: 1
+      - name: Commit exact generated output and remove this temporary workflow
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add map-generator/info.schema.json
+          git rm .github/workflows/temporary-schema-format.yml
+          git commit -m "chore(maps): commit exact generated schema formatting"
+          git push origin "HEAD:${GITHUB_REF_NAME}"
