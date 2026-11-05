@@ -143,6 +143,13 @@ export class WebGLGate extends LitElement {
           >
             ${intro}
           </p>
+          <a
+            href="/"
+            data-testid="webgl-return-menu"
+            class="mb-5 block w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
+          >
+            ${translateText("webgl_gate.return_to_menu")}
+          </a>
           ${sections.map(
             (section) => html`
               <section class="mb-5">
@@ -178,13 +185,6 @@ export class WebGLGate extends LitElement {
                 `
               : null
           }
-          <a
-            href="/"
-            data-testid="webgl-return-menu"
-            class="mt-5 block w-full rounded-lg border border-white/20 bg-white/10 px-4 py-2.5 text-center text-sm font-bold text-white transition-colors hover:bg-white/20 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-white"
-          >
-            ${translateText("webgl_gate.return_to_menu")}
-          </a>
         </div>
       </div>
     `;
