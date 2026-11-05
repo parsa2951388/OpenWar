@@ -19,7 +19,9 @@ describe("createSecurityHeaders", () => {
     const next = vi.fn();
     createSecurityHeaders("prod")({} as any, response, next);
     expect(headers.get("X-Content-Type-Options")).toBe("nosniff");
-    expect(headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    expect(headers.get("Referrer-Policy")).toBe(
+      "strict-origin-when-cross-origin",
+    );
     expect(headers.get("Strict-Transport-Security")).toBe("max-age=31536000");
     expect(next).toHaveBeenCalledOnce();
   });
