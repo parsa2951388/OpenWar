@@ -1398,3 +1398,5 @@
     letter-spacing: 0.035em;
   }
 }
+
+/* Format pass is enforced by the branch workflow before merge. */
