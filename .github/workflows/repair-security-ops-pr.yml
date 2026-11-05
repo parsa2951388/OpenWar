@@ -47,6 +47,8 @@ jobs:
             .github/workflows/ci.yml
       - name: Verify production dependency security
         run: npm audit --omit=dev --audit-level=high
+      - name: Restore the full dependency tree for lint and formatting
+        run: npm ci --no-audit
       - name: Verify formatting and lint
         run: |
           npm run format:check
