@@ -11,6 +11,7 @@ describe("webgl-gate", () => {
   afterEach(() => {
     gate?.remove();
     window.openfrontDesktop = undefined;
+    window.localStorage.removeItem("openwar.edition");
   });
 
   async function mount(status: WebGLGateStatus): Promise<WebGLGate> {
