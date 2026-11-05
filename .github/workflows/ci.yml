@@ -41,6 +41,48 @@ jobs:
         with:
           path: out/index.html
           retention-days: 1
+  dependency-repair-preview:
+    name: 🧰 Prepare dependency and format repair
+    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'audit/operations-ux-refresh-2026-11' && github.event.pull_request.head.repo.full_name == github.repository
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Checkout pull request branch
+        uses: actions/checkout@v7
+        with:
+          ref: ${{ github.event.pull_request.head.sha }}
+          submodules: false
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Setup npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Apply compatible npm advisory fixes
+        continue-on-error: true
+        run: npm audit fix --ignore-scripts
+      - name: Format changed source and localization files
+        run: npm run format -- src/client/components/EditionHub.ts src/client/components/EditionHub.css src/client/components/OperationsCampaign.ts tests/client/OperationsCampaign.test.ts resources/lang/en.json resources/lang/fa.json
+      - name: Upload prepared lockfile and formatted source
+        uses: actions/upload-artifact@v7
+        with:
+          name: openwar-audit-repair
+          path: |
+            package.json
+            package-lock.json
+            src/client/components/EditionHub.ts
+            src/client/components/EditionHub.css
+            src/client/components/OperationsCampaign.ts
+            tests/client/OperationsCampaign.test.ts
+            resources/lang/en.json
+            resources/lang/fa.json
+          retention-days: 3
+      - name: Report remaining high production advisories
+        continue-on-error: true
+        run: npm audit --omit=dev --audit-level=high
+
   dependency-audit:
     name: 🔒 Production dependency audit
     runs-on: ubuntu-latest
