@@ -25,6 +25,12 @@ describe("WebGLGate navigation and recovery", () => {
       expect(dialog?.getAttribute("aria-labelledby")).toBe("webgl-gate-title");
       expect(backToMenu?.getAttribute("href")).toBe("/");
       expect(backToMenu?.textContent?.trim()).toBeTruthy();
+      const firstSection = dialog?.querySelector("section");
+      expect(firstSection).not.toBeNull();
+      expect(
+        backToMenu!.compareDocumentPosition(firstSection!) &
+          Node.DOCUMENT_POSITION_FOLLOWING,
+      ).not.toBe(0);
       expect(
         gate.querySelector('[data-testid="webgl-continue-anyway"]'),
       ).toBeNull();
