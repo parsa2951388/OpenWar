@@ -1,6 +1,7 @@
 import { RankedType } from "@openfront/engine-api/game/GameTypes";
 import { html } from "lit";
 import { customElement, query, state } from "lit/decorators.js";
+import { ClientEnv } from "./ClientEnv";
 import { BaseModal } from "./components/BaseModal";
 import "./components/leaderboard/LeaderboardClanTable";
 import type { LeaderboardClanTable } from "./components/leaderboard/LeaderboardClanTable";
@@ -49,6 +50,7 @@ export class LeaderboardModal extends BaseModal {
   private lastRankedType: PlayerLadder = RankedType.OneVOne;
 
   protected modalConfig() {
+    if (ClientEnv.selfHostedAuthEnabled()) return { tabs: [] };
     return {
       tabs: [
         {
@@ -92,6 +94,7 @@ export class LeaderboardModal extends BaseModal {
   }
 
   private loadActiveTabData() {
+    if (ClientEnv.selfHostedAuthEnabled()) return;
     const token = ++this.loadToken;
 
     const active = this.activeTab;
@@ -154,8 +157,9 @@ export class LeaderboardModal extends BaseModal {
           </span>
           ${this.activeTab === "clans" ? dateRange : ""}
           ${
-            this.rankedTypeFor(this.activeTab) !== null ||
-            this.activeTab === "tribes"
+            !ClientEnv.selfHostedAuthEnabled() &&
+            (this.rankedTypeFor(this.activeTab) !== null ||
+              this.activeTab === "tribes")
               ? refreshTime
               : ""
           }
@@ -167,6 +171,24 @@ export class LeaderboardModal extends BaseModal {
   }
 
   protected renderBody() {
+    if (ClientEnv.selfHostedAuthEnabled()) {
+      return html`
+        <div class="flex h-full items-center justify-center p-8">
+          <div
+            class="max-w-xl text-center"
+            role="status"
+            aria-live="polite"
+          >
+            <h3 class="mb-3 text-lg font-bold text-white">
+              ${translateText("leaderboard_modal.self_hosted_unavailable")}
+            </h3>
+            <p class="text-sm leading-6 text-white/60">
+              ${translateText("leaderboard_modal.self_hosted_unavailable_body")}
+            </p>
+          </div>
+        </div>
+      `;
+    }
     return html`
       <div class="flex-1 min-h-0 h-full">
         <leaderboard-player-list
