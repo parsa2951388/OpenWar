@@ -384,9 +384,9 @@ describe("the upcoming heading (the route to the lobby browser)", () => {
 
 /**
  * At sm+ the block is a placed grid, so the class strings are the layout.
- * These pin the three states where an unconditional placement collided or
- * left a track empty: loading, a snapshot with no FFA lobby, and a column
- * with only one of its two cards.
+ * The live battle hub header occupies its own full-width row; these assertions
+ * target the lobby column and pin the three cases where an unconditional
+ * placement collided or left a track empty.
  */
 describe("grid placement", () => {
   const section = () => selector.querySelector("section.ow-lobby-column")!;
