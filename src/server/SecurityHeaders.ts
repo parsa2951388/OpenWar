@@ -2,8 +2,8 @@ import type { NextFunction, Request, Response } from "express";
 
 /**
  * Baseline browser hardening shared by the master and game-worker HTTP apps.
- * CSP and HSTS are intentionally managed at the public edge: this app can be
- * embedded by approved game portals and TLS terminates outside the container.
+ * A global CSP needs a provider-specific allowlist and is intentionally not
+ * guessed here; TLS may terminate outside the application container.
  */
 export function applySecurityHeaders(
   setHeader: (name: string, value: string) => void,
