@@ -14,6 +14,7 @@ import {
 import {
   getOperationsCampaignSummary,
   getOperationsMissionProgress,
+  getRecommendedOperationsMission,
   isOperationsMissionUnlocked,
   OPERATIONS_CAMPAIGN_UPDATED_EVENT,
   readOperationsCampaignProgress,
@@ -128,7 +129,10 @@ export class EditionHub extends LitElement {
     });
   };
 
-  private openTraining = () => this.openMission("iron-gate");
+  private openTraining = () => {
+    const mission = getRecommendedOperationsMission(this.campaignProgress);
+    if (mission) this.openMission(mission.id);
+  };
 
   private openPublicBattles = () => {
     if (!this.validateUsername()) return;
@@ -202,6 +206,17 @@ export class EditionHub extends LitElement {
 
   private renderOperationsDashboard() {
     const campaignSummary = getOperationsCampaignSummary(this.campaignProgress);
+    const recommendedMission = getRecommendedOperationsMission(
+      this.campaignProgress,
+    );
+    const campaignComplete =
+      campaignSummary.clearedMissions === campaignSummary.totalMissions;
+    const primaryActionKey =
+      campaignSummary.wins === 0
+        ? "practice_action"
+        : campaignComplete
+          ? "replay_campaign"
+          : "continue_campaign";
     return html`
       <section
         class="ow-operations-dashboard"
@@ -219,9 +234,10 @@ export class EditionHub extends LitElement {
               <button
                 class="ow-action-primary"
                 type="button"
+                data-recommended-mission=${recommendedMission?.id ?? "none"}
                 @click=${this.openTraining}
               >
-                ${this.t("practice_action")}
+                ${this.t(primaryActionKey)}
                 <span aria-hidden="true">↗</span>
               </button>
               <button
@@ -240,7 +256,11 @@ export class EditionHub extends LitElement {
             class="ow-theatre-map"
             role="img"
             aria-label=${this.t("theatre_map_alt")}
+            data-testid="operations-concept-map"
           >
+            <span class="ow-map-concept-label"
+              >${this.t("map_concept_label")}</span
+            >
             <div class="ow-map-grid"></div>
             <div class="ow-map-contours"></div>
             <div class="ow-map-route ow-map-route-one"></div>
@@ -293,6 +313,9 @@ export class EditionHub extends LitElement {
               ><span>${this.t("campaign_stars")}</span>
             </div>
           </div>
+          <p class="ow-campaign-storage-note">
+            ${this.t("campaign_storage_note")}
+          </p>
           <div class="ow-mission-grid">
             ${OPERATIONS_MISSIONS.map((mission, index) => {
               const record = getOperationsMissionProgress(
@@ -310,6 +333,8 @@ export class EditionHub extends LitElement {
               );
               return html` <article
                 class="ow-mission-card ${unlocked ? "" : "is-locked"}"
+                data-testid="operations-mission-card"
+                data-mission-id=${mission.id}
               >
                 <div class="ow-mission-card-topline">
                   <span class="ow-mission-number">OPERATION 0${index + 1}</span
