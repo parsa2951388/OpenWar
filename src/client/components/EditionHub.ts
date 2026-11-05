@@ -1,8 +1,6 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import "../GameModeSelector";
-import type { HostLobbyModal } from "../HostLobbyModal";
-import type { JoinLobbyModal } from "../JoinLobbyModal";
 import { whenModalLoaded } from "../LazyModals";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
