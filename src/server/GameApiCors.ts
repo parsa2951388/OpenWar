@@ -35,6 +35,31 @@ function isAllowedOrigin(origin: string): boolean {
 }
 
 /**
+ * WebSocket handshakes do not use the browser's CORS enforcement. Validate
+ * their Origin explicitly to prevent a hostile website from opening a
+ * browser-authenticated socket. Native clients without Origin remain
+ * supported; browser clients must be same-origin or on the exact API allowlist.
+ */
+export function isAllowedWebSocketOrigin(
+  origin: string | undefined,
+  requestHost: string | undefined,
+): boolean {
+  if (origin === undefined) return true;
+  if (isAllowedOrigin(origin)) return true;
+  if (!requestHost) return false;
+
+  try {
+    const parsed = new URL(origin);
+    if (parsed.origin !== origin || parsed.host.toLowerCase() !== requestHost.toLowerCase()) {
+      return false;
+    }
+    return ServerEnv.gameEnvName() !== "prod" || parsed.protocol === "https:";
+  } catch {
+    return false;
+  }
+}
+
+/**
  * Grant the game server's `/api` routes to the desktop app and to the page
  * host the players came from.
  *
