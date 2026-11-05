@@ -34,3 +34,10 @@ Harden the New/Operations alpha without modifying Classic production, correct th
 ## Verification contract
 
 A successful static build does not prove gameplay or multiplayer readiness. Report only checks actually run. No GPU-backed playthrough or second browser automation run is promised; the available browser test environment had software WebGL. Keep the WebGL safety gate and state this limitation explicitly.
+
+## Validation follow-up
+
+- The generated map-info schema is committed from the exact `npm run gen-map-schema` output; do not hand-reorder the tuple-schema keys.
+- WebSocket origin tests set an isolated `DOMAIN` and restore environment state after each test.
+- The New Pages preview origin is configured on the New Alpha Render service as `SITE_HOST`; the Cloudflare preview Worker targets the New Alpha Render origin.
+- CI must be green on the final branch head before merging and deploying the New Alpha service.
