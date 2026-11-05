@@ -23,7 +23,8 @@ import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
 import "./components/GameConfigSettings";
 import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
-import type { OperationsMissionPreset } from "./components/OperationsMissions";
+import { getOperationsMission, type OperationsMissionId, type OperationsMissionPreset } from "./components/OperationsMissions";
+import { markPendingOperationsMission } from "./components/OperationsCampaign";
 import { OPERATIONS_NON_NUCLEAR_UNITS } from "./components/OperationsMissions";
 import {
   type LoadSavedGameDetail,
@@ -251,6 +252,7 @@ export class SinglePlayerModal extends BaseModal {
   @state() private sharedSaveId: string | null = null;
   // Identifies the current start attempt. Bumped on every start and on every
   // close, so an attempt that outlives its modal can tell it has been retired.
+  private operationsMissionId: OperationsMissionId | null = null;
   private startAttempt: number = 0;
   // Which attempt the starting overlay is up for, so a retired attempt's
   // cleanup cannot hide the overlay a newer attempt has shown.
@@ -823,6 +825,8 @@ export class SinglePlayerModal extends BaseModal {
   }
 
   protected onOpen(args?: Record<string, unknown>): void {
+    const operationId = args?.operation;
+    this.operationsMissionId = typeof operationId === "string" ? (getOperationsMission(operationId)?.id ?? null) : null;
     const save = args?.save;
     this.sharedSaveId = typeof save === "string" ? savedGameIdFrom(save) : null;
     // Saves made since the list last loaded (a game played in between).
@@ -1421,6 +1425,10 @@ export class SinglePlayerModal extends BaseModal {
       // The ad is long enough that the modal can be closed while it runs.
       if (attempt !== this.startAttempt) return;
 
+      if (this.operationsMissionId !== null) {
+        markPendingOperationsMission(this.operationsMissionId);
+        this.operationsMissionId = null;
+      }
       this.dispatchEvent(
         new CustomEvent("join-lobby", {
           detail,

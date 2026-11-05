@@ -1,112 +1,30 @@
-import {
-  Difficulty,
-  GameMapType,
-  GameMode,
-  UnitType,
-} from "@openfront/engine-api/game/GameTypes";
+import { Difficulty, GameMapType, GameMode, UnitType } from "@openfront/engine-api/game/GameTypes";
 import type { TeamCountConfig } from "@openfront/engine-api/Schemas";
-
-export type OperationsMissionId = "iron-gate" | "tidebreaker" | "world-command";
-
-/**
- * A playable Operations alpha scenario built from the deterministic rules
- * already supported by the core game. It does not pretend to enable
- * unimplemented logistics, fog-of-war, convoy, or capture-point systems.
- */
-export type OperationsMissionTranslationKey =
-  | "iron_gate"
-  | "tidebreaker"
-  | "world_command";
-
+export type OperationsMissionId = "iron-gate" | "tidebreaker" | "world-command" | "sandstorm" | "northern-bastion" | "pacific-ascendant";
+export type OperationsMissionTranslationKey = "iron_gate" | "tidebreaker" | "world_command" | "sandstorm" | "northern_bastion" | "pacific_ascendant";
 export interface OperationsMissionPreset {
-  id: OperationsMissionId;
-  translationKey: OperationsMissionTranslationKey;
-  map: GameMapType;
-  difficulty: Difficulty;
-  gameMode: GameMode;
-  teamCount: TeamCountConfig;
-  timeLimitMinutes: number;
-  winThresholdTenths: number;
-  bots: number;
-  disableNukes: boolean;
-  disableAlliances: boolean;
+  id: OperationsMissionId; translationKey: OperationsMissionTranslationKey; map: GameMapType; difficulty: Difficulty;
+  gameMode: GameMode; teamCount: TeamCountConfig; timeLimitMinutes: number; winThresholdTenths: number; bots: number;
+  disableNukes: boolean; disableAlliances: boolean;
+  /** Total Operations victories required before this mission is available. */ unlockWins: number;
 }
-
+/** Playable Operations scenarios using deterministic rules supported by the current engine. */
 export const OPERATIONS_MISSIONS: readonly OperationsMissionPreset[] = [
-  {
-    id: "iron-gate",
-    translationKey: "iron_gate",
-    map: GameMapType.Europe,
-    difficulty: Difficulty.Hard,
-    gameMode: GameMode.FFA,
-    teamCount: 2,
-    timeLimitMinutes: 15,
-    winThresholdTenths: 650,
-    bots: 120,
-    disableNukes: true,
-    disableAlliances: true,
-  },
-  {
-    id: "tidebreaker",
-    translationKey: "tidebreaker",
-    map: GameMapType.Asia,
-    difficulty: Difficulty.Hard,
-    gameMode: GameMode.Team,
-    teamCount: 2,
-    timeLimitMinutes: 18,
-    winThresholdTenths: 600,
-    bots: 150,
-    disableNukes: true,
-    disableAlliances: false,
-  },
-  {
-    id: "world-command",
-    translationKey: "world_command",
-    map: GameMapType.World,
-    difficulty: Difficulty.Impossible,
-    gameMode: GameMode.FFA,
-    teamCount: 2,
-    timeLimitMinutes: 22,
-    winThresholdTenths: 550,
-    bots: 220,
-    disableNukes: false,
-    disableAlliances: true,
-  },
+  { id: "iron-gate", translationKey: "iron_gate", map: GameMapType.Europe, difficulty: Difficulty.Hard, gameMode: GameMode.FFA, teamCount: 2, timeLimitMinutes: 15, winThresholdTenths: 650, bots: 120, disableNukes: true, disableAlliances: true, unlockWins: 0 },
+  { id: "tidebreaker", translationKey: "tidebreaker", map: GameMapType.Asia, difficulty: Difficulty.Hard, gameMode: GameMode.Team, teamCount: 2, timeLimitMinutes: 18, winThresholdTenths: 600, bots: 150, disableNukes: true, disableAlliances: false, unlockWins: 0 },
+  { id: "world-command", translationKey: "world_command", map: GameMapType.World, difficulty: Difficulty.Impossible, gameMode: GameMode.FFA, teamCount: 2, timeLimitMinutes: 22, winThresholdTenths: 550, bots: 220, disableNukes: false, disableAlliances: true, unlockWins: 0 },
+  { id: "sandstorm", translationKey: "sandstorm", map: GameMapType.Africa, difficulty: Difficulty.Hard, gameMode: GameMode.Team, teamCount: 2, timeLimitMinutes: 16, winThresholdTenths: 640, bots: 140, disableNukes: true, disableAlliances: false, unlockWins: 1 },
+  { id: "northern-bastion", translationKey: "northern_bastion", map: GameMapType.Arctic, difficulty: Difficulty.Impossible, gameMode: GameMode.FFA, teamCount: 2, timeLimitMinutes: 18, winThresholdTenths: 600, bots: 180, disableNukes: true, disableAlliances: true, unlockWins: 2 },
+  { id: "pacific-ascendant", translationKey: "pacific_ascendant", map: GameMapType.Oceania, difficulty: Difficulty.Impossible, gameMode: GameMode.Team, teamCount: 2, timeLimitMinutes: 22, winThresholdTenths: 550, bots: 220, disableNukes: false, disableAlliances: false, unlockWins: 3 },
 ] as const;
-
-export function getOperationsMission(
-  id: string,
-): OperationsMissionPreset | undefined {
-  return OPERATIONS_MISSIONS.find((mission) => mission.id === id);
+export function getOperationsMission(id: string): OperationsMissionPreset | undefined { return OPERATIONS_MISSIONS.find((m) => m.id === id); }
+export function isValidOperationsMissionPreset(m: OperationsMissionPreset): boolean {
+  return Number.isInteger(m.timeLimitMinutes) && m.timeLimitMinutes >= 1 && m.timeLimitMinutes <= 120 &&
+    Number.isInteger(m.winThresholdTenths) && m.winThresholdTenths >= 100 && m.winThresholdTenths <= 999 &&
+    Number.isInteger(m.bots) && m.bots >= 0 && m.bots <= 400 &&
+    Object.values(GameMapType).includes(m.map) && Object.values(Difficulty).includes(m.difficulty) &&
+    Object.values(GameMode).includes(m.gameMode) && typeof m.disableNukes === "boolean" &&
+    typeof m.disableAlliances === "boolean" && typeof m.id === "string" && m.id.length > 0 &&
+    Number.isInteger(m.unlockWins) && m.unlockWins >= 0 && m.unlockWins <= 20;
 }
-
-export function isValidOperationsMissionPreset(
-  mission: OperationsMissionPreset,
-): boolean {
-  return (
-    Number.isInteger(mission.timeLimitMinutes) &&
-    mission.timeLimitMinutes >= 1 &&
-    mission.timeLimitMinutes <= 120 &&
-    Number.isInteger(mission.winThresholdTenths) &&
-    mission.winThresholdTenths >= 100 &&
-    mission.winThresholdTenths <= 999 &&
-    Number.isInteger(mission.bots) &&
-    mission.bots >= 0 &&
-    mission.bots <= 400 &&
-    Object.values(GameMapType).includes(mission.map) &&
-    Object.values(Difficulty).includes(mission.difficulty) &&
-    Object.values(GameMode).includes(mission.gameMode) &&
-    typeof mission.disableNukes === "boolean" &&
-    typeof mission.disableAlliances === "boolean" &&
-    typeof mission.id === "string" &&
-    mission.id.length > 0
-  );
-}
-
-/** Units hidden for the non-nuclear Operations scenarios. */
-export const OPERATIONS_NON_NUCLEAR_UNITS: readonly UnitType[] = [
-  UnitType.AtomBomb,
-  UnitType.HydrogenBomb,
-  UnitType.MIRV,
-  UnitType.MissileSilo,
-] as const;
+export const OPERATIONS_NON_NUCLEAR_UNITS: readonly UnitType[] = [UnitType.AtomBomb, UnitType.HydrogenBomb, UnitType.MIRV, UnitType.MissileSilo] as const;

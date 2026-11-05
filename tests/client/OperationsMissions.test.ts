@@ -9,7 +9,7 @@ describe("Operations mission presets", () => {
   it("ships unique mission ids and valid deterministic game settings", () => {
     const ids = OPERATIONS_MISSIONS.map((mission) => mission.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(OPERATIONS_MISSIONS.length).toBeGreaterThanOrEqual(3);
+    expect(OPERATIONS_MISSIONS).toHaveLength(6);
     for (const mission of OPERATIONS_MISSIONS) {
       expect(isValidOperationsMissionPreset(mission)).toBe(true);
     }
@@ -18,7 +18,7 @@ describe("Operations mission presets", () => {
   it("uses localized translation keys for every mission", () => {
     expect(
       OPERATIONS_MISSIONS.map((mission) => mission.translationKey),
-    ).toEqual(["iron_gate", "tidebreaker", "world_command"]);
+    ).toEqual(["iron_gate", "tidebreaker", "world_command", "sandstorm", "northern_bastion", "pacific_ascendant"]);
   });
 
   it("resolves each mission id and rejects unknown ids", () => {
@@ -36,6 +36,8 @@ describe("Operations mission presets", () => {
       expect(mission.winThresholdTenths).toBeLessThanOrEqual(999);
       expect(mission.bots).toBeGreaterThanOrEqual(0);
       expect(mission.bots).toBeLessThanOrEqual(400);
+      expect(mission.unlockWins).toBeGreaterThanOrEqual(0);
+      expect(mission.unlockWins).toBeLessThanOrEqual(20);
     }
   });
 });

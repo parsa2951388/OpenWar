@@ -61,6 +61,7 @@ import { PlaySoundEffectEvent } from "../../sound/Sounds";
 import { steamSDK } from "../../SteamSDK";
 import { SendWinnerEvent } from "../../Transport";
 import { GameView } from "../../view";
+import { consumePendingOperationsMission, recordOperationsMissionResult, type OperationsMissionId } from "../../components/OperationsCampaign";
 
 type LegendCeremonyModule = typeof import("../../components/LegendCeremony");
 
@@ -118,6 +119,7 @@ export class WinModal extends LitElement implements Controller {
   public eventBus: EventBus;
 
   private hasShownDeathModal = false;
+  private operationsMissionId: OperationsMissionId | null = null;
 
   @state()
   isVisible = false;
@@ -1029,6 +1031,7 @@ export class WinModal extends LitElement implements Controller {
 
   init() {
     if (this.game.config().isReplay()) return;
+    this.operationsMissionId = consumePendingOperationsMission(this.game.config().gameConfig());
     loadGameXpPanel();
     void this.captureStartProgress();
   }
@@ -1131,6 +1134,10 @@ export class WinModal extends LitElement implements Controller {
         void this.show();
       }
     });
+    if (winUpdates.length > 0 && this.operationsMissionId !== null) {
+      recordOperationsMissionResult(this.operationsMissionId, this.isWin, this.game.ticks() / 10);
+      this.operationsMissionId = null;
+    }
     // After the vote, so a figure from the end has what was voted.
     if (winUpdates.length > 0) void this.updateXp(true);
   }
