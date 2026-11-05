@@ -135,7 +135,6 @@ beforeEach(() => {
 import { RankedType } from "@openfront/engine-api/game/GameTypes";
 import { RankedLeaderboardResponseSchema } from "@openfront/shared/ApiSchemas";
 import "../../src/client/components/baseComponents/Modal";
-import { ClientEnv } from "../../src/client/ClientEnv";
 import { LeaderboardModal } from "../../src/client/LeaderboardModal";
 
 describe("LeaderboardModal", () => {
@@ -876,6 +875,7 @@ describe("LeaderboardModal", () => {
     it(
       "shows standalone unavailability without fetching",
       async () => {
+        const { ClientEnv } = await import("../../src/client/ClientEnv");
         const standalone = vi
           .spyOn(ClientEnv, "selfHostedAuthEnabled")
           .mockReturnValue(true);
