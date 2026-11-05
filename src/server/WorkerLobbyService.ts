@@ -19,8 +19,8 @@ import {
   WorkerReady,
 } from "./IPCBridgeSchema";
 import { logger } from "./Logger";
-import { ServerEnv } from "./ServerEnv";
 import { isAllowedGameApiOrigin } from "./GameApiCors";
+import { ServerEnv } from "./ServerEnv";
 
 // The game config advertised for a listed private lobby: everything the
 // host configured minus host-only fields. The server already rejects
