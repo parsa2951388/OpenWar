@@ -670,6 +670,54 @@ export class GameModeSelector extends LitElement {
     }
   }
 
+  private renderOnlineHubHeader() {
+    const games = this.lobbies?.games;
+    const publicCount =
+      (games?.ffa?.length ?? 0) +
+      (games?.team?.length ?? 0) +
+      (games?.special?.length ?? 0);
+    const hostedCount = this.hostedLobbyCount();
+    const connectionStatus =
+      this.lobbies !== null
+        ? translateText("mode_selector.battle_hub_live")
+        : this.offlineForLobbies()
+          ? translateText("mode_selector.battle_hub_offline")
+          : translateText("mode_selector.battle_hub_connecting");
+
+    return html`
+      <section
+        class="ow-online-hub-header sm:col-span-2 sm:row-start-2"
+        aria-label=${translateText("mode_selector.battle_hub_aria")}
+      >
+        <div class="ow-online-hub-copy">
+          <span class="ow-online-hub-eyebrow">
+            <span class="ow-online-hub-mark" aria-hidden="true"></span>
+            ${translateText("mode_selector.battle_hub_eyebrow")}
+          </span>
+          <h2>${translateText("mode_selector.battle_hub_title")}</h2>
+          <p>${translateText("mode_selector.battle_hub_description")}</p>
+        </div>
+        <div class="ow-online-hub-metrics">
+          <div class="ow-online-hub-metric">
+            <span>${translateText("mode_selector.battle_hub_public")}</span>
+            <strong>${this.lobbies === null ? "—" : publicCount}</strong>
+          </div>
+          <div class="ow-online-hub-metric">
+            <span>${translateText("mode_selector.battle_hub_private")}</span>
+            <strong>${this.lobbies === null ? "—" : hostedCount}</strong>
+          </div>
+          <div class="ow-online-hub-connection" aria-live="polite">
+            <span
+              class="ow-online-hub-connection-dot ${this.lobbies !== null ? "is-live" : this.offlineForLobbies() ? "is-offline" : "is-connecting"}"
+              aria-hidden="true"
+            ></span>
+            <span>${connectionStatus}</span>
+          </div>
+        </div>
+      </section>
+    `;
+  }
+
   render() {
     const ffa = this.lobbies?.games?.["ffa"]?.[0];
     const teams = this.lobbies?.games?.["team"]?.[0];
@@ -693,14 +741,16 @@ export class GameModeSelector extends LitElement {
     // There the grid also pulls up over the gap after the banner's row when it's empty.
     return html`
       <div
-        class="flex flex-col gap-4 sm:compact:gap-3 sm:compact:has-[>ios-add-to-home-screen-banner:empty]:-mt-3 w-full px-4 pb-4 mx-auto sm:px-0 sm:pb-0 sm:grid sm:grid-cols-[2fr_1fr] sm:grid-rows-[auto_min(24rem,40vh)_auto_auto] sm:compact:grid-rows-[auto_minmax(min(24rem,40vh),auto)_3.5rem_auto] desktop:sm:grid-rows-[auto_40vh_auto_auto] sm:[reading-flow:grid-rows]"
+        class="ow-online-battle-hub flex flex-col gap-4 sm:compact:gap-3 sm:compact:has-[>ios-add-to-home-screen-banner:empty]:-mt-3 w-full px-4 pb-4 mx-auto sm:px-0 sm:pb-0 sm:grid sm:grid-cols-[2fr_1fr] sm:grid-rows-[auto_auto_min(24rem,40vh)_auto_auto] sm:compact:grid-rows-[auto_auto_minmax(min(24rem,40vh),auto)_3.5rem_auto] desktop:sm:grid-rows-[auto_auto_40vh_auto_auto] sm:[reading-flow:grid-rows]"
       >
         <ios-add-to-home-screen-banner
           class="no-game-portal [&:empty]:hidden sm:col-span-2 sm:row-start-1"
         ></ios-add-to-home-screen-banner>
 
+        ${this.renderOnlineHubHeader()}
+
         <div
-          class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-3 ${
+          class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-4 ${
             heroSlot ? "sm:compact:col-span-1!" : ""
           }"
         >
@@ -724,7 +774,7 @@ export class GameModeSelector extends LitElement {
           }
         </div>
         <div
-          class="grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-4"
+          class="grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-5"
         >
           ${this.renderSmallActionCard(
             translateText("main.create"),
@@ -764,7 +814,7 @@ export class GameModeSelector extends LitElement {
 
         ${
           heroSlot
-            ? html`<div class="min-w-0 sm:col-start-1 sm:row-start-2">
+            ? html`<div class="min-w-0 sm:col-start-1 sm:row-start-3">
                 ${
                   ffa
                     ? this.renderLobbyCard(
@@ -789,8 +839,8 @@ export class GameModeSelector extends LitElement {
         <section
           class="flex flex-col gap-4 sm:compact:gap-3 min-w-0 sm:grid sm:grid-rows-[auto_1fr_1fr] sm:row-start-2 sm:min-h-0 sm:[reading-flow:grid-rows] ${
             heroSlot
-              ? "sm:col-start-2 sm:compact:row-end-4 sm:compact:grid-rows-[auto_minmax(7.5rem,1fr)_minmax(7.5rem,1fr)]"
-              : "sm:col-start-1 sm:col-span-2"
+              ? "sm:col-start-2 sm:row-start-3 sm:compact:row-end-4 sm:compact:grid-rows-[auto_minmax(7.5rem,1fr)_minmax(7.5rem,1fr)]"
+              : "sm:col-start-1 sm:col-span-2 sm:row-start-3"
           }"
         >
           ${
@@ -1004,7 +1054,7 @@ export class GameModeSelector extends LitElement {
         @click=${onClick}
         ?disabled=${!this.inputValid}
         aria-disabled=${blocked}
-        class="relative flex items-center justify-center w-full h-full rounded-lg ${bgClass} transition-all duration-200 text-sm lg:text-base font-medium text-white uppercase tracking-wider text-center ${
+        class="ow-selector-action relative flex items-center justify-center w-full h-full rounded-lg ${bgClass} transition-all duration-200 text-sm lg:text-base font-medium text-white uppercase tracking-wider text-center ${
           !this.inputValid
             ? DISABLED
             : blocked
