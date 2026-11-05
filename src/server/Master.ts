@@ -27,8 +27,8 @@ import { setNoStoreHeaders } from "./NoStoreHeaders";
 import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
 import { registerSelfHostedApi } from "./SelfHostedApi";
-import { ServerEnv } from "./ServerEnv";
 import { securityHeaders } from "./SecurityHeaders";
+import { ServerEnv } from "./ServerEnv";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
 
 const playlist = new MapPlaylist();
