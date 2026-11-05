@@ -743,7 +743,6 @@
   }
 }
 
-
 /* Larger, clearer Operations command desk across desktop, tablet and mobile. */
 .ow-edition-hub {
   max-width: 1640px;
@@ -760,8 +759,17 @@
   grid-template-columns: minmax(0, 1fr) minmax(360px, 1.02fr);
   border-radius: 22px;
   background:
-    radial-gradient(ellipse at 78% 14%, rgba(197, 163, 110, 0.12), transparent 34%),
-    linear-gradient(125deg, #1a2b28 0%, #101b1b 54%, #172522 100%);
+    radial-gradient(
+      ellipse at 78% 14%,
+      rgba(197, 163, 110, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(
+      125deg,
+      #1a2b28 0%,
+      #101b1b 54%,
+      #172522 100%
+    );
 }
 
 .ow-operations-hero-content {
@@ -791,8 +799,16 @@
   padding: clamp(1.15rem, 1.55vw, 1.6rem);
   border-radius: 16px;
   background:
-    radial-gradient(ellipse at 100% 0%, rgba(197, 163, 110, 0.13), transparent 48%),
-    linear-gradient(145deg, rgba(25, 42, 38, 0.99), rgba(10, 20, 20, 0.99));
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(197, 163, 110, 0.13),
+      transparent 48%
+    ),
+    linear-gradient(
+      145deg,
+      rgba(25, 42, 38, 0.99),
+      rgba(10, 20, 20, 0.99)
+    );
   box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
 }
 
@@ -886,7 +902,6 @@
 @media (prefers-reduced-motion: reduce) {
   .ow-operations-hero,
   .ow-mission-card {
-    scroll-behavior: auto;
     transition: none;
   }
   .ow-mission-card:hover {
