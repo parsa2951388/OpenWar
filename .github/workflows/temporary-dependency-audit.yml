@@ -28,9 +28,10 @@ jobs:
       - name: Apply compatible security updates
         shell: bash
         run: |
-          npm audit fix
+          npm audit fix || echo "npm audit fix left remaining advisories; checking direct semver-compatible test tooling updates."
+          npm update --save=false vitest @vitest/coverage-v8 @vitest/ui
           if ! git diff --quiet -- package.json; then
-            echo "::error::npm audit fix changed package.json; refusing an unreviewed direct dependency range change."
+            echo "::error::Security update changed package.json; refusing an unreviewed direct dependency range change."
             git diff -- package.json
             exit 1
           fi
@@ -38,14 +39,15 @@ jobs:
             git config user.name "github-actions[bot]"
             git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
             git add package-lock.json
-            git commit -m "fix(deps): patch npm audit vulnerabilities"
+            git commit -m "fix(deps): patch npm advisory lockfile versions"
             target_branch="${GITHUB_HEAD_REF:-$GITHUB_REF_NAME}"
             git push origin "HEAD:$target_branch"
           fi
           npm audit --json > /tmp/npm-audit.json || true
           node --input-type=commonjs -e '
             const audit = require("/tmp/npm-audit.json");
-            console.log("REMAINING_SUMMARY", JSON.stringify(audit.metadata?.vulnerabilities || {}));
+            const remaining = audit.metadata?.vulnerabilities || {};
+            console.log("REMAINING_SUMMARY", JSON.stringify(remaining));
             for (const [name, v] of Object.entries(audit.vulnerabilities || {})) {
               console.log(JSON.stringify({
                 name,
@@ -55,4 +57,5 @@ jobs:
                 fixAvailable: v.fixAvailable
               }));
             }
+            if ((remaining.total || 0) > 0) process.exit(2);
           '
