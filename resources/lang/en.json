@@ -934,7 +934,19 @@
     "online_maintenance_status": "SERVICE STATUS · COMING SOON",
     "online_maintenance_title": "Online Operations is under construction",
     "online_maintenance_description": "Public battles, room creation and room joining are temporarily unavailable while we finish and test the online service. Your solo Operations missions remain playable.",
-    "online_maintenance_close": "Close service notice"
+    "online_maintenance_close": "Close service notice",
+    "quick_access_eyebrow": "READY TO DEPLOY",
+    "quick_access_title": "Quick access",
+    "solo_ready_status": "SOLO PLAY AVAILABLE",
+    "custom_solo_title": "Custom solo battle",
+    "custom_solo_description": "Choose a map, difficulty, game mode, AI count and match rules before launching a solo battle.",
+    "custom_solo_action": "Configure battle",
+    "loadout_title": "Commander loadout",
+    "loadout_description": "Change your player appearance, flags, patterns and other unlocked cosmetics.",
+    "loadout_action": "Customize",
+    "field_manual_title": "Field manual",
+    "field_manual_description": "Review controls, game systems, tips and the in-game tutorial.",
+    "field_manual_action": "Open guide"
   },
   "effects": {
     "nukeType": {
