@@ -1,5 +1,9 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../../../src/client/components/EditionHub";
+import {
+  OPERATIONS_CAMPAIGN_STORAGE_KEY,
+  recordOperationsMissionResult,
+} from "../../../src/client/components/OperationsCampaign";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
 
@@ -24,6 +28,7 @@ describe("Open War edition hub", () => {
 
   beforeEach(() => {
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
+    window.localStorage.removeItem(OPERATIONS_CAMPAIGN_STORAGE_KEY);
     document.body.innerHTML = "";
   });
 
@@ -31,6 +36,7 @@ describe("Open War edition hub", () => {
     hub?.remove();
     document.body.innerHTML = "";
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
+    window.localStorage.removeItem(OPERATIONS_CAMPAIGN_STORAGE_KEY);
   });
 
   it("pauses the Classic lobby feed while Operations is selected", async () => {
@@ -76,5 +82,27 @@ describe("Open War edition hub", () => {
     ).toBe(false);
     expect(openLobbyFeed).toHaveBeenCalledTimes(1);
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("classic");
+  });
+
+  it("shows remaining victories needed to unlock each mission", async () => {
+    await mountHub();
+
+    recordOperationsMissionResult("iron-gate", true, 300);
+    await hub.updateComplete;
+    const northernBastion = hub.querySelectorAll<HTMLElement>(
+      ".ow-mission-card",
+    )[4];
+    expect(
+      northernBastion.querySelector(".ow-mission-unlock")?.textContent,
+    ).toContain("1");
+
+    recordOperationsMissionResult("tidebreaker", true, 300);
+    await hub.updateComplete;
+    const pacificAscendant = hub.querySelectorAll<HTMLElement>(
+      ".ow-mission-card",
+    )[5];
+    expect(
+      pacificAscendant.querySelector(".ow-mission-unlock")?.textContent,
+    ).toContain("1");
   });
 });
