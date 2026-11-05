@@ -1,8 +1,8 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import "../GameModeSelector";
-import type { HostLobbyModal } from "../HostLobbyModal";
-import type { JoinLobbyModal } from "../JoinLobbyModal";
+import type { HelpModal } from "../HelpModal";
+import type { InventoryModal } from "../InventoryModal";
 import { whenModalLoaded } from "../LazyModals";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
@@ -47,6 +47,7 @@ export class EditionHub extends LitElement {
   @state() private edition: OpenWarEdition = readEditionPreference();
   @state() private campaignProgress = readOperationsCampaignProgress();
   @state() private missionFilter: OperationsMissionFilter = "all";
+  @state() private onlineMaintenanceOpen = false;
 
   createRenderRoot() {
     return this;
@@ -136,26 +137,38 @@ export class EditionHub extends LitElement {
 
   private openTraining = () => this.openMission("iron-gate");
 
-  private openPublicBattles = () => {
-    if (!this.validateUsername()) return;
-    window.showPage?.("page-detailed-view");
+  private showOnlineMaintenance = () => {
+    this.onlineMaintenanceOpen = true;
   };
 
-  private openPrivateRoom = () => {
+  private openPublicBattles = () => this.showOnlineMaintenance();
+
+  private openPrivateRoom = () => this.showOnlineMaintenance();
+
+  private joinRoom = () => this.showOnlineMaintenance();
+
+  private openSoloSetup = () => {
     if (!this.validateUsername()) return;
-    whenModalLoaded("host-lobby-modal", () => {
+    whenModalLoaded("single-player-modal", () => {
       (
-        document.querySelector("host-lobby-modal") as HostLobbyModal | null
+        document.querySelector(
+          "single-player-modal",
+        ) as SinglePlayerModal | null
       )?.open();
     });
   };
 
-  private joinRoom = () => {
-    if (!this.validateUsername()) return;
-    whenModalLoaded("join-lobby-modal", () => {
+  private openLoadout = () => {
+    whenModalLoaded("inventory-modal", () => {
       (
-        document.querySelector("join-lobby-modal") as JoinLobbyModal | null
+        document.querySelector("inventory-modal") as InventoryModal | null
       )?.open();
+    });
+  };
+
+  private openFieldManual = () => {
+    whenModalLoaded("help-modal", () => {
+      (document.querySelector("help-modal") as HelpModal | null)?.open();
     });
   };
 
@@ -290,6 +303,102 @@ export class EditionHub extends LitElement {
           </div>
         </div>
 
+        <section
+          class="ow-quick-access"
+          aria-label=${this.t("quick_access_title")}
+          data-testid="quick-access"
+        >
+          <div class="ow-quick-access-heading">
+            <div>
+              <span class="ow-edition-eyebrow"
+                >${this.t("quick_access_eyebrow")}</span
+              >
+              <h3>${this.t("quick_access_title")}</h3>
+            </div>
+            <span class="ow-roadmap-status"
+              >${this.t("solo_ready_status")}</span
+            >
+          </div>
+          <div class="ow-quick-access-grid">
+            <article class="ow-quick-access-card">
+              <span class="ow-quick-access-icon" aria-hidden="true">⚔</span>
+              <div>
+                <h4>${this.t("custom_solo_title")}</h4>
+                <p>${this.t("custom_solo_description")}</p>
+              </div>
+              <button
+                class="ow-action-primary"
+                type="button"
+                @click=${this.openSoloSetup}
+              >
+                ${this.t("custom_solo_action")}
+                <span aria-hidden="true">↗</span>
+              </button>
+            </article>
+            <article class="ow-quick-access-card">
+              <span class="ow-quick-access-icon" aria-hidden="true">✦</span>
+              <div>
+                <h4>${this.t("loadout_title")}</h4>
+                <p>${this.t("loadout_description")}</p>
+              </div>
+              <button
+                class="ow-action-secondary"
+                type="button"
+                @click=${this.openLoadout}
+              >
+                ${this.t("loadout_action")}
+                <span aria-hidden="true">↗</span>
+              </button>
+            </article>
+            <article class="ow-quick-access-card">
+              <span class="ow-quick-access-icon" aria-hidden="true">⌘</span>
+              <div>
+                <h4>${this.t("field_manual_title")}</h4>
+                <p>${this.t("field_manual_description")}</p>
+              </div>
+              <button
+                class="ow-action-secondary"
+                type="button"
+                @click=${this.openFieldManual}
+              >
+                ${this.t("field_manual_action")}
+                <span aria-hidden="true">↗</span>
+              </button>
+            </article>
+          </div>
+        </section>
+
+        ${
+          this.onlineMaintenanceOpen
+            ? html`
+                <aside
+                  class="ow-online-maintenance"
+                  role="status"
+                  aria-live="polite"
+                  data-testid="online-maintenance"
+                >
+                  <span class="ow-online-maintenance-icon" aria-hidden="true">
+                    ⚒
+                  </span>
+                  <div class="ow-online-maintenance-copy">
+                    <span class="ow-online-maintenance-eyebrow">
+                      ${this.t("online_maintenance_status")}
+                    </span>
+                    <h3>${this.t("online_maintenance_title")}</h3>
+                    <p>${this.t("online_maintenance_description")}</p>
+                  </div>
+                  <button
+                    class="ow-online-maintenance-close"
+                    type="button"
+                    aria-label=${this.t("online_maintenance_close")}
+                    @click=${() => (this.onlineMaintenanceOpen = false)}
+                  >
+                    ×
+                  </button>
+                </aside>
+              `
+            : ""
+        }
         <section
           class="ow-mission-section"
           aria-label=${this.t("mission_selection_title")}

@@ -104,6 +104,48 @@ describe("Open War edition hub", () => {
     ).toBe(true);
   });
 
+  it("shows solo setup, cosmetics and help quick-access actions", async () => {
+    await mountHub();
+    tabs()[1].click();
+    await hub.updateComplete;
+
+    expect(hub.querySelector('[data-testid="quick-access"]')).not.toBeNull();
+    expect(hub.querySelectorAll(".ow-quick-access-card button")).toHaveLength(
+      3,
+    );
+  });
+
+  it("blocks every Operations online entry and shows a construction notice", async () => {
+    await mountHub();
+    tabs()[1].click();
+    await hub.updateComplete;
+
+    hub
+      .querySelector<HTMLButtonElement>(
+        ".ow-operations-actions .ow-action-secondary",
+      )!
+      .click();
+    await hub.updateComplete;
+
+    expect(
+      hub
+        .querySelector('[data-testid="online-maintenance"]')
+        ?.textContent?.trim(),
+    ).toBeTruthy();
+
+    (hub as any).openPrivateRoom();
+    await hub.updateComplete;
+    expect(
+      hub.querySelector('[data-testid="online-maintenance"]'),
+    ).not.toBeNull();
+
+    (hub as any).joinRoom();
+    await hub.updateComplete;
+    expect(
+      hub.querySelector('[data-testid="online-maintenance"]'),
+    ).not.toBeNull();
+  });
+
   it("resumes the Classic lobby feed on returning to Classic", async () => {
     await mountHub();
 
