@@ -3,6 +3,7 @@ import {
   consumePendingOperationsMission,
   getOperationsCampaignSummary,
   getOperationsMissionProgress,
+  getRecommendedOperationsMission,
   isOperationsMissionUnlocked,
   markPendingOperationsMission,
   OPERATIONS_CAMPAIGN_STORAGE_KEY,
@@ -73,6 +74,36 @@ describe("Operations campaign progression", () => {
       lastPlayedAt: 20_000,
     });
   });
+  it("recommends the next unlocked mission and replays the first after full completion", () => {
+    const storage = new MemoryStorage();
+
+    expect(
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+    ).toBe("iron-gate");
+
+    recordOperationsMissionResult("iron-gate", true, 360, storage, 10_000);
+    expect(
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+    ).toBe("tidebreaker");
+
+    recordOperationsMissionResult("tidebreaker", true, 360, storage, 20_000);
+    expect(
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+    ).toBe("world-command");
+
+    recordOperationsMissionResult("world-command", true, 360, storage, 30_000);
+    expect(
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+    ).toBe("sandstorm");
+
+    recordOperationsMissionResult("sandstorm", true, 360, storage, 40_000);
+    recordOperationsMissionResult("northern-bastion", true, 360, storage, 50_000);
+    recordOperationsMissionResult("pacific-ascendant", true, 360, storage, 60_000);
+    expect(
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+    ).toBe("iron-gate");
+  });
+
   it("consumes pending markers only for matching launched solo scenarios", () => {
     const storage = new MemoryStorage(),
       mission = getOperationsMission("iron-gate")!;
