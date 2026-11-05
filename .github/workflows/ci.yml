@@ -41,6 +41,26 @@ jobs:
         with:
           path: out/index.html
           retention-days: 1
+  dependency-audit:
+    name: 🔒 Production dependency audit
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          submodules: false
+      - name: Setup node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Setup npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install production dependency graph
+        run: npm ci --omit=dev --ignore-scripts
+      - name: Block high and critical production dependency advisories
+        run: npm audit --omit=dev --audit-level=high
+
   test-shard:
     name: 🔬 Test (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
