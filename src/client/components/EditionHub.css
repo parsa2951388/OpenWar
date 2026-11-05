@@ -899,3 +899,302 @@
     transform: none;
   }
 }
+
+
+/* Operations is intentionally a preview-only destination until online systems ship. */
+.ow-edition-tab.is-coming-soon {
+  border-style: dashed;
+  border-color: rgba(197, 163, 110, 0.22);
+}
+.ow-edition-tab.is-coming-soon small {
+  color: #d3b27b;
+}
+
+.ow-operations-coming-soon {
+  gap: 1.4rem;
+}
+
+.ow-coming-soon-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+  min-height: 350px;
+  overflow: hidden;
+  border: 1px solid rgba(197, 163, 110, 0.26);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      ellipse at 13% 0%,
+      rgba(193, 150, 89, 0.16),
+      transparent 42%
+    ),
+    linear-gradient(125deg, #1c2b28 0%, #101b1b 58%, #172522 100%);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.22);
+}
+
+.ow-coming-soon-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(1.5rem, 3.4vw, 3.2rem);
+}
+
+.ow-coming-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.15rem 0 1rem;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(213, 168, 93, 0.34);
+  border-radius: 999px;
+  background: rgba(213, 168, 93, 0.09);
+  color: #e3bf83;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.ow-coming-soon-copy h2 {
+  max-width: 40rem;
+  margin: 0;
+  color: #f3f4ee;
+  font-size: clamp(1.9rem, 3.4vw, 3.2rem);
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+
+.ow-coming-soon-copy p {
+  max-width: 45rem;
+  margin: 1rem 0 1.3rem;
+  color: #bac5bf;
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+
+.ow-coming-soon-copy .ow-action-primary {
+  margin-top: 0.25rem;
+}
+
+.ow-coming-soon-visual {
+  position: relative;
+  min-height: 300px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(217, 230, 219, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(217, 230, 219, 0.04) 1px, transparent 1px),
+    radial-gradient(circle at 50% 48%, rgba(72, 125, 109, 0.2), transparent 54%);
+  background-size: 32px 32px, 32px 32px, auto;
+}
+
+.ow-coming-soon-visual::before,
+.ow-coming-soon-visual::after {
+  position: absolute;
+  inset: 12%;
+  border: 1px solid rgba(193, 177, 133, 0.13);
+  border-radius: 50%;
+  content: "";
+}
+
+.ow-coming-soon-visual::after {
+  inset: 23%;
+  border-color: rgba(193, 177, 133, 0.2);
+}
+
+.ow-coming-soon-radar {
+  position: absolute;
+  width: 68%;
+  aspect-ratio: 1;
+  top: 15%;
+  left: 16%;
+  border: 1px solid rgba(168, 194, 178, 0.12);
+  border-radius: 50%;
+}
+
+.ow-coming-soon-radar-one {
+  transform: scale(0.74);
+}
+
+.ow-coming-soon-radar-two {
+  transform: scale(1.18);
+}
+
+.ow-coming-soon-crosshair {
+  position: absolute;
+  top: 47%;
+  left: 49%;
+  color: #e4c18a;
+  font-size: 2rem;
+  font-weight: 300;
+}
+
+.ow-coming-soon-coordinate {
+  position: absolute;
+  color: rgba(196, 210, 199, 0.62);
+  font: 700 0.58rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  letter-spacing: 0.12em;
+}
+
+.ow-coming-soon-coordinate-a {
+  top: 1.25rem;
+  left: 1.25rem;
+}
+
+.ow-coming-soon-coordinate-b {
+  right: 1.25rem;
+  bottom: 1.25rem;
+  text-align: end;
+}
+
+.ow-coming-soon-marker {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #e1bd83;
+  border-radius: 50%;
+  background: #1a2a26;
+  box-shadow: 0 0 0 5px rgba(225, 189, 131, 0.1);
+}
+
+.ow-coming-soon-marker-a {
+  top: 29%;
+  left: 30%;
+}
+
+.ow-coming-soon-marker-b {
+  top: 63%;
+  left: 66%;
+}
+
+.ow-coming-soon-marker-c {
+  top: 32%;
+  left: 73%;
+  border-color: #8cb9a5;
+  box-shadow: 0 0 0 5px rgba(140, 185, 165, 0.1);
+}
+
+.ow-coming-soon-path {
+  position: absolute;
+  top: 40%;
+  left: 28%;
+  width: 47%;
+  height: 25%;
+  border-top: 1px dashed rgba(225, 189, 131, 0.6);
+  border-right: 1px dashed rgba(225, 189, 131, 0.6);
+  transform: skewY(-22deg);
+}
+
+.ow-coming-soon-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.ow-coming-soon-section h3 {
+  margin: 0.25rem 0 0;
+  color: #f1f4ef;
+  font-size: clamp(1.1rem, 1.9vw, 1.55rem);
+  font-weight: 850;
+}
+
+.ow-coming-soon-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.ow-coming-soon-card {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid rgba(169, 191, 182, 0.17);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(197, 163, 110, 0.08),
+      transparent 48%
+    ),
+    rgba(12, 23, 22, 0.72);
+}
+
+.ow-coming-soon-card-icon {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid rgba(197, 163, 110, 0.3);
+  border-radius: 10px;
+  background: rgba(197, 163, 110, 0.08);
+  color: #e0bc80;
+  font-size: 1.4rem;
+}
+
+.ow-coming-soon-card h4 {
+  margin: 0.9rem 0 0.35rem;
+  color: #edf2ed;
+  font-size: 0.95rem;
+  font-weight: 850;
+}
+
+.ow-coming-soon-card p {
+  min-height: 4.3rem;
+  margin: 0;
+  color: #a8b7af;
+  font-size: 0.78rem;
+  line-height: 1.75;
+}
+
+.ow-coming-soon-card-status {
+  display: inline-block;
+  margin-top: 0.9rem;
+  color: #d3b27b;
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.ow-coming-soon-footnote {
+  margin: 0;
+  color: #879890;
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .ow-coming-soon-hero {
+    grid-template-columns: 1fr;
+  }
+  .ow-coming-soon-visual {
+    min-height: 240px;
+  }
+  .ow-coming-soon-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-coming-soon-hero {
+    border-radius: 16px;
+  }
+  .ow-coming-soon-copy {
+    padding: 1.2rem;
+  }
+  .ow-coming-soon-copy h2 {
+    font-size: 1.8rem;
+  }
+  .ow-coming-soon-visual {
+    min-height: 190px;
+  }
+  .ow-coming-soon-grid {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+  .ow-coming-soon-card {
+    padding: 1rem;
+  }
+  .ow-coming-soon-card p {
+    min-height: 0;
+  }
+}
