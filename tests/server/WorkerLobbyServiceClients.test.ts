@@ -8,6 +8,7 @@ import { mockLogger } from "../util/GameServerHarness";
 // follow connects, closes, and the dead-socket sweep done at broadcast time.
 describe("WorkerLobbyService.connectedClients", () => {
   let service: WorkerLobbyService;
+  let server: EventEmitter;
 
   beforeEach(() => {
     const gm = {
@@ -16,7 +17,7 @@ describe("WorkerLobbyService.connectedClients", () => {
       game: vi.fn().mockReturnValue(null),
       activeGames: vi.fn().mockReturnValue(0),
     };
-    const server = new EventEmitter();
+    server = new EventEmitter();
     service = new WorkerLobbyService(
       server as any,
       { handleUpgrade: vi.fn() } as any,
@@ -43,6 +44,60 @@ describe("WorkerLobbyService.connectedClients", () => {
     );
     return ws;
   }
+
+  it("rejects hostile browser origins before upgrading a WebSocket", () => {
+    const handleUpgrade = vi
+      .spyOn((service as any).lobbiesWss, "handleUpgrade")
+      .mockImplementation(() => {});
+    const socket = { end: vi.fn() };
+
+    server.emit(
+      "upgrade",
+      {
+        url: "/lobbies",
+        headers: {
+          origin: "https://evil.example",
+          host: "open-war-game.onrender.com",
+        },
+      },
+      socket,
+      Buffer.alloc(0),
+    );
+
+    expect(socket.end).toHaveBeenCalledWith(
+      expect.stringContaining("403 Forbidden"),
+    );
+    expect(handleUpgrade).not.toHaveBeenCalled();
+  });
+
+  it("allows a same-origin browser socket and a non-browser client without Origin", () => {
+    const handleUpgrade = vi
+      .spyOn((service as any).lobbiesWss, "handleUpgrade")
+      .mockImplementation(() => {});
+    const socket = { end: vi.fn() };
+
+    server.emit(
+      "upgrade",
+      {
+        url: "/lobbies",
+        headers: {
+          origin: "https://open-war-game.onrender.com",
+          host: "open-war-game.onrender.com",
+        },
+      },
+      socket,
+      Buffer.alloc(0),
+    );
+    server.emit(
+      "upgrade",
+      { url: "/lobbies", headers: { host: "open-war-game.onrender.com" } },
+      socket,
+      Buffer.alloc(0),
+    );
+
+    expect(handleUpgrade).toHaveBeenCalledTimes(2);
+    expect(socket.end).not.toHaveBeenCalled();
+  });
 
   it("counts clients per platform from the upgrade URL, zeros included", () => {
     connectClient("/w0/lobbies?platform=steam");
