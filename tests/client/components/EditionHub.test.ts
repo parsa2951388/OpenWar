@@ -71,8 +71,7 @@ describe("Open War edition hub", () => {
     expect(hub.querySelectorAll(".ow-operations-footer-actions button")).toHaveLength(
       0,
     );
-    expect(hub.querySelectorAll(".ow-coming-soon-card")).toHaveLength(3);
-    expect(hub.querySelector(".ow-coming-soon-classic-action")).toBeNull();
+    expect(hub.querySelectorAll(".ow-coming-soon-card")).toHaveLength(4);
     expect(hub.querySelector(".ow-coming-soon-copy .ow-action-primary")).not.toBeNull();
   });
 
