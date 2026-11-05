@@ -64,6 +64,7 @@ import { PrivilegeRefresher } from "./PrivilegeRefresher";
 import { startRankedCheckinLoops } from "./RankedCheckin";
 import { rejoinOrClose } from "./Rejoin";
 import { ServerEnv } from "./ServerEnv";
+import { createSecurityHeaders } from "./SecurityHeaders";
 import { SingleplayerPresence } from "./SingleplayerPresence";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
 import { WorkerLobbyService } from "./WorkerLobbyService";
@@ -290,6 +291,8 @@ export async function startWorker() {
   const __dirname = path.dirname(__filename);
 
   const app = express();
+  app.disable("x-powered-by");
+  app.use(createSecurityHeaders());
   app.use(express.json({ limit: "5mb" }));
   const server = http.createServer(app);
   const wss = new WebSocketServer({
