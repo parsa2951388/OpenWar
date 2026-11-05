@@ -40,6 +40,18 @@ describe("ClientMsgRateLimiter", () => {
     });
   });
 
+  it("releases a disconnected client's bucket so a fresh connection starts clean", () => {
+    const limiter = new ClientMsgRateLimiter();
+    for (let i = 0; i < 10; i++) {
+      expect(limiter.check(CLIENT_A, "intent", SMALL)).toBe("ok");
+    }
+    expect(limiter.check(CLIENT_A, "intent", SMALL)).toBe("limit");
+
+    limiter.forget(CLIENT_A);
+
+    expect(limiter.check(CLIENT_A, "intent", SMALL)).toBe("ok");
+  });
+
   describe("non-intent messages", () => {
     it("does not rate-limit non-intent messages", () => {
       const limiter = new ClientMsgRateLimiter();

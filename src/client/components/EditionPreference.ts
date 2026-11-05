@@ -1,3 +1,5 @@
+export const OPEN_WAR_EDITION_STORAGE_KEY = "openwar.edition";
+
 export type OpenWarEdition = "classic" | "operations";
 
 /** Unknown, missing and legacy values resolve to Classic for backward compatibility. */

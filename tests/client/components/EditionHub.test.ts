@@ -104,6 +104,48 @@ describe("Open War edition hub", () => {
     ).toBe(true);
   });
 
+  it("shows solo setup, cosmetics and help quick-access actions", async () => {
+    await mountHub();
+    tabs()[1].click();
+    await hub.updateComplete;
+
+    expect(hub.querySelector('[data-testid="quick-access"]')).not.toBeNull();
+    expect(hub.querySelectorAll(".ow-quick-access-card button")).toHaveLength(
+      3,
+    );
+  });
+
+  it("blocks every Operations online entry and shows a construction notice", async () => {
+    await mountHub();
+    tabs()[1].click();
+    await hub.updateComplete;
+
+    hub
+      .querySelector<HTMLButtonElement>(
+        ".ow-operations-actions .ow-action-secondary",
+      )!
+      .click();
+    await hub.updateComplete;
+
+    expect(
+      hub
+        .querySelector('[data-testid="online-maintenance"]')
+        ?.textContent?.trim(),
+    ).toBeTruthy();
+
+    (hub as any).openPrivateRoom();
+    await hub.updateComplete;
+    expect(
+      hub.querySelector('[data-testid="online-maintenance"]'),
+    ).not.toBeNull();
+
+    (hub as any).joinRoom();
+    await hub.updateComplete;
+    expect(
+      hub.querySelector('[data-testid="online-maintenance"]'),
+    ).not.toBeNull();
+  });
+
   it("resumes the Classic lobby feed on returning to Classic", async () => {
     await mountHub();
 
@@ -124,6 +166,67 @@ describe("Open War edition hub", () => {
     ).toBe(false);
     expect(openLobbyFeed).toHaveBeenCalledTimes(1);
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("classic");
+  });
+
+  it("filters missions by their real unlock and completion state", async () => {
+    await mountHub();
+
+    const locked = hub.querySelector<HTMLButtonElement>(
+      '[data-mission-filter="locked"]',
+    );
+    expect(locked).not.toBeNull();
+    locked!.click();
+    await hub.updateComplete;
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(3);
+    expect(
+      [...hub.querySelectorAll(".ow-mission-card")].every((card) =>
+        card.classList.contains("is-locked"),
+      ),
+    ).toBe(true);
+
+    hub
+      .querySelector<HTMLButtonElement>('[data-mission-filter="ready"]')!
+      .click();
+    await hub.updateComplete;
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(3);
+    expect(
+      [...hub.querySelectorAll(".ow-mission-card")].every(
+        (card) => !card.classList.contains("is-locked"),
+      ),
+    ).toBe(true);
+  });
+
+  it("shows a useful empty state when a filter has no completed missions", async () => {
+    await mountHub();
+    hub
+      .querySelector<HTMLButtonElement>('[data-mission-filter="cleared"]')!
+      .click();
+    await hub.updateComplete;
+
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(0);
+    const emptyState = hub.querySelector<HTMLElement>(
+      '[data-testid="mission-filter-empty"]',
+    );
+    expect(emptyState?.getAttribute("role")).toBe("status");
+    expect(emptyState?.textContent?.trim()).toBeTruthy();
+  });
+
+  it("exposes accessible campaign completion progress", async () => {
+    await mountHub();
+    const progress = hub.querySelector<HTMLElement>(
+      '[data-testid="campaign-progress"]',
+    );
+    expect(progress?.getAttribute("role")).toBe("progressbar");
+    expect(progress?.getAttribute("aria-valuenow")).toBe("0");
+
+    setCampaignWins(1);
+    await hub.updateComplete;
+
+    expect(
+      hub
+        .querySelector('[data-testid="campaign-progress"]')
+        ?.getAttribute("aria-valuenow"),
+    ).toBe("17");
   });
 
   it("shows remaining victories needed to unlock each mission", async () => {

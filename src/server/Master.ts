@@ -26,6 +26,7 @@ import { MasterLobbyService } from "./MasterLobbyService";
 import { setNoStoreHeaders } from "./NoStoreHeaders";
 import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
+import { createSecurityHeaders } from "./SecurityHeaders";
 import { registerSelfHostedApi } from "./SelfHostedApi";
 import { ServerEnv } from "./ServerEnv";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
@@ -34,6 +35,8 @@ const playlist = new MapPlaylist();
 let lobbyService: MasterLobbyService;
 
 const app = express();
+app.disable("x-powered-by");
+app.use(createSecurityHeaders());
 const server = http.createServer(app);
 
 const log = logger.child({ comp: "m" });

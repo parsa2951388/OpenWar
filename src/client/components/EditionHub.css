@@ -1,7 +1,7 @@
 /* Open War's two-edition entry point: Atlas Command visual language. */
 .ow-edition-hub {
   width: 100%;
-  max-width: 1480px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 1rem 2rem;
   color: #edf3f1;
@@ -556,7 +556,7 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-flow: row;
   gap: 0.8rem;
 }
@@ -644,14 +644,119 @@
   .ow-mission-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .ow-campaign-completion {
+    width: min(100%, 260px);
+  }
 }
 @media (max-width: 600px) {
   .ow-mission-grid {
     grid-template-columns: 1fr;
   }
+  .ow-mission-toolbar {
+    align-items: stretch;
+  }
+  .ow-mission-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-mission-filter {
+    width: 100%;
+  }
+  .ow-campaign-completion {
+    width: 100%;
+  }
   .ow-mission-brief {
     min-height: 0;
   }
+}
+
+.ow-mission-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.2rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(169, 191, 182, 0.16);
+  border-radius: 12px;
+  background: rgba(9, 19, 19, 0.58);
+}
+.ow-mission-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.ow-mission-filter {
+  min-height: 36px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(169, 191, 182, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #aab8b5;
+  font-size: 0.68rem;
+  font-weight: 800;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+.ow-mission-filter:hover {
+  border-color: rgba(205, 181, 132, 0.42);
+  color: #f0f4ef;
+}
+.ow-mission-filter.is-active {
+  border-color: rgba(205, 181, 132, 0.62);
+  background: rgba(197, 163, 110, 0.16);
+  color: #e8cb98;
+}
+.ow-mission-filter:focus-visible {
+  outline: 3px solid #f0bd72;
+  outline-offset: 3px;
+}
+.ow-campaign-completion {
+  display: grid;
+  width: min(100%, 230px);
+  gap: 0.42rem;
+}
+.ow-campaign-completion-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  color: #9eada6;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.ow-campaign-completion-copy strong {
+  color: #e6cb98;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+}
+.ow-campaign-progress-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+.ow-campaign-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9b8358, #e5c58f);
+  transition: width 220ms ease;
+}
+.ow-mission-filter-empty {
+  display: grid;
+  min-height: 150px;
+  place-items: center;
+  margin: 0;
+  padding: 1.5rem;
+  border: 1px dashed rgba(169, 191, 182, 0.25);
+  border-radius: 14px;
+  color: #9eada6;
+  font-size: 0.82rem;
+  text-align: center;
 }
 
 /* Operations campaign progression and local mission records. */
@@ -740,5 +845,438 @@
   .ow-mission-state {
     width: 100%;
     margin-left: 0;
+  }
+}
+
+@media (max-width: 900px) {
+  .ow-campaign-completion {
+    width: min(100%, 260px);
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-mission-toolbar {
+    align-items: stretch;
+  }
+  .ow-mission-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-mission-filter {
+    width: 100%;
+  }
+  .ow-campaign-completion {
+    width: 100%;
+  }
+}
+
+/* Expanded Operations command surface: larger mission cards and a clearer
+   briefing hierarchy while keeping the layout fluid on tablets and phones. */
+.ow-operations-dashboard {
+  gap: clamp(1.6rem, 2.8vw, 2.5rem);
+}
+.ow-operations-hero {
+  min-height: clamp(370px, 34vw, 470px);
+  grid-template-columns: minmax(0, 1.08fr) minmax(320px, 0.92fr);
+  border-radius: 22px;
+  box-shadow:
+    0 26px 64px rgba(0, 0, 0, 0.28),
+    inset 0 1px 0 rgba(234, 241, 231, 0.07);
+}
+.ow-operations-hero-content {
+  padding: clamp(1.6rem, 3.4vw, 3.25rem);
+}
+.ow-operations-kicker {
+  margin-bottom: 1.2rem;
+  font-size: 0.72rem;
+}
+.ow-operations-hero h2 {
+  max-width: 38rem;
+  font-size: clamp(1.9rem, 3.4vw, 3.05rem);
+}
+.ow-operations-hero p {
+  max-width: 45rem;
+  font-size: 0.98rem;
+  line-height: 1.85;
+}
+.ow-theatre-map {
+  min-height: 370px;
+}
+.ow-operations-section-heading h3 {
+  font-size: clamp(1.35rem, 2vw, 1.65rem);
+}
+.ow-mission-section {
+  gap: 1.15rem;
+}
+.ow-mission-grid {
+  gap: 1.1rem;
+}
+.ow-mission-card {
+  min-height: 340px;
+  padding: clamp(1.25rem, 2.1vw, 1.7rem);
+  border-radius: 17px;
+  box-shadow: inset 0 1px 0 rgba(234, 241, 231, 0.035);
+  transition:
+    border-color 180ms ease,
+    background-color 180ms ease,
+    box-shadow 180ms ease,
+    transform 180ms ease;
+}
+.ow-mission-card:not(.is-locked):hover,
+.ow-mission-card:not(.is-locked):focus-within {
+  border-color: rgba(218, 185, 125, 0.48);
+  box-shadow:
+    0 14px 30px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(234, 241, 231, 0.08);
+  transform: translateY(-2px);
+}
+.ow-mission-card h4 {
+  margin-top: 1rem;
+  font-size: 1.2rem;
+  line-height: 1.35;
+}
+.ow-mission-brief {
+  min-height: 4.3rem;
+  font-size: 0.86rem;
+  line-height: 1.8;
+}
+.ow-mission-meta {
+  gap: 0.7rem;
+  margin-top: 1.05rem;
+  padding: 0.8rem 0;
+  font-size: 0.66rem;
+  line-height: 1.55;
+}
+.ow-mission-objective {
+  margin-top: 0.95rem;
+  font-size: 0.82rem;
+  line-height: 1.8;
+}
+.ow-mission-progress {
+  font-size: 0.74rem;
+}
+.ow-mission-stars {
+  font-size: 1rem;
+}
+.ow-mission-state {
+  font-size: 0.65rem;
+}
+.ow-mission-unlock {
+  font-size: 0.74rem;
+}
+.ow-mission-launch {
+  min-height: 48px;
+  font-size: 0.84rem;
+}
+.ow-campaign-summary {
+  gap: 0.85rem;
+  padding: 1rem 1.15rem;
+  border-radius: 15px;
+}
+.ow-campaign-summary > div {
+  min-width: 0;
+  padding: 0.15rem 0.25rem;
+}
+.ow-campaign-summary strong {
+  font-size: clamp(1.25rem, 2vw, 1.55rem);
+}
+.ow-campaign-summary span {
+  font-size: 0.74rem;
+}
+.ow-systems-grid {
+  gap: 1rem;
+}
+.ow-system-card {
+  min-height: 215px;
+  padding: 1.35rem;
+  border-radius: 15px;
+}
+.ow-system-card h4 {
+  font-size: 1.02rem;
+}
+.ow-system-card p {
+  font-size: 0.83rem;
+  line-height: 1.8;
+}
+.ow-operations-footer {
+  padding: 1.45rem;
+  border-radius: 15px;
+}
+.ow-operations-footer strong {
+  font-size: 1rem;
+}
+.ow-operations-footer p {
+  font-size: 0.8rem;
+}
+.ow-action-primary,
+.ow-action-secondary {
+  min-height: 48px;
+  padding-inline: 1.15rem;
+  font-size: 0.84rem;
+}
+.ow-operations-dashboard button:focus-visible,
+.ow-mission-card button:focus-visible {
+  outline: 3px solid #f0bd72;
+  outline-offset: 4px;
+}
+@media (max-width: 1050px) {
+  .ow-operations-hero {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ow-theatre-map {
+    min-height: 270px;
+  }
+}
+@media (max-width: 700px) {
+  .ow-operations-dashboard {
+    gap: 1.45rem;
+  }
+  .ow-operations-hero {
+    min-height: 0;
+    border-radius: 16px;
+  }
+  .ow-operations-hero-content {
+    padding: 1.35rem;
+  }
+  .ow-operations-hero h2 {
+    font-size: clamp(1.65rem, 7vw, 2.1rem);
+  }
+  .ow-operations-hero p {
+    font-size: 0.9rem;
+  }
+  .ow-theatre-map {
+    min-height: 205px;
+  }
+  .ow-mission-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.85rem;
+  }
+  .ow-mission-card {
+    min-height: 0;
+    padding: 1.2rem;
+  }
+  .ow-mission-brief {
+    min-height: 0;
+    font-size: 0.84rem;
+  }
+  .ow-mission-objective {
+    font-size: 0.8rem;
+  }
+  .ow-campaign-summary {
+    gap: 0.55rem;
+    padding: 0.8rem;
+  }
+  .ow-campaign-summary strong {
+    font-size: 1.15rem;
+  }
+  .ow-campaign-summary span {
+    font-size: 0.68rem;
+  }
+  .ow-system-card {
+    padding: 1.15rem;
+  }
+}
+@media (max-width: 360px) {
+  .ow-operations-hero-content {
+    padding: 1.05rem;
+  }
+  .ow-mission-card {
+    padding: 1rem;
+  }
+  .ow-mission-meta {
+    gap: 0.45rem;
+    font-size: 0.61rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  .ow-mission-card {
+    transition: none;
+  }
+  .ow-mission-card:not(.is-locked):hover,
+  .ow-mission-card:not(.is-locked):focus-within {
+    transform: none;
+  }
+}
+
+/* Online Operations is intentionally gated while its multiplayer service is
+   under construction. Keep the notice visible, calm and readable on mobile. */
+.ow-online-maintenance {
+  position: relative;
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr) auto;
+  align-items: center;
+  gap: 1rem;
+  padding: clamp(1.1rem, 2.2vw, 1.55rem);
+  border: 1px solid rgba(224, 190, 127, 0.42);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      ellipse at 0 50%,
+      rgba(179, 137, 72, 0.15),
+      transparent 55%
+    ),
+    linear-gradient(120deg, rgba(28, 38, 34, 0.98), rgba(12, 22, 22, 0.98));
+  box-shadow:
+    inset 0 1px 0 rgba(245, 225, 190, 0.06),
+    0 14px 36px rgba(0, 0, 0, 0.18);
+}
+.ow-online-maintenance-icon {
+  display: grid;
+  width: 46px;
+  height: 46px;
+  place-items: center;
+  border: 1px solid rgba(224, 190, 127, 0.32);
+  border-radius: 13px;
+  background: rgba(224, 190, 127, 0.1);
+  color: #e7c88e;
+  font-size: 1.35rem;
+}
+.ow-online-maintenance-copy {
+  min-width: 0;
+}
+.ow-online-maintenance-eyebrow {
+  color: #d8b77d;
+  font-size: 0.62rem;
+  font-weight: 800;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+}
+.ow-online-maintenance h3 {
+  margin: 0.25rem 0;
+  color: #f1eadc;
+  font-size: clamp(1rem, 1.7vw, 1.25rem);
+}
+.ow-online-maintenance p {
+  margin: 0;
+  color: #aebbb3;
+  font-size: 0.82rem;
+  line-height: 1.7;
+}
+.ow-online-maintenance-close {
+  align-self: start;
+  width: 34px;
+  height: 34px;
+  border: 1px solid rgba(224, 230, 220, 0.14);
+  border-radius: 10px;
+  background: rgba(255, 255, 255, 0.045);
+  color: #dce4db;
+  font-size: 1.3rem;
+  cursor: pointer;
+}
+.ow-online-maintenance-close:focus-visible {
+  outline: 3px solid #f0bd72;
+  outline-offset: 3px;
+}
+@media (max-width: 600px) {
+  .ow-online-maintenance {
+    grid-template-columns: auto minmax(0, 1fr);
+    align-items: start;
+    gap: 0.75rem;
+    padding: 1rem;
+  }
+  .ow-online-maintenance-icon {
+    width: 38px;
+    height: 38px;
+  }
+  .ow-online-maintenance-close {
+    position: absolute;
+    top: 0.7rem;
+    right: 0.7rem;
+  }
+  .ow-online-maintenance-copy {
+    padding-right: 2rem;
+  }
+}
+
+/* Quick access gives the Operations edition fast entry points without
+   duplicating the underlying solo, inventory or help systems. */
+.ow-quick-access {
+  display: grid;
+  gap: 0.9rem;
+}
+.ow-quick-access-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.ow-quick-access-heading h3 {
+  margin: 0.3rem 0 0;
+  color: #edf0e8;
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+.ow-quick-access-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+.ow-quick-access-card {
+  display: flex;
+  min-width: 0;
+  min-height: 205px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.15rem;
+  border: 1px solid rgba(169, 191, 182, 0.17);
+  border-radius: 15px;
+  background: linear-gradient(
+    145deg,
+    rgba(24, 37, 34, 0.92),
+    rgba(10, 19, 20, 0.96)
+  );
+  box-shadow: inset 0 1px 0 rgba(234, 241, 231, 0.04);
+}
+.ow-quick-access-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(205, 181, 132, 0.25);
+  border-radius: 12px;
+  background: rgba(197, 163, 110, 0.1);
+  color: #e4c58e;
+  font-size: 1.25rem;
+}
+.ow-quick-access-card h4 {
+  margin: 0;
+  color: #e9eee6;
+  font-size: 0.98rem;
+}
+.ow-quick-access-card p {
+  margin: 0.35rem 0 0;
+  color: #9eada6;
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+.ow-quick-access-card button {
+  width: 100%;
+  margin-top: auto;
+}
+.ow-quick-access button:focus-visible {
+  outline: 3px solid #f0bd72;
+  outline-offset: 4px;
+}
+@media (max-width: 900px) {
+  .ow-quick-access-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .ow-quick-access-heading {
+    align-items: flex-start;
+  }
+  .ow-quick-access-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.7rem;
+  }
+  .ow-quick-access-card {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 1rem;
+  }
+  .ow-quick-access-card button {
+    grid-column: 1 / -1;
   }
 }
