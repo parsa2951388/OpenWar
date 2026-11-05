@@ -25,14 +25,20 @@ describe("WebGLGate navigation and recovery", () => {
       expect(dialog?.getAttribute("aria-labelledby")).toBe("webgl-gate-title");
       expect(backToMenu?.getAttribute("href")).toBe("/");
       expect(backToMenu?.textContent?.trim()).toBeTruthy();
-      expect(gate.querySelector('[data-testid="webgl-continue-anyway"]')).toBeNull();
+      expect(
+        gate.querySelector('[data-testid="webgl-continue-anyway"]'),
+      ).toBeNull();
     },
   );
 
   it("keeps Continue anyway for the limited-texture warning only", async () => {
     const gate = createGate("limited");
     await gate.updateComplete;
-    expect(gate.querySelector('[data-testid="webgl-continue-anyway"]')).not.toBeNull();
-    expect(gate.querySelector('[data-testid="webgl-return-menu"]')).not.toBeNull();
+    expect(
+      gate.querySelector('[data-testid="webgl-continue-anyway"]'),
+    ).not.toBeNull();
+    expect(
+      gate.querySelector('[data-testid="webgl-return-menu"]'),
+    ).not.toBeNull();
   });
 });

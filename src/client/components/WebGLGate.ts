@@ -137,7 +137,12 @@ export class WebGLGate extends LitElement {
           class="w-full max-w-lg max-h-[85vh] overflow-y-auto p-6 sm:p-8 rounded-xl bg-surface text-white shadow-2xl"
         >
           <h2 id="webgl-gate-title" class="text-xl font-bold mb-3">${title}</h2>
-          <p id="webgl-gate-description" class="text-sm leading-relaxed text-white/85 mb-5">${intro}</p>
+          <p
+            id="webgl-gate-description"
+            class="text-sm leading-relaxed text-white/85 mb-5"
+          >
+            ${intro}
+          </p>
           ${sections.map(
             (section) => html`
               <section class="mb-5">

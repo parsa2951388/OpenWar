@@ -458,10 +458,14 @@ export class SinglePlayerModal extends BaseModal {
         aria-label=${translateText("edition_hub.mission_briefing")}
       >
         <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
-          <span class="text-[0.65rem] font-extrabold uppercase tracking-[0.16em] text-amber-200/80">
+          <span
+            class="text-[0.65rem] font-extrabold uppercase tracking-[0.16em] text-amber-200/80"
+          >
             ${translateText("edition_hub.mission_briefing")}
           </span>
-          <span class="rounded-full border border-amber-200/20 bg-amber-200/10 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-amber-100">
+          <span
+            class="rounded-full border border-amber-200/20 bg-amber-200/10 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-amber-100"
+          >
             ${translateText(`difficulty.${mission.difficulty.toLowerCase()}`)}
           </span>
         </div>
@@ -473,38 +477,76 @@ export class SinglePlayerModal extends BaseModal {
         </p>
         <dl class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
           <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
-            <dt class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45">${translateText("edition_hub.mission_theatre_label")}</dt>
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("edition_hub.mission_theatre_label")}
+            </dt>
             <dd class="mt-1 text-sm font-bold text-white">${mission.map}</dd>
           </div>
           <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
-            <dt class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45">${translateText("edition_hub.mission_mode_label")}</dt>
-            <dd class="mt-1 text-sm font-bold text-white">${mission.gameMode}</dd>
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("edition_hub.mission_mode_label")}
+            </dt>
+            <dd class="mt-1 text-sm font-bold text-white">
+              ${mission.gameMode}
+            </dd>
           </div>
           <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
-            <dt class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45">${translateText("edition_hub.mission_duration_label")}</dt>
-            <dd class="mt-1 text-sm font-bold text-white">${mission.timeLimitMinutes} min</dd>
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("edition_hub.mission_duration_label")}
+            </dt>
+            <dd class="mt-1 text-sm font-bold text-white">
+              ${mission.timeLimitMinutes} min
+            </dd>
           </div>
           <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
-            <dt class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45">${translateText("edition_hub.mission_victory_label")}</dt>
-            <dd class="mt-1 text-sm font-bold text-white">${mission.winThresholdTenths / 10}%</dd>
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("edition_hub.mission_victory_label")}
+            </dt>
+            <dd class="mt-1 text-sm font-bold text-white">
+              ${mission.winThresholdTenths / 10}%
+            </dd>
           </div>
           <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
-            <dt class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45">${translateText("game_settings.bots")}</dt>
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("game_settings.bots")}
+            </dt>
             <dd class="mt-1 text-sm font-bold text-white">${mission.bots}</dd>
           </div>
         </dl>
-        ${mission.disableNukes || mission.disableAlliances
-          ? html`
-              <div class="mt-3 flex flex-wrap gap-2">
-                ${mission.disableNukes
-                  ? html`<span class="rounded-full border border-rose-300/20 bg-rose-400/10 px-2.5 py-1 text-[0.65rem] font-semibold text-rose-100">${translateText("edition_hub.mission_nuclear_units_disabled")}</span>`
-                  : ""}
-                ${mission.disableAlliances
-                  ? html`<span class="rounded-full border border-sky-300/20 bg-sky-400/10 px-2.5 py-1 text-[0.65rem] font-semibold text-sky-100">${translateText("edition_hub.mission_alliances_disabled")}</span>`
-                  : ""}
-              </div>
-            `
-          : ""}
+        ${
+          mission.disableNukes || mission.disableAlliances
+            ? html`
+                <div class="mt-3 flex flex-wrap gap-2">
+                  ${
+                    mission.disableNukes
+                      ? html`<span
+                          class="rounded-full border border-rose-300/20 bg-rose-400/10 px-2.5 py-1 text-[0.65rem] font-semibold text-rose-100"
+                          >${translateText("edition_hub.mission_nuclear_units_disabled")}</span
+                        >`
+                      : ""
+                  }
+                  ${
+                    mission.disableAlliances
+                      ? html`<span
+                          class="rounded-full border border-sky-300/20 bg-sky-400/10 px-2.5 py-1 text-[0.65rem] font-semibold text-sky-100"
+                          >${translateText("edition_hub.mission_alliances_disabled")}</span
+                        >`
+                      : ""
+                  }
+                </div>
+              `
+            : ""
+        }
         <p class="mt-3 text-xs leading-relaxed text-white/50">
           ${translateText("edition_hub.mission_settings_note")}
         </p>
