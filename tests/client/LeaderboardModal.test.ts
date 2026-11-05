@@ -133,6 +133,7 @@ beforeEach(() => {
 });
 
 import { RankedType } from "@openfront/engine-api/game/GameTypes";
+import { ClientEnv } from "../../src/client/ClientEnv";
 import { RankedLeaderboardResponseSchema } from "@openfront/shared/ApiSchemas";
 import "../../src/client/components/baseComponents/Modal";
 import { LeaderboardModal } from "../../src/client/LeaderboardModal";
@@ -868,6 +869,28 @@ describe("LeaderboardModal", () => {
 
       const tfoot = modal.querySelector("leaderboard-player-list tfoot");
       expect(leading(tfoot)).toEqual({ "p-zero": "name" });
+    });
+  });
+
+  describe("Standalone deployment support", () => {
+    it("shows an explicit unavailable state without requesting unsupported leaderboards", async () => {
+      const standalone = vi
+        .spyOn(ClientEnv, "selfHostedAuthEnabled")
+        .mockReturnValue(true);
+      try {
+        modal.open();
+        await modal.updateComplete;
+
+        expect(modal.textContent).toContain(
+          "leaderboard_modal.self_hosted_unavailable",
+        );
+        expect(modal.querySelector("leaderboard-player-list")).toBeNull();
+        expect(modal.querySelector("leaderboard-clan-table")).toBeNull();
+        expect(modal.querySelector("leaderboard-tribe-table")).toBeNull();
+        expect(global.fetch).not.toHaveBeenCalled();
+      } finally {
+        standalone.mockRestore();
+      }
     });
   });
 
