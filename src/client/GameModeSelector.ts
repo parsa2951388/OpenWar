@@ -71,7 +71,7 @@ export type OnlineBattleRoomCounts = {
   hostedRooms: number | null;
 };
 
-/** Counts only lobbies actually received from the live public-lobby feed. */
+/** Counts live feed entries; null means no server snapshot has arrived yet. */
 export function countOnlineBattleRooms(
   lobbies: PublicGames | null,
 ): OnlineBattleRoomCounts {
