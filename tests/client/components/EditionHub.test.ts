@@ -78,7 +78,7 @@ describe("Open War edition hub", () => {
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
-  it("renders all six mission cards when Operations is selected", async () => {
+  it("renders all eight mission cards when Operations is selected", async () => {
     await mountHub();
 
     const dashboard = hub.querySelector(".ow-operations-dashboard");
