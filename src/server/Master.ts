@@ -35,8 +35,8 @@ const playlist = new MapPlaylist();
 let lobbyService: MasterLobbyService;
 
 const app = express();
-  app.disable("x-powered-by");
-  app.use(createSecurityHeaders());
+app.disable("x-powered-by");
+app.use(createSecurityHeaders());
 const server = http.createServer(app);
 
 const log = logger.child({ comp: "m" });
