@@ -837,7 +837,7 @@ export class GameModeSelector extends LitElement {
 
         <!-- Always rendered: the heading is the only way into the lobby browser. -->
         <section
-          class="flex flex-col gap-4 sm:compact:gap-3 min-w-0 sm:grid sm:grid-rows-[auto_1fr_1fr] sm:row-start-2 sm:min-h-0 sm:[reading-flow:grid-rows] ${
+          class="flex flex-col gap-4 sm:compact:gap-3 min-w-0 sm:grid sm:grid-rows-[auto_1fr_1fr] sm:row-start-3 sm:min-h-0 sm:[reading-flow:grid-rows] ${
             heroSlot
               ? "sm:col-start-2 sm:row-start-3 sm:compact:row-end-4 sm:compact:grid-rows-[auto_minmax(7.5rem,1fr)_minmax(7.5rem,1fr)]"
               : "sm:col-start-1 sm:col-span-2 sm:row-start-3"
