@@ -154,6 +154,24 @@ export function isOperationsMissionUnlocked(
 ): boolean {
   return getOperationsCampaignSummary(progress).wins >= mission.unlockWins;
 }
+/**
+ * Picks the first unlocked mission that has not been cleared yet. Once the
+ * campaign is fully cleared, falls back to the first available mission so the
+ * primary Operations action remains useful as a replay entry point.
+ */
+export function getRecommendedOperationsMission(
+  progress: OperationsCampaignProgress = readOperationsCampaignProgress(),
+): OperationsMissionPreset | undefined {
+  const unlocked = OPERATIONS_MISSIONS.filter((mission) =>
+    isOperationsMissionUnlocked(mission, progress),
+  );
+  return (
+    unlocked.find(
+      (mission) => getOperationsMissionProgress(mission.id, progress).wins === 0,
+    ) ?? unlocked[0]
+  );
+}
+
 export function markPendingOperationsMission(
   id: OperationsMissionId,
   storage: OperationsStorage | null = browserStorage("sessionStorage"),
