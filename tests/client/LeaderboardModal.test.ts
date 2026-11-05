@@ -133,9 +133,9 @@ beforeEach(() => {
 });
 
 import { RankedType } from "@openfront/engine-api/game/GameTypes";
-import { ClientEnv } from "../../src/client/ClientEnv";
 import { RankedLeaderboardResponseSchema } from "@openfront/shared/ApiSchemas";
 import "../../src/client/components/baseComponents/Modal";
+import { ClientEnv } from "../../src/client/ClientEnv";
 import { LeaderboardModal } from "../../src/client/LeaderboardModal";
 
 describe("LeaderboardModal", () => {
@@ -873,7 +873,9 @@ describe("LeaderboardModal", () => {
   });
 
   describe("Standalone deployment support", () => {
-    it("shows an explicit unavailable state without requesting unsupported leaderboards", async () => {
+    it(
+      "shows an explicit unavailable state without requesting unsupported leaderboards",
+      async () => {
       const standalone = vi
         .spyOn(ClientEnv, "selfHostedAuthEnabled")
         .mockReturnValue(true);
@@ -891,7 +893,8 @@ describe("LeaderboardModal", () => {
       } finally {
         standalone.mockRestore();
       }
-    });
+      },
+    );
   });
 
   describe("Modal Functionality", () => {
