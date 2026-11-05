@@ -146,6 +146,10 @@ export class LeaderboardModal extends BaseModal {
       class="text-sm font-normal text-white/40 ml-2 wrap-break-words italic"
       >(${translateText("leaderboard_modal.refresh_time")})</span
     >`;
+    const showRefreshTime =
+      !ClientEnv.selfHostedAuthEnabled() &&
+      (this.rankedTypeFor(this.activeTab) !== null ||
+        this.activeTab === "tribes");
 
     return modalHeader({
       titleContent: html`
@@ -156,13 +160,7 @@ export class LeaderboardModal extends BaseModal {
             ${translateText("leaderboard_modal.title")}
           </span>
           ${this.activeTab === "clans" ? dateRange : ""}
-          ${
-            !ClientEnv.selfHostedAuthEnabled() &&
-            (this.rankedTypeFor(this.activeTab) !== null ||
-              this.activeTab === "tribes")
-              ? refreshTime
-              : ""
-          }
+          ${showRefreshTime ? refreshTime : ""}
         </div>
       `,
       onBack: () => this.close(),
@@ -174,11 +172,7 @@ export class LeaderboardModal extends BaseModal {
     if (ClientEnv.selfHostedAuthEnabled()) {
       return html`
         <div class="flex h-full items-center justify-center p-8">
-          <div
-            class="max-w-xl text-center"
-            role="status"
-            aria-live="polite"
-          >
+          <div class="max-w-xl text-center" role="status" aria-live="polite">
             <h3 class="mb-3 text-lg font-bold text-white">
               ${translateText("leaderboard_modal.self_hosted_unavailable")}
             </h3>
