@@ -26,6 +26,11 @@ import type { LegendCeremony } from "../../components/LegendCeremony";
 import "../../components/ProfileShare";
 import "../../components/PurchaseButton";
 import "../../components/SteamWishlist";
+import {
+  consumePendingOperationsMission,
+  recordOperationsMissionResult,
+} from "../../components/OperationsCampaign";
+import type { OperationsMissionId } from "../../components/OperationsMissions";
 import { Controller } from "../../Controller";
 import {
   fetchCosmetics,
@@ -61,8 +66,6 @@ import { PlaySoundEffectEvent } from "../../sound/Sounds";
 import { steamSDK } from "../../SteamSDK";
 import { SendWinnerEvent } from "../../Transport";
 import { GameView } from "../../view";
-import { consumePendingOperationsMission, recordOperationsMissionResult } from "../../components/OperationsCampaign";
-import type { OperationsMissionId } from "../../components/OperationsMissions";
 
 type LegendCeremonyModule = typeof import("../../components/LegendCeremony");
 
@@ -1032,7 +1035,9 @@ export class WinModal extends LitElement implements Controller {
 
   init() {
     if (this.game.config().isReplay()) return;
-    this.operationsMissionId = consumePendingOperationsMission(this.game.config().gameConfig());
+    this.operationsMissionId = consumePendingOperationsMission(
+      this.game.config().gameConfig(),
+    );
     loadGameXpPanel();
     void this.captureStartProgress();
   }
@@ -1136,7 +1141,11 @@ export class WinModal extends LitElement implements Controller {
       }
     });
     if (winUpdates.length > 0 && this.operationsMissionId !== null) {
-      recordOperationsMissionResult(this.operationsMissionId, this.isWin, this.game.ticks() / 10);
+      recordOperationsMissionResult(
+        this.operationsMissionId,
+        this.isWin,
+        this.game.ticks() / 10,
+      );
       this.operationsMissionId = null;
     }
     // After the vote, so a figure from the end has what was voted.

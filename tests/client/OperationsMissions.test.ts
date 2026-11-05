@@ -18,7 +18,14 @@ describe("Operations mission presets", () => {
   it("uses localized translation keys for every mission", () => {
     expect(
       OPERATIONS_MISSIONS.map((mission) => mission.translationKey),
-    ).toEqual(["iron_gate", "tidebreaker", "world_command", "sandstorm", "northern_bastion", "pacific_ascendant"]);
+    ).toEqual([
+      "iron_gate",
+      "tidebreaker",
+      "world_command",
+      "sandstorm",
+      "northern_bastion",
+      "pacific_ascendant",
+    ]);
   });
 
   it("resolves each mission id and rejects unknown ids", () => {

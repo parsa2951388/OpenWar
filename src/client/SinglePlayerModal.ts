@@ -23,8 +23,13 @@ import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
 import "./components/GameConfigSettings";
 import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
-import { getOperationsMission, OPERATIONS_NON_NUCLEAR_UNITS, type OperationsMissionId, type OperationsMissionPreset } from "./components/OperationsMissions";
 import { markPendingOperationsMission } from "./components/OperationsCampaign";
+import {
+  getOperationsMission,
+  OPERATIONS_NON_NUCLEAR_UNITS,
+  type OperationsMissionId,
+  type OperationsMissionPreset,
+} from "./components/OperationsMissions";
 import {
   type LoadSavedGameDetail,
   savedGameIdFrom,
@@ -825,7 +830,10 @@ export class SinglePlayerModal extends BaseModal {
 
   protected onOpen(args?: Record<string, unknown>): void {
     const operationId = args?.operation;
-    this.operationsMissionId = typeof operationId === "string" ? (getOperationsMission(operationId)?.id ?? null) : null;
+    this.operationsMissionId =
+      typeof operationId === "string"
+        ? (getOperationsMission(operationId)?.id ?? null)
+        : null;
     const save = args?.save;
     this.sharedSaveId = typeof save === "string" ? savedGameIdFrom(save) : null;
     // Saves made since the list last loaded (a game played in between).
