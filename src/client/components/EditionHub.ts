@@ -304,6 +304,10 @@ export class EditionHub extends LitElement {
                   this.campaignProgress,
                 ),
                 cleared = record.wins > 0;
+              const remainingWins = Math.max(
+                0,
+                mission.unlockWins - campaignSummary.wins,
+              );
               return html` <article
                 class="ow-mission-card ${unlocked ? "" : "is-locked"}"
               >
@@ -337,7 +341,7 @@ export class EditionHub extends LitElement {
                     >${"★".repeat(record.bestStars)}${"☆".repeat(3 - record.bestStars)}</span
                   >
                 </div>
-                ${!unlocked ? html`<p class="ow-mission-unlock">${mission.unlockWins} ${this.t("mission_wins_to_unlock")}</p>` : ""}
+                ${!unlocked ? html`<p class="ow-mission-unlock">${remainingWins} ${this.t("mission_wins_to_unlock")}</p>` : ""}
                 <button
                   class="ow-action-primary ow-mission-launch"
                   type="button"
