@@ -942,14 +942,7 @@
     "systems_eyebrow": "سیستم‌های اختصاصی",
     "systems_title": "چیزی فراتر از قلمروگیری",
     "theatre_map_alt": "نمای مفهومی نقشهٔ عملیاتی با خطوط ارتفاع و مسیرهای تدارکاتی",
-    "top_eyebrow": "دو مسیر، یک جهان",
-    "campaign_completion": "میزان تکمیل کمپین",
-    "mission_filter_all": "همهٔ مأموریت‌ها",
-    "mission_filter_cleared": "تکمیل‌شده",
-    "mission_filter_empty": "مأموریتی با این فیلتر پیدا نشد.",
-    "mission_filter_locked": "قفل‌شده",
-    "mission_filter_ready": "آماده",
-    "mission_filters": "فیلتر مأموریت‌ها"
+    "top_eyebrow": "دو مسیر، یک جهان"
   },
   "effects": {
     "nukeType": {
