@@ -315,7 +315,7 @@ export class WorkerLobbyService {
           host: request.headers.host,
         });
         socket.end(
-          "HTTP/1.1 403 Forbidden\\r\\nConnection: close\\r\\nContent-Length: 0\\r\\n\\r\\n",
+          "HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
         );
         return;
       }
