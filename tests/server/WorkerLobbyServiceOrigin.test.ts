@@ -48,8 +48,8 @@ describe("isAllowedWebSocketOrigin", () => {
         "open-war-game.onrender.com",
       ),
     ).toBe(false);
-    expect(
-      isAllowedWebSocketOrigin("null", "open-war-game.onrender.com"),
-    ).toBe(false);
+    expect(isAllowedWebSocketOrigin("null", "open-war-game.onrender.com")).toBe(
+      false,
+    );
   });
 });
