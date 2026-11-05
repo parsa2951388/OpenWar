@@ -1,9 +1,9 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import "../GameModeSelector";
-import { whenModalLoaded } from "../LazyModals";
 import type { HelpModal } from "../HelpModal";
 import type { InventoryModal } from "../InventoryModal";
+import { whenModalLoaded } from "../LazyModals";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
@@ -310,10 +310,14 @@ export class EditionHub extends LitElement {
         >
           <div class="ow-quick-access-heading">
             <div>
-              <span class="ow-edition-eyebrow">${this.t("quick_access_eyebrow")}</span>
+              <span class="ow-edition-eyebrow"
+                >${this.t("quick_access_eyebrow")}</span
+              >
               <h3>${this.t("quick_access_title")}</h3>
             </div>
-            <span class="ow-roadmap-status">${this.t("solo_ready_status")}</span>
+            <span class="ow-roadmap-status"
+              >${this.t("solo_ready_status")}</span
+            >
           </div>
           <div class="ow-quick-access-grid">
             <article class="ow-quick-access-card">

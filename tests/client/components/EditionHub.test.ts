@@ -110,9 +110,9 @@ describe("Open War edition hub", () => {
     await hub.updateComplete;
 
     expect(hub.querySelector('[data-testid="quick-access"]')).not.toBeNull();
-    expect(
-      hub.querySelectorAll(".ow-quick-access-card button"),
-    ).toHaveLength(3);
+    expect(hub.querySelectorAll(".ow-quick-access-card button")).toHaveLength(
+      3,
+    );
   });
 
   it("blocks every Operations online entry and shows a construction notice", async () => {
