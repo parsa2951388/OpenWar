@@ -105,6 +105,7 @@ import {
 import { modalRouter } from "./ModalRouter";
 import { updateAccountNavButton } from "./NavAccountButton";
 import { initNavigation } from "./Navigation";
+import { isOperationsEditionSelected } from "./components/EditionPreference";
 import { capturePagePin } from "./PagePin";
 import { setPurchaseAccountRefresh } from "./Payments";
 import { fallbackPlayerName, LAPSE_NOTICE_KEY } from "./PlayerName";
@@ -686,6 +687,14 @@ class Client {
     });
 
     document.addEventListener("join-lobby", (event) => {
+      if (isOperationsEditionSelected()) {
+        event.stopImmediatePropagation();
+        const hub = document.querySelector("openwar-edition-hub") as
+          | (HTMLElement & { showOnlineUnderConstruction?: () => void })
+          | null;
+        hub?.showOnlineUnderConstruction?.();
+        return;
+      }
       // A rejected handshake (Turnstile alerts then rejects) never assigns
       // lobbyHandle, so nothing downstream clears the "lobby" presence
       // emitted at the top of the join -- friends would keep being offered a
