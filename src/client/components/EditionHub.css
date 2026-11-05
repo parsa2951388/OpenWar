@@ -1187,3 +1187,97 @@
     padding-right: 2rem;
   }
 }
+
+
+/* Quick access gives the Operations edition fast entry points without
+   duplicating the underlying solo, inventory or help systems. */
+.ow-quick-access {
+  display: grid;
+  gap: 0.9rem;
+}
+.ow-quick-access-heading {
+  display: flex;
+  align-items: end;
+  justify-content: space-between;
+  gap: 1rem;
+}
+.ow-quick-access-heading h3 {
+  margin: 0.3rem 0 0;
+  color: #edf0e8;
+  font-size: clamp(1.2rem, 2vw, 1.55rem);
+}
+.ow-quick-access-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.9rem;
+}
+.ow-quick-access-card {
+  display: flex;
+  min-width: 0;
+  min-height: 205px;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.85rem;
+  padding: 1.15rem;
+  border: 1px solid rgba(169, 191, 182, 0.17);
+  border-radius: 15px;
+  background: linear-gradient(
+    145deg,
+    rgba(24, 37, 34, 0.92),
+    rgba(10, 19, 20, 0.96)
+  );
+  box-shadow: inset 0 1px 0 rgba(234, 241, 231, 0.04);
+}
+.ow-quick-access-icon {
+  display: grid;
+  width: 42px;
+  height: 42px;
+  place-items: center;
+  border: 1px solid rgba(205, 181, 132, 0.25);
+  border-radius: 12px;
+  background: rgba(197, 163, 110, 0.1);
+  color: #e4c58e;
+  font-size: 1.25rem;
+}
+.ow-quick-access-card h4 {
+  margin: 0;
+  color: #e9eee6;
+  font-size: 0.98rem;
+}
+.ow-quick-access-card p {
+  margin: 0.35rem 0 0;
+  color: #9eada6;
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+.ow-quick-access-card button {
+  width: 100%;
+  margin-top: auto;
+}
+.ow-quick-access button:focus-visible {
+  outline: 3px solid #f0bd72;
+  outline-offset: 4px;
+}
+@media (max-width: 900px) {
+  .ow-quick-access-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .ow-quick-access-heading {
+    align-items: flex-start;
+  }
+  .ow-quick-access-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.7rem;
+  }
+  .ow-quick-access-card {
+    display: grid;
+    min-height: 0;
+    grid-template-columns: auto minmax(0, 1fr);
+    padding: 1rem;
+  }
+  .ow-quick-access-card button {
+    grid-column: 1 / -1;
+  }
+}
