@@ -284,9 +284,16 @@ export class EditionHub extends LitElement {
                 aria-live="polite"
                 data-testid="online-maintenance"
               >
-                <span class="ow-online-maintenance-icon" aria-hidden="true">⚒</span>
+                <span
+                  class="ow-online-maintenance-icon"
+                  aria-hidden="true"
+                >
+                  ⚒
+                </span>
                 <div class="ow-online-maintenance-copy">
-                  <span class="ow-online-maintenance-eyebrow">${this.t("online_maintenance_status")}</span>
+                  <span class="ow-online-maintenance-eyebrow">
+                    ${this.t("online_maintenance_status")}
+                  </span>
                   <h3>${this.t("online_maintenance_title")}</h3>
                   <p>${this.t("online_maintenance_description")}</p>
                 </div>
