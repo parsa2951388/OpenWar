@@ -88,6 +88,7 @@ import type { JoinLobbyModal } from "./JoinLobbyModal";
 // The LangSelector class is used as a type; retain this for registration.
 // oxlint-disable-next-line import/no-duplicates -- Required custom-element registration.
 import "./LangSelector";
+import { isOperationsEditionSelected } from "./components/EditionPreference";
 import { LangSelector } from "./LangSelector";
 import { initLayout } from "./Layout";
 import { loadModal, prefetchModals, whenModalLoaded } from "./LazyModals";
@@ -686,6 +687,14 @@ class Client {
     });
 
     document.addEventListener("join-lobby", (event) => {
+      if (isOperationsEditionSelected()) {
+        event.stopImmediatePropagation();
+        const hub = document.querySelector("openwar-edition-hub") as
+          | (HTMLElement & { showOnlineUnderConstruction?: () => void })
+          | null;
+        hub?.showOnlineUnderConstruction?.();
+        return;
+      }
       // A rejected handshake (Turnstile alerts then rejects) never assigns
       // lobbyHandle, so nothing downstream clears the "lobby" presence
       // emitted at the top of the join -- friends would keep being offered a

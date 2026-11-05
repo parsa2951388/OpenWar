@@ -1,15 +1,13 @@
-import { html, LitElement } from "lit";
+import { html, LitElement, nothing } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import "../GameModeSelector";
-import type { HostLobbyModal } from "../HostLobbyModal";
-import type { JoinLobbyModal } from "../JoinLobbyModal";
 import { whenModalLoaded } from "../LazyModals";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
 import {
-  OPEN_WAR_EDITION_STORAGE_KEY,
-  normalizeOpenWarEdition,
+  readOpenWarEditionPreference,
+  setOpenWarEditionPreference,
   type OpenWarEdition,
 } from "./EditionPreference";
 import {
@@ -33,13 +31,7 @@ type EditionGameModeSelector = HTMLElement & {
 type OperationsMissionFilter = "all" | "ready" | "cleared" | "locked";
 
 function readEditionPreference(): OpenWarEdition {
-  try {
-    return normalizeOpenWarEdition(
-      window.localStorage.getItem(OPEN_WAR_EDITION_STORAGE_KEY),
-    );
-  } catch {
-    return "classic";
-  }
+  return readOpenWarEditionPreference();
 }
 
 @customElement("openwar-edition-hub")
@@ -47,6 +39,7 @@ export class EditionHub extends LitElement {
   @state() private edition: OpenWarEdition = readEditionPreference();
   @state() private campaignProgress = readOperationsCampaignProgress();
   @state() private missionFilter: OperationsMissionFilter = "all";
+  @state() private onlineNoticeOpen = false;
 
   createRenderRoot() {
     return this;
@@ -96,11 +89,7 @@ export class EditionHub extends LitElement {
   private selectEdition = (edition: OpenWarEdition) => {
     if (this.edition === edition) return;
     this.edition = edition;
-    try {
-      window.localStorage.setItem(OPEN_WAR_EDITION_STORAGE_KEY, edition);
-    } catch {
-      // The selector still works for this page load when browser storage is unavailable.
-    }
+    setOpenWarEditionPreference(edition);
     this.dispatchEvent(
       new CustomEvent("openwar-edition-changed", {
         detail: { edition },
@@ -137,25 +126,36 @@ export class EditionHub extends LitElement {
   private openTraining = () => this.openMission("iron-gate");
 
   private openPublicBattles = () => {
-    if (!this.validateUsername()) return;
-    window.showPage?.("page-detailed-view");
+    this.showOnlineUnderConstruction();
   };
 
   private openPrivateRoom = () => {
-    if (!this.validateUsername()) return;
-    whenModalLoaded("host-lobby-modal", () => {
-      (
-        document.querySelector("host-lobby-modal") as HostLobbyModal | null
-      )?.open();
-    });
+    this.showOnlineUnderConstruction();
   };
 
   private joinRoom = () => {
+    this.showOnlineUnderConstruction();
+  };
+
+  /** Public so navigation and join-event guards can refuse Operations online entry. */
+  public showOnlineUnderConstruction(): void {
+    this.edition = "operations";
+    this.onlineNoticeOpen = true;
+    setOpenWarEditionPreference("operations");
+  }
+
+  private closeOnlineNotice = () => {
+    this.onlineNoticeOpen = false;
+  };
+
+  private openFlagSelection = () => {
     if (!this.validateUsername()) return;
-    whenModalLoaded("join-lobby-modal", () => {
+    whenModalLoaded("inventory-modal", () => {
       (
-        document.querySelector("join-lobby-modal") as JoinLobbyModal | null
-      )?.open();
+        document.querySelector("inventory-modal") as
+          | (HTMLElement & { open?: (args?: Record<string, unknown>) => void })
+          | null
+      )?.open?.({ tab: "flags" });
     });
   };
 
@@ -259,9 +259,20 @@ export class EditionHub extends LitElement {
               <button
                 class="ow-action-secondary"
                 type="button"
+                data-testid="operations-online-entry"
                 @click=${this.openPublicBattles}
               >
                 ${this.t("browse_battles_action")}
+                <span aria-hidden="true">🔒</span>
+              </button>
+              <button
+                class="ow-action-secondary ow-flag-action"
+                type="button"
+                data-testid="operations-flag-selector"
+                @click=${this.openFlagSelection}
+              >
+                <span aria-hidden="true">🏳️</span>
+                ${this.t("choose_flag_action")}
               </button>
             </div>
             <small class="ow-honest-note"
@@ -289,6 +300,56 @@ export class EditionHub extends LitElement {
             <span class="ow-map-compass" aria-hidden="true">N</span>
           </div>
         </div>
+
+        ${
+          this.onlineNoticeOpen
+            ? html`
+                <section
+                  class="ow-online-construction"
+                  role="status"
+                  aria-live="polite"
+                  data-testid="operations-online-notice"
+                >
+                  <div class="ow-online-construction-icon" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M12 3v3M12 18v3M3 12h3M18 12h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12"
+                      />
+                      <circle cx="12" cy="12" r="4" />
+                    </svg>
+                  </div>
+                  <div class="ow-online-construction-copy">
+                    <span class="ow-online-construction-kicker"
+                      >${this.t("online_status")}</span
+                    >
+                    <h3>${this.t("online_title")}</h3>
+                    <p>${this.t("online_description")}</p>
+                    <div class="ow-online-construction-meta">
+                      <span
+                        ><i aria-hidden="true"></i
+                        >${this.t("online_blocked")}</span
+                      >
+                      <span>${this.t("online_solo_available")}</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="ow-online-construction-close"
+                    @click=${this.closeOnlineNotice}
+                  >
+                    ${this.t("online_close_action")}
+                  </button>
+                </section>
+              `
+            : nothing
+        }
 
         <section
           class="ow-mission-section"
@@ -628,6 +689,7 @@ export class EditionHub extends LitElement {
             <button
               class="ow-action-secondary"
               type="button"
+              data-testid="operations-private-join"
               @click=${this.joinRoom}
             >
               ${this.t("join_code_action")}
@@ -635,6 +697,7 @@ export class EditionHub extends LitElement {
             <button
               class="ow-action-primary"
               type="button"
+              data-testid="operations-private-create"
               @click=${this.openPrivateRoom}
             >
               ${this.t("create_room_action")}

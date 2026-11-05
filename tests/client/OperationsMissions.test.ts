@@ -9,7 +9,7 @@ describe("Operations mission presets", () => {
   it("ships unique mission ids and valid deterministic game settings", () => {
     const ids = OPERATIONS_MISSIONS.map((mission) => mission.id);
     expect(new Set(ids).size).toBe(ids.length);
-    expect(OPERATIONS_MISSIONS).toHaveLength(6);
+    expect(OPERATIONS_MISSIONS).toHaveLength(8);
     for (const mission of OPERATIONS_MISSIONS) {
       expect(isValidOperationsMissionPreset(mission)).toBe(true);
     }
@@ -25,6 +25,8 @@ describe("Operations mission presets", () => {
       "sandstorm",
       "northern_bastion",
       "pacific_ascendant",
+      "straitbreaker",
+      "southern_cross",
     ]);
   });
 

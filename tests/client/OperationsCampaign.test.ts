@@ -50,7 +50,7 @@ describe("Operations campaign progression", () => {
       wins: 1,
       stars: 3,
       clearedMissions: 1,
-      totalMissions: 6,
+      totalMissions: 8,
     });
     expect(storage.getItem(OPERATIONS_CAMPAIGN_STORAGE_KEY)).not.toBeNull();
   });

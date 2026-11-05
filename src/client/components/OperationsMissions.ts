@@ -11,14 +11,18 @@ export type OperationsMissionId =
   | "world-command"
   | "sandstorm"
   | "northern-bastion"
-  | "pacific-ascendant";
+  | "pacific-ascendant"
+  | "straitbreaker"
+  | "southern-cross";
 export type OperationsMissionTranslationKey =
   | "iron_gate"
   | "tidebreaker"
   | "world_command"
   | "sandstorm"
   | "northern_bastion"
-  | "pacific_ascendant";
+  | "pacific_ascendant"
+  | "straitbreaker"
+  | "southern_cross";
 export interface OperationsMissionPreset {
   id: OperationsMissionId;
   translationKey: OperationsMissionTranslationKey;
@@ -118,6 +122,34 @@ export const OPERATIONS_MISSIONS: readonly OperationsMissionPreset[] = [
     disableNukes: false,
     disableAlliances: false,
     unlockWins: 3,
+  },
+  {
+    id: "straitbreaker",
+    translationKey: "straitbreaker",
+    map: GameMapType.MiddleEast,
+    difficulty: Difficulty.Hard,
+    gameMode: GameMode.FFA,
+    teamCount: 2,
+    timeLimitMinutes: 20,
+    winThresholdTenths: 620,
+    bots: 170,
+    disableNukes: true,
+    disableAlliances: true,
+    unlockWins: 2,
+  },
+  {
+    id: "southern-cross",
+    translationKey: "southern_cross",
+    map: GameMapType.SouthAmerica,
+    difficulty: Difficulty.Impossible,
+    gameMode: GameMode.Team,
+    teamCount: 2,
+    timeLimitMinutes: 21,
+    winThresholdTenths: 580,
+    bots: 190,
+    disableNukes: false,
+    disableAlliances: false,
+    unlockWins: 4,
   },
 ] as const;
 export function getOperationsMission(

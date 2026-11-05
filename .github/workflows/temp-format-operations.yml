@@ -1,0 +1,36 @@
+name: Temporary branch formatter
+
+on:
+  push:
+    branches:
+      - open-war/new-online-gate-flags-missions
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          ref: open-war/new-online-gate-flags-missions
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - run: npm install --global --ignore-scripts npm@12.1.0
+      - run: npm ci
+      - name: Format repository
+        run: npm run format -- --write
+      - name: Commit formatter changes
+        run: |
+          if git diff --quiet; then
+            echo "No formatting changes."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -u
+          git commit -m "style: format New Operations updates"
+          git push origin HEAD:open-war/new-online-gate-flags-missions
