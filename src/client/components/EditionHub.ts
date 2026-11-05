@@ -258,7 +258,9 @@ export class EditionHub extends LitElement {
             aria-label=${this.t("theatre_map_alt")}
             data-testid="operations-concept-map"
           >
-            <span class="ow-map-concept-label">${this.t("map_concept_label")}</span>
+            <span class="ow-map-concept-label"
+              >${this.t("map_concept_label")}</span
+            >
             <div class="ow-map-grid"></div>
             <div class="ow-map-contours"></div>
             <div class="ow-map-route ow-map-route-one"></div>
@@ -311,7 +313,9 @@ export class EditionHub extends LitElement {
               ><span>${this.t("campaign_stars")}</span>
             </div>
           </div>
-          <p class="ow-campaign-storage-note">${this.t("campaign_storage_note")}</p>
+          <p class="ow-campaign-storage-note">
+            ${this.t("campaign_storage_note")}
+          </p>
           <div class="ow-mission-grid">
             ${OPERATIONS_MISSIONS.map((mission, index) => {
               const record = getOperationsMissionProgress(

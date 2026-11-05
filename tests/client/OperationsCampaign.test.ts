@@ -78,29 +78,46 @@ describe("Operations campaign progression", () => {
     const storage = new MemoryStorage();
 
     expect(
-      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))
+        ?.id,
     ).toBe("iron-gate");
 
     recordOperationsMissionResult("iron-gate", true, 360, storage, 10_000);
     expect(
-      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))
+        ?.id,
     ).toBe("tidebreaker");
 
     recordOperationsMissionResult("tidebreaker", true, 360, storage, 20_000);
     expect(
-      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))
+        ?.id,
     ).toBe("world-command");
 
     recordOperationsMissionResult("world-command", true, 360, storage, 30_000);
     expect(
-      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))
+        ?.id,
     ).toBe("sandstorm");
 
     recordOperationsMissionResult("sandstorm", true, 360, storage, 40_000);
-    recordOperationsMissionResult("northern-bastion", true, 360, storage, 50_000);
-    recordOperationsMissionResult("pacific-ascendant", true, 360, storage, 60_000);
+    recordOperationsMissionResult(
+      "northern-bastion",
+      true,
+      360,
+      storage,
+      50_000,
+    );
+    recordOperationsMissionResult(
+      "pacific-ascendant",
+      true,
+      360,
+      storage,
+      60_000,
+    );
     expect(
-      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))?.id,
+      getRecommendedOperationsMission(readOperationsCampaignProgress(storage))
+        ?.id,
     ).toBe("iron-gate");
   });
 

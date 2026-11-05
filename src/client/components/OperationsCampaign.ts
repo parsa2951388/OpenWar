@@ -167,7 +167,8 @@ export function getRecommendedOperationsMission(
   );
   return (
     unlocked.find(
-      (mission) => getOperationsMissionProgress(mission.id, progress).wins === 0,
+      (mission) =>
+        getOperationsMissionProgress(mission.id, progress).wins === 0,
     ) ?? unlocked[0]
   );
 }
