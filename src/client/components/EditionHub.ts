@@ -8,7 +8,7 @@ import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
 import {
-  OPEN_WAR_OPEN_WAR_EDITION_STORAGE_KEY,
+  OPEN_WAR_EDITION_STORAGE_KEY,
   normalizeOpenWarEdition,
   type OpenWarEdition,
 } from "./EditionPreference";
@@ -212,11 +212,17 @@ export class EditionHub extends LitElement {
       (campaignSummary.clearedMissions / campaignSummary.totalMissions) * 100,
     );
     const visibleMissions = OPERATIONS_MISSIONS.map((mission, index) => {
-      const record = getOperationsMissionProgress(mission.id, this.campaignProgress);
-      const unlocked = isOperationsMissionUnlocked(mission, this.campaignProgress);
+      const record = getOperationsMissionProgress(
+        mission.id,
+        this.campaignProgress,
+      );
+      const unlocked = isOperationsMissionUnlocked(
+        mission,
+        this.campaignProgress,
+      );
       const cleared = record.wins > 0;
       return { mission, index, record, unlocked, cleared };
-    }).filter(({unlocked, cleared}) => {
+    }).filter(({ unlocked, cleared }) => {
       switch (this.missionFilter) {
         case "ready":
           return unlocked && !cleared;
@@ -379,50 +385,85 @@ export class EditionHub extends LitElement {
                           0,
                           mission.unlockWins - campaignSummary.wins,
                         );
-                        return html` <article
-                class="ow-mission-card ${unlocked ? "" : "is-locked"}"
-              >
-                <div class="ow-mission-card-topline">
-                  <span class="ow-mission-number">OPERATION 0${index + 1}</span
-                  ><span class="ow-mission-difficulty"
-                    >${mission.difficulty}</span
-                  ><span class="ow-mission-state"
-                    >${cleared ? this.t("mission_cleared") : unlocked ? this.t("mission_available") : this.t("mission_locked")}</span
-                  >
-                </div>
-                <h4>${this.t(`mission_${mission.translationKey}_title`)}</h4>
-                <p class="ow-mission-brief">
-                  ${this.t(`mission_${mission.translationKey}_brief`)}
-                </p>
-                <div class="ow-mission-meta">
-                  <span>${mission.map}</span
-                  ><span>${mission.timeLimitMinutes} MIN</span
-                  ><span>${mission.winThresholdTenths / 10}% TERRITORY</span>
-                </div>
-                <p class="ow-mission-objective">
-                  ${this.t(`mission_${mission.translationKey}_objective`)}
-                </p>
-                <div class="ow-mission-progress">
-                  <span
-                    >${record.wins} ${this.t("mission_wins")} ·
-                    ${record.attempts} ${this.t("mission_attempts")}</span
-                  ><span
-                    class="ow-mission-stars"
-                    aria-label="${record.bestStars} ${this.t("campaign_stars")}"
-                    >${"★".repeat(record.bestStars)}${"☆".repeat(3 - record.bestStars)}</span
-                  >
-                </div>
-                ${!unlocked ? html`<p class="ow-mission-unlock">${remainingWins} ${this.t("mission_wins_to_unlock")}</p>` : ""}
-                <button
-                  class="ow-action-primary ow-mission-launch"
-                  type="button"
-                  ?disabled=${!unlocked}
-                  @click=${() => this.openMission(mission.id)}
-                >
-                  ${unlocked ? this.t("mission_start_action") : this.t("mission_locked_action")}
-                  <span aria-hidden="true">${unlocked ? "↗" : "🔒"}</span>
-                </button>
-                      </article>`;
+                        return html`
+                          <article
+                            class="ow-mission-card ${unlocked ? "" : "is-locked"}"
+                          >
+                            <div class="ow-mission-card-topline">
+                              <span class="ow-mission-number">
+                                OPERATION 0${index + 1}
+                              </span>
+                              <span class="ow-mission-difficulty">
+                                ${mission.difficulty}
+                              </span>
+                              <span class="ow-mission-state">
+                                ${cleared
+                                  ? this.t("mission_cleared")
+                                  : unlocked
+                                    ? this.t("mission_available")
+                                    : this.t("mission_locked")}
+                              </span>
+                            </div>
+                            <h4>
+                              ${this.t(
+                                `mission_${mission.translationKey}_title`,
+                              )}
+                            </h4>
+                            <p class="ow-mission-brief">
+                              ${this.t(
+                                `mission_${mission.translationKey}_brief`,
+                              )}
+                            </p>
+                            <div class="ow-mission-meta">
+                              <span>${mission.map}</span>
+                              <span>${mission.timeLimitMinutes} MIN</span>
+                              <span>
+                                ${mission.winThresholdTenths / 10}% TERRITORY
+                              </span>
+                            </div>
+                            <p class="ow-mission-objective">
+                              ${this.t(
+                                `mission_${mission.translationKey}_objective`,
+                              )}
+                            </p>
+                            <div class="ow-mission-progress">
+                              <span>
+                                ${record.wins} ${this.t("mission_wins")} ·
+                                ${record.attempts}
+                                ${this.t("mission_attempts")}
+                              </span>
+                              <span
+                                class="ow-mission-stars"
+                                aria-label="${record.bestStars} ${this.t("campaign_stars")}"
+                              >
+                                ${"★".repeat(record.bestStars)}${"☆".repeat(3 - record.bestStars)}
+                              </span>
+                            </div>
+                            ${
+                              !unlocked
+                                ? html`
+                                    <p class="ow-mission-unlock">
+                                      ${remainingWins}
+                                      ${this.t("mission_wins_to_unlock")}
+                                    </p>
+                                  `
+                                : ""
+                            }
+                            <button
+                              class="ow-action-primary ow-mission-launch"
+                              type="button"
+                              ?disabled=${!unlocked}
+                              @click=${() => this.openMission(mission.id)}
+                            >
+                              ${unlocked
+                                ? this.t("mission_start_action")
+                                : this.t("mission_locked_action")}
+                              <span aria-hidden="true">
+                                ${unlocked ? "↗" : "🔒"}
+                              </span>
+                            </button>
+                          </article>
+                        `;
                       },
                     )}
                   </div>
