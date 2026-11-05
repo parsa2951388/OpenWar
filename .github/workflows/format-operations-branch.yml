@@ -50,4 +50,6 @@ jobs:
             exit 0
           fi
           git commit -m "style: format Operations coming-soon UI"
+          git fetch origin open-war/operations-coming-soon-and-battle-hub
+          git rebase origin/open-war/operations-coming-soon-and-battle-hub
           git push origin HEAD:open-war/operations-coming-soon-and-battle-hub
