@@ -18,51 +18,6 @@ permissions:
   contents: read
 
 jobs:
-  dependency-repair-preview:
-    name: 🧰 Prepare dependency and format repair
-    if: github.event_name == 'pull_request' && github.event.pull_request.head.ref == 'audit/operations-ux-refresh-2026-11' && github.event.pull_request.head.repo.full_name == github.repository
-    permissions:
-      contents: write
-      actions: write
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout pull request branch
-        uses: actions/checkout@v7
-        with:
-          ref: ${{ github.event.pull_request.head.sha }}
-          submodules: false
-      - name: Setup node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-      - name: Setup npm
-        run: npm install --global --ignore-scripts npm@12.1.0
-      - name: Install locked dependencies
-        run: npm ci --ignore-scripts
-      - name: Apply compatible npm advisory fixes
-        continue-on-error: true
-        run: npm audit fix --ignore-scripts
-      - name: Format changed source and localization files
-        run: npm run format -- src/client/components/EditionHub.ts src/client/components/EditionHub.css src/client/components/OperationsCampaign.ts tests/client/OperationsCampaign.test.ts resources/lang/en.json resources/lang/fa.json
-      - name: Verify production dependency audit after repair
-        run: npm audit --omit=dev --audit-level=high
-      - name: Commit repaired lockfile and formatted files
-        env:
-          GH_TOKEN: ${{ github.token }}
-          BRANCH_NAME: ${{ github.event.pull_request.head.ref }}
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json src/client/components/EditionHub.ts src/client/components/EditionHub.css src/client/components/OperationsCampaign.ts tests/client/OperationsCampaign.test.ts resources/lang/en.json resources/lang/fa.json
-          if git diff --cached --quiet; then
-            echo "No dependency or formatting changes to commit."
-            exit 0
-          fi
-          git commit -m "fix(security): update production dependencies and format Operations UI"
-          git push origin "HEAD:${BRANCH_NAME}"
-          gh workflow run ci.yml --ref "${BRANCH_NAME}"
-
   build:
     name: 🏗️ Build
     runs-on: ubuntu-latest
