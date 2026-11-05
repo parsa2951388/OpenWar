@@ -1,4 +1,5 @@
 import { loadModal } from "./LazyModals";
+import { isOperationsEditionSelected } from "./components/EditionPreference";
 
 export function closeMobileSidebar() {
   const sidebar = document.getElementById("sidebar-menu");
@@ -16,6 +17,14 @@ export function closeMobileSidebar() {
 
 export function initNavigation() {
   const showPage = (pageId: string) => {
+    if (pageId === "page-detailed-view" && isOperationsEditionSelected()) {
+      if (window.currentPageId !== "page-play") showPage("page-play");
+      const hub = document.querySelector("openwar-edition-hub") as
+        | (HTMLElement & { showOnlineUnderConstruction?: () => void })
+        | null;
+      hub?.showOnlineUnderConstruction?.();
+      return;
+    }
     window.currentPageId = pageId;
 
     // Close mobile sidebar if a nav item was clicked
