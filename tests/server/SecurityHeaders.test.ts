@@ -1,7 +1,7 @@
 import express from "express";
 import http from "http";
 import type { AddressInfo } from "net";
-import { afterEach, describe, expect, test } from "vitest";
+import { describe, expect, test } from "vitest";
 import {
   applySecurityHeaders,
   securityHeaders,
