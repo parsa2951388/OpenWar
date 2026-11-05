@@ -1,0 +1,53 @@
+name: Format Operations coming-soon branch
+
+on:
+  push:
+    branches:
+      - open-war/operations-coming-soon-and-battle-hub
+
+permissions:
+  contents: write
+
+concurrency:
+  group: format-open-war-operations
+  cancel-in-progress: false
+
+jobs:
+  format:
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          ref: open-war/operations-coming-soon-and-battle-hub
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format Operations UI and tests
+        run: >
+          npx oxfmt --write
+          src/client/GameModeSelector.ts
+          src/client/components/EditionHub.ts
+          src/client/components/EditionHub.css
+          resources/lang/en.json
+          resources/lang/fa.json
+          tests/client/GameModeSelectorBattleHub.test.ts
+          tests/client/components/EditionHub.test.ts
+      - name: Commit formatter changes
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add             src/client/GameModeSelector.ts             src/client/components/EditionHub.ts             src/client/components/EditionHub.css             resources/lang/en.json             resources/lang/fa.json             tests/client/GameModeSelectorBattleHub.test.ts             tests/client/components/EditionHub.test.ts
+          if git diff --cached --quiet; then
+            echo "Operations files are already formatted."
+            exit 0
+          fi
+          git commit -m "style: format Operations coming-soon UI"
+          git push origin HEAD:open-war/operations-coming-soon-and-battle-hub
