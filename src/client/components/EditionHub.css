@@ -1,7 +1,7 @@
 /* Open War's two-edition entry point: Atlas Command visual language. */
 .ow-edition-hub {
   width: 100%;
-  max-width: 1480px;
+  max-width: 1600px;
   margin: 0 auto;
   padding: 0 1rem 2rem;
   color: #edf3f1;
@@ -556,7 +556,7 @@
   width: 100%;
   max-width: 100%;
   min-width: 0;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: repeat(3, minmax(0, 1fr));
   grid-auto-flow: row;
   gap: 0.8rem;
 }
@@ -644,14 +644,120 @@
   .ow-mission-grid {
     grid-template-columns: repeat(2, minmax(0, 1fr));
   }
+  .ow-campaign-completion {
+    width: min(100%, 260px);
+  }
 }
 @media (max-width: 600px) {
   .ow-mission-grid {
     grid-template-columns: 1fr;
   }
+  .ow-mission-toolbar {
+    align-items: stretch;
+  }
+  .ow-mission-filters {
+    display: grid;
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-mission-filter {
+    width: 100%;
+  }
+  .ow-campaign-completion {
+    width: 100%;
+  }
   .ow-mission-brief {
     min-height: 0;
   }
+}
+
+
+.ow-mission-toolbar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  flex-wrap: wrap;
+  gap: 0.9rem 1.2rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(169, 191, 182, 0.16);
+  border-radius: 12px;
+  background: rgba(9, 19, 19, 0.58);
+}
+.ow-mission-filters {
+  display: flex;
+  align-items: center;
+  flex-wrap: wrap;
+  gap: 0.4rem;
+}
+.ow-mission-filter {
+  min-height: 36px;
+  padding: 0.45rem 0.75rem;
+  border: 1px solid rgba(169, 191, 182, 0.18);
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.035);
+  color: #aab8b5;
+  font-size: 0.68rem;
+  font-weight: 800;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease,
+    color 150ms ease;
+}
+.ow-mission-filter:hover {
+  border-color: rgba(205, 181, 132, 0.42);
+  color: #f0f4ef;
+}
+.ow-mission-filter.is-active {
+  border-color: rgba(205, 181, 132, 0.62);
+  background: rgba(197, 163, 110, 0.16);
+  color: #e8cb98;
+}
+.ow-mission-filter:focus-visible {
+  outline: 3px solid #f0bd72;
+  outline-offset: 3px;
+}
+.ow-campaign-completion {
+  display: grid;
+  width: min(100%, 230px);
+  gap: 0.42rem;
+}
+.ow-campaign-completion-copy {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.6rem;
+  color: #9eada6;
+  font-size: 0.65rem;
+  font-weight: 700;
+}
+.ow-campaign-completion-copy strong {
+  color: #e6cb98;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+  font-size: 0.72rem;
+}
+.ow-campaign-progress-track {
+  height: 7px;
+  overflow: hidden;
+  border-radius: 999px;
+  background: rgba(255, 255, 255, 0.09);
+}
+.ow-campaign-progress-fill {
+  display: block;
+  height: 100%;
+  border-radius: inherit;
+  background: linear-gradient(90deg, #9b8358, #e5c58f);
+  transition: width 220ms ease;
+}
+.ow-mission-filter-empty {
+  display: grid;
+  min-height: 150px;
+  place-items: center;
+  margin: 0;
+  padding: 1.5rem;
+  border: 1px dashed rgba(169, 191, 182, 0.25);
+  border-radius: 14px;
+  color: #9eada6;
+  font-size: 0.82rem;
+  text-align: center;
 }
 
 /* Operations campaign progression and local mission records. */
