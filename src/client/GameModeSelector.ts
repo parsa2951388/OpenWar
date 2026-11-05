@@ -66,6 +66,29 @@ const TUTORIAL_ACTION =
 /** The Tutorial card shows beside Solo until the player has played this many games. */
 const TUTORIAL_CARD_MAX_GAMES = 5;
 
+export type OnlineBattleRoomCounts = {
+  publicRooms: number | null;
+  hostedRooms: number | null;
+};
+
+/** Counts only lobbies actually received from the live public-lobby feed. */
+export function countOnlineBattleRooms(
+  lobbies: PublicGames | null,
+): OnlineBattleRoomCounts {
+  if (lobbies === null) {
+    return { publicRooms: null, hostedRooms: null };
+  }
+
+  const games = lobbies.games;
+  return {
+    publicRooms:
+      (games?.ffa?.length ?? 0) +
+      (games?.team?.length ?? 0) +
+      (games?.special?.length ?? 0),
+    hostedRooms: games?.hosted?.length ?? 0,
+  };
+}
+
 /**
  * THE REACHABILITY RULE (OPE-439). Stated once, here; every other call site
  * in this feature points back at this comment rather than restating it.
@@ -671,12 +694,7 @@ export class GameModeSelector extends LitElement {
   }
 
   private renderOnlineHubHeader() {
-    const games = this.lobbies?.games;
-    const publicCount =
-      (games?.ffa?.length ?? 0) +
-      (games?.team?.length ?? 0) +
-      (games?.special?.length ?? 0);
-    const hostedCount = this.hostedLobbyCount();
+    const roomCounts = countOnlineBattleRooms(this.lobbies);
     const connectionStatus =
       this.lobbies !== null
         ? translateText("mode_selector.battle_hub_live")
@@ -700,11 +718,11 @@ export class GameModeSelector extends LitElement {
         <div class="ow-online-hub-metrics">
           <div class="ow-online-hub-metric">
             <span>${translateText("mode_selector.battle_hub_public")}</span>
-            <strong>${this.lobbies === null ? "—" : publicCount}</strong>
+            <strong>${roomCounts.publicRooms ?? "—"}</strong>
           </div>
           <div class="ow-online-hub-metric">
             <span>${translateText("mode_selector.battle_hub_private")}</span>
-            <strong>${this.lobbies === null ? "—" : hostedCount}</strong>
+            <strong>${roomCounts.hostedRooms ?? "—"}</strong>
           </div>
           <div class="ow-online-hub-connection" aria-live="polite">
             <span
