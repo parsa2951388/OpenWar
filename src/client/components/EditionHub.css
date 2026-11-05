@@ -536,3 +536,209 @@
     transform: none;
   }
 }
+
+/* Playable Operations alpha mission selection. */
+.ow-mission-section {
+  display: grid;
+  min-width: 0;
+  grid-template-columns: minmax(0, 1fr);
+  gap: 0.85rem;
+}
+.ow-mission-section .ow-operations-section-heading p {
+  max-width: 48rem;
+  margin: 0.45rem 0 0;
+  color: #9eada6;
+  font-size: 0.76rem;
+  line-height: 1.65;
+}
+.ow-mission-grid {
+  display: grid;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-auto-flow: row;
+  gap: 0.8rem;
+}
+.ow-mission-card {
+  display: flex;
+  box-sizing: border-box;
+  width: 100%;
+  max-width: 100%;
+  min-width: 0;
+  overflow-wrap: anywhere;
+  flex-direction: column;
+  padding: 1.2rem;
+  border: 1px solid rgba(205, 181, 132, 0.2);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(197, 163, 110, 0.1),
+      transparent 45%
+    ),
+    linear-gradient(145deg, rgba(23, 38, 35, 0.98), rgba(11, 21, 21, 0.98));
+}
+.ow-mission-card-topline,
+.ow-mission-meta {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  flex-wrap: wrap;
+}
+.ow-mission-number {
+  color: #d0b27b;
+  font:
+    800 0.62rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.1em;
+}
+.ow-mission-difficulty {
+  color: #aebdb6;
+  font-size: 0.62rem;
+  font-weight: 800;
+  text-transform: uppercase;
+}
+.ow-mission-card h4 {
+  margin: 0.9rem 0 0.35rem;
+  color: #f0f4ef;
+  font-size: 1rem;
+  font-weight: 850;
+}
+.ow-mission-brief {
+  min-height: 3.4rem;
+  margin: 0;
+  color: #a6b5ae;
+  font-size: 0.76rem;
+  line-height: 1.7;
+}
+.ow-mission-meta {
+  justify-content: flex-start;
+  margin-top: 0.9rem;
+  padding: 0.65rem 0;
+  border-top: 1px solid rgba(169, 191, 182, 0.12);
+  border-bottom: 1px solid rgba(169, 191, 182, 0.12);
+  color: #d8c59f;
+  font:
+    700 0.58rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.04em;
+}
+.ow-mission-objective {
+  flex: 1;
+  margin: 0.8rem 0 1rem;
+  color: #d0d8d1;
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
+.ow-mission-launch {
+  width: 100%;
+  margin-top: auto;
+}
+@media (max-width: 900px) {
+  .ow-mission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+@media (max-width: 600px) {
+  .ow-mission-grid {
+    grid-template-columns: 1fr;
+  }
+  .ow-mission-brief {
+    min-height: 0;
+  }
+}
+
+/* Operations campaign progression and local mission records. */
+.ow-campaign-summary {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.7rem;
+  padding: 0.85rem 1rem;
+  border: 1px solid rgba(205, 181, 132, 0.18);
+  border-radius: 12px;
+  background: rgba(9, 19, 19, 0.72);
+}
+.ow-campaign-summary > div {
+  display: flex;
+  flex-direction: column;
+  gap: 0.2rem;
+}
+.ow-campaign-summary strong {
+  color: #e6cb98;
+  font:
+    800 1.2rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+}
+.ow-campaign-summary span,
+.ow-mission-progress {
+  color: #9eada6;
+  font-size: 0.67rem;
+  line-height: 1.5;
+}
+.ow-mission-state {
+  margin-left: auto;
+  color: #d2b77f;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.ow-mission-progress {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.5rem;
+  margin: 0 0 0.8rem;
+}
+.ow-mission-stars {
+  flex: 0 0 auto;
+  color: #e2bd73;
+  font-size: 0.9rem;
+  letter-spacing: 0.1em;
+  white-space: nowrap;
+}
+.ow-mission-unlock {
+  margin: 0 0 0.75rem;
+  color: #c4a66e;
+  font-size: 0.68rem;
+}
+.ow-mission-card.is-locked {
+  border-color: rgba(159, 171, 164, 0.12);
+  background: linear-gradient(
+    145deg,
+    rgba(17, 27, 26, 0.96),
+    rgba(10, 17, 18, 0.96)
+  );
+}
+.ow-mission-card.is-locked .ow-mission-number,
+.ow-mission-card.is-locked .ow-mission-difficulty {
+  color: #77847e;
+}
+.ow-mission-launch:disabled {
+  cursor: not-allowed;
+  border-color: rgba(151, 162, 155, 0.18);
+  background: rgba(116, 129, 120, 0.16);
+  color: #89968f;
+  transform: none;
+}
+@media (max-width: 600px) {
+  .ow-campaign-summary {
+    gap: 0.45rem;
+    padding: 0.7rem;
+  }
+  .ow-campaign-summary strong {
+    font-size: 1rem;
+  }
+  .ow-mission-state {
+    width: 100%;
+    margin-left: 0;
+  }
+}

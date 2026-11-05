@@ -21,6 +21,10 @@ vi.mock("../../src/client/Utils", () => ({
       "leaderboard_modal.clans_tab": "Clans",
       "leaderboard_modal.refresh_time": "Refreshed every 1 hour",
       "leaderboard_modal.error": "Something went wrong",
+      "leaderboard_modal.self_hosted_unavailable":
+        "Leaderboards unavailable on this server",
+      "leaderboard_modal.self_hosted_unavailable_body":
+        "Player, clan and tribe rankings are not connected to this standalone server.",
       "leaderboard_modal.rank": "Rank",
       "leaderboard_modal.clan": "Clan",
       "leaderboard_modal.games": "Games",
@@ -868,6 +872,29 @@ describe("LeaderboardModal", () => {
 
       const tfoot = modal.querySelector("leaderboard-player-list tfoot");
       expect(leading(tfoot)).toEqual({ "p-zero": "name" });
+    });
+  });
+
+  describe("Standalone deployment support", () => {
+    it("shows standalone unavailability without fetching", async () => {
+      const { ClientEnv } = await import("../../src/client/ClientEnv");
+      const standalone = vi
+        .spyOn(ClientEnv, "selfHostedAuthEnabled")
+        .mockReturnValue(true);
+      try {
+        modal.open();
+        await modal.updateComplete;
+
+        expect(modal.textContent).toContain(
+          "Leaderboards unavailable on this server",
+        );
+        expect(modal.querySelector("leaderboard-player-list")).toBeNull();
+        expect(modal.querySelector("leaderboard-clan-table")).toBeNull();
+        expect(modal.querySelector("leaderboard-tribe-table")).toBeNull();
+        expect(global.fetch).not.toHaveBeenCalled();
+      } finally {
+        standalone.mockRestore();
+      }
     });
   });
 

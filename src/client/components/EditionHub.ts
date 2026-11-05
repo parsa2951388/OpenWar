@@ -11,6 +11,18 @@ import {
   normalizeOpenWarEdition,
   type OpenWarEdition,
 } from "./EditionPreference";
+import {
+  getOperationsCampaignSummary,
+  getOperationsMissionProgress,
+  isOperationsMissionUnlocked,
+  OPERATIONS_CAMPAIGN_UPDATED_EVENT,
+  readOperationsCampaignProgress,
+} from "./OperationsCampaign";
+import {
+  getOperationsMission,
+  OPERATIONS_MISSIONS,
+  type OperationsMissionId,
+} from "./OperationsMissions";
 import "./EditionHub.css";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
@@ -32,6 +44,7 @@ function readEditionPreference(): OpenWarEdition {
 @customElement("openwar-edition-hub")
 export class EditionHub extends LitElement {
   @state() private edition: OpenWarEdition = readEditionPreference();
+  @state() private campaignProgress = readOperationsCampaignProgress();
 
   createRenderRoot() {
     return this;
@@ -40,10 +53,18 @@ export class EditionHub extends LitElement {
   connectedCallback() {
     super.connectedCallback();
     document.addEventListener("language-changed", this.onLanguageChanged);
+    window.addEventListener(
+      OPERATIONS_CAMPAIGN_UPDATED_EVENT,
+      this.onCampaignProgressUpdated,
+    );
   }
 
   disconnectedCallback() {
     document.removeEventListener("language-changed", this.onLanguageChanged);
+    window.removeEventListener(
+      OPERATIONS_CAMPAIGN_UPDATED_EVENT,
+      this.onCampaignProgressUpdated,
+    );
     super.disconnectedCallback();
   }
 
@@ -56,6 +77,10 @@ export class EditionHub extends LitElement {
 
   private onLanguageChanged = () => {
     this.requestUpdate();
+  };
+
+  private onCampaignProgressUpdated = () => {
+    this.campaignProgress = readOperationsCampaignProgress();
   };
 
   private t(key: string): string {
@@ -86,16 +111,24 @@ export class EditionHub extends LitElement {
     return input ? input.canPlay() : true;
   }
 
-  private openTraining = () => {
+  private openMission = (missionId: OperationsMissionId) => {
     if (!this.validateUsername()) return;
+    const mission = getOperationsMission(missionId);
+    if (
+      !mission ||
+      !isOperationsMissionUnlocked(mission, this.campaignProgress)
+    )
+      return;
     whenModalLoaded("single-player-modal", () => {
       (
         document.querySelector(
           "single-player-modal",
         ) as SinglePlayerModal | null
-      )?.open();
+      )?.openForOperation(mission);
     });
   };
+
+  private openTraining = () => this.openMission("iron-gate");
 
   private openPublicBattles = () => {
     if (!this.validateUsername()) return;
@@ -168,6 +201,7 @@ export class EditionHub extends LitElement {
   }
 
   private renderOperationsDashboard() {
+    const campaignSummary = getOperationsCampaignSummary(this.campaignProgress);
     return html`
       <section
         class="ow-operations-dashboard"
@@ -223,6 +257,104 @@ export class EditionHub extends LitElement {
             <span class="ow-map-compass" aria-hidden="true">N</span>
           </div>
         </div>
+
+        <section
+          class="ow-mission-section"
+          aria-label=${this.t("mission_selection_title")}
+        >
+          <div class="ow-operations-section-heading">
+            <div>
+              <span class="ow-edition-eyebrow">
+                ${this.t("mission_selection_eyebrow")}
+              </span>
+              <h3>${this.t("mission_selection_title")}</h3>
+              <p>${this.t("mission_selection_description")}</p>
+            </div>
+            <span class="ow-roadmap-status">
+              ${this.t("alpha_scenarios")}
+            </span>
+          </div>
+          <div
+            class="ow-campaign-summary"
+            aria-label=${this.t("campaign_progress")}
+          >
+            <div>
+              <strong
+                >${campaignSummary.clearedMissions}/${campaignSummary.totalMissions}</strong
+              ><span>${this.t("campaign_cleared")}</span>
+            </div>
+            <div>
+              <strong>${campaignSummary.wins}</strong
+              ><span>${this.t("campaign_wins")}</span>
+            </div>
+            <div>
+              <strong
+                >${campaignSummary.stars}/${campaignSummary.totalMissions * 3}</strong
+              ><span>${this.t("campaign_stars")}</span>
+            </div>
+          </div>
+          <div class="ow-mission-grid">
+            ${OPERATIONS_MISSIONS.map((mission, index) => {
+              const record = getOperationsMissionProgress(
+                mission.id,
+                this.campaignProgress,
+              );
+              const unlocked = isOperationsMissionUnlocked(
+                  mission,
+                  this.campaignProgress,
+                ),
+                cleared = record.wins > 0;
+              const remainingWins = Math.max(
+                0,
+                mission.unlockWins - campaignSummary.wins,
+              );
+              return html` <article
+                class="ow-mission-card ${unlocked ? "" : "is-locked"}"
+              >
+                <div class="ow-mission-card-topline">
+                  <span class="ow-mission-number">OPERATION 0${index + 1}</span
+                  ><span class="ow-mission-difficulty"
+                    >${mission.difficulty}</span
+                  ><span class="ow-mission-state"
+                    >${cleared ? this.t("mission_cleared") : unlocked ? this.t("mission_available") : this.t("mission_locked")}</span
+                  >
+                </div>
+                <h4>${this.t(`mission_${mission.translationKey}_title`)}</h4>
+                <p class="ow-mission-brief">
+                  ${this.t(`mission_${mission.translationKey}_brief`)}
+                </p>
+                <div class="ow-mission-meta">
+                  <span>${mission.map}</span
+                  ><span>${mission.timeLimitMinutes} MIN</span
+                  ><span>${mission.winThresholdTenths / 10}% TERRITORY</span>
+                </div>
+                <p class="ow-mission-objective">
+                  ${this.t(`mission_${mission.translationKey}_objective`)}
+                </p>
+                <div class="ow-mission-progress">
+                  <span
+                    >${record.wins} ${this.t("mission_wins")} ·
+                    ${record.attempts} ${this.t("mission_attempts")}</span
+                  ><span
+                    class="ow-mission-stars"
+                    aria-label="${record.bestStars} ${this.t("campaign_stars")}"
+                    >${"★".repeat(record.bestStars)}${"☆".repeat(3 - record.bestStars)}</span
+                  >
+                </div>
+                ${!unlocked ? html`<p class="ow-mission-unlock">${remainingWins} ${this.t("mission_wins_to_unlock")}</p>` : ""}
+                <button
+                  class="ow-action-primary ow-mission-launch"
+                  type="button"
+                  ?disabled=${!unlocked}
+                  @click=${() => this.openMission(mission.id)}
+                >
+                  ${unlocked ? this.t("mission_start_action") : this.t("mission_locked_action")}
+                  <span aria-hidden="true">${unlocked ? "↗" : "🔒"}</span>
+                </button>
+              </article>`;
+            })}
+          </div>
+        </section>
 
         <div class="ow-operations-section-heading">
           <div>

@@ -23,6 +23,13 @@ import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
 import "./components/GameConfigSettings";
 import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
+import { markPendingOperationsMission } from "./components/OperationsCampaign";
+import {
+  getOperationsMission,
+  OPERATIONS_NON_NUCLEAR_UNITS,
+  type OperationsMissionId,
+  type OperationsMissionPreset,
+} from "./components/OperationsMissions";
 import {
   type LoadSavedGameDetail,
   savedGameIdFrom,
@@ -130,6 +137,7 @@ const DEFAULT_OPTIONS = {
   compactMap: false,
   maxTimer: false,
   maxTimerValue: undefined as number | undefined,
+  winThresholdTenths: undefined as number | undefined,
   instantBuild: false,
   randomSpawn: false,
   useRandomMap: false,
@@ -207,6 +215,8 @@ export class SinglePlayerModal extends BaseModal {
   @state() private maxTimer: boolean = DEFAULT_OPTIONS.maxTimer;
   @state() private maxTimerValue: number | undefined =
     DEFAULT_OPTIONS.maxTimerValue;
+  @state() private winThresholdTenths: number | undefined =
+    DEFAULT_OPTIONS.winThresholdTenths;
   @state() private instantBuild: boolean = DEFAULT_OPTIONS.instantBuild;
   @state() private randomSpawn: boolean = DEFAULT_OPTIONS.randomSpawn;
   @state() private useRandomMap: boolean = DEFAULT_OPTIONS.useRandomMap;
@@ -246,6 +256,7 @@ export class SinglePlayerModal extends BaseModal {
   @state() private sharedSaveId: string | null = null;
   // Identifies the current start attempt. Bumped on every start and on every
   // close, so an attempt that outlives its modal can tell it has been retired.
+  @state() private operationsMissionId: OperationsMissionId | null = null;
   private startAttempt: number = 0;
   // Which attempt the starting overlay is up for, so a retired attempt's
   // cleanup cannot hide the overlay a newer attempt has shown.
@@ -434,6 +445,115 @@ export class SinglePlayerModal extends BaseModal {
     </div>`;
   }
 
+  private renderOperationsMissionBriefing(): TemplateResult {
+    if (this.operationsMissionId === null) return html``;
+    const mission = getOperationsMission(this.operationsMissionId);
+    if (!mission) return html``;
+
+    return html`
+      <section
+        class="mb-6 rounded-xl border border-amber-300/25 bg-gradient-to-r from-amber-500/10 via-slate-900/80 to-slate-900/80 p-4 sm:p-5"
+        data-testid="operations-mission-briefing"
+        role="region"
+        aria-label=${translateText("edition_hub.mission_briefing")}
+      >
+        <div class="mb-2 flex flex-wrap items-center justify-between gap-2">
+          <span
+            class="text-[0.65rem] font-extrabold uppercase tracking-[0.16em] text-amber-200/80"
+          >
+            ${translateText("edition_hub.mission_briefing")}
+          </span>
+          <span
+            class="rounded-full border border-amber-200/20 bg-amber-200/10 px-2.5 py-1 text-[0.65rem] font-bold uppercase tracking-wider text-amber-100"
+          >
+            ${translateText(`difficulty.${mission.difficulty.toLowerCase()}`)}
+          </span>
+        </div>
+        <h3 class="text-lg font-extrabold text-white">
+          ${translateText(`edition_hub.mission_${mission.translationKey}_title`)}
+        </h3>
+        <p class="mt-1 text-sm leading-relaxed text-white/70">
+          ${translateText(`edition_hub.mission_${mission.translationKey}_brief`)}
+        </p>
+        <dl class="mt-4 grid grid-cols-2 gap-2 sm:grid-cols-5">
+          <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("edition_hub.mission_theatre_label")}
+            </dt>
+            <dd class="mt-1 text-sm font-bold text-white">${mission.map}</dd>
+          </div>
+          <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("edition_hub.mission_mode_label")}
+            </dt>
+            <dd class="mt-1 text-sm font-bold text-white">
+              ${mission.gameMode}
+            </dd>
+          </div>
+          <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("edition_hub.mission_duration_label")}
+            </dt>
+            <dd class="mt-1 text-sm font-bold text-white">
+              ${mission.timeLimitMinutes} min
+            </dd>
+          </div>
+          <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("edition_hub.mission_victory_label")}
+            </dt>
+            <dd class="mt-1 text-sm font-bold text-white">
+              ${mission.winThresholdTenths / 10}%
+            </dd>
+          </div>
+          <div class="rounded-lg border border-white/10 bg-black/20 p-2.5">
+            <dt
+              class="text-[0.62rem] font-semibold uppercase tracking-wider text-white/45"
+            >
+              ${translateText("game_settings.bots")}
+            </dt>
+            <dd class="mt-1 text-sm font-bold text-white">${mission.bots}</dd>
+          </div>
+        </dl>
+        ${
+          mission.disableNukes || mission.disableAlliances
+            ? html`
+                <div class="mt-3 flex flex-wrap gap-2">
+                  ${
+                    mission.disableNukes
+                      ? html`<span
+                          class="rounded-full border border-rose-300/20 bg-rose-400/10 px-2.5 py-1 text-[0.65rem] font-semibold text-rose-100"
+                          >${translateText("edition_hub.mission_nuclear_units_disabled")}</span
+                        >`
+                      : ""
+                  }
+                  ${
+                    mission.disableAlliances
+                      ? html`<span
+                          class="rounded-full border border-sky-300/20 bg-sky-400/10 px-2.5 py-1 text-[0.65rem] font-semibold text-sky-100"
+                          >${translateText("edition_hub.mission_alliances_disabled")}</span
+                        >`
+                      : ""
+                  }
+                </div>
+              `
+            : ""
+        }
+        <p class="mt-3 text-xs leading-relaxed text-white/50">
+          ${translateText("edition_hub.mission_settings_note")}
+        </p>
+      </section>
+    `;
+  }
+
   protected renderBody() {
     const inputCards = [
       html`<toggle-input-card
@@ -521,6 +641,7 @@ export class SinglePlayerModal extends BaseModal {
         <div
           class="flex-1 min-h-0 overflow-y-auto custom-scrollbar px-6 pt-4 pb-6 mr-1 mx-auto w-full max-w-5xl"
         >
+          ${this.renderOperationsMissionBriefing()}
           <saved-games-panel
             class="block mb-6"
             .signedIn=${responseHasLinkedIdentity(this.userMeResponse)}
@@ -776,6 +897,7 @@ export class SinglePlayerModal extends BaseModal {
     this.compactMap = DEFAULT_OPTIONS.compactMap;
     this.maxTimer = DEFAULT_OPTIONS.maxTimer;
     this.maxTimerValue = DEFAULT_OPTIONS.maxTimerValue;
+    this.winThresholdTenths = DEFAULT_OPTIONS.winThresholdTenths;
     this.instantBuild = DEFAULT_OPTIONS.instantBuild;
     this.randomSpawn = DEFAULT_OPTIONS.randomSpawn;
     this.teamCount = DEFAULT_OPTIONS.teamCount;
@@ -793,7 +915,35 @@ export class SinglePlayerModal extends BaseModal {
     this.overtimeStartMinutes = DEFAULT_OPTIONS.overtimeStartMinutes;
   }
 
+  /**
+   * Opens the standard solo lobby with a curated Operations scenario preset.
+   * The scenario reuses existing deterministic game rules and only configures
+   * map, difficulty, mode, timer, victory threshold, AI count, and unit bans.
+   */
+  public openForOperation(mission: OperationsMissionPreset): void {
+    this.resetOptions();
+    this.selectedMap = mission.map;
+    this.selectedDifficulty = mission.difficulty;
+    this.gameMode = mission.gameMode;
+    this.teamCount = mission.teamCount;
+    this.maxTimer = true;
+    this.maxTimerValue = mission.timeLimitMinutes;
+    this.winThresholdTenths = mission.winThresholdTenths;
+    this.bots = mission.bots;
+    this.disabledUnits = mission.disableNukes
+      ? [...OPERATIONS_NON_NUCLEAR_UNITS]
+      : [];
+    this.customAlliances = mission.disableAlliances;
+    this.customAllianceMinutes = mission.disableAlliances ? 0 : undefined;
+    this.open({ operation: mission.id });
+  }
+
   protected onOpen(args?: Record<string, unknown>): void {
+    const operationId = args?.operation;
+    this.operationsMissionId =
+      typeof operationId === "string"
+        ? (getOperationsMission(operationId)?.id ?? null)
+        : null;
     const save = args?.save;
     this.sharedSaveId = typeof save === "string" ? savedGameIdFrom(save) : null;
     // Saves made since the list last loaded (a game played in between).
@@ -1194,6 +1344,9 @@ export class SinglePlayerModal extends BaseModal {
             playerTeams: this.teamCount,
             difficulty: this.selectedDifficulty,
             maxTimerValue: finalMaxTimerValue,
+            ...(this.winThresholdTenths !== undefined
+              ? { winThresholdTenths: this.winThresholdTenths }
+              : {}),
             bots: this.bots,
             infiniteGold: this.infiniteGold,
             donateGold: this.gameMode === GameMode.Team,
@@ -1389,6 +1542,10 @@ export class SinglePlayerModal extends BaseModal {
       // The ad is long enough that the modal can be closed while it runs.
       if (attempt !== this.startAttempt) return;
 
+      if (this.operationsMissionId !== null) {
+        markPendingOperationsMission(this.operationsMissionId);
+        this.operationsMissionId = null;
+      }
       this.dispatchEvent(
         new CustomEvent("join-lobby", {
           detail,

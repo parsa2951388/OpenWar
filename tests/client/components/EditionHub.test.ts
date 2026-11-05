@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import "../../../src/client/components/EditionHub";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
+const CAMPAIGN_STORAGE_KEY = "openwar.operations.campaign.v1";
 
 describe("Open War edition hub", () => {
   let hub: HTMLElement & { updateComplete: Promise<unknown> };
@@ -22,8 +23,28 @@ describe("Open War edition hub", () => {
     };
   }
 
+  function setCampaignWins(wins: number): void {
+    window.localStorage.setItem(
+      CAMPAIGN_STORAGE_KEY,
+      JSON.stringify({
+        version: 1,
+        missions: {
+          "iron-gate": {
+            attempts: wins,
+            wins,
+            bestStars: 3,
+            bestTimeSeconds: 300,
+            lastPlayedAt: 1,
+          },
+        },
+      }),
+    );
+    window.dispatchEvent(new CustomEvent("operations-campaign-updated"));
+  }
+
   beforeEach(() => {
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
+    window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY);
     document.body.innerHTML = "";
   });
 
@@ -31,6 +52,7 @@ describe("Open War edition hub", () => {
     hub?.remove();
     document.body.innerHTML = "";
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
+    window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY);
   });
 
   it("pauses the Classic lobby feed while Operations is selected", async () => {
@@ -56,6 +78,32 @@ describe("Open War edition hub", () => {
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
+  it("renders all six mission cards when Operations is selected", async () => {
+    await mountHub();
+
+    const dashboard = hub.querySelector(".ow-operations-dashboard");
+    expect(dashboard?.hasAttribute("hidden")).toBe(true);
+
+    tabs()[1].click();
+    await hub.updateComplete;
+
+    expect(dashboard?.hasAttribute("hidden")).toBe(false);
+    const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");
+    expect(cards).toHaveLength(6);
+    expect(cards[0].querySelector(".ow-mission-number")?.textContent).toContain(
+      "01",
+    );
+    expect(cards[5].querySelector(".ow-mission-number")?.textContent).toContain(
+      "06",
+    );
+    expect(
+      cards[0].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
+    ).toBe(false);
+    expect(
+      cards[3].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
+    ).toBe(true);
+  });
+
   it("resumes the Classic lobby feed on returning to Classic", async () => {
     await mountHub();
 
@@ -76,5 +124,20 @@ describe("Open War edition hub", () => {
     ).toBe(false);
     expect(openLobbyFeed).toHaveBeenCalledTimes(1);
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("classic");
+  });
+
+  it("shows remaining victories needed to unlock each mission", async () => {
+    await mountHub();
+
+    const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");
+    setCampaignWins(1);
+    await hub.updateComplete;
+    const northernUnlock = cards[4].querySelector(".ow-mission-unlock");
+    expect(northernUnlock?.textContent).toContain("1");
+
+    setCampaignWins(2);
+    await hub.updateComplete;
+    const pacificUnlock = cards[5].querySelector(".ow-mission-unlock");
+    expect(pacificUnlock?.textContent).toContain("1");
   });
 });
