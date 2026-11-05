@@ -128,7 +128,9 @@ describe("Open War edition hub", () => {
 
     (hub as any).joinRoom();
     await hub.updateComplete;
-    expect(hub.querySelector('[data-testid="online-maintenance"]')).not.toBeNull();
+    expect(
+      hub.querySelector('[data-testid="online-maintenance"]'),
+    ).not.toBeNull();
   });
 
   it("resumes the Classic lobby feed on returning to Classic", async () => {
