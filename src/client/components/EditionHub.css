@@ -742,3 +742,154 @@
     margin-left: 0;
   }
 }
+
+
+/* Larger, clearer Operations command desk across desktop, tablet and mobile. */
+.ow-edition-hub {
+  max-width: 1640px;
+  padding-right: clamp(1rem, 2.2vw, 2rem);
+  padding-left: clamp(1rem, 2.2vw, 2rem);
+}
+
+.ow-operations-dashboard {
+  gap: clamp(1.4rem, 2.2vw, 2.1rem);
+}
+
+.ow-operations-hero {
+  min-height: 390px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 1.02fr);
+  border-radius: 22px;
+  background:
+    radial-gradient(ellipse at 78% 14%, rgba(197, 163, 110, 0.12), transparent 34%),
+    linear-gradient(125deg, #1a2b28 0%, #101b1b 54%, #172522 100%);
+}
+
+.ow-operations-hero-content {
+  padding: clamp(1.7rem, 3.2vw, 3.35rem);
+}
+
+.ow-operations-hero h2 {
+  font-size: clamp(1.9rem, 3.2vw, 3rem);
+}
+
+.ow-theatre-map {
+  min-height: 360px;
+  background-size: auto, auto, cover;
+}
+
+.ow-mission-section {
+  gap: 1.1rem;
+}
+
+.ow-mission-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ow-mission-card {
+  min-height: 330px;
+  padding: clamp(1.15rem, 1.55vw, 1.6rem);
+  border-radius: 16px;
+  background:
+    radial-gradient(ellipse at 100% 0%, rgba(197, 163, 110, 0.13), transparent 48%),
+    linear-gradient(145deg, rgba(25, 42, 38, 0.99), rgba(10, 20, 20, 0.99));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.ow-mission-card h4 {
+  font-size: 1.12rem;
+  line-height: 1.35;
+}
+
+.ow-mission-brief {
+  min-height: 4rem;
+  font-size: 0.8rem;
+}
+
+.ow-mission-meta {
+  gap: 0.65rem 0.85rem;
+  font-size: 0.64rem;
+}
+
+.ow-campaign-summary {
+  padding: 1rem 1.15rem;
+}
+
+.ow-system-card {
+  min-height: 210px;
+  padding: 1.3rem;
+}
+
+@media (max-width: 1250px) {
+  .ow-mission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-operations-hero {
+    min-height: 360px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.95fr);
+  }
+  .ow-theatre-map {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 900px) {
+  .ow-edition-hub {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+  .ow-operations-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .ow-theatre-map {
+    min-height: 260px;
+  }
+  .ow-mission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-mission-card {
+    min-height: 310px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-edition-hub {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+  .ow-operations-hero {
+    border-radius: 16px;
+  }
+  .ow-operations-hero-content {
+    padding: 1.25rem;
+  }
+  .ow-theatre-map {
+    min-height: 205px;
+  }
+  .ow-mission-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+  }
+  .ow-mission-card {
+    min-height: 0;
+    padding: 1.1rem;
+  }
+  .ow-mission-brief {
+    min-height: 0;
+  }
+  .ow-campaign-summary {
+    padding: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow-operations-hero,
+  .ow-mission-card {
+    scroll-behavior: auto;
+    transition: none;
+  }
+  .ow-mission-card:hover {
+    transform: none;
+  }
+}
