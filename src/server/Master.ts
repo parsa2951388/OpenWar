@@ -26,9 +26,9 @@ import { MasterLobbyService } from "./MasterLobbyService";
 import { setNoStoreHeaders } from "./NoStoreHeaders";
 import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
+import { createSecurityHeaders } from "./SecurityHeaders";
 import { registerSelfHostedApi } from "./SelfHostedApi";
 import { ServerEnv } from "./ServerEnv";
-import { createSecurityHeaders } from "./SecurityHeaders";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
 
 const playlist = new MapPlaylist();

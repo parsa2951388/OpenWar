@@ -50,7 +50,10 @@ export function isAllowedWebSocketOrigin(
 
   try {
     const parsed = new URL(origin);
-    if (parsed.origin !== origin || parsed.host.toLowerCase() !== requestHost.toLowerCase()) {
+    if (
+      parsed.origin !== origin ||
+      parsed.host.toLowerCase() !== requestHost.toLowerCase()
+    ) {
       return false;
     }
     return ServerEnv.gameEnvName() !== "prod" || parsed.protocol === "https:";

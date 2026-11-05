@@ -24,9 +24,7 @@ describe("createSecurityHeaders", () => {
     expect(headers.get("Referrer-Policy")).toBe(
       "strict-origin-when-cross-origin",
     );
-    expect(headers.get("Strict-Transport-Security")).toBe(
-      "max-age=31536000",
-    );
+    expect(headers.get("Strict-Transport-Security")).toBe("max-age=31536000");
     expect(next).toHaveBeenCalledOnce();
   });
 
