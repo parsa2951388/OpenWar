@@ -88,6 +88,7 @@ import type { JoinLobbyModal } from "./JoinLobbyModal";
 // The LangSelector class is used as a type; retain this for registration.
 // oxlint-disable-next-line import/no-duplicates -- Required custom-element registration.
 import "./LangSelector";
+import { isOperationsEditionSelected } from "./components/EditionPreference";
 import { LangSelector } from "./LangSelector";
 import { initLayout } from "./Layout";
 import { loadModal, prefetchModals, whenModalLoaded } from "./LazyModals";
@@ -105,7 +106,6 @@ import {
 import { modalRouter } from "./ModalRouter";
 import { updateAccountNavButton } from "./NavAccountButton";
 import { initNavigation } from "./Navigation";
-import { isOperationsEditionSelected } from "./components/EditionPreference";
 import { capturePagePin } from "./PagePin";
 import { setPurchaseAccountRefresh } from "./Payments";
 import { fallbackPlayerName, LAPSE_NOTICE_KEY } from "./PlayerName";

@@ -22,8 +22,14 @@ describe("Operations online route gate", () => {
     initNavigation();
     window.showPage?.("page-detailed-view");
 
-    expect(document.getElementById("page-play")?.classList.contains("hidden")).toBe(false);
-    expect(document.getElementById("page-detailed-view")?.classList.contains("hidden")).toBe(true);
+    expect(
+      document.getElementById("page-play")?.classList.contains("hidden"),
+    ).toBe(false);
+    expect(
+      document
+        .getElementById("page-detailed-view")
+        ?.classList.contains("hidden"),
+    ).toBe(true);
     expect(hub.showOnlineUnderConstruction).toHaveBeenCalledOnce();
   });
 });

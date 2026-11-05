@@ -1098,7 +1098,6 @@
   }
 }
 
-
 /* Operations online entry is deliberately gated while its dedicated server mode is built. */
 .ow-online-construction {
   display: grid;
@@ -1108,8 +1107,15 @@
   padding: 1.15rem 1.25rem;
   border: 1px solid rgba(226, 176, 94, 0.36);
   border-radius: 15px;
-  background: linear-gradient(112deg, rgba(77, 54, 27, 0.46), rgba(25, 30, 28, 0.94) 58%, rgba(25, 41, 39, 0.92));
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045), 0 18px 42px rgba(0, 0, 0, 0.18);
+  background: linear-gradient(
+    112deg,
+    rgba(77, 54, 27, 0.46),
+    rgba(25, 30, 28, 0.94) 58%,
+    rgba(25, 41, 39, 0.92)
+  );
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.045),
+    0 18px 42px rgba(0, 0, 0, 0.18);
   animation: ow-notice-in 180ms ease-out;
 }
 .ow-online-construction-icon {
@@ -1122,8 +1128,13 @@
   background: rgba(232, 184, 108, 0.12);
   color: #e8bb78;
 }
-.ow-online-construction-icon svg { width: 25px; height: 25px; }
-.ow-online-construction-copy { min-width: 0; }
+.ow-online-construction-icon svg {
+  width: 25px;
+  height: 25px;
+}
+.ow-online-construction-copy {
+  min-width: 0;
+}
 .ow-online-construction-kicker {
   display: block;
   margin-bottom: 0.25rem;
@@ -1154,7 +1165,11 @@
   font-size: 0.67rem;
   font-weight: 800;
 }
-.ow-online-construction-meta span { display: inline-flex; align-items: center; gap: 0.4rem; }
+.ow-online-construction-meta span {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.4rem;
+}
 .ow-online-construction-meta i {
   display: inline-block;
   width: 7px;
@@ -1174,15 +1189,47 @@
   font-size: 0.73rem;
   font-weight: 800;
   white-space: nowrap;
-  transition: background-color 150ms ease, border-color 150ms ease;
+  transition:
+    background-color 150ms ease,
+    border-color 150ms ease;
 }
-.ow-online-construction-close:hover { border-color: rgba(220, 231, 224, 0.48); background: rgba(255, 255, 255, 0.1); }
-.ow-flag-action { border-color: rgba(113, 190, 173, 0.35); }
-.ow-flag-action:hover { border-color: rgba(113, 190, 173, 0.65); }
-@keyframes ow-notice-in { from { opacity: 0; transform: translateY(-5px); } to { opacity: 1; transform: translateY(0); } }
+.ow-online-construction-close:hover {
+  border-color: rgba(220, 231, 224, 0.48);
+  background: rgba(255, 255, 255, 0.1);
+}
+.ow-flag-action {
+  border-color: rgba(113, 190, 173, 0.35);
+}
+.ow-flag-action:hover {
+  border-color: rgba(113, 190, 173, 0.65);
+}
+@keyframes ow-notice-in {
+  from {
+    opacity: 0;
+    transform: translateY(-5px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
 @media (max-width: 700px) {
-  .ow-online-construction { grid-template-columns: 42px minmax(0, 1fr); gap: 0.75rem; padding: 0.95rem; }
-  .ow-online-construction-icon { width: 40px; height: 40px; }
-  .ow-online-construction-close { grid-column: 1 / -1; justify-self: stretch; }
+  .ow-online-construction {
+    grid-template-columns: 42px minmax(0, 1fr);
+    gap: 0.75rem;
+    padding: 0.95rem;
+  }
+  .ow-online-construction-icon {
+    width: 40px;
+    height: 40px;
+  }
+  .ow-online-construction-close {
+    grid-column: 1 / -1;
+    justify-self: stretch;
+  }
 }
-@media (prefers-reduced-motion: reduce) { .ow-online-construction { animation: none; } }
+@media (prefers-reduced-motion: reduce) {
+  .ow-online-construction {
+    animation: none;
+  }
+}

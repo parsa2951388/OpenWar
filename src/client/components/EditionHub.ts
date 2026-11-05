@@ -315,35 +315,55 @@ export class EditionHub extends LitElement {
           </div>
         </div>
 
-        ${this.onlineNoticeOpen
-          ? html`
-              <section
-                class="ow-online-construction"
-                role="status"
-                aria-live="polite"
-                data-testid="operations-online-notice"
-              >
-                <div class="ow-online-construction-icon" aria-hidden="true">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.7" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M12 3v3M12 18v3M3 12h3M18 12h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12" />
-                    <circle cx="12" cy="12" r="4" />
-                  </svg>
-                </div>
-                <div class="ow-online-construction-copy">
-                  <span class="ow-online-construction-kicker">${this.t("online_status")}</span>
-                  <h3>${this.t("online_title")}</h3>
-                  <p>${this.t("online_description")}</p>
-                  <div class="ow-online-construction-meta">
-                    <span><i aria-hidden="true"></i>${this.t("online_blocked")}</span>
-                    <span>${this.t("online_solo_available")}</span>
+        ${
+          this.onlineNoticeOpen
+            ? html`
+                <section
+                  class="ow-online-construction"
+                  role="status"
+                  aria-live="polite"
+                  data-testid="operations-online-notice"
+                >
+                  <div class="ow-online-construction-icon" aria-hidden="true">
+                    <svg
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.7"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                    >
+                      <path
+                        d="M12 3v3M12 18v3M3 12h3M18 12h3M5.64 5.64l2.12 2.12m8.48 8.48 2.12 2.12m0-12.72-2.12 2.12m-8.48 8.48-2.12 2.12"
+                      />
+                      <circle cx="12" cy="12" r="4" />
+                    </svg>
                   </div>
-                </div>
-                <button type="button" class="ow-online-construction-close" @click=${this.closeOnlineNotice}>
-                  ${this.t("online_close_action")}
-                </button>
-              </section>
-            `
-          : nothing}
+                  <div class="ow-online-construction-copy">
+                    <span class="ow-online-construction-kicker"
+                      >${this.t("online_status")}</span
+                    >
+                    <h3>${this.t("online_title")}</h3>
+                    <p>${this.t("online_description")}</p>
+                    <div class="ow-online-construction-meta">
+                      <span
+                        ><i aria-hidden="true"></i
+                        >${this.t("online_blocked")}</span
+                      >
+                      <span>${this.t("online_solo_available")}</span>
+                    </div>
+                  </div>
+                  <button
+                    type="button"
+                    class="ow-online-construction-close"
+                    @click=${this.closeOnlineNotice}
+                  >
+                    ${this.t("online_close_action")}
+                  </button>
+                </section>
+              `
+            : nothing
+        }
 
         <section
           class="ow-mission-section"

@@ -109,17 +109,35 @@ describe("Open War edition hub", () => {
     tabs()[1].click();
     await hub.updateComplete;
 
-    hub.querySelector<HTMLButtonElement>('[data-testid="operations-online-entry"]')!.click();
+    hub
+      .querySelector<HTMLButtonElement>(
+        '[data-testid="operations-online-entry"]',
+      )!
+      .click();
     await hub.updateComplete;
-    expect(hub.querySelector('[data-testid="operations-online-notice"]')).toBeTruthy();
+    expect(
+      hub.querySelector('[data-testid="operations-online-notice"]'),
+    ).toBeTruthy();
 
-    hub.querySelector<HTMLButtonElement>('[data-testid="operations-private-create"]')!.click();
+    hub
+      .querySelector<HTMLButtonElement>(
+        '[data-testid="operations-private-create"]',
+      )!
+      .click();
     await hub.updateComplete;
-    expect(hub.querySelector('[data-testid="operations-online-notice"]')).toBeTruthy();
+    expect(
+      hub.querySelector('[data-testid="operations-online-notice"]'),
+    ).toBeTruthy();
 
-    hub.querySelector<HTMLButtonElement>('[data-testid="operations-private-join"]')!.click();
+    hub
+      .querySelector<HTMLButtonElement>(
+        '[data-testid="operations-private-join"]',
+      )!
+      .click();
     await hub.updateComplete;
-    expect(hub.querySelector('[data-testid="operations-online-notice"]')).toBeTruthy();
+    expect(
+      hub.querySelector('[data-testid="operations-online-notice"]'),
+    ).toBeTruthy();
   });
 
   it("resumes the Classic lobby feed on returning to Classic", async () => {
