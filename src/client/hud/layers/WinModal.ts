@@ -61,7 +61,8 @@ import { PlaySoundEffectEvent } from "../../sound/Sounds";
 import { steamSDK } from "../../SteamSDK";
 import { SendWinnerEvent } from "../../Transport";
 import { GameView } from "../../view";
-import { consumePendingOperationsMission, recordOperationsMissionResult, type OperationsMissionId } from "../../components/OperationsCampaign";
+import { consumePendingOperationsMission, recordOperationsMissionResult } from "../../components/OperationsCampaign";
+import type { OperationsMissionId } from "../../components/OperationsMissions";
 
 type LegendCeremonyModule = typeof import("../../components/LegendCeremony");
 
