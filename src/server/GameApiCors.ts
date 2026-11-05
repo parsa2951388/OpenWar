@@ -45,7 +45,7 @@ export function isAllowedWebSocketOrigin(
   requestHost: string | undefined,
 ): boolean {
   if (origin === undefined) return true;
-  if (isAllowedOrigin(origin)) return true;
+  if (isAllowedOrigin(origin) || origin === ServerEnv.authOrigin()) return true;
   if (!requestHost) return false;
 
   try {
