@@ -2,14 +2,19 @@ import express from "express";
 import http from "http";
 import type { AddressInfo } from "net";
 import { afterEach, describe, expect, test } from "vitest";
-import { applySecurityHeaders, securityHeaders } from "../../src/server/SecurityHeaders";
+import {
+  applySecurityHeaders,
+  securityHeaders,
+} from "../../src/server/SecurityHeaders";
 
 describe("security headers", () => {
   test("sets safe baseline browser headers", () => {
     const headers = new Map<string, string>();
     applySecurityHeaders((name, value) => headers.set(name, value));
     expect(headers.get("X-Content-Type-Options")).toBe("nosniff");
-    expect(headers.get("Referrer-Policy")).toBe("strict-origin-when-cross-origin");
+    expect(headers.get("Referrer-Policy")).toBe(
+      "strict-origin-when-cross-origin",
+    );
     expect(headers.get("X-Permitted-Cross-Domain-Policies")).toBe("none");
     expect(headers.get("Permissions-Policy")).toBe(
       "camera=(), microphone=(), geolocation=()",
@@ -29,7 +34,9 @@ describe("security headers", () => {
       expect(response.headers.get("referrer-policy")).toBe(
         "strict-origin-when-cross-origin",
       );
-      expect(response.headers.get("permissions-policy")).toContain("camera=()");
+      expect(response.headers.get("permissions-policy")).toContain(
+        "camera=()",
+      );
     } finally {
       await new Promise<void>((resolve, reject) =>
         server.close((error) => (error ? reject(error) : resolve())),
