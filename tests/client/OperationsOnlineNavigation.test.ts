@@ -1,5 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import { initNavigation } from "../../src/client/Navigation";
+import {
+  isOperationsEditionSelected,
+  setOpenWarEditionPreference,
+} from "../../src/client/components/EditionPreference";
 
 const editionKey = "openwar.edition";
 
@@ -31,5 +35,19 @@ describe("Operations online route gate", () => {
         ?.classList.contains("hidden"),
     ).toBe(true);
     expect(hub.showOnlineUnderConstruction).toHaveBeenCalledOnce();
+  });
+
+  it("keeps the New online gate active when browser storage is blocked", () => {
+    const setItem = vi
+      .spyOn(Storage.prototype, "setItem")
+      .mockImplementation(() => {
+        throw new Error("storage blocked");
+      });
+
+    setOpenWarEditionPreference("operations");
+    expect(isOperationsEditionSelected()).toBe(true);
+
+    setItem.mockRestore();
+    setOpenWarEditionPreference("classic");
   });
 });
