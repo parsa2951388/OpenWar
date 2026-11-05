@@ -348,7 +348,9 @@ export class EditionHub extends LitElement {
             <div class="ow-campaign-completion">
               <div class="ow-campaign-completion-copy">
                 <span>${this.t("campaign_completion")}</span>
-                <strong>${campaignSummary.clearedMissions}/${campaignSummary.totalMissions}</strong>
+                <strong
+                  >${campaignSummary.clearedMissions}/${campaignSummary.totalMissions}</strong
+                >
               </div>
               <div
                 class="ow-campaign-progress-track"
@@ -397,11 +399,13 @@ export class EditionHub extends LitElement {
                                 ${mission.difficulty}
                               </span>
                               <span class="ow-mission-state">
-                                ${cleared
-                                  ? this.t("mission_cleared")
-                                  : unlocked
-                                    ? this.t("mission_available")
-                                    : this.t("mission_locked")}
+                                ${
+                                  cleared
+                                    ? this.t("mission_cleared")
+                                    : unlocked
+                                      ? this.t("mission_available")
+                                      : this.t("mission_locked")
+                                }
                               </span>
                             </div>
                             <h4>
@@ -429,8 +433,7 @@ export class EditionHub extends LitElement {
                             <div class="ow-mission-progress">
                               <span>
                                 ${record.wins} ${this.t("mission_wins")} ·
-                                ${record.attempts}
-                                ${this.t("mission_attempts")}
+                                ${record.attempts} ${this.t("mission_attempts")}
                               </span>
                               <span
                                 class="ow-mission-stars"
@@ -455,9 +458,11 @@ export class EditionHub extends LitElement {
                               ?disabled=${!unlocked}
                               @click=${() => this.openMission(mission.id)}
                             >
-                              ${unlocked
-                                ? this.t("mission_start_action")
-                                : this.t("mission_locked_action")}
+                              ${
+                                unlocked
+                                  ? this.t("mission_start_action")
+                                  : this.t("mission_locked_action")
+                              }
                               <span aria-hidden="true">
                                 ${unlocked ? "↗" : "🔒"}
                               </span>

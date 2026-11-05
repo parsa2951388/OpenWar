@@ -179,9 +179,9 @@ describe("Open War edition hub", () => {
     await hub.updateComplete;
 
     expect(
-      hub.querySelector('[data-testid="campaign-progress"]')?.getAttribute(
-        "aria-valuenow",
-      ),
+      hub
+        .querySelector('[data-testid="campaign-progress"]')
+        ?.getAttribute("aria-valuenow"),
     ).toBe("17");
   });
 
