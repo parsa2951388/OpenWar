@@ -1,0 +1,44 @@
+name: Temporary dependency audit
+
+on:
+  push:
+    branches:
+      - open-war/new-operations-hardening
+
+permissions:
+  contents: read
+
+jobs:
+  audit:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Print dependency audit summary
+        shell: bash
+        run: |
+          npm audit --json > /tmp/npm-audit.json || true
+          node --input-type=commonjs -e '
+            const audit = require("/tmp/npm-audit.json");
+            const vulns = audit.vulnerabilities || {};
+            console.log("SUMMARY", JSON.stringify(audit.metadata?.vulnerabilities || {}));
+            for (const [name, v] of Object.entries(vulns)) {
+              const via = (v.via || []).map(x => typeof x === "string" ? x : x.title + " [" + x.range + "]");
+              console.log(JSON.stringify({
+                name,
+                severity: v.severity,
+                direct: v.isDirect,
+                range: v.range,
+                via,
+                fixAvailable: v.fixAvailable
+              }));
+            }
+          '
