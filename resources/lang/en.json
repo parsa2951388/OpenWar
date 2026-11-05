@@ -938,7 +938,9 @@
     "coming_soon_objectives_title": "Multi-stage objectives",
     "coming_soon_objectives_body": "Team operations with strategic locations, changing tasks and distinct victory conditions.",
     "coming_soon_planned": "ON THE ROADMAP",
-    "coming_soon_notice": "These features are not active yet. Online Operations will stay closed until implementation and testing are complete."
+    "coming_soon_notice": "These features are not active yet. Online Operations will stay closed until implementation and testing are complete.",
+    "coming_soon_battle_royale_title": "Survival and last nation standing",
+    "coming_soon_battle_royale_body": "A dynamic safe zone, escalating time pressure and a last-nation-standing victory condition with configurable match rules."
   },
   "effects": {
     "nukeType": {
