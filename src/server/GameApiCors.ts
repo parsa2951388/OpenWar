@@ -8,30 +8,47 @@ import { ServerEnv } from "./ServerEnv";
  */
 export const DESKTOP_APP_ORIGIN = "app://openfront";
 
-function isAllowedOrigin(origin: string): boolean {
+/**
+ * Exact browser Origin allowlist shared by HTTP CORS and WebSocket upgrades.
+ * Missing Origin is handled separately for non-browser clients; "null" and
+ * lookalike origins are never trusted.
+ */
+export function isAllowedGameApiOrigin(origin: string): boolean {
+  if (!origin || origin === "null") return false;
   if (origin === DESKTOP_APP_ORIGIN) return true;
+
   const siteHost = ServerEnv.siteHost();
   if (siteHost !== undefined && origin === `https://${siteHost}`) return true;
 
-  // Replay shell host: replay.openfront.io (or replay.<domain>)
   const audience = ServerEnv.domain();
   if (audience && origin === `https://replay.${audience}`) return true;
-  // This server's own game host — harmless (same-origin requests skip CORS)
-  // and what a page rendered by this server pins itself to — and its own
-  // PAGE host when GAME_DOMAIN splits the two names (`main.openfront.dev`
-  // for game host `main.server.openfront.dev`): a player who loads that
-  // page arrives from exactly that origin.
-  //
-  // Sibling game hosts are deliberately NOT here any more. Every page a
-  // player can reach a foreign game from is served by the site host (the
-  // apex behind the load balancer, the static Worker), which is granted
-  // above; only a page loaded on another server's own game host would be
-  // refused, and nothing serves pages there.
+
   const own = ServerEnv.publicHost();
-  if (own === undefined) return false;
-  if (origin === `https://${own}`) return true;
-  const pageHost = ServerEnv.pageHostFor(own);
-  return pageHost !== undefined && origin === `https://${pageHost}`;
+  if (own !== undefined) {
+    if (origin === `https://${own}`) return true;
+    const pageHost = ServerEnv.pageHostFor(own);
+    return pageHost !== undefined && origin === `https://${pageHost}`;
+  }
+
+  // A standalone self-hosted deployment uses DOMAIN as both the JWT audience
+  // and its single browser-facing origin (for example the Cloudflare Pages
+  // proxy described in docs/SELF_HOSTING.md).
+  if (audience && origin === `https://${audience}`) return true;
+
+  // Vite/dev proxy origins are intentionally accepted only in local dev.
+  if (audience === "localhost") {
+    try {
+      const url = new URL(origin);
+      return (
+        (url.protocol === "http:" || url.protocol === "https:") &&
+        (url.hostname === "localhost" || url.hostname === "127.0.0.1")
+      );
+    } catch {
+      return false;
+    }
+  }
+
+  return false;
 }
 
 /**
@@ -61,7 +78,7 @@ export function applyGameApiCorsHeaders(
   // serve one origin's response to another.
   setHeader("Vary", "Origin");
 
-  if (requestOrigin === undefined || !isAllowedOrigin(requestOrigin)) {
+  if (requestOrigin === undefined || !isAllowedGameApiOrigin(requestOrigin)) {
     return;
   }
 
