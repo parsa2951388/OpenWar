@@ -47,6 +47,7 @@ export class EditionHub extends LitElement {
   @state() private edition: OpenWarEdition = readEditionPreference();
   @state() private campaignProgress = readOperationsCampaignProgress();
   @state() private missionFilter: OperationsMissionFilter = "all";
+  @state() private onlineMaintenanceOpen = false;
 
   createRenderRoot() {
     return this;
@@ -136,28 +137,15 @@ export class EditionHub extends LitElement {
 
   private openTraining = () => this.openMission("iron-gate");
 
-  private openPublicBattles = () => {
-    if (!this.validateUsername()) return;
-    window.showPage?.("page-detailed-view");
+  private showOnlineMaintenance = () => {
+    this.onlineMaintenanceOpen = true;
   };
 
-  private openPrivateRoom = () => {
-    if (!this.validateUsername()) return;
-    whenModalLoaded("host-lobby-modal", () => {
-      (
-        document.querySelector("host-lobby-modal") as HostLobbyModal | null
-      )?.open();
-    });
-  };
+  private openPublicBattles = () => this.showOnlineMaintenance();
 
-  private joinRoom = () => {
-    if (!this.validateUsername()) return;
-    whenModalLoaded("join-lobby-modal", () => {
-      (
-        document.querySelector("join-lobby-modal") as JoinLobbyModal | null
-      )?.open();
-    });
-  };
+  private openPrivateRoom = () => this.showOnlineMaintenance();
+
+  private joinRoom = () => this.showOnlineMaintenance();
 
   private renderEditionControl() {
     return html`
@@ -290,6 +278,29 @@ export class EditionHub extends LitElement {
           </div>
         </div>
 
+        ${this.onlineMaintenanceOpen
+          ? html`
+              <aside
+                class="ow-online-maintenance"
+                role="status"
+                aria-live="polite"
+                data-testid="online-maintenance"
+              >
+                <span class="ow-online-maintenance-icon" aria-hidden="true">⚒</span>
+                <div class="ow-online-maintenance-copy">
+                  <span class="ow-online-maintenance-eyebrow">${this.t("online_maintenance_status")}</span>
+                  <h3>${this.t("online_maintenance_title")}</h3>
+                  <p>${this.t("online_maintenance_description")}</p>
+                </div>
+                <button
+                  class="ow-online-maintenance-close"
+                  type="button"
+                  aria-label=${this.t("online_maintenance_close")}
+                  @click=${() => (this.onlineMaintenanceOpen = false)}
+                >×</button>
+              </aside>
+            `
+          : ""}
         <section
           class="ow-mission-section"
           aria-label=${this.t("mission_selection_title")}
