@@ -1400,3 +1400,5 @@
 }
 
 /* Format pass is enforced by the branch workflow before merge. */
+
+/* Re-run the formatter on the latest branch head. */
