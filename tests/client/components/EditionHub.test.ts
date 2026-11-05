@@ -44,9 +44,9 @@ describe("Open War edition hub", () => {
     tabs()[1].click();
     await hub.updateComplete;
 
-    expect(hub.querySelector(".ow-classic-edition")?.hasAttribute("hidden")).toBe(
-      true,
-    );
+    expect(
+      hub.querySelector(".ow-classic-edition")?.hasAttribute("hidden"),
+    ).toBe(true);
     expect(
       hub.querySelector(".ow-operations-coming-soon")?.hasAttribute("hidden"),
     ).toBe(false);
@@ -68,11 +68,13 @@ describe("Open War edition hub", () => {
     await hub.updateComplete;
 
     expect(hub.querySelectorAll(".ow-mission-launch")).toHaveLength(0);
-    expect(hub.querySelectorAll(".ow-operations-footer-actions button")).toHaveLength(
-      0,
-    );
+    expect(
+      hub.querySelectorAll(".ow-operations-footer-actions button"),
+    ).toHaveLength(0);
     expect(hub.querySelectorAll(".ow-coming-soon-card")).toHaveLength(4);
-    expect(hub.querySelector(".ow-coming-soon-copy .ow-action-primary")).not.toBeNull();
+    expect(
+      hub.querySelector(".ow-coming-soon-copy .ow-action-primary"),
+    ).not.toBeNull();
   });
 
   it("resumes the Classic lobby feed when the player returns to Classic", async () => {

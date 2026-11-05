@@ -1,5 +1,5 @@
-import { describe, expect, it } from "vitest";
 import type { PublicGames } from "@openfront/shared/WireSchemas";
+import { describe, expect, it } from "vitest";
 import { countOnlineBattleRooms } from "../../src/client/GameModeSelector";
 
 describe("online battle hub room counts", () => {

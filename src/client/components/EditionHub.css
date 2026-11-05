@@ -900,7 +900,6 @@
   }
 }
 
-
 /* Operations is intentionally a preview-only destination until online systems ship. */
 .ow-edition-tab.is-coming-soon {
   border-style: dashed;
@@ -987,7 +986,10 @@
     linear-gradient(rgba(217, 230, 219, 0.04) 1px, transparent 1px),
     linear-gradient(90deg, rgba(217, 230, 219, 0.04) 1px, transparent 1px),
     radial-gradient(circle at 50% 48%, rgba(72, 125, 109, 0.2), transparent 54%);
-  background-size: 32px 32px, 32px 32px, auto;
+  background-size:
+    32px 32px,
+    32px 32px,
+    auto;
 }
 
 .ow-coming-soon-visual::before,
@@ -1034,7 +1036,11 @@
 .ow-coming-soon-coordinate {
   position: absolute;
   color: rgba(196, 210, 199, 0.62);
-  font: 700 0.58rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    700 0.58rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
   letter-spacing: 0.12em;
 }
 
@@ -1198,7 +1204,6 @@
     min-height: 0;
   }
 }
-
 
 /* Live multiplayer hub: clear hierarchy, live counts and tactile entry points. */
 .ow-online-battle-hub {

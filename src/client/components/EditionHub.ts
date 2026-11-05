@@ -138,9 +138,7 @@ export class EditionHub extends LitElement {
               <span aria-hidden="true">◷</span>
               ${this.t("coming_soon_label")}
             </span>
-            <h2 id="ow-coming-soon-title">
-              ${this.t("coming_soon_title")}
-            </h2>
+            <h2 id="ow-coming-soon-title">${this.t("coming_soon_title")}</h2>
             <p>${this.t("coming_soon_body")}</p>
             <button
               class="ow-action-primary"
@@ -155,8 +153,12 @@ export class EditionHub extends LitElement {
             <div class="ow-coming-soon-radar ow-coming-soon-radar-one"></div>
             <div class="ow-coming-soon-radar ow-coming-soon-radar-two"></div>
             <div class="ow-coming-soon-crosshair">+</div>
-            <span class="ow-coming-soon-coordinate ow-coming-soon-coordinate-a">OW / OPS-01</span>
-            <span class="ow-coming-soon-coordinate ow-coming-soon-coordinate-b">SYSTEM STATUS · BUILDING</span>
+            <span class="ow-coming-soon-coordinate ow-coming-soon-coordinate-a"
+              >OW / OPS-01</span
+            >
+            <span class="ow-coming-soon-coordinate ow-coming-soon-coordinate-b"
+              >SYSTEM STATUS · BUILDING</span
+            >
             <span class="ow-coming-soon-marker ow-coming-soon-marker-a"></span>
             <span class="ow-coming-soon-marker ow-coming-soon-marker-b"></span>
             <span class="ow-coming-soon-marker ow-coming-soon-marker-c"></span>
@@ -166,7 +168,9 @@ export class EditionHub extends LitElement {
 
         <div class="ow-coming-soon-section">
           <div>
-            <span class="ow-edition-eyebrow">${this.t("coming_soon_features_eyebrow")}</span>
+            <span class="ow-edition-eyebrow"
+              >${this.t("coming_soon_features_eyebrow")}</span
+            >
             <h3>${this.t("coming_soon_features_title")}</h3>
           </div>
           <div class="ow-coming-soon-grid">
@@ -174,25 +178,33 @@ export class EditionHub extends LitElement {
               <span class="ow-coming-soon-card-icon" aria-hidden="true">⌁</span>
               <h4>${this.t("coming_soon_supply_title")}</h4>
               <p>${this.t("coming_soon_supply_body")}</p>
-              <span class="ow-coming-soon-card-status">${this.t("coming_soon_planned")}</span>
+              <span class="ow-coming-soon-card-status"
+                >${this.t("coming_soon_planned")}</span
+              >
             </article>
             <article class="ow-coming-soon-card">
               <span class="ow-coming-soon-card-icon" aria-hidden="true">◎</span>
               <h4>${this.t("coming_soon_recon_title")}</h4>
               <p>${this.t("coming_soon_recon_body")}</p>
-              <span class="ow-coming-soon-card-status">${this.t("coming_soon_planned")}</span>
+              <span class="ow-coming-soon-card-status"
+                >${this.t("coming_soon_planned")}</span
+              >
             </article>
             <article class="ow-coming-soon-card">
               <span class="ow-coming-soon-card-icon" aria-hidden="true">⚑</span>
               <h4>${this.t("coming_soon_objectives_title")}</h4>
               <p>${this.t("coming_soon_objectives_body")}</p>
-              <span class="ow-coming-soon-card-status">${this.t("coming_soon_planned")}</span>
+              <span class="ow-coming-soon-card-status"
+                >${this.t("coming_soon_planned")}</span
+              >
             </article>
             <article class="ow-coming-soon-card">
               <span class="ow-coming-soon-card-icon" aria-hidden="true">◉</span>
               <h4>${this.t("coming_soon_coop_campaign_title")}</h4>
               <p>${this.t("coming_soon_coop_campaign_body")}</p>
-              <span class="ow-coming-soon-card-status">${this.t("coming_soon_planned")}</span>
+              <span class="ow-coming-soon-card-status"
+                >${this.t("coming_soon_planned")}</span
+              >
             </article>
           </div>
           <p class="ow-coming-soon-footnote">${this.t("coming_soon_notice")}</p>
