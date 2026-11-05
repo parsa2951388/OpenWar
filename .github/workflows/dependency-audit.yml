@@ -1,0 +1,68 @@
+name: Dependency security audit
+
+on:
+  pull_request:
+    branches:
+      - open-war/independent-self-host
+
+permissions:
+  contents: read
+
+jobs:
+  dependency-audit:
+    name: npm dependency vulnerability report
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24.15.0
+          package-manager-cache: false
+      - name: Install repository-pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm run inst
+      - name: Audit all dependencies
+        shell: bash
+        run: |
+          set +e
+          npm audit --json > npm-audit-all.json
+          all_status=$?
+          npm audit --omit=dev --json > npm-audit-production.json
+          production_status=$?
+          set -e
+          node --input-type=module <<'NODE'
+          import fs from "node:fs";
+          for (const [label, file, status] of [
+            ["All dependencies", "npm-audit-all.json", process.env.ALL_STATUS],
+            ["Production dependencies", "npm-audit-production.json", process.env.PRODUCTION_STATUS],
+          ]) {
+            const report = JSON.parse(fs.readFileSync(file, "utf8"));
+            const counts = report.metadata?.vulnerabilities ?? {};
+            console.log(`\n${label}: ${JSON.stringify(counts)}`);
+            for (const [name, item] of Object.entries(report.vulnerabilities ?? {})) {
+              const via = (item.via ?? []).map((entry) =>
+                typeof entry === "string" ? entry : `${entry.name ?? name}: ${entry.title ?? "advisory"}`,
+              );
+              console.log(JSON.stringify({
+                package: name,
+                severity: item.severity,
+                direct: item.isDirect,
+                range: item.range,
+                via,
+                fixAvailable: item.fixAvailable,
+              }));
+            }
+          }
+          NODE
+        env:
+          ALL_STATUS: ${{ steps.audit.outputs.all_status }}
+          PRODUCTION_STATUS: ${{ steps.audit.outputs.production_status }}
+      - name: Upload audit reports
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-dependency-audit
+          path: npm-audit-*.json
+          retention-days: 14
