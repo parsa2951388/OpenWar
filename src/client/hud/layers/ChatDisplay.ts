@@ -124,18 +124,35 @@ export class ChatDisplay extends LitElement implements Controller {
     if (!this.active) {
       return html``;
     }
+    const feedClass = [
+      "ow-hud-chat-feed pointer-events-auto",
+      this._hidden ? "w-fit px-2.5 py-1.25" : "",
+      "rounded-md bg-black/60 relative max-h-[30vh]",
+      "flex flex-col-reverse overflow-y-auto w-full",
+      "lg:bottom-2.5 lg:right-2.5 z-50",
+      "lg:max-w-[30vw] lg:w-full lg:w-auto",
+    ].filter(Boolean).join(" ");
+    const visibleToggleClass = [
+      "ow-hud-chat-feed__toggle text-white cursor-pointer",
+      "pointer-events-auto",
+      this._hidden ? "hidden" : "",
+    ].filter(Boolean).join(" ");
+    const hiddenToggleClass = [
+      "ow-hud-chat-feed__toggle text-white cursor-pointer",
+      "pointer-events-auto",
+      this._hidden ? "" : "hidden",
+    ].filter(Boolean).join(" ");
+    const tableClass = [
+      "ow-hud-chat-feed__table w-full border-collapse text-white shadow-lg",
+      "lg:text-xl text-xs pointer-events-none",
+      this._hidden ? "hidden" : "",
+    ].filter(Boolean).join(" ");
     return html`
-      <div
-        class="ow-hud-chat-feed pointer-events-auto ${
-          this._hidden ? "w-fit px-2.5 py-1.25" : ""
-        } rounded-md bg-black/60 relative max-h-[30vh] flex flex-col-reverse overflow-y-auto w-full lg:bottom-2.5 lg:right-2.5 z-50 lg:max-w-[30vw] lg:w-full lg:w-auto"
-      >
+      <div class=${feedClass}>
         <div>
           <div class="ow-hud-chat-feed__header w-full bg-black/80 sticky top-0 px-2.5">
             <button
-              class="ow-hud-chat-feed__toggle text-white cursor-pointer pointer-events-auto ${
-                this._hidden ? "hidden" : ""
-              }"
+              class=${visibleToggleClass}
               @click=${this.toggleHidden}
             >
               Hide
@@ -143,9 +160,7 @@ export class ChatDisplay extends LitElement implements Controller {
           </div>
 
           <button
-            class="ow-hud-chat-feed__toggle text-white cursor-pointer pointer-events-auto ${
-              this._hidden ? "" : "hidden"
-            }"
+            class=${hiddenToggleClass}
             @click=${this.toggleHidden}
           >
             Chat
@@ -158,9 +173,7 @@ export class ChatDisplay extends LitElement implements Controller {
           </button>
 
           <table
-            class="ow-hud-chat-feed__table w-full border-collapse text-white shadow-lg lg:text-xl text-xs pointer-events-none ${
-              this._hidden ? "hidden" : ""
-            }"
+            class=${tableClass}
           >
             <tbody>
               ${this.chatEvents.map(
