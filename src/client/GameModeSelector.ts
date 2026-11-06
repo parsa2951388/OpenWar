@@ -89,7 +89,9 @@ export function countOnlineBattleRooms(
   };
 }
 
-/** Counts connected players across the current public and hosted lobby snapshot. */
+/**
+ * Counts connected players across the current public and hosted lobby snapshot.
+ */
 export function countOnlineBattlePlayers(
   lobbies: PublicGames | null,
 ): number | null {
@@ -105,11 +107,10 @@ export function countOnlineBattlePlayers(
 
   return allGames.reduce((total, game) => {
     const clients = game.numClients;
-    return total + (
-      typeof clients === "number" && Number.isFinite(clients)
-        ? Math.max(0, Math.floor(clients))
-        : 0
-    );
+    if (typeof clients !== "number" || !Number.isFinite(clients)) {
+      return total;
+    }
+    return total + Math.max(0, Math.floor(clients));
   }, 0);
 }
 
@@ -749,7 +750,10 @@ export class GameModeSelector extends LitElement {
             <span>${translateText("mode_selector.battle_hub_private")}</span>
             <strong>${roomCounts.hostedRooms ?? "—"}</strong>
           </div>
-          <div class="ow-online-hub-metric ow-online-hub-metric-live" data-testid="battle-hub-live-players">
+          <div
+            class="ow-online-hub-metric ow-online-hub-metric-live"
+            data-testid="battle-hub-live-players"
+          >
             <span>${translateText("mode_selector.battle_hub_players")}</span>
             <strong>${livePlayers ?? "—"}</strong>
           </div>
