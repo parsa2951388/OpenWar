@@ -33,6 +33,7 @@ The official OpenFront releases page lists **v0.35.11**, released November 4, 20
 - A guided tutorial covering spawn, expansion, troops and first attacks (v0.35.7).
 - Progression with XP, player levels, prestige, ranked FFA and Clan Wars, plus a seekable replay viewer (v0.35.0).
 - Clan territory map, clan donation leaderboard and continuing public-lobby/team fixes (v0.35.7–v0.35.11).
+- v0.35.11 (November 4): fixes friend groups being split across public Duos/Trios/Quads teams and adds timed sale banners, discount ribbons and crossed-out old prices in the Store.
 - Current lobby options include map search/favourites, AI difficulty, FFA/Teams, tribes/nations, gameplay modifiers, unit bans and start/timer controls.
 
 The release feed is the source of truth for current version claims; the wiki and community guides may lag behind the live client.
