@@ -160,7 +160,11 @@ const HUD_STYLES = `
 }
 `;
 
-if (typeof document !== "undefined" && document.head && !document.getElementById(STYLE_ID)) {
+if (
+  typeof document !== "undefined" &&
+  document.head &&
+  !document.getElementById(STYLE_ID)
+) {
   const style = document.createElement("style");
   style.id = STYLE_ID;
   style.textContent = HUD_STYLES;
