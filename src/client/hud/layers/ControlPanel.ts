@@ -15,7 +15,7 @@ import { UIState } from "../../UIState";
 import { USER_SETTINGS_CHANGED_EVENT, UserSettings } from "../../UserSettings";
 import { getGamesPlayed, translateText } from "../../Utils";
 import { GameView } from "../../view";
-import "./OpenWarHudSkin.css";
+import "./OpenWarHudSkin";
 import { PlayerView } from "../../view/PlayerView";
 import { goldCoinIcon, soldierIcon } from "../HotbarIcons";
 import { OnboardingLowTroopsEvent } from "../Onboarding";
