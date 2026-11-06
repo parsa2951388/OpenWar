@@ -3,8 +3,8 @@ import {
   PlayerType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
-import { ConstructionExecution } from "@openfront/engine/execution/ConstructionExecution";
 import { AirportExecution } from "@openfront/engine/execution/AirportExecution";
+import { ConstructionExecution } from "@openfront/engine/execution/ConstructionExecution";
 import { DoomsdayClockExecution } from "@openfront/engine/execution/DoomsdayClockExecution";
 import { MirvExecution } from "@openfront/engine/execution/MIRVExecution";
 import { NukeExecution } from "@openfront/engine/execution/NukeExecution";
@@ -47,7 +47,6 @@ async function twoPlayers(
 }
 
 describe("structure and missile execution snapshots", () => {
-
   test("airport and aircraft executions round-trip together", async () => {
     const { game, a } = await twoPlayers(BIG, { instantBuild: true });
     conquerRect(game, a, 0, 0, 30, 30);
