@@ -120,16 +120,29 @@ describe("Open War edition hub", () => {
     ).not.toBe("");
 
     const onlineButtons = Array.from(
-      onlinePanel?.querySelectorAll<HTMLButtonElement>("button") ?? [],
+      onlinePanel?.querySelectorAll<HTMLButtonElement>(
+        ".ow-online-disabled-actions button",
+      ) ?? [],
     );
     expect(onlineButtons).toHaveLength(3);
-    const clicks = vi.fn();
-    for (const button of onlineButtons) {
-      button.addEventListener("click", clicks);
-      expect(button.disabled).toBe(true);
-      button.click();
+    const joined = vi.fn();
+    document.addEventListener("join-lobby", joined);
+    try {
+      for (const button of onlineButtons) {
+        expect(button.disabled).toBe(false);
+        button.click();
+        await hub.updateComplete;
+        expect(
+          hub.querySelector('[data-testid="online-operations-note"]')?.textContent?.trim(),
+        ).toBeTruthy();
+      }
+      expect(joined).not.toHaveBeenCalled();
+      expect(
+        hub.querySelector('[data-testid="online-operations-note"]')?.textContent,
+      ).not.toBe("");
+    } finally {
+      document.removeEventListener("join-lobby", joined);
     }
-    expect(clicks).not.toHaveBeenCalled();
 
     // The offline solo campaign is intentionally unaffected.
     expect(
