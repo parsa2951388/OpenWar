@@ -943,7 +943,10 @@ export class SinglePlayerModal extends BaseModal {
   protected onOpen(args?: Record<string, unknown>): void {
     const operationId = args?.operation;
     this.operationsMissionId = null;
-    if (canPlayOperationsInCurrentBrowser() && typeof operationId === "string") {
+    if (
+      canPlayOperationsInCurrentBrowser() &&
+      typeof operationId === "string"
+    ) {
       this.operationsMissionId = getOperationsMission(operationId)?.id ?? null;
     }
     const save = args?.save;
