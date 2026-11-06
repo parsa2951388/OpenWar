@@ -27,8 +27,9 @@ const BUILDING_ORDER = {
 >;
 
 type OtherUnitKey = (typeof otherUnits)[number];
+type AviationUnitKey = Extract<OtherUnitKey, "airp" | "airc">;
 
-const AVIATION_UNITS = ["airp", "airc"] as const satisfies readonly OtherUnitKey[];
+const AVIATION_UNITS: readonly AviationUnitKey[] = ["airp", "airc"];
 
 const buildingUnits = (
   Object.keys(BUILDING_ORDER) as (keyof typeof BUILDING_ORDER)[]
