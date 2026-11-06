@@ -83,6 +83,12 @@ export class SAMMissileExecution implements Execution {
       this.active = false;
       return;
     }
+
+    // Aircraft keep moving while the SAM missile is in flight. Refresh the
+    // destination each tick so the interceptor follows the live target instead
+    // of applying damage at a stale launch-time coordinate.
+    if (isAircraft) this.targetTile = this.target.tile();
+
     for (let i = 0; i < this.speed; i++) {
       const result = this.pathFinder.next(
         this.SAMMissile.tile(),
