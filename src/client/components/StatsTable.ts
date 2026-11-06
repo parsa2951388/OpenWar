@@ -2,6 +2,7 @@ import { LitElement, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import "../hud/layers/ColumnPicker";
+import "../hud/layers/OpenWarHudSkin";
 import {
   type ColumnAlignment,
   type ColumnDef,
@@ -9,7 +10,6 @@ import {
 } from "../hud/layers/lib/StatsColumns";
 import { type ColumnId, type StatsTableKind } from "../StatsConstants";
 import { UserSettings } from "../UserSettings";
-import "../hud/layers/OpenWarHudSkin";
 import { translateText } from "../Utils";
 import type { GameView } from "../view";
 

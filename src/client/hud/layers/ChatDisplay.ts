@@ -176,9 +176,7 @@ export class ChatDisplay extends LitElement implements Controller {
             >
           </button>
 
-          <table
-            class=${tableClass}
-          >
+          <table class=${tableClass}>
             <tbody>
               ${this.chatEvents.map(
                 (chat) => html`
