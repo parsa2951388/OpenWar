@@ -18,7 +18,11 @@
   border-radius: 13px;
   color: var(--ow-hud-text);
   background:
-    radial-gradient(ellipse at 8% 0%, rgba(66, 151, 206, 0.14), transparent 50%),
+    radial-gradient(
+      ellipse at 8% 0%,
+      rgba(66, 151, 206, 0.14),
+      transparent 50%
+    ),
     linear-gradient(135deg, var(--ow-hud-panel-raised), var(--ow-hud-panel));
   box-shadow:
     0 12px 30px rgba(0, 0, 0, 0.25),
@@ -61,8 +65,11 @@
   border: 1px solid var(--ow-hud-line);
   border-top-color: rgba(126, 174, 210, 0.34);
   border-radius: 13px;
-  background:
-    linear-gradient(180deg, rgba(17, 37, 57, 0.97), rgba(7, 17, 30, 0.97));
+  background: linear-gradient(
+    180deg,
+    rgba(17, 37, 57, 0.97),
+    rgba(7, 17, 30, 0.97)
+  );
   box-shadow:
     0 14px 32px rgba(0, 0, 0, 0.27),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
@@ -74,7 +81,11 @@
   min-height: 52px;
   border: 1px solid rgba(130, 170, 198, 0.24);
   border-radius: 10px;
-  background: linear-gradient(160deg, rgba(24, 45, 65, 0.88), rgba(9, 22, 37, 0.94));
+  background: linear-gradient(
+    160deg,
+    rgba(24, 45, 65, 0.88),
+    rgba(9, 22, 37, 0.94)
+  );
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
   transition:
     border-color 140ms ease,
@@ -85,7 +96,11 @@
 
 .ow-hud-buildbar .ow-hud-build-button:hover {
   border-color: var(--ow-hud-line-strong);
-  background: linear-gradient(160deg, rgba(35, 78, 110, 0.92), rgba(12, 31, 49, 0.98));
+  background: linear-gradient(
+    160deg,
+    rgba(35, 78, 110, 0.92),
+    rgba(12, 31, 49, 0.98)
+  );
   box-shadow:
     0 5px 14px rgba(0, 0, 0, 0.2),
     0 0 0 1px rgba(102, 185, 239, 0.08);
@@ -94,7 +109,11 @@
 
 .ow-hud-buildbar .ow-hud-build-button[data-selected="true"] {
   border-color: rgba(102, 185, 239, 0.82);
-  background: linear-gradient(160deg, rgba(35, 104, 151, 0.5), rgba(12, 37, 60, 0.98));
+  background: linear-gradient(
+    160deg,
+    rgba(35, 104, 151, 0.5),
+    rgba(12, 37, 60, 0.98)
+  );
   box-shadow:
     0 0 0 1px rgba(102, 185, 239, 0.22),
     0 0 18px rgba(64, 157, 215, 0.16);
@@ -118,7 +137,11 @@
   border-top: 0;
   border-right: 0;
   border-radius: 0 0 0 13px;
-  background: linear-gradient(160deg, rgba(16, 35, 54, 0.97), rgba(5, 14, 26, 0.97));
+  background: linear-gradient(
+    160deg,
+    rgba(16, 35, 54, 0.97),
+    rgba(5, 14, 26, 0.97)
+  );
   box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
   -webkit-backdrop-filter: blur(14px);
   backdrop-filter: blur(14px);
@@ -161,8 +184,16 @@
 .ow-hud-player-card {
   border: 1px solid rgba(126, 174, 210, 0.28);
   background:
-    radial-gradient(ellipse at 15% 0%, rgba(55, 127, 174, 0.16), transparent 52%),
-    linear-gradient(155deg, rgba(16, 34, 51, 0.98), rgba(7, 15, 27, 0.98));
+    radial-gradient(
+      ellipse at 15% 0%,
+      rgba(55, 127, 174, 0.16),
+      transparent 52%
+    ),
+    linear-gradient(
+      155deg,
+      rgba(16, 34, 51, 0.98),
+      rgba(7, 15, 27, 0.98)
+    );
   box-shadow:
     0 22px 56px rgba(0, 0, 0, 0.44),
     inset 0 1px 0 rgba(255, 255, 255, 0.05);
