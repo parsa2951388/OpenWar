@@ -1,0 +1,58 @@
+name: Format Open War mobile polish branch
+
+on:
+  push:
+    branches:
+      - open-war/mobile-polish-openbattle-2026-11
+
+permissions:
+  contents: write
+
+concurrency:
+  group: format-open-war-mobile-polish
+  cancel-in-progress: false
+
+jobs:
+  format:
+    if: "!contains(github.event.head_commit.message, 'chore: format Open War mobile polish')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out mobile polish branch
+        uses: actions/checkout@v7
+        with:
+          ref: open-war/mobile-polish-openbattle-2026-11
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install repository-pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format touched source and tests
+        run: |
+          npx oxfmt --write \
+            src/client/components/EditionHub.css \
+            src/client/components/NavUtilityIcons.ts \
+            tests/client/PlayPageTopBar.test.ts \
+            tests/client/UsernameInputValidation.test.ts
+      - name: Commit formatting corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/client/components/EditionHub.css \
+            src/client/components/NavUtilityIcons.ts \
+            tests/client/PlayPageTopBar.test.ts \
+            tests/client/UsernameInputValidation.test.ts
+          if git diff --cached --quiet; then
+            echo "Formatting is already clean."
+            exit 0
+          fi
+          git commit -m "chore: format Open War mobile polish"
+          git fetch origin open-war/mobile-polish-openbattle-2026-11
+          git rebase origin/open-war/mobile-polish-openbattle-2026-11
+          git push origin HEAD:open-war/mobile-polish-openbattle-2026-11

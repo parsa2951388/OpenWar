@@ -1508,3 +1508,115 @@
     letter-spacing: 0.035em;
   }
 }
+
+/* Phone-first layout guardrails: keep every homepage section inside the visual
+   viewport, including Persian RTL text and narrow 320px Android screens. */
+@media (max-width: 600px) {
+  .ow-edition-hub,
+  .ow-edition-header,
+  .ow-edition-heading,
+  .ow-edition-switch,
+  .ow-classic-edition,
+  .ow-classic-heading,
+  .ow-online-battle-hub,
+  .ow-online-hub-header,
+  .ow-online-hub-copy,
+  .ow-online-hub-metrics,
+  .ow-lobby-column {
+    box-sizing: border-box;
+    width: 100%;
+    min-width: 0;
+    max-width: 100%;
+  }
+
+  .ow-edition-heading h1,
+  .ow-edition-heading p,
+  .ow-classic-heading h2,
+  .ow-classic-heading p,
+  .ow-online-hub-copy h2,
+  .ow-online-hub-copy p {
+    min-width: 0;
+    max-width: 100%;
+    overflow-wrap: anywhere;
+    word-break: normal;
+  }
+
+  .ow-edition-switch {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ow-edition-tab {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .ow-edition-tab > span:nth-child(2),
+  .ow-edition-tab small {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+
+  .ow-online-hub-header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.75rem;
+  }
+
+  .ow-online-hub-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+
+  .ow-online-hub-metric,
+  .ow-online-hub-metric span,
+  .ow-online-hub-connection {
+    min-width: 0;
+    overflow-wrap: anywhere;
+  }
+}
+
+@media (max-width: 380px) {
+  .ow-edition-hub {
+    padding-right: 0.5rem;
+    padding-left: 0.5rem;
+  }
+
+  .ow-edition-header {
+    gap: 0.65rem;
+    padding-top: 0.8rem;
+  }
+
+  .ow-edition-heading h1,
+  .ow-classic-heading h2 {
+    font-size: 1.12rem;
+  }
+
+  .ow-edition-tab {
+    grid-template-columns: 10px minmax(0, 1fr);
+    column-gap: 0.3rem;
+    padding: 0.45rem 0.35rem;
+  }
+
+  .ow-edition-tab > span:nth-child(2) {
+    font-size: 0.72rem;
+  }
+
+  .ow-edition-tab small {
+    font-size: 0.59rem;
+  }
+
+  .ow-online-hub-header {
+    padding: 0.75rem;
+  }
+
+  .ow-online-hub-metric {
+    padding: 0.48rem;
+  }
+
+  .ow-online-hub-metric span {
+    font-size: 0.52rem;
+    letter-spacing: 0.025em;
+  }
+
+  .ow-online-hub-metric strong {
+    font-size: 1.1rem;
+  }
+}

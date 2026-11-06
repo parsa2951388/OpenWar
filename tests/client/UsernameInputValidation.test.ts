@@ -70,3 +70,18 @@ describe("UsernameInput validation error", () => {
     expect(el.validationError).toBe("");
   });
 });
+
+describe("UsernameInput mobile clan-tag layout", () => {
+  it("anchors the tag menu to the right edge and caps it to the viewport", async () => {
+    const el = await mount();
+    el.querySelector<HTMLButtonElement>("#clan-tag-button")!.click();
+    await el.updateComplete;
+
+    const menu = el.querySelector<HTMLElement>("#clan-tag-menu");
+    expect(menu).not.toBeNull();
+    expect(menu?.className).toContain("right-0");
+    expect(menu?.className).toContain("left-auto");
+    expect(menu?.className).toContain("max-w-[calc(100vw-1rem)]");
+    expect(el.firstElementChild?.className).toContain("min-w-0");
+  });
+});

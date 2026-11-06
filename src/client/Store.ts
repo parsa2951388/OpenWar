@@ -566,12 +566,12 @@ export class StoreModal extends BaseModal {
           : "store.no_skins";
     return html`
       <div
-        class="flex items-center justify-center gap-6 border-b border-white/10 px-4"
+        class="grid min-w-0 grid-cols-3 items-center justify-center gap-1 border-b border-white/10 px-2 sm:gap-3 sm:px-4"
       >
         ${COSMETICS_SUB_TABS.map((tab) => {
           const active = this.cosmeticsSubTab === tab;
           return html`<button
-            class="-mb-px whitespace-nowrap border-b-2 px-4 py-3 text-sm font-bold uppercase tracking-wider transition-colors ${
+            class="-mb-px min-w-0 border-b-2 px-4 py-3 text-sm text-center font-bold uppercase tracking-wider whitespace-nowrap transition-colors max-sm:px-1 max-sm:text-[11px] max-sm:tracking-wide max-sm:whitespace-normal ${
               active
                 ? "border-malibu-blue text-aquarius"
                 : "border-transparent text-white/40 hover:text-white/70"

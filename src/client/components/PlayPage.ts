@@ -29,7 +29,7 @@ export class PlayPage extends LitElement {
           class="lg:hidden fixed left-0 right-0 top-[var(--top-ad-height,0px)] z-40 pt-[env(safe-area-inset-top)] bg-surface border-b border-white/10"
         >
           <div
-            class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center h-14 px-2 gap-2"
+            class="grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center h-14 px-1.5 gap-1"
           >
             <button
               id="hamburger-btn"
@@ -62,7 +62,7 @@ export class PlayPage extends LitElement {
               <img
                 src=${assetUrl("images/OpenWarLogo.svg")}
                 alt="Open War"
-                class="h-7 w-auto max-w-[min(42vw,13rem)] object-contain drop-shadow-[0_0_16px_rgba(0,200,255,0.16)]"
+                class="h-6 w-auto max-w-[min(28vw,9rem)] min-w-0 object-contain drop-shadow-[0_0_16px_rgba(0,200,255,0.16)]"
               />
             </div>
 
@@ -70,7 +70,7 @@ export class PlayPage extends LitElement {
                  the account affordance on every platform now — on CrazyGames
                  its "Sign in" item hands off to their SDK prompt. -->
             <div
-              class="col-start-3 justify-self-end shrink-0 flex items-center gap-0.5"
+              class="col-start-3 justify-self-end flex min-w-0 items-center gap-0"
             >
               <nav-utility-icons size="mobile"></nav-utility-icons>
               <nav-account-menu variant="mobile"></nav-account-menu>
