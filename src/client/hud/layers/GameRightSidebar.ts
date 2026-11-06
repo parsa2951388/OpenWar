@@ -17,6 +17,7 @@ import { shareGame } from "../../utilities/ShareGame";
 import { homeHref, showToast, translateText } from "../../Utils";
 import { GameView } from "../../view";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
+import "./OpenWarHudSkin.css";
 import { ShowReplayPanelEvent } from "./ReplayPanel";
 import { ShowSettingsModalEvent } from "./SettingsModal";
 import { SpawnBarVisibleEvent } from "./SpawnTimer";
@@ -396,7 +397,7 @@ export class GameRightSidebar extends LitElement implements Controller {
         }
       </style>
       <aside
-        class=${`w-fit flex flex-row items-center gap-3 py-2 px-3 bg-gray-800/92 backdrop-blur-sm shadow-xs rounded-bl-lg transition-transform duration-300 ease-out transform text-white ${shouldFlashSidebar ? "game-end-timer-sidebar-flash" : ""} ${
+        class=${`ow-hud-control-rail w-fit flex flex-row items-center gap-3 py-2 px-3 bg-gray-800/92 backdrop-blur-sm shadow-xs rounded-bl-lg transition-transform duration-300 ease-out transform text-white ${shouldFlashSidebar ? "game-end-timer-sidebar-flash" : ""} ${
           this._isVisible ? "translate-x-0" : "translate-x-full"
         }`}
         @contextmenu=${(e: Event) => e.preventDefault()}
