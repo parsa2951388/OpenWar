@@ -139,3 +139,15 @@ Open War is an OpenFront-derived fork. Before reusing or modifying upstream mate
 - [OpenFront Wiki](https://openfront.wiki/)
 - [OpenFront licensing notes](https://github.com/openfrontio/openfront-verified/blob/main/LICENSING.md)
 - [OpenFront official releases](https://github.com/openfrontio/OpenFrontIO/releases)
+
+## Open War implementation update — 2026-11-06
+
+The post-PR-20 parity branch now contains the following implemented work, distinct from future roadmap items:
+
+- Validated lobby presets are connected to solo and hosted-lobby setup.
+- Ally troop and gold donations have direct actions and configurable key bindings.
+- The in-game graphics entry point opens a shared responsive graphics side panel.
+- The Classic online battle hub reports live public and hosted room counts from the public lobby feed, with explicit connecting and unavailable states.
+- The New / Operations public entry remains gated behind the existing Coming Soon maintenance screen.
+
+The browser-facing deployment is still the independent Pages-to-Render topology documented in `docs/SELF_HOSTING.md`. A skipped upstream deploy workflow is not evidence of a new production rollout. The PR's CI and two-client production smoke tests remain the release gate.
