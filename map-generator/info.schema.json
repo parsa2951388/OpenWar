@@ -153,10 +153,10 @@
                     "maximum": 9007199254740991
                   }
                 ],
-                "description": "[x, y] tile position. Origin is top-left; y extends down.",
                 "items": false,
                 "minItems": 2,
-                "maxItems": 2
+                "maxItems": 2,
+                "description": "[x, y] tile position. Origin is top-left; y extends down."
               }
             },
             "required": ["name"],
