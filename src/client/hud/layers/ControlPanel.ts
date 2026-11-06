@@ -15,6 +15,7 @@ import { UIState } from "../../UIState";
 import { USER_SETTINGS_CHANGED_EVENT, UserSettings } from "../../UserSettings";
 import { getGamesPlayed, translateText } from "../../Utils";
 import { GameView } from "../../view";
+import "./OpenWarHudSkin.css";
 import { PlayerView } from "../../view/PlayerView";
 import { goldCoinIcon, soldierIcon } from "../HotbarIcons";
 import { OnboardingLowTroopsEvent } from "../Onboarding";
@@ -730,7 +731,7 @@ export class ControlPanel extends LitElement implements Controller {
         }
       </style>
       <div
-        class="relative pointer-events-auto ${
+        class="ow-hud-resource-panel relative pointer-events-auto ${
           this._isVisible ? "relative w-full text-sm px-2 py-1" : "hidden"
         }"
         @contextmenu=${(e: MouseEvent) => e.preventDefault()}
