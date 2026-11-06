@@ -1295,7 +1295,9 @@
     "territory_alpha_desc": "How opaque the territory fill is (lower lets terrain show through)",
     "territory_alpha_label": "Territory opacity",
     "territory_sat_desc": "How vivid the territory fill colors are (lower mutes them)",
-    "territory_sat_label": "Territory saturation"
+    "territory_sat_label": "Territory saturation",
+    "preset_battlefield": "Battlefield",
+    "preset_battlefield_desc": "High-contrast terrain, clearer borders and more readable structures for fast battles"
   },
   "heads_up_message": {
     "catching_up": "Catching up...",
