@@ -22,8 +22,8 @@ import "./components/baseComponents/Button";
 import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
 import "./components/GameConfigSettings";
-import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
 import { canPlayOperationsInCurrentBrowser } from "./components/EditionPreference";
+import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
 import { markPendingOperationsMission } from "./components/OperationsCampaign";
 import {
   getOperationsMission,
@@ -942,11 +942,10 @@ export class SinglePlayerModal extends BaseModal {
 
   protected onOpen(args?: Record<string, unknown>): void {
     const operationId = args?.operation;
-    this.operationsMissionId = canPlayOperationsInCurrentBrowser()
-      ? typeof operationId === "string"
-        ? (getOperationsMission(operationId)?.id ?? null)
-        : null
-      : null;
+    this.operationsMissionId = null;
+    if (canPlayOperationsInCurrentBrowser() && typeof operationId === "string") {
+      this.operationsMissionId = getOperationsMission(operationId)?.id ?? null;
+    }
     const save = args?.save;
     this.sharedSaveId = typeof save === "string" ? savedGameIdFrom(save) : null;
     // Saves made since the list last loaded (a game played in between).
