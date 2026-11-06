@@ -10,6 +10,7 @@ import {
 import { encodeLobbyMessage } from "@openfront/shared/ZbinWire";
 import http from "http";
 import { WebSocket, WebSocketServer } from "ws";
+import { isAllowedGameApiOrigin } from "./GameApiCors";
 import { GameManager } from "./GameManager";
 import {
   InternalGameInfo,
@@ -307,6 +308,25 @@ export class WorkerLobbyService {
 
   private setupUpgradeHandler() {
     this.server.on("upgrade", (request, socket, head) => {
+      const origin = request.headers.origin;
+      // Browsers always send Origin on WebSocket handshakes. Enforce the same
+      // exact allowlist as HTTP CORS to prevent cross-site socket initiation;
+      // non-browser clients without Origin remain supported.
+      if (
+        origin !== undefined &&
+        (typeof origin !== "string" || !isAllowedGameApiOrigin(origin))
+      ) {
+        this.log.warn("Rejected WebSocket upgrade from untrusted origin", {
+          origin: typeof origin === "string" ? origin : "invalid",
+          path: (request.url ?? "").split("?")[0].slice(0, 120),
+        });
+        socket.write(
+          "HTTP/1.1 403 Forbidden\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
+        );
+        socket.destroy();
+        return;
+      }
+
       const pathname = (request.url ?? "").split("?")[0];
       if (pathname === "/lobbies" || pathname.endsWith("/lobbies")) {
         this.lobbiesWss.handleUpgrade(request, socket, head, (ws) => {

@@ -1,0 +1,37 @@
+name: Format Open War feature branch
+
+on:
+  push:
+    branches:
+      - open-war/security-ops-polish-2026-11
+
+permissions:
+  contents: write
+
+jobs:
+  format:
+    if: github.actor != 'github-actions[bot]'
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          persist-credentials: true
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Setup npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - run: npm ci
+      - name: Apply repository formatter
+        run: npm run format
+      - name: Commit formatter output when needed
+        run: |
+          if [ -n "$(git status --porcelain)" ]; then
+            git config user.name "github-actions[bot]"
+            git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+            git add -u
+            git commit -m "style: apply repository formatter"
+            git push origin "HEAD:${GITHUB_REF_NAME}"
+          else
+            echo "All tracked files are already formatted."
+          fi

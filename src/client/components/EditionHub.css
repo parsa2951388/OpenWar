@@ -742,3 +742,521 @@
     margin-left: 0;
   }
 }
+
+/* Larger, clearer Operations command desk across desktop, tablet and mobile. */
+.ow-edition-hub {
+  max-width: 1640px;
+  padding-right: clamp(1rem, 2.2vw, 2rem);
+  padding-left: clamp(1rem, 2.2vw, 2rem);
+}
+
+.ow-operations-dashboard {
+  gap: clamp(1.4rem, 2.2vw, 2.1rem);
+}
+
+.ow-operations-hero {
+  min-height: 390px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 1.02fr);
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      ellipse at 78% 14%,
+      rgba(197, 163, 110, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(125deg, #1a2b28 0%, #101b1b 54%, #172522 100%);
+}
+
+.ow-operations-hero-content {
+  padding: clamp(1.7rem, 3.2vw, 3.35rem);
+}
+
+.ow-operations-hero h2 {
+  font-size: clamp(1.9rem, 3.2vw, 3rem);
+}
+
+.ow-theatre-map {
+  min-height: 360px;
+  background-size: auto, auto, cover;
+}
+
+.ow-mission-section {
+  gap: 1.1rem;
+}
+
+.ow-mission-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ow-mission-card {
+  min-height: 330px;
+  padding: clamp(1.15rem, 1.55vw, 1.6rem);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(197, 163, 110, 0.13),
+      transparent 48%
+    ),
+    linear-gradient(145deg, rgba(25, 42, 38, 0.99), rgba(10, 20, 20, 0.99));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.ow-mission-card h4 {
+  font-size: 1.12rem;
+  line-height: 1.35;
+}
+
+.ow-mission-brief {
+  min-height: 4rem;
+  font-size: 0.8rem;
+}
+
+.ow-mission-meta {
+  gap: 0.65rem 0.85rem;
+  font-size: 0.64rem;
+}
+
+.ow-campaign-summary {
+  padding: 1rem 1.15rem;
+}
+
+.ow-system-card {
+  min-height: 210px;
+  padding: 1.3rem;
+}
+
+@media (max-width: 1250px) {
+  .ow-mission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-operations-hero {
+    min-height: 360px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.95fr);
+  }
+  .ow-theatre-map {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 900px) {
+  .ow-edition-hub {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+  .ow-operations-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .ow-theatre-map {
+    min-height: 260px;
+  }
+  .ow-mission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-mission-card {
+    min-height: 310px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-edition-hub {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+  .ow-operations-hero {
+    border-radius: 16px;
+  }
+  .ow-operations-hero-content {
+    padding: 1.25rem;
+  }
+  .ow-theatre-map {
+    min-height: 205px;
+  }
+  .ow-mission-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+  }
+  .ow-mission-card {
+    min-height: 0;
+    padding: 1.1rem;
+  }
+  .ow-mission-brief {
+    min-height: 0;
+  }
+  .ow-campaign-summary {
+    padding: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow-operations-hero,
+  .ow-mission-card {
+    transition: none;
+  }
+  .ow-mission-card:hover {
+    transform: none;
+  }
+}
+
+/* Online Operations is deliberately unavailable until its multiplayer backend is ready. */
+.ow-online-operations {
+  position: relative;
+  display: grid;
+  gap: 1.15rem;
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(1.2rem, 2.5vw, 2rem);
+  border: 1px solid rgba(120, 174, 174, 0.28);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(67, 139, 151, 0.18),
+      transparent 42%
+    ),
+    linear-gradient(135deg, rgba(15, 35, 39, 0.98), rgba(10, 20, 25, 0.98));
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
+}
+
+.ow-online-operations-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.ow-online-operations-head h3 {
+  margin: 0;
+  color: #f1f6f5;
+  font-size: clamp(1.15rem, 2vw, 1.6rem);
+  line-height: 1.3;
+}
+
+.ow-online-operations-head p {
+  max-width: 54rem;
+  margin: 0.55rem 0 0;
+  color: #adbfbd;
+  font-size: 0.82rem;
+  line-height: 1.75;
+}
+
+.ow-online-operations-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  color: #e7c98e;
+  border-color: rgba(231, 201, 142, 0.3);
+  background: rgba(231, 201, 142, 0.08);
+}
+
+.ow-online-operations-badge > span {
+  color: #e6bd70;
+  font-size: 0.58rem;
+  text-shadow: 0 0 10px rgba(230, 189, 112, 0.75);
+}
+
+.ow-online-operations-note {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(230, 189, 112, 0.2);
+  border-radius: 12px;
+  background: rgba(230, 189, 112, 0.07);
+}
+
+.ow-online-note-icon {
+  display: grid;
+  flex: 0 0 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(230, 189, 112, 0.12);
+  color: #eacb91;
+  font-size: 1.25rem;
+}
+
+.ow-online-operations-note p {
+  margin: 0;
+  color: #e0d3b7;
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.ow-online-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.ow-online-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(169, 191, 182, 0.14);
+  border-radius: 13px;
+  background: rgba(5, 15, 19, 0.36);
+}
+
+.ow-online-feature-icon {
+  display: grid;
+  flex: 0 0 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid rgba(125, 183, 184, 0.23);
+  border-radius: 10px;
+  background: rgba(70, 135, 143, 0.12);
+  color: #9ed2cf;
+  font-size: 1.1rem;
+}
+
+.ow-online-feature strong {
+  display: block;
+  color: #eaf2ef;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.ow-online-feature p {
+  margin: 0.35rem 0 0;
+  color: #9dafaa;
+  font-size: 0.72rem;
+  line-height: 1.65;
+}
+
+.ow-online-disabled-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.ow-online-disabled-actions button,
+.ow-online-disabled-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(155, 177, 172, 0.16);
+  border-radius: 11px;
+  background: rgba(7, 17, 21, 0.6);
+  color: #80918c;
+  cursor: not-allowed;
+  opacity: 0.72;
+  text-align: start;
+}
+
+.ow-online-disabled-actions button:disabled,
+.ow-online-disabled-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+  filter: saturate(0.55);
+}
+
+.ow-online-disabled-actions button > span,
+.ow-online-disabled-trigger > span {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .ow-online-feature-grid,
+  .ow-online-disabled-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-online-operations {
+    gap: 0.9rem;
+    padding: 1rem;
+    border-radius: 15px;
+  }
+  .ow-online-operations-head {
+    flex-direction: column;
+  }
+  .ow-online-operations-badge {
+    align-self: flex-start;
+  }
+  .ow-online-feature {
+    padding: 0.85rem;
+  }
+  .ow-online-operations-note {
+    align-items: flex-start;
+    padding: 0.8rem;
+  }
+}
+
+/* Public New edition: informative landing state only; no gameplay entry points. */
+.ow-online-operations-public {
+  min-height: min(68vh, 760px);
+  align-content: center;
+  padding: clamp(1.35rem, 3vw, 2.5rem);
+  border-color: rgba(224, 181, 111, 0.3);
+  background:
+    radial-gradient(
+      ellipse at 90% 10%,
+      rgba(224, 181, 111, 0.13),
+      transparent 40%
+    ),
+    radial-gradient(
+      ellipse at 0% 100%,
+      rgba(66, 135, 146, 0.16),
+      transparent 45%
+    ),
+    linear-gradient(135deg, rgba(17, 31, 34, 0.99), rgba(8, 17, 22, 0.99));
+}
+
+.ow-online-operations-public .ow-online-operations-head h2 {
+  font-size: clamp(1.55rem, 3vw, 2.25rem);
+  letter-spacing: -0.035em;
+}
+
+.ow-online-operations-public .ow-online-operations-note {
+  max-width: 74rem;
+  padding: 1rem 1.15rem;
+}
+
+.ow-online-operations-public .ow-online-feature {
+  min-height: 130px;
+  align-items: center;
+  padding: 1.1rem;
+}
+
+.ow-online-operations-public .ow-online-disabled-actions button {
+  min-height: 54px;
+  font-weight: 750;
+}
+
+.ow-classic-systems {
+  display: grid;
+  gap: 0.95rem;
+  margin: 1.1rem 0 1.35rem;
+  min-width: 0;
+}
+
+.ow-classic-systems-heading h3 {
+  margin: 0;
+  color: #f1f5f2;
+  font-size: clamp(1.05rem, 1.7vw, 1.4rem);
+  font-weight: 850;
+  line-height: 1.3;
+}
+
+.ow-classic-systems-heading p {
+  max-width: 62rem;
+  margin: 0.4rem 0 0;
+  color: #a7b8b2;
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.ow-classic-systems-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.ow-classic-system-card {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 142px;
+  padding: 1rem;
+  border: 1px solid rgba(151, 183, 174, 0.17);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(84, 151, 150, 0.11),
+      transparent 55%
+    ),
+    linear-gradient(145deg, rgba(19, 34, 34, 0.92), rgba(9, 19, 22, 0.94));
+  transition:
+    border-color 160ms ease,
+    transform 160ms ease,
+    background 160ms ease;
+}
+
+.ow-classic-system-card:hover {
+  transform: translateY(-2px);
+  border-color: rgba(162, 204, 192, 0.34);
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(103, 172, 166, 0.17),
+      transparent 55%
+    ),
+    linear-gradient(145deg, rgba(22, 40, 39, 0.96), rgba(9, 19, 22, 0.96));
+}
+
+.ow-classic-system-index {
+  display: grid;
+  flex: 0 0 2.1rem;
+  width: 2.1rem;
+  height: 2.1rem;
+  place-items: center;
+  border: 1px solid rgba(205, 181, 132, 0.23);
+  border-radius: 9px;
+  background: rgba(205, 181, 132, 0.09);
+  color: #d9bf8c;
+  font:
+    800 0.66rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.04em;
+}
+
+.ow-classic-system-card h4 {
+  margin: 0.05rem 0 0;
+  color: #e8efeb;
+  font-size: 0.82rem;
+  font-weight: 850;
+  line-height: 1.4;
+}
+
+.ow-classic-system-card p {
+  margin: 0.4rem 0 0;
+  color: #a1b1aa;
+  font-size: 0.7rem;
+  line-height: 1.65;
+}
+
+@media (max-width: 1200px) {
+  .ow-classic-systems-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-classic-systems-grid {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .ow-classic-system-card {
+    min-height: 0;
+  }
+  .ow-online-operations-public {
+    min-height: 0;
+    padding: 1rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow-classic-system-card {
+    transition: none;
+  }
+  .ow-classic-system-card:hover {
+    transform: none;
+  }
+}

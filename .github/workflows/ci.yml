@@ -33,6 +33,8 @@ jobs:
       - name: Setup npm
         run: npm install --global --ignore-scripts npm@12.1.0
       - run: npm ci
+      - name: Audit production dependencies
+        run: npm audit --omit=dev --audit-level=high
       # Root project plus each package's own tsconfig (engine, engine-api and
       # engine-lib get no DOM and no Node types).
       - run: npm run typecheck
