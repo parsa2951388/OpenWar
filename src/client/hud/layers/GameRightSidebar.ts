@@ -17,7 +17,7 @@ import { shareGame } from "../../utilities/ShareGame";
 import { homeHref, showToast, translateText } from "../../Utils";
 import { GameView } from "../../view";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
-import "./OpenWarHudSkin.css";
+import "./OpenWarHudSkin";
 import { ShowReplayPanelEvent } from "./ReplayPanel";
 import { ShowSettingsModalEvent } from "./SettingsModal";
 import { SpawnBarVisibleEvent } from "./SpawnTimer";
