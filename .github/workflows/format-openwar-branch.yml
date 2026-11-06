@@ -4,6 +4,7 @@ on:
   push:
     branches:
       - open-war/security-ops-polish-2026-11
+      - open-war/new-gate-integration-2026-11
 
 permissions:
   contents: write
