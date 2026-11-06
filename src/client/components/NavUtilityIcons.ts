@@ -41,6 +41,10 @@ export class NavUtilityIcons extends LitElement {
     this.requestUpdate();
   };
 
+  private iconSizeClass(): string {
+    return this.size === "mobile" ? "w-5 h-5" : "w-6 h-6";
+  }
+
   private buttonClass(): string {
     const box = this.size === "mobile" ? "w-8 h-8" : "w-10 h-10";
     return (
@@ -90,7 +94,7 @@ export class NavUtilityIcons extends LitElement {
           stroke-width="1.8"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
+          class="${this.iconSizeClass()} pointer-events-none"
           aria-hidden="true"
         >
           <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
@@ -132,7 +136,7 @@ export class NavUtilityIcons extends LitElement {
               stroke-width="1.8"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
+              class="${this.iconSizeClass()} pointer-events-none"
               aria-hidden="true"
             >
               <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -167,7 +171,7 @@ export class NavUtilityIcons extends LitElement {
                       stroke-width="1.8"
                       stroke-linecap="round"
                       stroke-linejoin="round"
-                      class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
+                      class="${this.iconSizeClass()} pointer-events-none"
                       aria-hidden="true"
                     >
                       <circle cx="12" cy="12" r="9" />
@@ -201,7 +205,7 @@ export class NavUtilityIcons extends LitElement {
             stroke-width="1.8"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
+            class="${this.iconSizeClass()} pointer-events-none"
             aria-hidden="true"
           >
             <circle cx="12" cy="12" r="3" />
