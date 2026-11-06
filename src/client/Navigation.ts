@@ -1,3 +1,7 @@
+import {
+  isOperationsOnlineLockedInCurrentBrowser,
+  showOperationsOnlineMaintenance,
+} from "./components/EditionPreference";
 import { loadModal } from "./LazyModals";
 
 export function closeMobileSidebar() {
@@ -16,6 +20,20 @@ export function closeMobileSidebar() {
 
 export function initNavigation() {
   const showPage = (pageId: string) => {
+    if (
+      isOperationsOnlineLockedInCurrentBrowser() &&
+      [
+        "page-detailed-view",
+        "page-join-lobby",
+        "page-host-lobby",
+        "page-matchmaking",
+      ].includes(pageId)
+    ) {
+      showOperationsOnlineMaintenance(
+        pageId === "page-host-lobby" ? "private" : "join",
+      );
+      pageId = "page-play";
+    }
     window.currentPageId = pageId;
 
     // Close mobile sidebar if a nav item was clicked

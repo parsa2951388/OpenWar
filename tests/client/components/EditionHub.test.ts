@@ -1,4 +1,21 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+
+const mockCanPlayOperations = vi.hoisted(() => vi.fn(() => false));
+
+vi.mock(
+  "../../../src/client/components/EditionPreference",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("../../../src/client/components/EditionPreference")
+      >();
+    return {
+      ...actual,
+      canPlayOperationsInCurrentBrowser: mockCanPlayOperations,
+    };
+  },
+);
+
 import "../../../src/client/components/EditionHub";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
@@ -43,12 +60,14 @@ describe("Open War edition hub", () => {
   }
 
   beforeEach(() => {
+    mockCanPlayOperations.mockReturnValue(false);
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
     window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY);
     document.body.innerHTML = "";
   });
 
   afterEach(() => {
+    mockCanPlayOperations.mockReturnValue(false);
     hub?.remove();
     document.body.innerHTML = "";
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
@@ -79,30 +98,22 @@ describe("Open War edition hub", () => {
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
-  it("renders all six mission cards when Operations is selected", async () => {
+  it("shows an under-construction preview instead of Operations missions on public hosts", async () => {
     await mountHub();
-
-    const dashboard = hub.querySelector(".ow-operations-dashboard");
-    expect(dashboard?.hasAttribute("hidden")).toBe(true);
 
     tabs()[1].click();
     await hub.updateComplete;
 
-    expect(dashboard?.hasAttribute("hidden")).toBe(false);
-    const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");
-    expect(cards).toHaveLength(6);
-    expect(cards[0].querySelector(".ow-mission-number")?.textContent).toContain(
-      "01",
-    );
-    expect(cards[5].querySelector(".ow-mission-number")?.textContent).toContain(
-      "06",
-    );
+    expect(hub.querySelector(".ow-operations-dashboard")).toBeNull();
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(0);
+
+    const onlinePanel = hub.querySelector(".ow-online-operations");
+    expect(onlinePanel).not.toBeNull();
     expect(
-      cards[0].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
-    ).toBe(false);
-    expect(
-      cards[3].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
-    ).toBe(true);
+      onlinePanel
+        ?.querySelector(".ow-online-operations-note")
+        ?.textContent?.trim(),
+    ).toBeTruthy();
   });
 
   it("blocks every Operations online entry point and explains why", async () => {
@@ -120,21 +131,36 @@ describe("Open War edition hub", () => {
     ).not.toBe("");
 
     const onlineButtons = Array.from(
-      onlinePanel?.querySelectorAll<HTMLButtonElement>("button") ?? [],
+      onlinePanel?.querySelectorAll<HTMLButtonElement>(
+        ".ow-online-disabled-actions button",
+      ) ?? [],
     );
     expect(onlineButtons).toHaveLength(3);
-    const clicks = vi.fn();
-    for (const button of onlineButtons) {
-      button.addEventListener("click", clicks);
-      expect(button.disabled).toBe(true);
-      button.click();
+    const joined = vi.fn();
+    document.addEventListener("join-lobby", joined);
+    try {
+      for (const button of onlineButtons) {
+        expect(button.disabled).toBe(false);
+        button.click();
+        await hub.updateComplete;
+        expect(
+          hub
+            .querySelector('[data-testid="online-operations-note"]')
+            ?.textContent?.trim(),
+        ).toBeTruthy();
+      }
+      expect(joined).not.toHaveBeenCalled();
+      expect(
+        hub.querySelector('[data-testid="online-operations-note"]')
+          ?.textContent,
+      ).not.toBe("");
+    } finally {
+      document.removeEventListener("join-lobby", joined);
     }
-    expect(clicks).not.toHaveBeenCalled();
 
-    // The offline solo campaign is intentionally unaffected.
-    expect(
-      hub.querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
-    ).toBe(false);
+    // Public hosts do not render the local-only Operations campaign.
+    expect(hub.querySelector(".ow-operations-dashboard")).toBeNull();
+    expect(hub.querySelectorAll(".ow-mission-launch")).toHaveLength(0);
   });
 
   it("resumes the Classic lobby feed on returning to Classic", async () => {
@@ -160,6 +186,7 @@ describe("Open War edition hub", () => {
   });
 
   it("shows remaining victories needed to unlock each mission", async () => {
+    mockCanPlayOperations.mockReturnValue(true);
     await mountHub();
 
     const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");

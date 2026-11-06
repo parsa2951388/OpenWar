@@ -942,13 +942,11 @@ export class SinglePlayerModal extends BaseModal {
 
   protected onOpen(args?: Record<string, unknown>): void {
     const operationId = args?.operation;
-    this.operationsMissionId = null;
-    if (
-      canPlayOperationsInCurrentBrowser() &&
-      typeof operationId === "string"
-    ) {
-      this.operationsMissionId = getOperationsMission(operationId)?.id ?? null;
-    }
+    this.operationsMissionId = canPlayOperationsInCurrentBrowser()
+      ? typeof operationId === "string"
+        ? (getOperationsMission(operationId)?.id ?? null)
+        : null
+      : null;
     const save = args?.save;
     this.sharedSaveId = typeof save === "string" ? savedGameIdFrom(save) : null;
     // Saves made since the list last loaded (a game played in between).

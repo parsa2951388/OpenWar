@@ -31,8 +31,12 @@ import {
 import { createLobby, getUserMe, queueLobby, setLobbyListed } from "./Api";
 import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
-import "./components/ConfirmDialog";
 import { CopyButton } from "./components/CopyButton";
+import "./components/ConfirmDialog";
+import {
+  isOperationsOnlineLockedInCurrentBrowser,
+  showOperationsOnlineMaintenance,
+} from "./components/EditionPreference";
 import "./components/GameConfigSettings";
 import "./components/InputCard";
 import "./components/InsufficientCurrencyDialog";
@@ -64,6 +68,15 @@ import {
 
 @customElement("host-lobby-modal")
 export class HostLobbyModal extends BaseModal {
+  public open(args?: Record<string, unknown>): void {
+    if (isOperationsOnlineLockedInCurrentBrowser()) {
+      showOperationsOnlineMaintenance("private");
+      window.showPage?.("page-play");
+      return;
+    }
+    super.open(args);
+  }
+
   @state() private selectedMap: GameMapType = GameMapType.World;
   @state() private selectedDifficulty: Difficulty = Difficulty.Easy;
   @state() private nations: number = 0;

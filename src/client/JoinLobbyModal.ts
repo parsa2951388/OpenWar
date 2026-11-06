@@ -23,6 +23,10 @@ import {
 } from "../client/Utils";
 import { getApiBase } from "./Api";
 import { BaseModal } from "./components/BaseModal";
+import {
+  isOperationsOnlineLockedInCurrentBrowser,
+  showOperationsOnlineMaintenance,
+} from "./components/EditionPreference";
 import { GameStartAlertController } from "./components/GameStartAlertController";
 import { inviteFriendsButton } from "./components/ui/InviteFriendsButton";
 import { DEFAULT_TITLE_CLASS, modalHeader } from "./components/ui/ModalHeader";
@@ -48,6 +52,15 @@ import { findVersionedShell } from "./VersionedReplay";
 
 @customElement("join-lobby-modal")
 export class JoinLobbyModal extends BaseModal {
+  public open(args?: Record<string, unknown>): void {
+    if (isOperationsOnlineLockedInCurrentBrowser()) {
+      showOperationsOnlineMaintenance("join");
+      window.showPage?.("page-play");
+      return;
+    }
+    super.open(args);
+  }
+
   @query("#lobbyIdInput") private lobbyIdInput!: HTMLInputElement;
 
   @property({ attribute: false }) eventBus: EventBus | null = null;

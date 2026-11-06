@@ -8,6 +8,10 @@ import { responseHasLinkedIdentity } from "./AccountIdentity";
 import { getUserMe, invalidateUserMe } from "./Api";
 import { getPlayToken } from "./Auth";
 import { BaseModal } from "./components/BaseModal";
+import {
+  isOperationsOnlineLockedInCurrentBrowser,
+  showOperationsOnlineMaintenance,
+} from "./components/EditionPreference";
 import "./components/Difficulties";
 import { GameStartAlertController } from "./components/GameStartAlertController";
 import { DEFAULT_TITLE_CLASS, modalHeader } from "./components/ui/ModalHeader";
@@ -34,6 +38,15 @@ type MatchmakingJoin = {
 
 @customElement("matchmaking-modal")
 export class MatchmakingModal extends BaseModal {
+  public open(args?: Record<string, unknown>): void {
+    if (isOperationsOnlineLockedInCurrentBrowser()) {
+      showOperationsOnlineMaintenance("join");
+      window.showPage?.("page-play");
+      return;
+    }
+    super.open(args);
+  }
+
   private gameCheckInterval: ReturnType<typeof setInterval> | null = null;
   private connectTimeout: ReturnType<typeof setTimeout> | null = null;
   private reconnectTimeout: ReturnType<typeof setTimeout> | null = null;
