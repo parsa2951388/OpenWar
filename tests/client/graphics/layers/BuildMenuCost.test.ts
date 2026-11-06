@@ -169,52 +169,55 @@ it("an older timeout cannot erase a newer successful menu refresh", async () => 
 it(
   "exposes build choices as keyboard-accessible buttons with descriptions",
   async () => {
-  const display = document.createElement("unit-display") as any;
-  const player = {
-    isAlive: () => true,
-    gold: () => 1000n,
-    units: () => [],
-    totalUnitLevels: () => 0,
-  };
-  const setGhostStructure = vi.fn();
-  const emit = vi.fn();
-  display.game = {
-    myPlayer: () => player,
-    inSpawnPhase: () => false,
-    config: () => ({ isUnitDisabled: () => false }),
-  };
-  display.uiState = { ghostStructure: null };
-  display.inputHandler = { setGhostStructure };
-  display.eventBus = { emit };
-  display.playerBuildables = [
-    {
-      type: UnitType.City,
-      cost: 125n,
-      canBuild: true,
-      canUpgrade: false,
-    },
-  ];
-  document.body.appendChild(display);
-  try {
-    await display.updateComplete;
-    const city = display.querySelector("button[data-ow-build-button]") as
-      | HTMLButtonElement
-      | null;
-    expect(city).not.toBeNull();
-    expect(city?.type).toBe("button");
-    expect(city?.getAttribute("aria-pressed")).toBe("false");
-    expect(city?.getAttribute("aria-disabled")).toBe("false");
+    const display = document.createElement("unit-display") as any;
+    const player = {
+      isAlive: () => true,
+      gold: () => 1000n,
+      units: () => [],
+      totalUnitLevels: () => 0,
+    };
+    const setGhostStructure = vi.fn();
+    const emit = vi.fn();
+    display.game = {
+      myPlayer: () => player,
+      inSpawnPhase: () => false,
+      config: () => ({ isUnitDisabled: () => false }),
+    };
+    display.uiState = { ghostStructure: null };
+    display.inputHandler = { setGhostStructure };
+    display.eventBus = { emit };
+    display.playerBuildables = [
+      {
+        type: UnitType.City,
+        cost: 125n,
+        canBuild: true,
+        canUpgrade: false,
+      },
+    ];
+    document.body.appendChild(display);
+    try {
+      await display.updateComplete;
+      const city = display.querySelector("button[data-ow-build-button]") as
+        | HTMLButtonElement
+        | null;
+      expect(city).not.toBeNull();
+      expect(city?.type).toBe("button");
+      expect(city?.getAttribute("aria-pressed")).toBe("false");
+      expect(city?.getAttribute("aria-disabled")).toBe("false");
 
-    city?.focus();
-    await display.updateComplete;
-    const descriptionId = city?.getAttribute("aria-describedby");
-    expect(descriptionId).toBe("ow-build-tooltip-city");
-    expect(display.querySelector('[role="tooltip"]')?.textContent).toContain(
-      "125",
-    );
+      city?.focus();
+      await display.updateComplete;
+      const descriptionId = city?.getAttribute("aria-describedby");
+      expect(descriptionId).toBe("ow-build-tooltip-city");
+      expect(display.querySelector('[role="tooltip"]')?.textContent).toContain(
+        "125",
+      );
 
-    city?.click();
-    expect(setGhostStructure).toHaveBeenCalledWith(UnitType.City, "GUIclick");
+      city?.click();
+      expect(setGhostStructure).toHaveBeenCalledWith(
+        UnitType.City,
+        "GUIclick",
+      );
     } finally {
       display.remove();
     }
