@@ -1,8 +1,6 @@
 import { html, LitElement } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import "../GameModeSelector";
-import type { HostLobbyModal } from "../HostLobbyModal";
-import type { JoinLobbyModal } from "../JoinLobbyModal";
 import { whenModalLoaded } from "../LazyModals";
 import type { SinglePlayerModal } from "../SinglePlayerModal";
 import { UsernameInput } from "../UsernameInput";
@@ -130,29 +128,6 @@ export class EditionHub extends LitElement {
 
   private openTraining = () => this.openMission("iron-gate");
 
-  private openPublicBattles = () => {
-    if (!this.validateUsername()) return;
-    window.showPage?.("page-detailed-view");
-  };
-
-  private openPrivateRoom = () => {
-    if (!this.validateUsername()) return;
-    whenModalLoaded("host-lobby-modal", () => {
-      (
-        document.querySelector("host-lobby-modal") as HostLobbyModal | null
-      )?.open();
-    });
-  };
-
-  private joinRoom = () => {
-    if (!this.validateUsername()) return;
-    whenModalLoaded("join-lobby-modal", () => {
-      (
-        document.querySelector("join-lobby-modal") as JoinLobbyModal | null
-      )?.open();
-    });
-  };
-
   private renderEditionControl() {
     return html`
       <section
@@ -225,11 +200,13 @@ export class EditionHub extends LitElement {
                 <span aria-hidden="true">↗</span>
               </button>
               <button
-                class="ow-action-secondary"
+                class="ow-action-secondary ow-online-disabled-trigger"
                 type="button"
-                @click=${this.openPublicBattles}
+                disabled
+                aria-describedby="ow-online-operations-note"
               >
-                ${this.t("browse_battles_action")}
+                ${this.t("online_teaser_action")}
+                <span aria-hidden="true">🔒</span>
               </button>
             </div>
             <small class="ow-honest-note"
@@ -499,28 +476,77 @@ export class EditionHub extends LitElement {
           </article>
         </div>
 
-        <div class="ow-operations-footer">
-          <div>
-            <strong>${this.t("private_room_title")}</strong>
-            <p>${this.t("private_room_description")}</p>
+        <section
+          class="ow-online-operations"
+          aria-labelledby="ow-online-operations-title"
+        >
+          <div class="ow-online-operations-head">
+            <div>
+              <span class="ow-edition-eyebrow">
+                ${this.t("online_section_eyebrow")}
+              </span>
+              <h3 id="ow-online-operations-title">
+                ${this.t("online_section_title")}
+              </h3>
+              <p>${this.t("online_section_description")}</p>
+            </div>
+            <span class="ow-roadmap-status ow-online-operations-badge">
+              <span aria-hidden="true">●</span>
+              ${this.t("online_section_badge")}
+            </span>
           </div>
-          <div class="ow-operations-footer-actions">
-            <button
-              class="ow-action-secondary"
-              type="button"
-              @click=${this.joinRoom}
-            >
-              ${this.t("join_code_action")}
+
+          <div
+            class="ow-online-operations-note"
+            id="ow-online-operations-note"
+            role="status"
+          >
+            <span class="ow-online-note-icon" aria-hidden="true">⌛</span>
+            <p>${this.t("online_section_notice")}</p>
+          </div>
+
+          <div class="ow-online-feature-grid">
+            <article class="ow-online-feature">
+              <span class="ow-online-feature-icon" aria-hidden="true">◎</span>
+              <div>
+                <strong>${this.t("online_public_feature_title")}</strong>
+                <p>${this.t("online_public_feature_description")}</p>
+              </div>
+            </article>
+            <article class="ow-online-feature">
+              <span class="ow-online-feature-icon" aria-hidden="true">▣</span>
+              <div>
+                <strong>${this.t("online_private_feature_title")}</strong>
+                <p>${this.t("online_private_feature_description")}</p>
+              </div>
+            </article>
+            <article class="ow-online-feature">
+              <span class="ow-online-feature-icon" aria-hidden="true">⌘</span>
+              <div>
+                <strong>${this.t("online_matchmaking_feature_title")}</strong>
+                <p>${this.t("online_matchmaking_feature_description")}</p>
+              </div>
+            </article>
+          </div>
+
+          <div
+            class="ow-online-disabled-actions"
+            aria-label=${this.t("online_disabled_actions_label")}
+          >
+            <button type="button" disabled>
+              ${this.t("online_public_action")}
+              <span aria-hidden="true">🔒</span>
             </button>
-            <button
-              class="ow-action-primary"
-              type="button"
-              @click=${this.openPrivateRoom}
-            >
-              ${this.t("create_room_action")}
+            <button type="button" disabled>
+              ${this.t("online_private_action")}
+              <span aria-hidden="true">🔒</span>
+            </button>
+            <button type="button" disabled>
+              ${this.t("online_join_action")}
+              <span aria-hidden="true">🔒</span>
             </button>
           </div>
-        </div>
+        </section>
       </section>
     `;
   }
