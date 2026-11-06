@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { forwardClickToLayerBelow } from "../../src/client/hud/layers/RadialMenu";
+import { forwardClickToLayerBelow } from "../../../src/client/hud/layers/RadialMenu";
 import {
   FORWARDED_CLICK,
   FORWARDED_TOUCH_CLICK,
-} from "../../src/client/InputHandler";
+} from "../../../src/client/InputHandler";
 
 describe("radial-menu click-through", () => {
   afterEach(() => {
