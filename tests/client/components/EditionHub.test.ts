@@ -1,5 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
+const mockCanPlayOperations = vi.hoisted(() => vi.fn(() => false));
+
 vi.mock(
   "../../../src/client/components/EditionPreference",
   async (importOriginal) => {
@@ -9,7 +11,7 @@ vi.mock(
       >();
     return {
       ...actual,
-      canPlayOperationsInCurrentBrowser: () => false,
+      canPlayOperationsInCurrentBrowser: mockCanPlayOperations,
     };
   },
 );
@@ -58,12 +60,14 @@ describe("Open War edition hub", () => {
   }
 
   beforeEach(() => {
+    mockCanPlayOperations.mockReturnValue(false);
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
     window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY);
     document.body.innerHTML = "";
   });
 
   afterEach(() => {
+    mockCanPlayOperations.mockReturnValue(false);
     hub?.remove();
     document.body.innerHTML = "";
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
@@ -182,6 +186,7 @@ describe("Open War edition hub", () => {
   });
 
   it("shows remaining victories needed to unlock each mission", async () => {
+    mockCanPlayOperations.mockReturnValue(true);
     await mountHub();
 
     const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");
