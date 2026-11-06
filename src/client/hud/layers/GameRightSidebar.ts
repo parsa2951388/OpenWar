@@ -295,6 +295,8 @@ export class GameRightSidebar extends LitElement implements Controller {
     const gameType = this.game?.config?.()?.gameConfig?.()?.gameType;
     return (
       Boolean(this.game?.gameID?.()) &&
+      gameType !== undefined &&
+      gameType !== null &&
       gameType !== GameType.Singleplayer &&
       !isReplay
     );
