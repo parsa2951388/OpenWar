@@ -866,8 +866,8 @@
     "edition_switch_label": "Game edition",
     "experience_design_status": "EXPERIENCE DESIGN",
     "in_development": "IN DEVELOPMENT",
-    "intro_description": "Choose the familiar classic battlefield or explore the new Operations command experience.",
-    "intro_title": "Choose your Open War experience",
+    "intro_description": "Jump into live battles, start a solo match, or set up a private room with friends.",
+    "intro_title": "Enter the battlefield",
     "join_code_action": "Join with code",
     "mechanic_design_status": "MECHANIC DESIGN",
     "mission_alliances_disabled": "Alliances disabled",
@@ -933,7 +933,7 @@
     "operations_eyebrow": "COMMAND DESK · PRODUCT PREVIEW",
     "operations_headline": "Every battle is a strategic operation",
     "operations_label": "New · Operations",
-    "operations_subtitle": "Command and logistics",
+    "operations_subtitle": "In development",
     "practice_action": "Launch Iron Gate",
     "private_room_description": "Private rooms still use the standard lobby rules. Dedicated Operations multiplayer is not enabled yet.",
     "private_room_title": "Set up a private room for your group",
@@ -955,7 +955,7 @@
     "systems_overview_title": "A deeper battlefield, already in Classic",
     "systems_title": "Beyond territorial control",
     "theatre_map_alt": "Conceptual theatre map with contour lines and supply routes",
-    "top_eyebrow": "TWO WAYS TO COMMAND"
+    "top_eyebrow": "OPEN WAR  /  LIVE BATTLE NETWORK"
   },
   "effects": {
     "nukeType": {
@@ -1849,7 +1849,7 @@
     "battle_hub_offline": "Battle feed is temporarily unavailable",
     "battle_hub_private": "PRIVATE ROOMS",
     "battle_hub_public": "PUBLIC BATTLES",
-    "battle_hub_title": "Online battle command",
+    "battle_hub_title": "Live battles",
     "lobbies_unreachable": "Can't reach the public lobbies right now",
     "offline_lobbies": "Public lobbies aren't available while you're offline",
     "ranked_1v1_title": "1v1",
