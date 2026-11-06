@@ -186,6 +186,15 @@ export class SettingsModal extends LitElement implements Controller {
     });
   }
 
+  private onOpenGraphicsButtonClick() {
+    const settings = document.getElementById(
+      "game-settings",
+    ) as UserSettingModal | null;
+    if (!settings?.openGraphicsPanel(() => this.openModal())) return;
+    // Keep the simulation paused while the graphics panel is open.
+    this.closeModal({ keepPause: true });
+  }
+
   private onRenderDebugGuiButtonClick() {
     this.eventBus.emit(new ToggleRenderDebugGuiEvent());
     this.closeModal();
@@ -343,6 +352,17 @@ export class SettingsModal extends LitElement implements Controller {
           </div>
 
           <div class="p-4 flex flex-col gap-3">
+            <button
+              type="button"
+              data-open-graphics
+              class="flex gap-3 items-center w-full text-left p-3 hover:bg-slate-700 rounded-sm text-white transition-colors"
+              @click=${this.onOpenGraphicsButtonClick}
+            >
+              <img src=${settingsIcon} alt="" width="20" height="20" />
+              <span class="font-medium">
+                ${translateText("user_setting.tab_graphics")}
+              </span>
+            </button>
             ${this.renderSaveRow()}
 
             <button
