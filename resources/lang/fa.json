@@ -1157,6 +1157,9 @@
     "hvn": "انسان‌ها در برابر ملت‌ها",
     "teams": "تیم‌‌ها"
   },
+  "game_right_sidebar": {
+    "share_link": "اشتراک‌گذاری پیوند"
+  },
   "game_settings": {
     "bots": "قبیله ها: ",
     "compact_map": "نقشه فشرده",
