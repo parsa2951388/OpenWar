@@ -12,8 +12,8 @@ import { isDesktopShell } from "../../DesktopShell";
 import { gamePortal } from "../../GamePortal";
 import { showInGameAlert, showInGameConfirm } from "../../InGameModal";
 import { TogglePauseIntentEvent } from "../../InputHandler";
-import { shareGame } from "../../utilities/ShareGame";
 import { PauseGameIntentEvent, SendWinnerEvent } from "../../Transport";
+import { shareGame } from "../../utilities/ShareGame";
 import { homeHref, showToast, translateText } from "../../Utils";
 import { GameView } from "../../view";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
@@ -293,7 +293,11 @@ export class GameRightSidebar extends LitElement implements Controller {
   private isShareable(): boolean {
     const isReplay = this.game?.config?.()?.isReplay?.();
     const gameType = this.game?.config?.()?.gameConfig?.()?.gameType;
-    return Boolean(this.game?.gameID?.()) && gameType !== GameType.Singleplayer && !isReplay;
+    return (
+      Boolean(this.game?.gameID?.()) &&
+      gameType !== GameType.Singleplayer &&
+      !isReplay
+    );
   }
 
   private async onShareButtonClick(e?: Event) {
@@ -422,7 +426,13 @@ export class GameRightSidebar extends LitElement implements Controller {
                 title=${translateText("game_right_sidebar.share_link")}
                 aria-label=${translateText("game_right_sidebar.share_link")}
               >
-                <img src=${shareIcon} alt="" aria-hidden="true" width="20" height="20" />
+                <img
+                  src=${shareIcon}
+                  alt=""
+                  aria-hidden="true"
+                  width="20"
+                  height="20"
+                />
               </button>`
             : ""
         }

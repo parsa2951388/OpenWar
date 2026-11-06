@@ -1621,7 +1621,6 @@
   }
 }
 
-
 /* Battle-network launcher redesign: prioritize live lobbies and direct play. */
 .ow-battle-launcher {
   position: relative;
@@ -1636,8 +1635,16 @@
   inset: 0 -2rem auto;
   height: 34rem;
   background:
-    radial-gradient(ellipse at 12% 0%, rgba(41, 119, 189, 0.11), transparent 54%),
-    radial-gradient(ellipse at 92% 14%, rgba(255, 209, 102, 0.045), transparent 38%);
+    radial-gradient(
+      ellipse at 12% 0%,
+      rgba(41, 119, 189, 0.11),
+      transparent 54%
+    ),
+    radial-gradient(
+      ellipse at 92% 14%,
+      rgba(255, 209, 102, 0.045),
+      transparent 38%
+    );
   content: "";
   pointer-events: none;
 }
@@ -1667,7 +1674,9 @@
   flex: 0 0 auto;
   border-radius: 50%;
   background: #62b5ef;
-  box-shadow: 0 0 0 4px rgba(98, 181, 239, 0.12), 0 0 14px rgba(98, 181, 239, 0.45);
+  box-shadow:
+    0 0 0 4px rgba(98, 181, 239, 0.12),
+    0 0 14px rgba(98, 181, 239, 0.45);
 }
 
 .ow-launcher-heading h1 {
@@ -1731,9 +1740,15 @@
 
 .ow-launcher-edition-switch .ow-edition-tab.is-active {
   border-color: rgba(91, 157, 206, 0.43);
-  background: linear-gradient(135deg, rgba(36, 91, 133, 0.72), rgba(17, 42, 64, 0.96));
+  background: linear-gradient(
+    135deg,
+    rgba(36, 91, 133, 0.72),
+    rgba(17, 42, 64, 0.96)
+  );
   color: #f4f9ff;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.06), 0 4px 12px rgba(0, 0, 0, 0.18);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.06),
+    0 4px 12px rgba(0, 0, 0, 0.18);
 }
 
 .ow-launcher-edition-switch .ow-edition-tab.is-active small {
@@ -1766,10 +1781,20 @@
   border-color: var(--ow-live-border);
   border-radius: 17px;
   background:
-    radial-gradient(ellipse at 9% 0%, rgba(47, 125, 187, 0.25), transparent 49%),
-    radial-gradient(ellipse at 100% 70%, rgba(255, 209, 102, 0.055), transparent 34%),
+    radial-gradient(
+      ellipse at 9% 0%,
+      rgba(47, 125, 187, 0.25),
+      transparent 49%
+    ),
+    radial-gradient(
+      ellipse at 100% 70%,
+      rgba(255, 209, 102, 0.055),
+      transparent 34%
+    ),
     linear-gradient(112deg, rgba(19, 39, 57, 0.99), rgba(11, 20, 31, 0.99));
-  box-shadow: 0 15px 36px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255, 255, 255, 0.035);
+  box-shadow:
+    0 15px 36px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .ow-online-hub-header::after {
@@ -1785,7 +1810,9 @@
 
 .ow-online-hub-mark {
   background: #66b9f1;
-  box-shadow: 0 0 0 4px rgba(102, 185, 241, 0.13), 0 0 12px rgba(102, 185, 241, 0.42);
+  box-shadow:
+    0 0 0 4px rgba(102, 185, 241, 0.13),
+    0 0 12px rgba(102, 185, 241, 0.42);
 }
 
 .ow-online-hub-metric {
@@ -1809,25 +1836,37 @@
   min-height: 3.55rem;
   border-color: rgba(126, 174, 210, 0.2);
   border-radius: 11px;
-  background-image: linear-gradient(180deg, rgba(255,255,255,0.025), transparent);
+  background-image: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.025),
+    transparent
+  );
   letter-spacing: 0.06em;
-  box-shadow: 0 9px 22px rgba(0, 0, 0, 0.2), inset 0 1px 0 rgba(255,255,255,0.04);
+  box-shadow:
+    0 9px 22px rgba(0, 0, 0, 0.2),
+    inset 0 1px 0 rgba(255, 255, 255, 0.04);
 }
 
 .ow-selector-action:not(:disabled):hover {
   border-color: rgba(91, 157, 206, 0.52);
-  box-shadow: 0 13px 27px rgba(0, 0, 0, 0.24), 0 0 0 1px rgba(91,157,206,0.12);
+  box-shadow:
+    0 13px 27px rgba(0, 0, 0, 0.24),
+    0 0 0 1px rgba(91, 157, 206, 0.12);
 }
 
 .ow-online-battle-hub button.group {
   border: 1px solid rgba(148, 182, 207, 0.16);
   border-radius: 17px;
-  box-shadow: 0 10px 25px rgba(0, 0, 0, 0.18), inset 0 1px 0 rgba(255,255,255,0.035);
+  box-shadow:
+    0 10px 25px rgba(0, 0, 0, 0.18),
+    inset 0 1px 0 rgba(255, 255, 255, 0.035);
 }
 
 .ow-online-battle-hub button.group:hover {
   border-color: rgba(91, 157, 206, 0.47);
-  box-shadow: 0 16px 32px rgba(0, 0, 0, 0.27), 0 0 0 1px rgba(91,157,206,0.12);
+  box-shadow:
+    0 16px 32px rgba(0, 0, 0, 0.27),
+    0 0 0 1px rgba(91, 157, 206, 0.12);
 }
 
 .ow-online-battle-hub openfront-lobby-card {

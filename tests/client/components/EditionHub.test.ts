@@ -78,7 +78,9 @@ describe("Open War edition hub", () => {
     await mountHub();
 
     expect(hub.querySelector(".ow-battle-launcher")).not.toBeNull();
-    expect(hub.querySelector('[data-testid="classic-edition"] game-mode-selector')).not.toBeNull();
+    expect(
+      hub.querySelector('[data-testid="classic-edition"] game-mode-selector'),
+    ).not.toBeNull();
     expect(hub.querySelector(".ow-classic-heading")).toBeNull();
     expect(tabs()[0].getAttribute("aria-pressed")).toBe("true");
     expect(tabs()[1].getAttribute("aria-pressed")).toBe("false");

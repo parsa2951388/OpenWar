@@ -11,7 +11,11 @@ import { ChatIntegration } from "./ChatIntegration";
 import { EmojiTable } from "./EmojiTable";
 import { PlayerActionHandler } from "./PlayerActionHandler";
 import { PlayerPanel } from "./PlayerPanel";
-import { CloseRadialMenuEvent, RadialMenu, RadialMenuConfig } from "./RadialMenu";
+import {
+  CloseRadialMenuEvent,
+  RadialMenu,
+  RadialMenuConfig,
+} from "./RadialMenu";
 import {
   centerButtonElement,
   COLORS,

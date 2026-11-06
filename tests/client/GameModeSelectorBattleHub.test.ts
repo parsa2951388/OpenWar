@@ -1,7 +1,7 @@
 import type { PublicGames } from "@openfront/shared/WireSchemas";
 import { describe, expect, it } from "vitest";
-import { countOnlineBattleRooms } from "../../src/client/GameModeSelector";
 import { formatLobbyPlayerCount } from "../../src/client/components/LobbyCard";
+import { countOnlineBattleRooms } from "../../src/client/GameModeSelector";
 
 describe("online battle hub room counts", () => {
   it("counts public modes separately from hosted private rooms", () => {
