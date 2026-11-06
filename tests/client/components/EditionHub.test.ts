@@ -1,14 +1,18 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
-vi.mock("../../../src/client/components/EditionPreference", async (importOriginal) => {
-  const actual = await importOriginal<
-    typeof import("../../../src/client/components/EditionPreference")
-  >();
-  return {
-    ...actual,
-    canPlayOperationsInCurrentBrowser: () => false,
-  };
-});
+vi.mock(
+  "../../../src/client/components/EditionPreference",
+  async (importOriginal) => {
+    const actual =
+      await importOriginal<
+        typeof import("../../../src/client/components/EditionPreference")
+      >();
+    return {
+      ...actual,
+      canPlayOperationsInCurrentBrowser: () => false,
+    };
+  },
+);
 
 import "../../../src/client/components/EditionHub";
 
