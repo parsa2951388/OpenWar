@@ -1859,7 +1859,16 @@
     "teams_count": "{teamCount} teams",
     "teams_of": "{teamCount} teams of {playersPerTeam}",
     "teams_preset": "{preset} ({teams})",
-    "teams_title": "Teams"
+    "teams_title": "Teams",
+    "battle_hub_aria": "Online battle hub",
+    "battle_hub_connecting": "Connecting to the battle feed…",
+    "battle_hub_description": "Browse public matches, enter ranked play or set up a private room with friends.",
+    "battle_hub_eyebrow": "LIVE BATTLE NETWORK",
+    "battle_hub_live": "Battle feed is live",
+    "battle_hub_offline": "Battle feed is temporarily unavailable",
+    "battle_hub_private": "PRIVATE ROOMS",
+    "battle_hub_public": "PUBLIC BATTLES",
+    "battle_hub_title": "Online battle command"
   },
   "multi_tab": {
     "detected": "Multiple open game tabs detected.",
