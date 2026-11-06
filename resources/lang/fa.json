@@ -942,7 +942,23 @@
     "systems_eyebrow": "سیستم‌های اختصاصی",
     "systems_title": "چیزی فراتر از قلمروگیری",
     "theatre_map_alt": "نمای مفهومی نقشهٔ عملیاتی با خطوط ارتفاع و مسیرهای تدارکاتی",
-    "top_eyebrow": "دو مسیر، یک جهان"
+    "top_eyebrow": "دو مسیر، یک جهان",
+    "online_teaser_action": "عملیات آنلاین · در دست ساخت",
+    "online_section_eyebrow": "نقشهٔ راه چندنفره",
+    "online_section_title": "بخش آنلاین عملیات در حال ساخت است",
+    "online_section_description": "کمپین انفرادی همین حالا قابل‌بازی است. بخش آنلاین پس از اتصال و آزمایش لابی‌های عمومی، اتاق‌های خصوصی و سیستم همتاسازی باز می‌شود.",
+    "online_section_badge": "در دست ساخت",
+    "online_section_notice": "عملیات آنلاین هنوز فعال نیست. دکمه‌های این بخش عمداً غیرفعال شده‌اند تا کسی وارد مسابقهٔ آنلاین ناتمام نشود. مأموریت‌های انفرادی بالاتر همچنان قابل‌بازی هستند.",
+    "online_public_feature_title": "عملیات عمومی",
+    "online_public_feature_description": "فهرست سرورهای زنده، وضعیت لابی و تعداد بازیکنان.",
+    "online_private_feature_title": "اتاق فرمان خصوصی",
+    "online_private_feature_description": "ساخت اتاق دعوتی و اشتراک کد امن برای دوستان.",
+    "online_matchmaking_feature_title": "همتاسازی و تیم‌ها",
+    "online_matchmaking_feature_description": "ورود به نبردهای متعادل و هماهنگی با هم‌تیمی‌ها.",
+    "online_disabled_actions_label": "امکانات آنلاین غیرفعال",
+    "online_public_action": "نبردهای عمومی",
+    "online_private_action": "ساخت اتاق خصوصی",
+    "online_join_action": "ورود با کد"
   },
   "effects": {
     "nukeType": {
