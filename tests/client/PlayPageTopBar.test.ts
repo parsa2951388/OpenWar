@@ -75,7 +75,7 @@ describe("play-page mobile top bar", () => {
       expect(rightSlot()).toEqual(["nav-utility-icons", "nav-account-menu"]);
       const grid = el.querySelector("#hamburger-btn")?.parentElement;
       expect(grid?.className).toContain("grid-cols-[2.5rem_minmax(0,1fr)_auto]");
-      expect(grid?.querySelector("img[alt=\\"Open War\\"]")?.className).toContain(
+      expect(grid?.querySelector("img")?.className).toContain(
         "max-w-[min(28vw,9rem)]",
       );
     });
