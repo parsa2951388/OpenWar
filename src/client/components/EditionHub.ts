@@ -514,6 +514,8 @@ export class EditionHub extends LitElement {
             class="ow-online-operations-note"
             id="ow-online-operations-note"
             role="status"
+            aria-live="polite"
+            data-testid="online-operations-note"
           >
             <span class="ow-online-note-icon" aria-hidden="true">⌛</span>
             <p>${this.onlineMaintenanceMessage()}</p>
@@ -596,7 +598,7 @@ export class EditionHub extends LitElement {
           data-testid="online-operations-note"
         >
           <span class="ow-online-note-icon" aria-hidden="true">⌛</span>
-          <p>${this.t("online_section_notice")}</p>
+          <p>${this.onlineMaintenanceMessage()}</p>
         </div>
 
         <div class="ow-online-feature-grid">
