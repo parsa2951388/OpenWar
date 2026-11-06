@@ -203,6 +203,18 @@ export class Config {
     return 110;
   }
 
+  aircraftRange(): number {
+    return 55;
+  }
+
+  aircraftStrikeCooldown(): Tick {
+    return 90;
+  }
+
+  aircraftSpawnCooldown(): Tick {
+    return 60 * 10;
+  }
+
   unitInfo(type: UnitType): UnitInfo {
     const cached = this.unitInfoCache.get(type);
     if (cached !== undefined) {
@@ -246,6 +258,15 @@ export class Config {
           constructionDuration: this.instantBuild() ? 0 : 2 * 10,
           upgradable: true,
         };
+        break;
+      case UnitType.Airport:
+        info = {
+          maxHealth: 2500,
+          constructionDuration: this.instantBuild() ? 0 : 20 * 10,
+        };
+        break;
+      case UnitType.Aircraft:
+        info = { maxHealth: 650 };
         break;
       case UnitType.TransportShip:
       case UnitType.SAMMissile:

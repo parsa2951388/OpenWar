@@ -17,6 +17,7 @@ import { UserSettings } from "../../UserSettings";
 import { resolveKeybindLabel, translateText } from "../../Utils";
 import { GameView } from "../../view";
 import {
+  airportIcon,
   atomBombIcon,
   cityIcon,
   defensePostIcon,
@@ -47,6 +48,7 @@ export class UnitDisplay extends LitElement implements Controller {
   private _port = 0;
   private _defensePost = 0;
   private _samLauncher = 0;
+  private _airports = 0;
   private allDisabled = false;
   private buildablesRefreshPending = false;
   private _hoveredUnit: PlayerBuildableUnitType | null = null;
@@ -132,6 +134,7 @@ export class UnitDisplay extends LitElement implements Controller {
     const samLaunchers = player.totalUnitLevels(UnitType.SAMLauncher);
     const factories = player.totalUnitLevels(UnitType.Factory);
     const warships = player.totalUnitLevels(UnitType.Warship);
+    const airports = player.totalUnitLevels(UnitType.Airport);
 
     if (this._cities !== cities) {
       this._cities = cities;
@@ -159,6 +162,10 @@ export class UnitDisplay extends LitElement implements Controller {
     }
     if (this._warships !== warships) {
       this._warships = warships;
+      changed = true;
+    }
+    if (this._airports !== airports) {
+      this._airports = airports;
       changed = true;
     }
 
@@ -199,7 +206,7 @@ export class UnitDisplay extends LitElement implements Controller {
     return html`
       <div class="border-t border-white/10 p-0.5 w-full">
         <div
-          class="grid grid-cols-5 sm:grid-cols-10 grid-flow-row gap-1 w-full max-w-full px-1 mx-auto"
+          class="grid grid-cols-5 sm:grid-cols-11 grid-flow-row gap-1 w-full max-w-full px-1 mx-auto"
         >
           ${this.renderUnitItem(
             cityIcon,
@@ -270,6 +277,13 @@ export class UnitDisplay extends LitElement implements Controller {
             UnitType.MIRV,
             "mirv",
             this.getHotkey("buildMIRV", "Digit0"),
+          )}
+          ${this.renderUnitItem(
+            airportIcon,
+            this._airports,
+            UnitType.Airport,
+            "airport",
+            "",
           )}
         </div>
       </div>

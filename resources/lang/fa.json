@@ -210,6 +210,7 @@
   "build_menu": {
     "cost_label": "هزینه ساخت",
     "desc": {
+      "airport": "فرودگاه را بسازید؛ هواپیما به‌صورت خودکار از آن برخاسته و در محدودهٔ عملیاتی از اهداف دشمن دفاع می‌کند.",
       "atom_bomb": "انفجار کوچک",
       "city": "حداکثر جمعیت را افزایش می‌دهد",
       "defense_post": "دفاعات مرزهای اطراف را افزایش می‌دهد",
@@ -1025,6 +1026,7 @@
   "events_display": {
     "about_to_expire": "اتحاد شما با {name} در حال انقضا است!",
     "accept_alliance": "پذیرفتن",
+    "aircraft_shot_down": "سام یک هواپیمای دشمن را سرنگون کرد",
     "alliance_accepted": "پذیرفته شد",
     "alliance_expired": "اتحاد شما با {name} منقضی شد",
     "alliance_nukes_destroyed_incoming": "«{count, plural, one {یک بمب هسته‌ای شلیک‌شده توسط {name} به دلیل اتحاد نابود شد} other {# بمب هسته‌ای شلیک‌شده توسط {name} به دلیل اتحاد نابود شدند}}»",
@@ -2058,6 +2060,8 @@
   "player_stats_table": {
     "arrived": "رسیده",
     "attack_stats": "آمار حملات",
+    "aviation_stats": "آمار نیروی هوایی",
+    "aviation_unit": "واحد هوایی",
     "betrayals": "خیانت‌ها",
     "building": "درحال ساخت",
     "building_stats": "آمار ساختمان",
@@ -2543,6 +2547,19 @@
   "store": {
     "already_owned": "شما از قبل مالک این آیتم هستید. هیچ هزینه‌ای از شما کسر نشد.",
     "already_subscribed": "از قبل مشترک هستید.",
+    "aviation": "هوانوردی",
+    "aviation_airfield_description": "تم تاریک باند پرواز و آشیانهٔ هواپیما.",
+    "aviation_airfield_title": "فرودگاه شبانه",
+    "aviation_bomber_description": "طرح تزئینی یک هواپیمای سنگین دوربرد.",
+    "aviation_bomber_title": "بمب‌افکن دوربرد",
+    "aviation_collection_description": "پیش‌نمایش هواپیماها، فرودگاه‌ها و ظاهرهای تزئینی مرتبط با نیروی هوایی. این موارد در حال حاضر فقط برای نمایش هستند.",
+    "aviation_collection_title": "مجموعهٔ هوانوردی",
+    "aviation_control_tower_description": "نمای تزئینی برج فرماندهی و کنترل پرواز.",
+    "aviation_control_tower_title": "برج مراقبت",
+    "aviation_fighter_description": "طرح ظاهری یک جنگندهٔ سریع برای اسکادران شما.",
+    "aviation_fighter_title": "جنگندهٔ آذرخش",
+    "aviation_no_price": "فعلاً هیچ قیمتی یا درگاه پرداختی برای این موارد فعال نیست.",
+    "aviation_preview_only": "پیش‌نمایش — خرید غیرفعال",
     "bundles": "بسته‌ها",
     "card_email_hint": "رسید شما در این قسمت قرار می‌گیرد و این خرید را به حساب کاربری‌تان متصل می‌کند تا بتوانید آن را بازیابی کنید.",
     "card_email_label": "ایمیل",
@@ -2776,6 +2793,8 @@
     "title": "آموزش"
   },
   "unit_type": {
+    "aircraft": "هواپیما",
+    "airport": "فرودگاه",
     "atom_bomb": "بمب اتم",
     "boat": "قایق",
     "city": "شهر",

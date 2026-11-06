@@ -3,6 +3,7 @@ import {
   PlayerType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
+import { AirportExecution } from "@openfront/engine/execution/AirportExecution";
 import { ConstructionExecution } from "@openfront/engine/execution/ConstructionExecution";
 import { DoomsdayClockExecution } from "@openfront/engine/execution/DoomsdayClockExecution";
 import { MirvExecution } from "@openfront/engine/execution/MIRVExecution";
@@ -46,6 +47,24 @@ async function twoPlayers(
 }
 
 describe("structure and missile execution snapshots", () => {
+  test("airport and aircraft executions round-trip together", async () => {
+    const { game, a } = await twoPlayers(BIG, { instantBuild: true });
+    conquerRect(game, a, 0, 0, 30, 30);
+
+    const airport = a.buildUnit(UnitType.Airport, game.ref(10, 10), {});
+    game.addExecution(new AirportExecution(airport));
+
+    let ticks = 0;
+    while (a.units(UnitType.Aircraft).length === 0 && ticks++ < 5) {
+      game.executeNextTick();
+    }
+    expect(a.units(UnitType.Aircraft)).toHaveLength(1);
+
+    // The airport continues producing airframes; both persistent execution
+    // records, their unit references and aircraft pathfinder state must survive.
+    await expectSnapshotRoundTrip(game, BIG, 20);
+  });
+
   test("construction mid-build, pending, and captured", async () => {
     const { game, a, b } = await twoPlayers(BIG);
     conquerRect(game, a, 0, 0, 40, 40);

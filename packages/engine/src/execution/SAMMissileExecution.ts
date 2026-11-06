@@ -27,6 +27,7 @@ const INTERCEPTED_UNIT_TRANSLATION_KEYS: Partial<Record<UnitType, string>> = {
   [UnitType.AtomBomb]: "unit_type.atom_bomb",
   [UnitType.HydrogenBomb]: "unit_type.hydrogen_bomb",
   [UnitType.MIRVWarhead]: "unit_type.mirv",
+  [UnitType.Aircraft]: "unit_type.aircraft",
 };
 
 export class SAMMissileExecution implements Execution {
@@ -59,26 +60,35 @@ export class SAMMissileExecution implements Execution {
       this.active = false;
       return;
     }
-    // The MIRV carrier itself can't be intercepted, only its warheads
+    // The MIRV carrier itself can't be intercepted, only its warheads.
+    // Aircraft are also valid SAM targets.
     const nukesWhitelist = [
       UnitType.AtomBomb,
       UnitType.HydrogenBomb,
       UnitType.MIRVWarhead,
     ];
+    const isAircraft = this.target.type() === UnitType.Aircraft;
+    const isNuke = nukesWhitelist.includes(this.target.type());
     if (
       !this.target.isActive() ||
       !this.ownerUnit.isActive() ||
       this.target.owner() === this.SAMMissile.owner() ||
-      !nukesWhitelist.includes(this.target.type())
+      (!isNuke && !isAircraft)
     ) {
-      // Clear the flag so other SAMs can re-target this nuke
       if (this.target.isActive()) {
-        this.target.setTargetedBySAM(false);
+        if (isAircraft) this.target.setTargetable(true);
+        else if (isNuke) this.target.setTargetedBySAM(false);
       }
       this.SAMMissile.delete(false);
       this.active = false;
       return;
     }
+
+    // Aircraft keep moving while the SAM missile is in flight. Refresh the
+    // destination each tick so the interceptor follows the live target instead
+    // of applying damage at a stale launch-time coordinate.
+    if (isAircraft) this.targetTile = this.target.tile();
+
     for (let i = 0; i < this.speed; i++) {
       const result = this.pathFinder.next(
         this.SAMMissile.tile(),
@@ -86,24 +96,32 @@ export class SAMMissileExecution implements Execution {
       );
       if (result.status === PathStatus.COMPLETE) {
         this.mg.displayMessage(
-          "events_display.missile_intercepted",
+          isAircraft
+            ? "events_display.aircraft_shot_down"
+            : "events_display.missile_intercepted",
           MessageType.SAM_HIT,
           this._owner.id(),
           undefined,
-          {
-            unit:
-              INTERCEPTED_UNIT_TRANSLATION_KEYS[this.target.type()] ??
-              this.target.type(),
-          },
+          isAircraft
+            ? {}
+            : {
+                unit:
+                  INTERCEPTED_UNIT_TRANSLATION_KEYS[this.target.type()] ??
+                  this.target.type(),
+              },
         );
         this.active = false;
-        this.target.delete(true, this._owner);
+        if (isAircraft) {
+          this.target.modifyHealth(-this.target.health(), this._owner);
+          if (this.target.isActive()) this.target.setTargetable(true);
+        } else {
+          this.target.delete(true, this._owner);
+          // Record stats for intercepted bombs only.
+          this.mg
+            .stats()
+            .bombIntercept(this._owner, this.target.type() as NukeType, 1);
+        }
         this.SAMMissile.delete(false);
-
-        // Record stats
-        this.mg
-          .stats()
-          .bombIntercept(this._owner, this.target.type() as NukeType, 1);
         return;
       } else if (result.status === PathStatus.NEXT) {
         this.SAMMissile.move(result.node);
