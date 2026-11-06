@@ -1096,6 +1096,7 @@
   }
 }
 
+
 /* Public New edition: informative landing state only; no gameplay entry points. */
 .ow-online-operations-public {
   min-height: min(68vh, 760px);
@@ -1210,11 +1211,7 @@
   border-radius: 9px;
   background: rgba(205, 181, 132, 0.09);
   color: #d9bf8c;
-  font:
-    800 0.66rem ui-monospace,
-    SFMono-Regular,
-    Menlo,
-    monospace;
+  font: 800 0.66rem ui-monospace, SFMono-Regular, Menlo, monospace;
   letter-spacing: 0.04em;
 }
 
@@ -1259,4 +1256,57 @@
   .ow-classic-system-card:hover {
     transform: none;
   }
+}
+
+
+/* The Operations online controls explain their locked state on activation;
+   they remain non-navigating and never create or join a lobby. */
+.ow-online-disabled-actions button,
+.ow-online-disabled-trigger {
+  color: #d6e3dd;
+  cursor: pointer;
+  opacity: 1;
+  transition:
+    border-color 140ms ease,
+    background 140ms ease,
+    color 140ms ease,
+    transform 140ms ease;
+}
+
+.ow-online-disabled-actions button:hover,
+.ow-online-disabled-trigger:hover {
+  border-color: rgba(224, 181, 111, 0.55);
+  background: rgba(224, 181, 111, 0.11);
+  color: #f2d9aa;
+}
+
+.ow-online-disabled-actions button:focus-visible,
+.ow-online-disabled-trigger:focus-visible {
+  outline: 2px solid #e4bd7b;
+  outline-offset: 3px;
+}
+
+.ow-online-return-classic {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 0.65rem;
+  min-height: 48px;
+  padding: 0.75rem 1rem;
+  border: 1px solid rgba(135, 191, 187, 0.35);
+  border-radius: 11px;
+  background: rgba(60, 115, 117, 0.13);
+  color: #c2e1db;
+  font-weight: 800;
+  cursor: pointer;
+}
+
+.ow-online-return-classic:hover {
+  border-color: rgba(135, 191, 187, 0.65);
+  background: rgba(60, 115, 117, 0.24);
+}
+
+.ow-online-return-classic:focus-visible {
+  outline: 2px solid #9ed2cf;
+  outline-offset: 3px;
 }
