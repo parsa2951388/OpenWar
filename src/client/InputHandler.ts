@@ -97,6 +97,28 @@ export class AlternateViewEvent implements GameEvent {
 
 export class CloseViewEvent implements GameEvent {}
 
+/**
+ * Marks a click that the radial menu overlay forwarded to a HUD layer below it.
+ * The receiving layer can distinguish this from a native pointer click.
+ */
+export const FORWARDED_CLICK = "forwardedFromRadialOverlay";
+
+/** Marks a forwarded click that originated from a touch pointer. */
+export const FORWARDED_TOUCH_CLICK = "forwardedTouchFromRadialOverlay";
+
+export function isForwardedClick(event: Event): boolean {
+  return (
+    (event as unknown as Record<string, unknown>)[FORWARDED_CLICK] === true
+  );
+}
+
+export function isForwardedTouchClick(event: Event): boolean {
+  return (
+    (event as unknown as Record<string, unknown>)[FORWARDED_TOUCH_CLICK] ===
+    true
+  );
+}
+
 export class RefreshGraphicsEvent implements GameEvent {}
 
 export class ToggleRenderDebugGuiEvent implements GameEvent {}
