@@ -74,6 +74,16 @@ describe("Open War edition hub", () => {
     window.localStorage.removeItem(CAMPAIGN_STORAGE_KEY);
   });
 
+  it("opens directly on the battle launcher without a duplicate Classic heading", async () => {
+    await mountHub();
+
+    expect(hub.querySelector(".ow-battle-launcher")).not.toBeNull();
+    expect(hub.querySelector('[data-testid="classic-edition"] game-mode-selector')).not.toBeNull();
+    expect(hub.querySelector(".ow-classic-heading")).toBeNull();
+    expect(tabs()[0].getAttribute("aria-pressed")).toBe("true");
+    expect(tabs()[1].getAttribute("aria-pressed")).toBe("false");
+  });
+
   it("pauses the Classic lobby feed while Operations is selected", async () => {
     await mountHub();
 
