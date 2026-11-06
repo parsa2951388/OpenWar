@@ -145,40 +145,46 @@ export class NavUtilityIcons extends LitElement {
               : ""
           }
         </div>
-${this.size === "mobile" ? "" : html`
-        <div class="relative">
-          <button
-            class="${this.buttonClass()} ${
-              currentPage === "page-help" ? "active" : ""
-            }"
-            data-page="page-help"
-            data-i18n-aria-label="main.help"
-            data-i18n-title="main.help"
-            @click=${this._notifications.onHelpClick}
-          >
-            <svg
-              xmlns="http://www.w3.org/2000/svg"
-              viewBox="0 0 24 24"
-              fill="none"
-              stroke="currentColor"
-              stroke-width="1.8"
-              stroke-linecap="round"
-              stroke-linejoin="round"
-              class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
-              aria-hidden="true"
-            >
-              <circle cx="12" cy="12" r="9" />
-              <path d="M9.2 9.2a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4" />
-              <line x1="12" y1="17.5" x2="12.01" y2="17.5" />
-            </svg>
-          </button>
-          ${
-            this._notifications.showHelpDot()
-              ? this.renderDot("bg-yellow-400")
-              : ""
-          }
-        </div>
-        `}
+        ${
+          this.size === "mobile"
+            ? ""
+            : html`
+                <div class="relative">
+                  <button
+                    class="${this.buttonClass()} ${
+                      currentPage === "page-help" ? "active" : ""
+                    }"
+                    data-page="page-help"
+                    data-i18n-aria-label="main.help"
+                    data-i18n-title="main.help"
+                    @click=${this._notifications.onHelpClick}
+                  >
+                    <svg
+                      xmlns="http://www.w3.org/2000/svg"
+                      viewBox="0 0 24 24"
+                      fill="none"
+                      stroke="currentColor"
+                      stroke-width="1.8"
+                      stroke-linecap="round"
+                      stroke-linejoin="round"
+                      class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
+                      aria-hidden="true"
+                    >
+                      <circle cx="12" cy="12" r="9" />
+                      <path
+                        d="M9.2 9.2a2.9 2.9 0 0 1 5.6 1c0 1.9-2.8 2.4-2.8 4"
+                      />
+                      <line x1="12" y1="17.5" x2="12.01" y2="17.5" />
+                    </svg>
+                  </button>
+                  ${
+                    this._notifications.showHelpDot()
+                      ? this.renderDot("bg-yellow-400")
+                      : ""
+                  }
+                </div>
+              `
+        }
         <button
           class="${this.buttonClass()} ${
             currentPage === "page-settings" ? "active" : ""

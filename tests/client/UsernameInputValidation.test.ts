@@ -71,7 +71,6 @@ describe("UsernameInput validation error", () => {
   });
 });
 
-
 describe("UsernameInput mobile clan-tag layout", () => {
   it("anchors the tag menu to the right edge and caps it to the viewport", async () => {
     const el = await mount();

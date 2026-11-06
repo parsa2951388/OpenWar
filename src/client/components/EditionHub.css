@@ -1509,7 +1509,6 @@
   }
 }
 
-
 /* Phone-first layout guardrails: keep every homepage section inside the visual
    viewport, including Persian RTL text and narrow 320px Android screens. */
 @media (max-width: 600px) {
