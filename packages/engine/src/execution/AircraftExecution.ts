@@ -2,7 +2,7 @@ import { TileRef } from "@openfront/engine-api/game/GameMap";
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { zInt, zRef } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { z } from "zod";
-import { Execution, Game, Unit } from "../game/Game";
+import { Execution, Game, isUnit, Unit } from "../game/Game";
 import { PathFinding } from "../pathfinding/PathFinder";
 import { PathStatus, SteppingPathFinder } from "../pathfinding/types";
 import { execSnapshotType } from "../snapshot/ExecutionSnapshot";
@@ -65,7 +65,7 @@ export class AircraftExecution implements Execution {
     if (this.target !== undefined && !this.isValidTarget(this.target)) {
       this.target = undefined;
     }
-    if (this.target === undefined) this.target = this.findTarget();
+    this.target ??= this.findTarget();
 
     if (this.target !== undefined) {
       const target = this.target;
@@ -113,7 +113,6 @@ export class AircraftExecution implements Execution {
 
   private findTarget(): Unit | undefined {
     const mg = this.mg!;
-    const owner = this.aircraft.owner();
     const candidates = mg.nearbyUnits(
       this.airport.tile(),
       mg.config().aircraftRange(),
@@ -126,9 +125,13 @@ export class AircraftExecution implements Execution {
     );
     let best: { unit: Unit; distSquared: number } | undefined;
     for (const candidate of candidates) {
-      if (best === undefined || candidate.distSquared < best.distSquared) {
-        best = candidate;
+      if (
+        !isUnit(candidate.unit) ||
+        (best !== undefined && candidate.distSquared >= best.distSquared)
+      ) {
+        continue;
       }
+      best = { unit: candidate.unit, distSquared: candidate.distSquared };
     }
     return best?.unit;
   }

@@ -22,9 +22,11 @@ const BUILDING_ORDER = {
   silo: 5,
   saml: 6,
 } as const satisfies Record<
-  Exclude<(typeof otherUnits)[number], "wshp">,
+  Exclude<(typeof otherUnits)[number], "wshp" | "airp" | "airc">,
   number
 >;
+
+const AVIATION_UNITS = ["airp", "airc"] as const satisfies readonly (typeof otherUnits)[number][];
 
 const buildingUnits = (
   Object.keys(BUILDING_ORDER) as (keyof typeof BUILDING_ORDER)[]
@@ -36,6 +38,8 @@ const buildingUnits = (
 // MIRV warheads are stats-only rows and keep their own keys. `satisfies` fails
 // compilation if a new stat unit lands without a label.
 const UNIT_LABEL_KEYS = {
+  airc: "unit_type.aircraft",
+  airp: "unit_type.airport",
   city: "unit_type.city",
   defp: "unit_type.defense_post",
   fact: "unit_type.factory",
@@ -177,6 +181,15 @@ export class PlayerStatsTable extends LitElement {
         ${statsSection("player_stats_table.warship_stats", UNIT_COLUMNS, [
           { values: slots(stats?.units?.wshp, 4) },
         ])}
+        ${statsSection(
+          "player_stats_table.aviation_stats",
+          UNIT_COLUMNS,
+          AVIATION_UNITS.map((key) => ({
+            label: UNIT_LABEL_KEYS[key],
+            values: slots(stats?.units?.[key], 4),
+          })),
+          "player_stats_table.aviation_unit",
+        )}
         ${statsSection(
           "player_stats_table.ship_arrivals",
           [

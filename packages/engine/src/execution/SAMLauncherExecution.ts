@@ -414,21 +414,24 @@ export class SAMLauncherExecution implements Execution {
       return;
     }
 
-    const aircraftTarget = this.mg
+    const aircraftTargetResult = this.mg
       .nearbyUnits(
         this.sam.tile(),
         this.mg.config().dynamicSamRange(this.sam, ticks),
         UnitType.Aircraft,
         (unit) =>
+          isUnit(unit) &&
           unit.isActive() &&
           !unit.isUnderConstruction() &&
           unit.isTargetable() &&
           this.sam!.owner().canAttackPlayer(unit.owner(), true),
       )
-      .find(({ unit }) => unit.health() > 0)?.unit;
+      .find(({ unit }) => isUnit(unit) && unit.health() > 0);
+    const aircraftTarget = aircraftTargetResult?.unit;
 
-    if (aircraftTarget !== undefined) {
-      aircraftTarget.setTargetable(false);
+    if (aircraftTarget === undefined || !isUnit(aircraftTarget)) return;
+
+    aircraftTarget.setTargetable(false);
       this.sam.launch();
       this.mg.addExecution(
         new SAMMissileExecution(
@@ -439,7 +442,6 @@ export class SAMLauncherExecution implements Execution {
           aircraftTarget.tile(),
         ),
       );
-    }
   }
   isActive(): boolean {
     return this.active;

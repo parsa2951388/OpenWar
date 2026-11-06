@@ -195,6 +195,7 @@
   "build_menu": {
     "cost_label": "Build cost",
     "desc": {
+      "airport": "Build an airfield. Aircraft launch automatically and defend against enemy targets within their operational radius.",
       "atom_bomb": "Small explosion",
       "city": "Increases max population",
       "defense_post": "Increases defenses of nearby borders",
@@ -204,8 +205,7 @@
       "missile_silo": "Used to launch nukes",
       "port": "Sends trade ships to generate gold",
       "sam_launcher": "Defends against incoming nukes",
-      "warship": "Captures trade ships, destroys ships and boats",
-      "airport": "Build an airfield. Aircraft launch automatically and defend against enemy targets within their operational radius."
+      "warship": "Captures trade ships, destroys ships and boats"
     },
     "loading": "Loading build options...",
     "not_enough_money": "Not enough money",
@@ -1007,6 +1007,7 @@
   "events_display": {
     "about_to_expire": "Your alliance with {name} is about to expire!",
     "accept_alliance": "Accept",
+    "aircraft_shot_down": "Your SAM shot down an enemy aircraft",
     "alliance_accepted": "accepted",
     "alliance_expired": "Your alliance with {name} expired",
     "alliance_nukes_destroyed_incoming": "{count, plural, one {# nuke launched by {name} was destroyed due to the alliance} other {# nukes launched by {name} were destroyed due to the alliance}}",
@@ -1048,8 +1049,7 @@
     "trade_ship_captured": "Your trade ship was captured by {name}",
     "unit_destroyed": "Your {unit} was destroyed",
     "unit_voluntarily_deleted": "Unit voluntarily deleted",
-    "wants_to_renew_alliance": "{name} wants to renew your alliance",
-    "aircraft_shot_down": "Your SAM shot down an enemy aircraft"
+    "wants_to_renew_alliance": "{name} wants to renew your alliance"
   },
   "featured_stream": {
     "expand": "Expand",
@@ -2035,6 +2035,8 @@
   "player_stats_table": {
     "arrived": "Arrived",
     "attack_stats": "Attack Statistics",
+    "aviation_stats": "Aviation statistics",
+    "aviation_unit": "Air unit",
     "betrayals": "Betrayals",
     "building": "Building",
     "building_stats": "Building Statistics",
@@ -2520,6 +2522,19 @@
   "store": {
     "already_owned": "You already own this item. Nothing was charged.",
     "already_subscribed": "Already subscribed.",
+    "aviation": "Aviation",
+    "aviation_airfield_description": "A dark runway and hangar visual theme.",
+    "aviation_airfield_title": "Night airfield",
+    "aviation_bomber_description": "A heavy-aircraft visual concept for the hangar.",
+    "aviation_bomber_title": "Long-range bomber",
+    "aviation_collection_description": "Preview aircraft, airfields and aviation-themed cosmetics. These items are display-only for now.",
+    "aviation_collection_title": "Aviation collection",
+    "aviation_control_tower_description": "A command-tower look for the airport complex.",
+    "aviation_control_tower_title": "Control tower",
+    "aviation_fighter_description": "A fast-fighter visual livery for your air wing.",
+    "aviation_fighter_title": "Thunder fighter",
+    "aviation_no_price": "No prices or checkout are enabled for these items yet.",
+    "aviation_preview_only": "Preview only — purchase disabled",
     "bundles": "Bundles",
     "card_email_hint": "Your receipt goes here, and it links this purchase to your account so you can recover it.",
     "card_email_label": "Email",
@@ -2634,20 +2649,7 @@
     "tribes_login_required": "Log in to buy and manage tribe names.",
     "tribes_purchase_description": "Your name gets assigned to a bot tribe in real multiplayer games. It goes live right away.",
     "tribes_purchase_heading": "Buy a Tribe Name",
-    "your_tribes_heading": "Your Tribe Names",
-    "aviation": "Aviation",
-    "aviation_collection_title": "Aviation collection",
-    "aviation_collection_description": "Preview aircraft, airfields and aviation-themed cosmetics. These items are display-only for now.",
-    "aviation_preview_only": "Preview only — purchase disabled",
-    "aviation_no_price": "No prices or checkout are enabled for these items yet.",
-    "aviation_fighter_title": "Thunder fighter",
-    "aviation_fighter_description": "A fast-fighter visual livery for your air wing.",
-    "aviation_bomber_title": "Long-range bomber",
-    "aviation_bomber_description": "A heavy-aircraft visual concept for the hangar.",
-    "aviation_airfield_title": "Night airfield",
-    "aviation_airfield_description": "A dark runway and hangar visual theme.",
-    "aviation_control_tower_title": "Control tower",
-    "aviation_control_tower_description": "A command-tower look for the airport complex."
+    "your_tribes_heading": "Your Tribe Names"
   },
   "streaming_now": {
     "live_count": "{count} Streaming",
@@ -2766,6 +2768,8 @@
     "title": "Tutorial"
   },
   "unit_type": {
+    "aircraft": "Aircraft",
+    "airport": "Airport",
     "atom_bomb": "Atom Bomb",
     "boat": "Boat",
     "city": "City",
@@ -2776,9 +2780,7 @@
     "missile_silo": "Missile Silo",
     "port": "Port",
     "sam_launcher": "SAM Launcher",
-    "warship": "Warship",
-    "airport": "Airport",
-    "aircraft": "Aircraft"
+    "warship": "Warship"
   },
   "update_available": {
     "desktop": "A new version of OpenFront is available. It will download in the background; reload from the update bar once it is ready.",

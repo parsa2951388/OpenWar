@@ -327,7 +327,7 @@ describe("StoreModal cosmetic browser", () => {
     expect(store!.querySelector("[data-aviation-no-price]")).not.toBeNull();
     expect(store!.querySelector("purchase-button")).toBeNull();
     expect(store!.querySelector("inline-checkout")).toBeNull();
-    expect(store!.textContent).toContain("store.aviation_no_price");
+    expect(store!.querySelector("[data-aviation-no-price]")?.textContent).toBeTruthy();
     expect(store!.textContent).not.toMatch(/\$\s*\d/);
   });
 

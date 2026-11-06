@@ -1,0 +1,60 @@
+name: Format Open War aviation feature branch
+
+on:
+  push:
+    branches:
+      - open-war/aviation-airport-store-2026-11
+
+permissions:
+  contents: write
+
+concurrency:
+  group: format-open-war-aviation
+  cancel-in-progress: false
+
+jobs:
+  format:
+    if: "!contains(github.event.head_commit.message, 'chore: format Open War aviation files')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out aviation feature branch
+        uses: actions/checkout@v7
+        with:
+          ref: open-war/aviation-airport-store-2026-11
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install repository-pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Format files reported by CI
+        run: |
+          npx oxfmt --write \
+            packages/engine/src/execution/AircraftExecution.ts \
+            packages/engine/src/execution/AirportExecution.ts \
+            packages/engine/src/game/GameImpl.ts \
+            packages/engine/src/snapshot/ExecutionRegistry.ts \
+            src/client/Store.ts \
+            tests/client/StoreModal.test.ts
+      - name: Commit formatting corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            packages/engine/src/execution/AircraftExecution.ts \
+            packages/engine/src/execution/AirportExecution.ts \
+            packages/engine/src/game/GameImpl.ts \
+            packages/engine/src/snapshot/ExecutionRegistry.ts \
+            src/client/Store.ts \
+            tests/client/StoreModal.test.ts
+          if git diff --cached --quiet; then
+            echo "Formatting is already clean."
+            exit 0
+          fi
+          git commit -m "chore: format Open War aviation files"
+          git push origin HEAD:open-war/aviation-airport-store-2026-11
