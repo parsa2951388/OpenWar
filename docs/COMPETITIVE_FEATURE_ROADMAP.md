@@ -1,6 +1,6 @@
 # Open War — Competitive Feature Audit and Roadmap
 
-**Audit date:** 2026-11-06  
+**Audit date:** 2026-11-06
 **Compared products:** [OpenBattle.ir](https://openbattle.ir/), [OpenFront.io](https://openfront.io/), [OpenFrontIO source](https://github.com/openfrontio/OpenFrontIO), [OpenFront Wiki](https://openfront.wiki/)
 
 This document records an implementation-oriented comparison. It distinguishes features observed on a live competitor in the 2026-11-05 inspection, code present in the Open War repository, and features whose production behavior still needs end-to-end verification. A later automated browser attempt against OpenBattle was unavailable because the browser provider account had insufficient credits; the OpenBattle details below are therefore historical observations, not a fresh 2026-11-06 verification.
@@ -28,11 +28,12 @@ The key distinction is **code presence versus verified production behavior**. A 
 
 ### OpenFront latest release snapshot (verified 2026-11-06)
 
-The official OpenFront releases page lists **v0.35.11**, released November 4, 2026, as the latest release at the time of this audit. Recent additions relevant to Open War include:
+The official OpenFront releases endpoint now lists **v0.35.12**, published November 6, 2026 (release notes dated November 5), as the latest release at the time of this audit. Its release note gives a high-level summary — “Improve the experience on game portals” — without itemizing the underlying changes. The immediately preceding v0.35.11 release (November 4) contains the specific social-lobby and Store updates below. Recent additions relevant to Open War include:
 
 - A guided tutorial covering spawn, expansion, troops and first attacks (v0.35.7).
 - Progression with XP, player levels, prestige, ranked FFA and Clan Wars, plus a seekable replay viewer (v0.35.0).
 - Clan territory map, clan donation leaderboard and continuing public-lobby/team fixes (v0.35.7–v0.35.11).
+- v0.35.12 (November 5 release notes; published November 6): high-level game-portal experience improvements; the release does not specify the individual changes.
 - v0.35.11 (November 4): fixes friend groups being split across public Duos/Trios/Quads teams and adds timed sale banners, discount ribbons and crossed-out old prices in the Store.
 - Current lobby options include map search/favourites, AI difficulty, FFA/Teams, tribes/nations, gameplay modifiers, unit bans and start/timer controls.
 
