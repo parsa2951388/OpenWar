@@ -88,8 +88,10 @@ describe("Open War edition hub", () => {
     tabs()[1].click();
     await hub.updateComplete;
 
-    expect(dashboard?.hasAttribute("hidden")).toBe(false);
-    const cards = hub.querySelectorAll<HTMLElement>(".ow-mission-card");
+    const visibleDashboard = hub.querySelector(".ow-operations-dashboard");
+    expect(visibleDashboard?.hasAttribute("hidden")).toBe(false);
+    const cards =
+      visibleDashboard?.querySelectorAll<HTMLElement>(".ow-mission-card") ?? [];
     expect(cards).toHaveLength(6);
     expect(cards[0].querySelector(".ow-mission-number")?.textContent).toContain(
       "01",
