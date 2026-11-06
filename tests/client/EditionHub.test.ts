@@ -1,5 +1,8 @@
 import { describe, expect, it } from "vitest";
-import {\n  isOperationsPlayableHost,\n  normalizeOpenWarEdition,\n} from "../../src/client/components/EditionPreference";
+import {
+  isOperationsPlayableHost,
+  normalizeOpenWarEdition,
+} from "../../src/client/components/EditionPreference";
 
 describe("Open War edition preference", () => {
   it("defaults missing and unknown values to Classic for backward compatibility", () => {
