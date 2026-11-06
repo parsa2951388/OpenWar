@@ -16,6 +16,7 @@ import { UIState } from "../../UIState";
 import { UserSettings } from "../../UserSettings";
 import { resolveKeybindLabel, translateText } from "../../Utils";
 import { GameView } from "../../view";
+import "./OpenWarHudSkin.css";
 import {
   airportIcon,
   atomBombIcon,
@@ -205,7 +206,7 @@ export class UnitDisplay extends LitElement implements Controller {
 
     return html`
       <div
-        class="border-t border-white/10 p-0.5 w-full"
+        class="ow-hud-buildbar border-t border-white/10 p-0.5 w-full"
         data-radial-click-through
       >
         <div
@@ -364,12 +365,14 @@ export class UnitDisplay extends LitElement implements Controller {
             : null
         }
         <div
-          class="${
+          class="ow-hud-build-button ${
             this.canBuild(unitType) ? "" : "opacity-40"
           } min-h-11 min-w-0 w-full border border-slate-500 rounded-sm px-1 py-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer touch-manipulation
              ${selected ? "hover:bg-gray-400/10" : "hover:bg-gray-800"}
              rounded-sm text-white ${selected ? "bg-slate-400/20" : ""}
              ${this.tutorialHighlight === unitType ? "tutorial-highlight" : ""}"
+          data-ow-build-button
+          data-selected=${selected ? "true" : "false"}
           @click=${() => {
             if (selected) {
               this.inputHandler.setGhostStructure(null);
