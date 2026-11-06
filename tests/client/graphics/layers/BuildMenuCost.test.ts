@@ -166,7 +166,9 @@ it("an older timeout cannot erase a newer successful menu refresh", async () => 
 });
 
 
-it("exposes build choices as keyboard-accessible buttons with descriptions", async () => {
+it(
+  "exposes build choices as keyboard-accessible buttons with descriptions",
+  async () => {
   const display = document.createElement("unit-display") as any;
   const player = {
     isAlive: () => true,
@@ -213,7 +215,8 @@ it("exposes build choices as keyboard-accessible buttons with descriptions", asy
 
     city?.click();
     expect(setGhostStructure).toHaveBeenCalledWith(UnitType.City, "GUIclick");
-  } finally {
-    display.remove();
-  }
-});
+    } finally {
+      display.remove();
+    }
+  },
+);
