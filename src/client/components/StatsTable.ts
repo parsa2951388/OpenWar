@@ -9,6 +9,7 @@ import {
 } from "../hud/layers/lib/StatsColumns";
 import { type ColumnId, type StatsTableKind } from "../StatsConstants";
 import { UserSettings } from "../UserSettings";
+import "../hud/layers/OpenWarHudSkin";
 import { translateText } from "../Utils";
 import type { GameView } from "../view";
 
@@ -351,7 +352,7 @@ export abstract class StatsTable extends LitElement {
         : "max-h-[6rem] md:max-h-[8rem] lg:max-h-[9rem]";
 
     return html`
-      <div class="stats-table relative mt-1 text-white text-xs lg:text-sm">
+      <div class="stats-table ow-hud-leaderboard-panel relative mt-1 text-white text-xs lg:text-sm">
         <div
           class="overflow-x-auto rounded-lg bg-gray-800/85"
           @contextmenu=${(event: Event) => event.preventDefault()}
