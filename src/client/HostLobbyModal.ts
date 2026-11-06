@@ -31,12 +31,12 @@ import {
 import { createLobby, getUserMe, queueLobby, setLobbyListed } from "./Api";
 import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
+import { CopyButton } from "./components/CopyButton";
+import "./components/ConfirmDialog";
 import {
   isOperationsOnlineLockedInCurrentBrowser,
   showOperationsOnlineMaintenance,
 } from "./components/EditionPreference";
-import "./components/ConfirmDialog";
-import { CopyButton } from "./components/CopyButton";
 import "./components/GameConfigSettings";
 import "./components/InputCard";
 import "./components/InsufficientCurrencyDialog";

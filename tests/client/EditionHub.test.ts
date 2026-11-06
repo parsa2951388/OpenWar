@@ -19,10 +19,21 @@ describe("Open War edition preference", () => {
     expect(isOperationsPlayableHost("open-war-game.onrender.com")).toBe(false);
     expect(isOperationsPlayableHost("open-war-8o2.pages.dev")).toBe(false);
     expect(isOperationsPlayableHost("example.com")).toBe(false);
-    expect(shouldBlockOperationsOnlineEntry("operations", "open-war-game.onrender.com")).toBe(true);
-    expect(shouldBlockOperationsOnlineEntry("operations", "example.com")).toBe(true);
-    expect(shouldBlockOperationsOnlineEntry("classic", "open-war-game.onrender.com")).toBe(false);
-    expect(shouldBlockOperationsOnlineEntry("operations", "localhost")).toBe(false);
+    expect(
+      shouldBlockOperationsOnlineEntry(
+        "operations",
+        "open-war-game.onrender.com",
+      ),
+    ).toBe(true);
+    expect(shouldBlockOperationsOnlineEntry("operations", "example.com")).toBe(
+      true,
+    );
+    expect(
+      shouldBlockOperationsOnlineEntry("classic", "open-war-game.onrender.com"),
+    ).toBe(false);
+    expect(shouldBlockOperationsOnlineEntry("operations", "localhost")).toBe(
+      false,
+    );
   });
 
   it("keeps the public gate scoped to Operations and production hosts", () => {

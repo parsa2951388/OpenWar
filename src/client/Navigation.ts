@@ -1,8 +1,8 @@
-import { loadModal } from "./LazyModals";
 import {
   isOperationsOnlineLockedInCurrentBrowser,
   showOperationsOnlineMaintenance,
 } from "./components/EditionPreference";
+import { loadModal } from "./LazyModals";
 
 export function closeMobileSidebar() {
   const sidebar = document.getElementById("sidebar-menu");

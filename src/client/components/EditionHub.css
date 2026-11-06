@@ -1096,7 +1096,6 @@
   }
 }
 
-
 /* Public New edition: informative landing state only; no gameplay entry points. */
 .ow-online-operations-public {
   min-height: min(68vh, 760px);
@@ -1211,7 +1210,11 @@
   border-radius: 9px;
   background: rgba(205, 181, 132, 0.09);
   color: #d9bf8c;
-  font: 800 0.66rem ui-monospace, SFMono-Regular, Menlo, monospace;
+  font:
+    800 0.66rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
   letter-spacing: 0.04em;
 }
 
@@ -1257,7 +1260,6 @@
     transform: none;
   }
 }
-
 
 /* The Operations online controls explain their locked state on activation;
    they remain non-navigating and never create or join a lobby. */

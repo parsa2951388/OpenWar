@@ -22,8 +22,8 @@ import "./components/baseComponents/Button";
 import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
 import "./components/GameConfigSettings";
-import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
 import { canPlayOperationsInCurrentBrowser } from "./components/EditionPreference";
+import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
 import { markPendingOperationsMission } from "./components/OperationsCampaign";
 import {
   getOperationsMission,

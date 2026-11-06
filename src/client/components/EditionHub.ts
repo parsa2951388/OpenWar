@@ -38,7 +38,8 @@ function readEditionPreference(): OpenWarEdition {
 export class EditionHub extends LitElement {
   @state() private edition: OpenWarEdition = readEditionPreference();
   @state() private campaignProgress = readOperationsCampaignProgress();
-  @state() private onlineMaintenanceAction: OperationsOnlineAction | null = null;
+  @state() private onlineMaintenanceAction: OperationsOnlineAction | null =
+    null;
 
   createRenderRoot() {
     return this;
@@ -549,15 +550,27 @@ export class EditionHub extends LitElement {
             class="ow-online-disabled-actions"
             aria-label=${this.t("online_disabled_actions_label")}
           >
-            <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("public")}>
+            <button
+              type="button"
+              aria-describedby="ow-online-operations-note"
+              @click=${() => this.showOnlineMaintenance("public")}
+            >
               ${this.t("online_public_action")}
               <span aria-hidden="true">🔒</span>
             </button>
-            <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("private")}>
+            <button
+              type="button"
+              aria-describedby="ow-online-operations-note"
+              @click=${() => this.showOnlineMaintenance("private")}
+            >
               ${this.t("online_private_action")}
               <span aria-hidden="true">🔒</span>
             </button>
-            <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("join")}>
+            <button
+              type="button"
+              aria-describedby="ow-online-operations-note"
+              @click=${() => this.showOnlineMaintenance("join")}
+            >
               ${this.t("online_join_action")}
               <span aria-hidden="true">🔒</span>
             </button>
@@ -629,15 +642,27 @@ export class EditionHub extends LitElement {
           class="ow-online-disabled-actions"
           aria-label=${this.t("online_disabled_actions_label")}
         >
-          <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("public")}>
+          <button
+            type="button"
+            aria-describedby="ow-online-operations-note"
+            @click=${() => this.showOnlineMaintenance("public")}
+          >
             ${this.t("online_public_action")}
             <span aria-hidden="true">🔒</span>
           </button>
-          <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("private")}>
+          <button
+            type="button"
+            aria-describedby="ow-online-operations-note"
+            @click=${() => this.showOnlineMaintenance("private")}
+          >
             ${this.t("online_private_action")}
             <span aria-hidden="true">🔒</span>
           </button>
-          <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("join")}>
+          <button
+            type="button"
+            aria-describedby="ow-online-operations-note"
+            @click=${() => this.showOnlineMaintenance("join")}
+          >
             ${this.t("online_join_action")}
             <span aria-hidden="true">🔒</span>
           </button>

@@ -133,12 +133,15 @@ describe("Open War edition hub", () => {
         button.click();
         await hub.updateComplete;
         expect(
-          hub.querySelector('[data-testid="online-operations-note"]')?.textContent?.trim(),
+          hub
+            .querySelector('[data-testid="online-operations-note"]')
+            ?.textContent?.trim(),
         ).toBeTruthy();
       }
       expect(joined).not.toHaveBeenCalled();
       expect(
-        hub.querySelector('[data-testid="online-operations-note"]')?.textContent,
+        hub.querySelector('[data-testid="online-operations-note"]')
+          ?.textContent,
       ).not.toBe("");
     } finally {
       document.removeEventListener("join-lobby", joined);
