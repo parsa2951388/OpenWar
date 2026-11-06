@@ -885,8 +885,8 @@
     "edition_switch_label": "حالت بازی",
     "experience_design_status": "طراحی تجربه",
     "in_development": "در حال توسعه",
-    "intro_description": "تجربهٔ کلاسیک را برای نبرد سریع انتخاب کن یا وارد میز عملیات و مسیر توسعهٔ جدید شو.",
-    "intro_title": "دنیای Open War را انتخاب کن",
+    "intro_description": "وارد نبردهای زنده شو، یک مسابقهٔ انفرادی آغاز کن یا با دوستانت اتاق خصوصی بساز.",
+    "intro_title": "ورود به میدان نبرد",
     "join_code_action": "پیوستن با کد",
     "mechanic_design_status": "طراحی مکانیک",
     "mission_alliances_disabled": "اتحادها غیرفعال",
@@ -952,7 +952,7 @@
     "operations_eyebrow": "میز فرماندهی · کمپین عملیات",
     "operations_headline": "هر نبرد، یک عملیات استراتژیک",
     "operations_label": "عملیات جدید",
-    "operations_subtitle": "فرماندهی و لجستیک",
+    "operations_subtitle": "در دست ساخت",
     "practice_action": "شروع عملیات دروازهٔ آهنین",
     "private_room_description": "اتاق خصوصی هنوز از قوانین استاندارد لابی استفاده می‌کند؛ قوانین اختصاصی چندنفرهٔ Operations فعال نشده‌اند.",
     "private_room_title": "اتاق خصوصی برای دوستانت بساز",
@@ -974,7 +974,7 @@
     "systems_overview_title": "میدان نبردی فراتر از تصرف قلمرو",
     "systems_title": "چیزی فراتر از قلمروگیری",
     "theatre_map_alt": "نمای مفهومی نقشهٔ عملیاتی با خطوط ارتفاع و مسیرهای تدارکاتی",
-    "top_eyebrow": "دو مسیر، یک جهان"
+    "top_eyebrow": "OPEN WAR  /  شبکهٔ نبرد زنده"
   },
   "effects": {
     "nukeType": {
@@ -1887,7 +1887,7 @@
     "teams_title": "تیم ها",
     "battle_hub_aria": "مرکز نبردهای آنلاین",
     "battle_hub_eyebrow": "شبکهٔ نبرد زنده",
-    "battle_hub_title": "میدان نبرد آنلاین",
+    "battle_hub_title": "نبردهای زنده",
     "battle_hub_description": "نبردهای عمومی را بررسی کن، وارد رتبه‌بندی شو یا با دوستانت اتاق خصوصی بساز.",
     "battle_hub_public": "نبردهای عمومی",
     "battle_hub_private": "اتاق‌های خصوصی",
