@@ -59,6 +59,7 @@ describe("Open War edition hub", () => {
     await mountHub();
 
     const selector = classicSelector();
+    expect(hub.querySelectorAll(".ow-classic-system-card")).toHaveLength(4);
     const openLobbyFeed = vi
       .spyOn(selector as any, "openLobbyFeed")
       .mockImplementation(() => {});
