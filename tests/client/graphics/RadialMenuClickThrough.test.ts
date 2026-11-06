@@ -8,6 +8,7 @@ import { forwardClickToLayerBelow } from "../../src/client/hud/layers/RadialMenu
 describe("radial-menu click-through", () => {
   afterEach(() => {
     vi.restoreAllMocks();
+    Reflect.deleteProperty(document, "elementFromPoint");
     document.body.innerHTML = "";
   });
 
@@ -24,7 +25,10 @@ describe("radial-menu click-through", () => {
     const target = createClickThroughTarget();
     const onClick = vi.fn();
     target.addEventListener("click", onClick);
-    vi.spyOn(document, "elementFromPoint").mockReturnValue(target);
+    Object.defineProperty(document, "elementFromPoint", {
+      configurable: true,
+      value: vi.fn(() => target),
+    });
 
     forwardClickToLayerBelow(
       new MouseEvent("click", { clientX: 42, clientY: 24 }),
@@ -42,7 +46,10 @@ describe("radial-menu click-through", () => {
     const target = createClickThroughTarget();
     const onClick = vi.fn();
     target.addEventListener("click", onClick);
-    vi.spyOn(document, "elementFromPoint").mockReturnValue(target);
+    Object.defineProperty(document, "elementFromPoint", {
+      configurable: true,
+      value: vi.fn(() => target),
+    });
 
     forwardClickToLayerBelow(
       new MouseEvent("click", { clientX: 10, clientY: 20 }),
@@ -59,7 +66,10 @@ describe("radial-menu click-through", () => {
     document.body.append(target);
     const onClick = vi.fn();
     target.addEventListener("click", onClick);
-    vi.spyOn(document, "elementFromPoint").mockReturnValue(target);
+    Object.defineProperty(document, "elementFromPoint", {
+      configurable: true,
+      value: vi.fn(() => target),
+    });
 
     forwardClickToLayerBelow(new MouseEvent("click", { clientX: 1, clientY: 2 }));
 
