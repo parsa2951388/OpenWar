@@ -79,32 +79,20 @@ describe("Open War edition hub", () => {
     expect(window.localStorage.getItem(EDITION_STORAGE_KEY)).toBe("operations");
   });
 
-  it("renders all six mission cards when Operations is selected", async () => {
+  it("shows an under-construction preview instead of Operations missions on public hosts", async () => {
     await mountHub();
-
-    const dashboard = hub.querySelector(".ow-operations-dashboard");
-    expect(dashboard?.hasAttribute("hidden")).toBe(true);
 
     tabs()[1].click();
     await hub.updateComplete;
 
-    const visibleDashboard = hub.querySelector(".ow-operations-dashboard");
-    expect(visibleDashboard?.hasAttribute("hidden")).toBe(false);
-    const cards =
-      visibleDashboard?.querySelectorAll<HTMLElement>(".ow-mission-card") ?? [];
-    expect(cards).toHaveLength(6);
-    expect(cards[0].querySelector(".ow-mission-number")?.textContent).toContain(
-      "01",
-    );
-    expect(cards[5].querySelector(".ow-mission-number")?.textContent).toContain(
-      "06",
-    );
+    expect(hub.querySelector(".ow-operations-dashboard")).toBeNull();
+    expect(hub.querySelectorAll(".ow-mission-card")).toHaveLength(0);
+
+    const onlinePanel = hub.querySelector(".ow-online-operations");
+    expect(onlinePanel).not.toBeNull();
     expect(
-      cards[0].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
-    ).toBe(false);
-    expect(
-      cards[3].querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
-    ).toBe(true);
+      onlinePanel?.querySelector(".ow-online-operations-note")?.textContent,
+    ).toContain("Operations");
   });
 
   it("blocks every Operations online entry point and explains why", async () => {
@@ -149,10 +137,9 @@ describe("Open War edition hub", () => {
       document.removeEventListener("join-lobby", joined);
     }
 
-    // The offline solo campaign is intentionally unaffected.
-    expect(
-      hub.querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
-    ).toBe(false);
+    // Public hosts do not render the local-only Operations campaign.
+    expect(hub.querySelector(".ow-operations-dashboard")).toBeNull();
+    expect(hub.querySelectorAll(".ow-mission-launch")).toHaveLength(0);
   });
 
   it("resumes the Classic lobby feed on returning to Classic", async () => {
