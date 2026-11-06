@@ -1,6 +1,6 @@
 # Open War — Competitive Feature Audit and Roadmap
 
-**Audit date:** 2026-11-05  
+**Audit date:** 2026-11-06  
 **Compared products:** [OpenBattle.ir](https://openbattle.ir/), [OpenFront.io](https://openfront.io/), [OpenFrontIO source](https://github.com/openfrontio/OpenFrontIO), [OpenFront Wiki](https://openfront.wiki/)
 
 This document records an implementation-oriented comparison. It distinguishes features observed on a live competitor in the 2026-11-05 inspection, code present in the Open War repository, and features whose production behavior still needs end-to-end verification. A later automated browser attempt against OpenBattle was unavailable because the browser provider account had insufficient credits; the OpenBattle details below are therefore historical observations, not a fresh 2026-11-06 verification.
@@ -9,7 +9,7 @@ This document records an implementation-oriented comparison. It distinguishes fe
 
 Open War already contains a substantial portion of the OpenFront-derived RTS foundation. Its repository includes a deterministic simulation engine, a browser client, lobby and game-server code, a single-player configuration flow, a custom Operations edition, and UI modules for inventory/cosmetics, store, clans, leaderboards, news, help, and saved games.
 
-The key distinction is **code presence versus verified production behavior**. A component or mode existing in the repository does not prove its account flow, matchmaking, persistence, multiplayer synchronization, or live deployment is operational. The active Operations preview should therefore be treated as a controlled preview until two-client gameplay, authentication, and service health are verified.
+The key distinction is **code presence versus verified production behavior**. A component or mode existing in the repository does not prove its account flow, matchmaking, persistence, multiplayer synchronization, or live deployment is operational. On public hosts, the New/Operations edition now intentionally shows an under-construction information screen and blocks normal client entry to its online routes. The solo Operations campaign is available only on localhost/127.0.0.1 for development QA. The gate is client-side; server-side edition isolation and two-client gameplay verification remain required before enabling public New multiplayer.
 
 ## Feature comparison
 
@@ -25,6 +25,16 @@ The key distinction is **code presence versus verified production behavior**. A 
 | Cosmetics          | Store shell observed; inventory availability was empty during inspection                | Territory patterns, flags, ship/weapon effects, crowns and other cosmetics                         | Inventory, cosmetics, loadout and store components exist; production catalog/payment readiness needs validation                                       |
 | Onboarding         | Persian-first UI, help/download/news                                                    | Tutorial, wiki, settings and rebindable controls                                                   | Help/tutorial, news and settings components exist; translation coverage should be measured                                                            |
 | Mobile             | Beta Android web app/download flow                                                      | Browser touch support, with known control gaps                                                     | Responsive UI exists; dedicated mobile touch QA and installability need a separate pass                                                               |
+
+### OpenFront latest release snapshot (verified 2026-11-06)
+
+The official OpenFront releases page lists **v0.35.11**, released November 4, 2026, as the latest release at the time of this audit. Recent additions relevant to Open War include:
+- A guided tutorial covering spawn, expansion, troops and first attacks (v0.35.7).
+- Progression with XP, player levels, prestige, ranked FFA and Clan Wars, plus a seekable replay viewer (v0.35.0).
+- Clan territory map, clan donation leaderboard and continuing public-lobby/team fixes (v0.35.7–v0.35.11).
+- Current lobby options include map search/favourites, AI difficulty, FFA/Teams, tribes/nations, gameplay modifiers, unit bans and start/timer controls.
+
+The release feed is the source of truth for current version claims; the wiki and community guides may lag behind the live client.
 
 ### OpenBattle-specific observations
 
@@ -63,12 +73,14 @@ These are repository-level findings, not a claim that every service behind them 
 
 ## Current Operations preview behavior
 
-The Operations/New edition is being kept separate from Classic while its online multiplayer path is unfinished:
+The public-host experience is intentionally narrower than the local development preview:
 
-- Public battle browsing, private-room creation and room joining display a localized **Under construction** notice and do not open an online lobby.
-- Solo Operations missions remain available.
-- The Operations dashboard exposes quick access to custom solo setup, commander loadout/cosmetics and the field manual.
-- Classic online entry points are intentionally outside this gate and are not changed by this feature.
+- On public hosts, selecting New/Operations replaces the mode dashboard with a dedicated localized **در دست ساخت / Under construction** screen. It explains the planned online systems and offers a return to Classic.
+- Public battle, create-private-room and join-room actions display an explanatory notice; they do not open matchmaking or a lobby.
+- Direct navigation to lobby, detailed-view and matchmaking routes is redirected back to the edition hub. Host, join and matchmaking modal entry points are guarded, and the final `join-lobby` event is cancelled while Operations is selected on a public host.
+- The Operations dashboard and solo missions are available only on `localhost` / `127.0.0.1` for development QA; they are not exposed on the public site.
+- Classic online entry remains available and is not covered by the New/Operations gate. The Classic hub also surfaces existing gameplay systems so they are easier to discover.
+- This is a **client-side entry gate**, not a separate Operations server protocol. Do not treat it as protection against custom clients that connect directly to the shared backend; server-side edition authorization and two-client end-to-end tests are still P0 release requirements.
 
 ## Prioritized implementation roadmap
 
@@ -123,3 +135,4 @@ Open War is an OpenFront-derived fork. Before reusing or modifying upstream mate
 - [OpenFrontIO source repository](https://github.com/openfrontio/OpenFrontIO)
 - [OpenFront Wiki](https://openfront.wiki/)
 - [OpenFront licensing notes](https://github.com/openfrontio/openfront-verified/blob/main/LICENSING.md)
+- [OpenFront official releases](https://github.com/openfrontio/OpenFrontIO/releases)
