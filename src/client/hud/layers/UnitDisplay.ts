@@ -16,7 +16,7 @@ import { UIState } from "../../UIState";
 import { UserSettings } from "../../UserSettings";
 import { resolveKeybindLabel, translateText } from "../../Utils";
 import { GameView } from "../../view";
-import "./OpenWarHudSkin.css";
+import "./OpenWarHudSkin";
 import {
   airportIcon,
   atomBombIcon,
