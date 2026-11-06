@@ -165,7 +165,6 @@ it("an older timeout cannot erase a newer successful menu refresh", async () => 
   }
 });
 
-
 it("renders build choices as keyboard-accessible buttons", async () => {
   const display = document.createElement("unit-display") as any;
   const player = {
@@ -191,9 +190,9 @@ it("renders build choices as keyboard-accessible buttons", async () => {
   document.body.appendChild(display);
   try {
     await display.updateComplete;
-    const city = display.querySelector<HTMLButtonElement>(
+    const city = display.querySelector(
       "button[data-ow-build-button]",
-    );
+    ) as HTMLButtonElement | null;
     expect(city?.type).toBe("button");
     expect(city?.getAttribute("aria-pressed")).toBe("false");
     city?.focus();
