@@ -923,7 +923,23 @@
     "systems_eyebrow": "SIGNATURE SYSTEMS",
     "systems_title": "Beyond territorial control",
     "theatre_map_alt": "Conceptual theatre map with contour lines and supply routes",
-    "top_eyebrow": "TWO WAYS TO COMMAND"
+    "top_eyebrow": "TWO WAYS TO COMMAND",
+    "online_teaser_action": "Online operations · In development",
+    "online_section_eyebrow": "MULTIPLAYER ROADMAP",
+    "online_section_title": "Online Operations is being built",
+    "online_section_description": "The solo campaign is playable now. Online Operations will open after public lobbies, private rooms and matchmaking are connected and tested.",
+    "online_section_badge": "IN DEVELOPMENT",
+    "online_section_notice": "Online Operations is not available yet. These controls are intentionally disabled, so nobody can enter an unfinished online match. Your solo missions remain available above.",
+    "online_public_feature_title": "Public operations",
+    "online_public_feature_description": "Live server browser, lobby status and player counts.",
+    "online_private_feature_title": "Private command rooms",
+    "online_private_feature_description": "Create invite-only rooms and share a secure room code.",
+    "online_matchmaking_feature_title": "Matchmaking and teams",
+    "online_matchmaking_feature_description": "Join balanced battles and coordinate with teammates.",
+    "online_disabled_actions_label": "Unavailable online actions",
+    "online_public_action": "Public battles",
+    "online_private_action": "Create private room",
+    "online_join_action": "Join with code"
   },
   "effects": {
     "nukeType": {
