@@ -124,6 +124,19 @@ describe("the nav bars that host the cluster", () => {
     );
   });
 
+  it("exposes News as a direct desktop navigation destination", async () => {
+    const bar = await mount("desktop-nav-bar");
+    const news = bar.querySelector<HTMLElement>(
+      '.nav-menu-item[data-page="page-news"]',
+    );
+    expect(news?.getAttribute("data-i18n")).toBe("main.news");
+
+    initNavigation();
+    window.showPage!("page-news");
+    await bar.updateComplete;
+    expect(news?.classList.contains("active")).toBe(true);
+  });
+
   it("renders the settings control in the mobile utility-cluster variant", async () => {
     const cluster = await mount("nav-utility-icons");
     cluster.setAttribute("size", "mobile");
