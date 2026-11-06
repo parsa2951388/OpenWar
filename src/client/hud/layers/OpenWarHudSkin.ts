@@ -48,6 +48,10 @@ const HUD_STYLES = `
 }
 
 .ow-hud-buildbar .ow-hud-build-button {
+  appearance: none;
+  color: inherit;
+  font: inherit;
+  text-align: center;
   min-height: 52px;
   border: 1px solid rgba(130, 170, 198, 0.3);
   border-radius: 10px;
