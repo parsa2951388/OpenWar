@@ -131,22 +131,30 @@ export class ChatDisplay extends LitElement implements Controller {
       "flex flex-col-reverse overflow-y-auto w-full",
       "lg:bottom-2.5 lg:right-2.5 z-50",
       "lg:max-w-[30vw] lg:w-full lg:w-auto",
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
     const visibleToggleClass = [
       "ow-hud-chat-feed__toggle text-white cursor-pointer",
       "pointer-events-auto",
       this._hidden ? "hidden" : "",
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
     const hiddenToggleClass = [
       "ow-hud-chat-feed__toggle text-white cursor-pointer",
       "pointer-events-auto",
       this._hidden ? "" : "hidden",
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
     const tableClass = [
       "ow-hud-chat-feed__table w-full border-collapse text-white shadow-lg",
       "lg:text-xl text-xs pointer-events-none",
       this._hidden ? "hidden" : "",
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
     const chatHeaderClass = [
       "ow-hud-chat-feed__header w-full bg-black/80",
       "sticky top-0 px-2.5",
@@ -155,18 +163,12 @@ export class ChatDisplay extends LitElement implements Controller {
       <div class=${feedClass}>
         <div>
           <div class=${chatHeaderClass}>
-            <button
-              class=${visibleToggleClass}
-              @click=${this.toggleHidden}
-            >
+            <button class=${visibleToggleClass} @click=${this.toggleHidden}>
               Hide
             </button>
           </div>
 
-          <button
-            class=${hiddenToggleClass}
-            @click=${this.toggleHidden}
-          >
+          <button class=${hiddenToggleClass} @click=${this.toggleHidden}>
             Chat
             <span
               class="${

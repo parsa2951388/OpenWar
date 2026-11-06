@@ -212,7 +212,9 @@ export abstract class StatsTable extends LitElement {
       "justify-center text-center whitespace-nowrap",
       "border-b border-b-slate-500",
       index > 0 ? HEADER_DIVIDER_CLASS : "",
-    ].filter(Boolean).join(" ");
+    ]
+      .filter(Boolean)
+      .join(" ");
     const sortButtonClass = [
       "inline-flex items-center justify-center gap-1",
       "hover:text-sky-200 transition-colors",
@@ -399,10 +401,7 @@ export abstract class StatsTable extends LitElement {
                 (column) => column.id,
                 (column, index) => this.renderHeaderCell(column, index),
               )}
-              <div
-                class=${pickerHeaderClass}
-                role="columnheader"
-              >
+              <div class=${pickerHeaderClass} role="columnheader">
                 <column-picker
                   class="inline-flex"
                   .columns=${columnsFor(this.tableKind).filter(
