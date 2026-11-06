@@ -633,4 +633,29 @@ describe("SAM", () => {
     expect(aircraft.isActive()).toBeFalsy();
     expect(sam.isInCooldown()).toBeTruthy();
   });
+
+  test("SAM keeps tracking an enemy aircraft after it moves", async () => {
+    const sam = defender.buildUnit(UnitType.SAMLauncher, game.ref(1, 1), {});
+    const aircraft = attacker.buildUnit(UnitType.Aircraft, game.ref(19, 1), {});
+    game.addExecution(new SAMLauncherExecution(defender, null, sam));
+
+    // Initialize the launcher and let its missile begin following the plane.
+    executeTicks(game, 2);
+    const missile = defender.units(UnitType.SAMMissile)[0];
+    expect(missile).toBeDefined();
+    expect(aircraft.isTargetable()).toBeFalsy();
+
+    // The aircraft moves while the interceptor is already in flight. The
+    // missile must re-plan to the new tile instead of hitting the old one.
+    aircraft.move(game.ref(15, 15));
+    const speed = game.config().defaultSamMissileSpeed();
+    const oldRouteTicks = Math.ceil(Math.max(0, 18 - speed) / speed);
+    executeTicks(game, oldRouteTicks);
+    expect(aircraft.isActive()).toBeTruthy();
+    expect(missile.isActive()).toBeTruthy();
+
+    const newRouteTicks = Math.ceil((28 - speed) / speed);
+    executeTicks(game, Math.max(1, newRouteTicks - oldRouteTicks + 2));
+    expect(aircraft.isActive()).toBeFalsy();
+  });
 });
