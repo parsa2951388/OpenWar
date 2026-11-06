@@ -104,6 +104,10 @@ import {
 } from "./MenuChrome";
 import { modalRouter } from "./ModalRouter";
 import { updateAccountNavButton } from "./NavAccountButton";
+import {
+  isOperationsOnlineLockedInCurrentBrowser,
+  showOperationsOnlineMaintenance,
+} from "./components/EditionPreference";
 import { initNavigation } from "./Navigation";
 import { capturePagePin } from "./PagePin";
 import { setPurchaseAccountRefresh } from "./Payments";
@@ -686,6 +690,16 @@ class Client {
     });
 
     document.addEventListener("join-lobby", (event) => {
+      // Public-host New/Operations is a read-only preview. This is the final
+      // client-side choke point for joins from private rooms, links, ranked
+      // matches and any stale UI entry point. Classic and local QA are intact.
+      if (isOperationsOnlineLockedInCurrentBrowser()) {
+        event.preventDefault();
+        event.stopImmediatePropagation();
+        showOperationsOnlineMaintenance("join");
+        return;
+      }
+
       // A rejected handshake (Turnstile alerts then rejects) never assigns
       // lobbyHandle, so nothing downstream clears the "lobby" presence
       // emitted at the top of the join -- friends would keep being offered a
