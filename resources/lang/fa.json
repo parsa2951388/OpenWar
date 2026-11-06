@@ -219,7 +219,8 @@
       "missile_silo": "برای پرتاب سلاح‌های هسته‌ای استفاده می‌شود",
       "port": "کشتی‌های تجاری را برای تولید طلا ارسال می‌کند",
       "sam_launcher": "در برابر سلاح‌های هسته‌ای ورودی دفاع می‌کند",
-      "warship": "کشتی‌های تجاری را تسخیر می‌کند و کشتی‌ها و قایق‌ها را نابود می‌کند"
+      "warship": "کشتی‌های تجاری را تسخیر می‌کند و کشتی‌ها و قایق‌ها را نابود می‌کند",
+      "airport": "فرودگاه را بسازید؛ هواپیما به‌صورت خودکار از آن برخاسته و در محدودهٔ عملیاتی از اهداف دشمن دفاع می‌کند."
     },
     "loading": "در حال بارگذاری...",
     "not_enough_money": "پول کافی نیست",
@@ -1066,7 +1067,8 @@
     "trade_ship_captured": "کشتی تجاری شما توسط {name} دستگیر شد",
     "unit_destroyed": "واحد {unit} شما نابود شد",
     "unit_voluntarily_deleted": "واحد به‌صورت داوطلبانه حذف شد",
-    "wants_to_renew_alliance": "{name} می‌خواهد اتحاد شما را تمدید کند"
+    "wants_to_renew_alliance": "{name} می‌خواهد اتحاد شما را تمدید کند",
+    "aircraft_shot_down": "سام یک هواپیمای دشمن را سرنگون کرد"
   },
   "featured_stream": {
     "expand": "گسترش دادن",
@@ -2657,7 +2659,20 @@
     "tribes_login_required": "برای خرید و مدیریت نام‌های قبیله وارد شوید.",
     "tribes_purchase_description": "نام شما به یک قبیله بات در بازی‌های آنلاین واقعی اختصاص می‌یابد و بلافاصله فعال می‌شود.",
     "tribes_purchase_heading": "خرید نام قبیله",
-    "your_tribes_heading": "نام‌های قبیله شما"
+    "your_tribes_heading": "نام‌های قبیله شما",
+    "aviation": "هوانوردی",
+    "aviation_collection_title": "مجموعهٔ هوانوردی",
+    "aviation_collection_description": "پیش‌نمایش هواپیماها، فرودگاه‌ها و ظاهرهای تزئینی مرتبط با نیروی هوایی. این موارد در حال حاضر فقط برای نمایش هستند.",
+    "aviation_preview_only": "پیش‌نمایش — خرید غیرفعال",
+    "aviation_no_price": "فعلاً هیچ قیمتی یا درگاه پرداختی برای این موارد فعال نیست.",
+    "aviation_fighter_title": "جنگندهٔ آذرخش",
+    "aviation_fighter_description": "طرح ظاهری یک جنگندهٔ سریع برای اسکادران شما.",
+    "aviation_bomber_title": "بمب‌افکن دوربرد",
+    "aviation_bomber_description": "طرح تزئینی یک هواپیمای سنگین دوربرد.",
+    "aviation_airfield_title": "فرودگاه شبانه",
+    "aviation_airfield_description": "تم تاریک باند پرواز و آشیانهٔ هواپیما.",
+    "aviation_control_tower_title": "برج مراقبت",
+    "aviation_control_tower_description": "نمای تزئینی برج فرماندهی و کنترل پرواز."
   },
   "streaming_now": {
     "live_count": "{count} پخش زنده",
@@ -2786,7 +2801,9 @@
     "missile_silo": "سیلوی موشکی",
     "port": "بندر",
     "sam_launcher": "لانچر موشک دفاعی",
-    "warship": "کشتی جنگی"
+    "warship": "کشتی جنگی",
+    "airport": "فرودگاه",
+    "aircraft": "هواپیما"
   },
   "update_available": {
     "desktop": "نسخه جدیدی از اپن‌فرانت در دسترس است. دانلود در پس‌زمینه انجام می‌شود؛ پس از آماده‌سازی، از نوار به‌روزرسانی صفحه را مجدداً بارگذاری کنید.",

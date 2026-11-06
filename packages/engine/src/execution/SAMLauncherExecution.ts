@@ -384,40 +384,63 @@ export class SAMLauncherExecution implements Execution {
 
     this.pseudoRandom ??= new PseudoRandom(this.sam.id());
 
-    // No nuke in flight anywhere: nothing to target, skip the grid query. Every SAM ran it every
-    // tick (~7 % of a long headless game with 150 launchers). Exact: with no nukes the query is
-    // empty and the targeting loop a no-op; the only side effect skipped is pruning cache entries
-    // of nukes that no longer exist, which the next real call prunes before anything could read
-    // them (unit ids are unique). unitCount(type) is memoised per unit-list version — one shared
-    // walk a tick, not one a launcher — and unlike units(type) a hit allocates nothing. A nuke's
-    // level is always 1, so a zero count is exactly an empty list.
-    if (
-      this.mg.unitCount(UnitType.AtomBomb) === 0 &&
-      this.mg.unitCount(UnitType.HydrogenBomb) === 0 &&
-      this.mg.unitCount(UnitType.MIRVWarhead) === 0
-    ) {
+    // Preserve the existing missile-defense priority: ballistic threats are
+    // processed before aircraft. Planes only consume a ready SAM round after
+    // the nuke pass has had its chance.
+    const hasNukes =
+      this.mg.unitCount(UnitType.AtomBomb) > 0 ||
+      this.mg.unitCount(UnitType.HydrogenBomb) > 0 ||
+      this.mg.unitCount(UnitType.MIRVWarhead) > 0;
+
+    if (hasNukes) {
+      const targets = this.targetingSystem.getValidTargets(ticks);
+      for (const target of targets) {
+        if (this.sam.isInCooldown()) break;
+        this.sam.launch();
+        target.unit.setTargetedBySAM(true);
+        this.mg.addExecution(
+          new SAMMissileExecution(
+            this.sam.tile(),
+            this.sam.owner(),
+            this.sam,
+            target.unit,
+            target.tile,
+          ),
+        );
+      }
+    }
+
+    if (this.sam.isInCooldown() || this.mg.unitCount(UnitType.Aircraft) === 0) {
       return;
     }
-    // target is already filtered to exclude nukes targeted by other SAMs
-    const targets = this.targetingSystem.getValidTargets(ticks);
-    for (const target of targets) {
-      if (this.sam.isInCooldown()) {
-        break;
-      }
+
+    const aircraftTarget = this.mg
+      .nearbyUnits(
+        this.sam.tile(),
+        this.mg.config().dynamicSamRange(this.sam, ticks),
+        UnitType.Aircraft,
+        (unit) =>
+          unit.isActive() &&
+          !unit.isUnderConstruction() &&
+          unit.isTargetable() &&
+          this.sam!.owner().canAttackPlayer(unit.owner(), true),
+      )
+      .find(({ unit }) => unit.health() > 0)?.unit;
+
+    if (aircraftTarget !== undefined) {
+      aircraftTarget.setTargetable(false);
       this.sam.launch();
-      target.unit.setTargetedBySAM(true);
       this.mg.addExecution(
         new SAMMissileExecution(
           this.sam.tile(),
           this.sam.owner(),
           this.sam,
-          target.unit,
-          target.tile,
+          aircraftTarget,
+          aircraftTarget.tile(),
         ),
       );
     }
   }
-
   isActive(): boolean {
     return this.active;
   }

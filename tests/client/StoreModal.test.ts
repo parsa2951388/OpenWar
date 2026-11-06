@@ -315,6 +315,22 @@ async function openStoreOnTab(tab: "packs" | "subscriptions" | "bundles") {
 }
 
 describe("StoreModal cosmetic browser", () => {
+  it("shows aviation previews without prices or checkout actions", async () => {
+    store = document.createElement("store-modal") as StoreModal;
+    store.inline = true;
+    document.body.appendChild(store);
+    await store.updateComplete;
+    store.open({ tab: "aviation" });
+    await vi.waitFor(() =>
+      expect(store!.querySelectorAll("[data-aviation-preview]")).toHaveLength(4),
+    );
+    expect(store!.querySelector("[data-aviation-no-price]")).not.toBeNull();
+    expect(store!.querySelector("purchase-button")).toBeNull();
+    expect(store!.querySelector("inline-checkout")).toBeNull();
+    expect(store!.textContent).toContain("store.aviation_no_price");
+    expect(store!.textContent).not.toMatch(/\$\s*\d/);
+  });
+
   Element.prototype.animate ??= () => ({ cancel: () => {} }) as Animation;
 
   beforeEach(() => {

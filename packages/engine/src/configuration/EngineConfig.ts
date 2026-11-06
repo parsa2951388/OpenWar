@@ -386,6 +386,13 @@ export class EngineConfig extends Config {
           UnitType.Factory,
           UnitType.Port,
         );
+      case UnitType.Airport:
+        return this.costWrapper(
+          (numUnits: number) => Math.min(2_400_000, (numUnits + 1) * 650_000),
+          UnitType.Airport,
+        );
+      case UnitType.Aircraft:
+        return () => 0n;
       case UnitType.TransportShip:
       case UnitType.Shell:
       case UnitType.SAMMissile:

@@ -623,4 +623,14 @@ describe("SAM", () => {
     sam.decreaseLevel();
     expect(game.config().dynamicSamRange(sam, game.ticks())).toBe(20);
   });
+  test("SAM intercepts an enemy aircraft in range", async () => {
+    const sam = defender.buildUnit(UnitType.SAMLauncher, game.ref(1, 1), {});
+    const aircraft = attacker.buildUnit(UnitType.Aircraft, game.ref(1, 2), {});
+    game.addExecution(new SAMLauncherExecution(defender, null, sam));
+
+    executeTicks(game, 4);
+
+    expect(aircraft.isActive()).toBeFalsy();
+    expect(sam.isInCooldown()).toBeTruthy();
+  });
 });
