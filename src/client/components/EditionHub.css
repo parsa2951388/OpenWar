@@ -899,3 +899,200 @@
     transform: none;
   }
 }
+
+
+/* Online Operations is deliberately unavailable until its multiplayer backend is ready. */
+.ow-online-operations {
+  position: relative;
+  display: grid;
+  gap: 1.15rem;
+  min-width: 0;
+  overflow: hidden;
+  padding: clamp(1.2rem, 2.5vw, 2rem);
+  border: 1px solid rgba(120, 174, 174, 0.28);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(67, 139, 151, 0.18),
+      transparent 42%
+    ),
+    linear-gradient(135deg, rgba(15, 35, 39, 0.98), rgba(10, 20, 25, 0.98));
+  box-shadow: 0 18px 42px rgba(0, 0, 0, 0.16);
+}
+
+.ow-online-operations-head {
+  display: flex;
+  align-items: flex-start;
+  justify-content: space-between;
+  gap: 1.2rem;
+}
+
+.ow-online-operations-head h3 {
+  margin: 0;
+  color: #f1f6f5;
+  font-size: clamp(1.15rem, 2vw, 1.6rem);
+  line-height: 1.3;
+}
+
+.ow-online-operations-head p {
+  max-width: 54rem;
+  margin: 0.55rem 0 0;
+  color: #adbfbd;
+  font-size: 0.82rem;
+  line-height: 1.75;
+}
+
+.ow-online-operations-badge {
+  display: inline-flex;
+  flex: 0 0 auto;
+  align-items: center;
+  gap: 0.45rem;
+  color: #e7c98e;
+  border-color: rgba(231, 201, 142, 0.3);
+  background: rgba(231, 201, 142, 0.08);
+}
+
+.ow-online-operations-badge > span {
+  color: #e6bd70;
+  font-size: 0.58rem;
+  text-shadow: 0 0 10px rgba(230, 189, 112, 0.75);
+}
+
+.ow-online-operations-note {
+  display: flex;
+  align-items: center;
+  gap: 0.8rem;
+  padding: 0.9rem 1rem;
+  border: 1px solid rgba(230, 189, 112, 0.2);
+  border-radius: 12px;
+  background: rgba(230, 189, 112, 0.07);
+}
+
+.ow-online-note-icon {
+  display: grid;
+  flex: 0 0 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border-radius: 50%;
+  background: rgba(230, 189, 112, 0.12);
+  color: #eacb91;
+  font-size: 1.25rem;
+}
+
+.ow-online-operations-note p {
+  margin: 0;
+  color: #e0d3b7;
+  font-size: 0.78rem;
+  line-height: 1.7;
+}
+
+.ow-online-feature-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.75rem;
+}
+
+.ow-online-feature {
+  display: flex;
+  align-items: flex-start;
+  gap: 0.75rem;
+  min-width: 0;
+  padding: 1rem;
+  border: 1px solid rgba(169, 191, 182, 0.14);
+  border-radius: 13px;
+  background: rgba(5, 15, 19, 0.36);
+}
+
+.ow-online-feature-icon {
+  display: grid;
+  flex: 0 0 2.25rem;
+  width: 2.25rem;
+  height: 2.25rem;
+  place-items: center;
+  border: 1px solid rgba(125, 183, 184, 0.23);
+  border-radius: 10px;
+  background: rgba(70, 135, 143, 0.12);
+  color: #9ed2cf;
+  font-size: 1.1rem;
+}
+
+.ow-online-feature strong {
+  display: block;
+  color: #eaf2ef;
+  font-size: 0.82rem;
+  line-height: 1.4;
+}
+
+.ow-online-feature p {
+  margin: 0.35rem 0 0;
+  color: #9dafaa;
+  font-size: 0.72rem;
+  line-height: 1.65;
+}
+
+.ow-online-disabled-actions {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 0.65rem;
+}
+
+.ow-online-disabled-actions button,
+.ow-online-disabled-trigger {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 0.75rem;
+  min-width: 0;
+  min-height: 48px;
+  padding: 0.75rem 0.9rem;
+  border: 1px solid rgba(155, 177, 172, 0.16);
+  border-radius: 11px;
+  background: rgba(7, 17, 21, 0.6);
+  color: #80918c;
+  cursor: not-allowed;
+  opacity: 0.72;
+  text-align: start;
+}
+
+.ow-online-disabled-actions button:disabled,
+.ow-online-disabled-trigger:disabled {
+  cursor: not-allowed;
+  opacity: 0.72;
+  filter: saturate(0.55);
+}
+
+.ow-online-disabled-actions button > span,
+.ow-online-disabled-trigger > span {
+  flex: 0 0 auto;
+  font-size: 0.85rem;
+}
+
+@media (max-width: 900px) {
+  .ow-online-feature-grid,
+  .ow-online-disabled-actions {
+    grid-template-columns: 1fr;
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-online-operations {
+    gap: 0.9rem;
+    padding: 1rem;
+    border-radius: 15px;
+  }
+  .ow-online-operations-head {
+    flex-direction: column;
+  }
+  .ow-online-operations-badge {
+    align-self: flex-start;
+  }
+  .ow-online-feature {
+    padding: 0.85rem;
+  }
+  .ow-online-operations-note {
+    align-items: flex-start;
+    padding: 0.8rem;
+  }
+}
