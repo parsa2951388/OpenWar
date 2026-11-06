@@ -7,7 +7,9 @@ import { UsernameInput } from "../UsernameInput";
 import { translateText } from "../Utils";
 import {
   canPlayOperationsInCurrentBrowser,
-  normalizeOpenWarEdition,
+  getOpenWarEditionPreference,
+  setOpenWarEditionPreference,
+  type OperationsOnlineAction,
   type OpenWarEdition,
 } from "./EditionPreference";
 import {
@@ -24,26 +26,19 @@ import {
 } from "./OperationsMissions";
 import "./EditionHub.css";
 
-const EDITION_STORAGE_KEY = "openwar.edition";
-
-type EditionGameModeSelector = HTMLElement & {
+constanttype EditionGameModeSelector = HTMLElement & {
   setEditionActive(active: boolean): void;
 };
 
 function readEditionPreference(): OpenWarEdition {
-  try {
-    return normalizeOpenWarEdition(
-      window.localStorage.getItem(EDITION_STORAGE_KEY),
-    );
-  } catch {
-    return "classic";
-  }
+  return getOpenWarEditionPreference();
 }
 
 @customElement("openwar-edition-hub")
 export class EditionHub extends LitElement {
   @state() private edition: OpenWarEdition = readEditionPreference();
   @state() private campaignProgress = readOperationsCampaignProgress();
+  @state() private onlineMaintenanceAction: OperationsOnlineAction | null = null;
 
   createRenderRoot() {
     return this;
@@ -89,11 +84,7 @@ export class EditionHub extends LitElement {
   private selectEdition = (edition: OpenWarEdition) => {
     if (this.edition === edition) return;
     this.edition = edition;
-    try {
-      window.localStorage.setItem(EDITION_STORAGE_KEY, edition);
-    } catch {
-      // The selector still works for this page load when browser storage is unavailable.
-    }
+    setOpenWarEditionPreference(edition);
     this.dispatchEvent(
       new CustomEvent("openwar-edition-changed", {
         detail: { edition },
@@ -129,6 +120,27 @@ export class EditionHub extends LitElement {
   };
 
   private openTraining = () => this.openMission("iron-gate");
+
+  /** Called by online controls and global navigation guards. */
+  public showOnlineMaintenance(
+    action: OperationsOnlineAction = "direct",
+  ): void {
+    this.onlineMaintenanceAction = action;
+    this.requestUpdate();
+  }
+
+  private onlineMaintenanceMessage(): string {
+    switch (this.onlineMaintenanceAction) {
+      case "public":
+        return this.t("online_public_action_notice");
+      case "private":
+        return this.t("online_private_action_notice");
+      case "join":
+        return this.t("online_join_action_notice");
+      default:
+        return this.t("online_section_notice");
+    }
+  }
 
   private renderEditionControl() {
     return html`
@@ -204,8 +216,8 @@ export class EditionHub extends LitElement {
               <button
                 class="ow-action-secondary ow-online-disabled-trigger"
                 type="button"
-                disabled
                 aria-describedby="ow-online-operations-note"
+                @click=${() => this.showOnlineMaintenance("public")}
               >
                 ${this.t("online_teaser_action")}
                 <span aria-hidden="true">🔒</span>
@@ -504,7 +516,7 @@ export class EditionHub extends LitElement {
             role="status"
           >
             <span class="ow-online-note-icon" aria-hidden="true">⌛</span>
-            <p>${this.t("online_section_notice")}</p>
+            <p>${this.onlineMaintenanceMessage()}</p>
           </div>
 
           <div class="ow-online-feature-grid">
@@ -535,15 +547,15 @@ export class EditionHub extends LitElement {
             class="ow-online-disabled-actions"
             aria-label=${this.t("online_disabled_actions_label")}
           >
-            <button type="button" disabled>
+            <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("public")}>
               ${this.t("online_public_action")}
               <span aria-hidden="true">🔒</span>
             </button>
-            <button type="button" disabled>
+            <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("private")}>
               ${this.t("online_private_action")}
               <span aria-hidden="true">🔒</span>
             </button>
-            <button type="button" disabled>
+            <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("join")}>
               ${this.t("online_join_action")}
               <span aria-hidden="true">🔒</span>
             </button>
@@ -580,6 +592,8 @@ export class EditionHub extends LitElement {
           class="ow-online-operations-note"
           id="ow-online-operations-note"
           role="status"
+          aria-live="polite"
+          data-testid="online-operations-note"
         >
           <span class="ow-online-note-icon" aria-hidden="true">⌛</span>
           <p>${this.t("online_section_notice")}</p>
@@ -613,15 +627,15 @@ export class EditionHub extends LitElement {
           class="ow-online-disabled-actions"
           aria-label=${this.t("online_disabled_actions_label")}
         >
-          <button type="button" disabled>
+          <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("public")}>
             ${this.t("online_public_action")}
             <span aria-hidden="true">🔒</span>
           </button>
-          <button type="button" disabled>
+          <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("private")}>
             ${this.t("online_private_action")}
             <span aria-hidden="true">🔒</span>
           </button>
-          <button type="button" disabled>
+          <button type="button" aria-describedby="ow-online-operations-note" @click=${() => this.showOnlineMaintenance("join")}>
             ${this.t("online_join_action")}
             <span aria-hidden="true">🔒</span>
           </button>
