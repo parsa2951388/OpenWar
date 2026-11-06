@@ -800,7 +800,7 @@ export class UsernameInput extends LitElement {
     return html`
       <!-- The name field takes whatever the tag picker and trailing button
            leave, so the row always fills the strip. -->
-      <div class="flex items-center w-full h-full gap-1.5 sm:gap-2">
+      <div class="flex min-w-0 items-center w-full h-full gap-1 sm:gap-2">
         ${this.renderClanControl()} ${this.renderNameControl()}
       </div>
       <!-- One positioned slot, stacked. An error and the reservation reminder
@@ -864,13 +864,13 @@ export class UsernameInput extends LitElement {
       <!-- Escape is bound here, not on the menu: the trigger keeps focus and
            is the menu's sibling, so a menu-level handler never sees it. -->
       <div
-        class="no-game-portal relative shrink-0 h-full max-h-[44px]"
+        class="no-game-portal relative min-w-0 shrink-0 h-full max-h-[44px]"
         @keydown=${this.handleClanMenuKeydown}
       >
         <button
           type="button"
           id="clan-tag-button"
-          class="flex h-full w-[7.25rem] items-center justify-between gap-0.5 rounded-lg bg-transparent px-1.5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-malibu-blue/60 ${
+          class="flex h-full w-[clamp(5rem,28vw,7.25rem)] items-center justify-between gap-0.5 rounded-lg bg-transparent px-1.5 transition-colors cursor-pointer focus-visible:outline-none focus-visible:ring-2 focus-visible:ring-malibu-blue/60 ${
             invalid
               ? "ring-2 ring-red-400/70"
               : this.clanMenuOpen
@@ -927,7 +927,7 @@ export class UsernameInput extends LitElement {
         id="clan-tag-menu"
         role="dialog"
         aria-labelledby="clan-tag-button"
-        class="absolute left-0 top-full z-50 mt-1.5 w-[17rem] max-w-[80vw] rounded-xl border border-white/15 bg-surface/95 p-1.5 shadow-xl backdrop-blur-md"
+        class="absolute right-0 left-auto top-full z-50 mt-1.5 w-[min(17rem,calc(100vw-1rem))] max-w-[calc(100vw-1rem)] rounded-xl border border-white/15 bg-surface/95 p-1.5 shadow-xl backdrop-blur-md"
       >
         ${
           clans.length > 0

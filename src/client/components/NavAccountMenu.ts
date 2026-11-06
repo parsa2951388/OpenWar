@@ -868,7 +868,7 @@ export class NavAccountMenu extends LitElement {
         aria-haspopup="menu"
         aria-expanded=${this.menuOpen ? "true" : "false"}
         @click=${this.handleTriggerClick}
-        class="nav-menu-item h-10 flex items-center justify-center gap-1 pl-1 pr-1.5 rounded-full text-white/90 cursor-pointer transition-colors"
+        class="nav-menu-item h-9 flex items-center justify-center gap-0.5 pl-0.5 pr-1 rounded-full text-white/90 cursor-pointer transition-colors"
         data-page="page-account"
         aria-label=${this.triggerLabel()}
         data-i18n-title="main.account"

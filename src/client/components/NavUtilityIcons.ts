@@ -42,7 +42,7 @@ export class NavUtilityIcons extends LitElement {
   };
 
   private buttonClass(): string {
-    const box = this.size === "mobile" ? "w-9 h-9" : "w-10 h-10";
+    const box = this.size === "mobile" ? "w-8 h-8" : "w-10 h-10";
     return (
       `nav-menu-item flex items-center justify-center ${box} rounded-full ` +
       "text-white/70 hover:text-malibu-blue cursor-pointer transition-colors " +
@@ -90,7 +90,7 @@ export class NavUtilityIcons extends LitElement {
           stroke-width="1.8"
           stroke-linecap="round"
           stroke-linejoin="round"
-          class="w-6 h-6 pointer-events-none"
+          class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
           aria-hidden="true"
         >
           <path d="M18.36 6.64a9 9 0 1 1-12.73 0" />
@@ -112,7 +112,7 @@ export class NavUtilityIcons extends LitElement {
   render(): TemplateResult {
     const currentPage = window.currentPageId;
     return html`
-      <div class="flex items-center gap-1">
+      <div class="flex items-center gap-0">
         <lang-selector class="shrink-0"></lang-selector>
         <div class="relative">
           <button
@@ -132,7 +132,7 @@ export class NavUtilityIcons extends LitElement {
               stroke-width="1.8"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="w-6 h-6 pointer-events-none"
+              class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
               aria-hidden="true"
             >
               <path d="M18 8a6 6 0 0 0-12 0c0 7-3 9-3 9h18s-3-2-3-9" />
@@ -145,6 +145,7 @@ export class NavUtilityIcons extends LitElement {
               : ""
           }
         </div>
+${this.size === "mobile" ? "" : html`
         <div class="relative">
           <button
             class="${this.buttonClass()} ${
@@ -163,7 +164,7 @@ export class NavUtilityIcons extends LitElement {
               stroke-width="1.8"
               stroke-linecap="round"
               stroke-linejoin="round"
-              class="w-6 h-6 pointer-events-none"
+              class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
               aria-hidden="true"
             >
               <circle cx="12" cy="12" r="9" />
@@ -177,6 +178,7 @@ export class NavUtilityIcons extends LitElement {
               : ""
           }
         </div>
+        `}
         <button
           class="${this.buttonClass()} ${
             currentPage === "page-settings" ? "active" : ""
@@ -193,7 +195,7 @@ export class NavUtilityIcons extends LitElement {
             stroke-width="1.8"
             stroke-linecap="round"
             stroke-linejoin="round"
-            class="w-6 h-6 pointer-events-none"
+            class="${this.size === "mobile" ? "w-5 h-5" : "w-6 h-6"} pointer-events-none"
             aria-hidden="true"
           >
             <circle cx="12" cy="12" r="3" />

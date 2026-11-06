@@ -71,8 +71,13 @@ describe("play-page mobile top bar", () => {
   describe("off CrazyGames", () => {
     beforeEach(mount);
 
-    it("puts the bell/help icons beside the profile menu", () => {
+    it("keeps the header columns bounded and the logo within the mobile rail", () => {
       expect(rightSlot()).toEqual(["nav-utility-icons", "nav-account-menu"]);
+      const grid = el.querySelector("#hamburger-btn")?.parentElement;
+      expect(grid?.className).toContain("grid-cols-[2.5rem_minmax(0,1fr)_auto]");
+      expect(grid?.querySelector("img[alt=\\"Open War\\"]")?.className).toContain(
+        "max-w-[min(28vw,9rem)]",
+      );
     });
   });
 
