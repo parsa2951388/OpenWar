@@ -19,9 +19,11 @@ import "./components/baseComponents/setting/SettingSlider";
 import "./components/baseComponents/setting/SettingToggle";
 import { BaseModal } from "./components/BaseModal";
 import "./components/GraphicsAdvancedSettings";
-import type { GraphicsAdvancedSettings } from "./components/GraphicsAdvancedSettings";
+import "./components/GraphicsSettingsModal";
+import type { GraphicsSettingsModal } from "./components/GraphicsSettingsModal";
 import "./components/GraphicsPresetSelector";
 import "./components/GraphicsPresetTools";
+import { hudOpacitySetting } from "./components/ui/HudOpacitySetting";
 import { modalHeader } from "./components/ui/ModalHeader";
 import {
   desktopDisplay,
@@ -843,6 +845,51 @@ export class UserSettingModal extends BaseModal {
     });
   }
 
+  /** Keep the in-game graphics side panel mounted beside the settings shell. */
+  render() {
+    return html`${super.render()}
+      ${this.inline
+        ? nothing
+        : html`<graphics-settings-modal
+            .mapLayers=${this.mapLayers}
+          ></graphics-settings-modal>`}
+    `;
+  }
+
+  /** The inline page expands controls in place; the in-game modal uses a HUD side panel. */
+  public isGraphicsPanelOpen(): boolean {
+    return (
+      this.querySelector<GraphicsSettingsModal>(
+        "graphics-settings-modal",
+      )?.isOpen() === true
+    );
+  }
+
+  public openGraphicsPanel(onReturn?: () => void): boolean {
+    if (this.inline) {
+      this.graphicsAdvancedOpen = !this.graphicsAdvancedOpen;
+      return true;
+    }
+    const panel = this.querySelector<GraphicsSettingsModal>(
+      "graphics-settings-modal",
+    );
+    if (!panel) return false;
+    if (panel.isOpen()) return true;
+    panel.mapLayers = this.mapLayers;
+    if (this.isOpen()) {
+      const previousReturn = this.onReturn;
+      this.onReturn = undefined;
+      this.close();
+      panel.open({
+        onReturn: () =>
+          this.open({ tab: "graphics", onReturn: previousReturn }),
+      });
+    } else {
+      panel.open({ onReturn });
+    }
+    return true;
+  }
+
   protected renderBody(tab: string) {
     let body;
     switch (tab) {
@@ -868,25 +915,6 @@ export class UserSettingModal extends BaseModal {
 
   protected updated(): void {
     this.syncDisplayControls();
-    this.syncGraphicsLayerWiring();
-  }
-
-  /**
-   * Hand the advanced graphics body the current game's layers, so it can draw
-   * a row per layer. It only exists while the Graphics tab is open and
-   * Advanced is expanded, so this runs on every update rather than once: the
-   * element is created and destroyed as the player moves between tabs.
-   */
-  private syncGraphicsLayerWiring(): void {
-    const advanced = this.querySelector<GraphicsAdvancedSettings>(
-      "graphics-advanced-settings",
-    );
-    if (advanced === null) return;
-    advanced.mapLayers = this.mapLayers;
-  }
-
-  private toggleGraphicsAdvanced() {
-    this.graphicsAdvancedOpen = !this.graphicsAdvancedOpen;
   }
 
   protected onTabEnter(key: string): void {
@@ -902,6 +930,10 @@ export class UserSettingModal extends BaseModal {
   }
 
   protected onClose(): void {
+    this.graphicsAdvancedOpen = false;
+    this.querySelector<GraphicsSettingsModal>("graphics-settings-modal")?.close({
+      silent: true,
+    });
     this.leaveDisplayTab();
     window.removeEventListener("keydown", this.handleEasterEggKey);
     // Fire once: a caller that reopens us on return would otherwise inherit
@@ -1862,24 +1894,7 @@ export class UserSettingModal extends BaseModal {
    */
   private renderGraphicsSettings() {
     return html`
-      <setting-slider
-        label=${translateText("user_setting.hud_opacity_label")}
-        description=${translateText("user_setting.hud_opacity_desc")}
-        id="hud-opacity-slider"
-        .value=${this.userSettings.hudOpacity() * 100}
-        @change=${(e: CustomEvent<{ value: number }>) => {
-          const value = e.detail?.value;
-          if (typeof value !== "number") {
-            console.warn("Slider event missing detail.value", e);
-            return;
-          }
-          this.userSettings.setHudOpacity(value / 100);
-          document.documentElement.style.setProperty(
-            "--hud-opacity",
-            String(this.userSettings.hudOpacity()),
-          );
-        }}
-      ></setting-slider>
+      ${hudOpacitySetting(this.userSettings)}
       <!-- 🎨 Graphics preset -->
       <div
         class="flex flex-col w-full p-4 bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-all gap-3"
@@ -1926,18 +1941,26 @@ export class UserSettingModal extends BaseModal {
         @change=${this.toggleMapLayers}
       ></setting-toggle>
 
-      <!-- 🔧 Advanced -->
-      <setting-toggle
-        label="${translateText("graphics_setting.advanced_label")}"
-        description="${translateText("graphics_setting.advanced_desc")}"
-        id="graphics-advanced-toggle"
-        .checked=${this.graphicsAdvancedOpen}
-        @change=${this.toggleGraphicsAdvanced}
-      ></setting-toggle>
-
+      <button
+        type="button"
+        data-open-graphics-panel
+        aria-expanded=${this.inline ? String(this.graphicsAdvancedOpen) : nothing}
+        aria-controls=${this.inline ? "graphics-advanced-inline" : nothing}
+        class="w-full p-4 text-left text-white font-bold bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors"
+        @click=${() => this.openGraphicsPanel()}
+      >
+        <span class="block">${translateText("graphics_setting.advanced_label")}</span>
+        <span class="block text-white/50 text-sm font-normal mt-1">
+          ${translateText("graphics_setting.advanced_desc")}
+        </span>
+      </button>
       ${
-        this.graphicsAdvancedOpen
-          ? html`<graphics-advanced-settings></graphics-advanced-settings>`
+        this.inline && this.graphicsAdvancedOpen
+          ? html`<graphics-advanced-settings
+              id="graphics-advanced-inline"
+              class="flex flex-col gap-2"
+              .mapLayers=${this.mapLayers}
+            ></graphics-advanced-settings>`
           : nothing
       }
     `;
