@@ -147,10 +147,14 @@ export class ChatDisplay extends LitElement implements Controller {
       "lg:text-xl text-xs pointer-events-none",
       this._hidden ? "hidden" : "",
     ].filter(Boolean).join(" ");
+    const chatHeaderClass = [
+      "ow-hud-chat-feed__header w-full bg-black/80",
+      "sticky top-0 px-2.5",
+    ].join(" ");
     return html`
       <div class=${feedClass}>
         <div>
-          <div class="ow-hud-chat-feed__header w-full bg-black/80 sticky top-0 px-2.5">
+          <div class=${chatHeaderClass}>
             <button
               class=${visibleToggleClass}
               @click=${this.toggleHidden}
