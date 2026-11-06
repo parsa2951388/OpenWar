@@ -26,7 +26,9 @@ const BUILDING_ORDER = {
   number
 >;
 
-const AVIATION_UNITS = ["airp", "airc"] as const satisfies readonly (typeof otherUnits)[number][];
+type OtherUnitKey = (typeof otherUnits)[number];
+
+const AVIATION_UNITS = ["airp", "airc"] as const satisfies readonly OtherUnitKey[];
 
 const buildingUnits = (
   Object.keys(BUILDING_ORDER) as (keyof typeof BUILDING_ORDER)[]
