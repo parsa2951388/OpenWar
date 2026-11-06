@@ -11,7 +11,7 @@ import { ChatIntegration } from "./ChatIntegration";
 import { EmojiTable } from "./EmojiTable";
 import { PlayerActionHandler } from "./PlayerActionHandler";
 import { PlayerPanel } from "./PlayerPanel";
-import { RadialMenu, RadialMenuConfig } from "./RadialMenu";
+import { CloseRadialMenuEvent, RadialMenu, RadialMenuConfig } from "./RadialMenu";
 import {
   centerButtonElement,
   COLORS,
@@ -43,6 +43,8 @@ export class MainRadialMenu implements Controller {
   private chatIntegration: ChatIntegration;
 
   private clickedTile: TileRef | null = null;
+  /** Identifies the current async action query; stale results are discarded. */
+  private menuRequest: object | null = null;
   private pendingDonations = new Set<object>();
 
   getTickIntervalMs() {
@@ -88,8 +90,17 @@ export class MainRadialMenu implements Controller {
 
   init() {
     this.radialMenu.init();
-    this.eventBus.on(CloseViewEvent, () => this.pendingDonations.clear());
+    this.eventBus.on(CloseViewEvent, () => {
+      this.menuRequest = null;
+      this.pendingDonations.clear();
+    });
+    this.eventBus.on(CloseRadialMenuEvent, () => {
+      this.menuRequest = null;
+      this.pendingDonations.clear();
+    });
     this.eventBus.on(ContextMenuEvent, (event) => {
+      const request = {};
+      this.menuRequest = request;
       this.pendingDonations.clear();
       const worldCoords = this.transformHandler.screenToWorldCoordinates(
         event.x,
@@ -115,6 +126,8 @@ export class MainRadialMenu implements Controller {
       myPlayer
         .actions(clickedTile)
         .then((actions) => {
+          // A click elsewhere may close/replace this menu while the query is in flight.
+          if (this.menuRequest !== request) return;
           void this.updatePlayerActions(
             myPlayer,
             actions,
@@ -240,9 +253,11 @@ export class MainRadialMenu implements Controller {
     const myPlayer = this.game.myPlayer();
     if (myPlayer === null) return;
     const tile = this.clickedTile;
+    const request = this.menuRequest;
     myPlayer
       .actions(tile)
       .then((actions) => {
+        if (request === null || this.menuRequest !== request) return;
         void this.updatePlayerActions(myPlayer, actions, tile);
       })
       .catch((error) => {
@@ -251,6 +266,7 @@ export class MainRadialMenu implements Controller {
   }
 
   closeMenu() {
+    this.menuRequest = null;
     this.pendingDonations.clear();
     if (this.radialMenu.isMenuVisible()) {
       this.radialMenu.hideRadialMenu();
