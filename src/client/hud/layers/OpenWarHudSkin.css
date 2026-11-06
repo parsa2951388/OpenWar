@@ -1,11 +1,7 @@
-/* Open War tactical HUD skin. Original CSS for the existing game UI. */
 :root {
-  --ow-hud-panel: rgba(8, 19, 33, 0.94);
-  --ow-hud-panel-raised: rgba(14, 31, 49, 0.96);
-  --ow-hud-line: rgba(126, 174, 210, 0.24);
-  --ow-hud-line-strong: rgba(95, 174, 226, 0.48);
-  --ow-hud-text: #eef6fc;
-  --ow-hud-muted: #9bb0c3;
+  --ow-hud-panel: rgba(8, 19, 33, 0.96);
+  --ow-hud-line: rgba(126, 174, 210, 0.28);
+  --ow-hud-line-strong: rgba(95, 174, 226, 0.7);
   --ow-hud-blue: #66b9ef;
   --ow-hud-gold: #ffd166;
 }
@@ -16,43 +12,22 @@
   padding: 0.55rem 0.65rem;
   border: 1px solid var(--ow-hud-line);
   border-radius: 13px;
-  color: var(--ow-hud-text);
-  background:
-    radial-gradient(
-      ellipse at 8% 0%,
-      rgba(66, 151, 206, 0.14),
-      transparent 50%
-    ),
-    linear-gradient(135deg, var(--ow-hud-panel-raised), var(--ow-hud-panel));
-  box-shadow:
-    0 12px 30px rgba(0, 0, 0, 0.25),
-    inset 0 1px 0 rgba(255, 255, 255, 0.055);
-  -webkit-backdrop-filter: blur(14px);
+  background: var(--ow-hud-panel);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(14px);
 }
 
-.ow-hud-resource-panel::after {
-  position: absolute;
-  z-index: -1;
-  inset: 1px;
-  border: 1px solid rgba(255, 255, 255, 0.025);
-  border-radius: 12px;
-  content: "";
-  pointer-events: none;
-}
-
 .ow-hud-resource-panel .border-gray-600 {
-  border-color: rgba(139, 169, 194, 0.34);
+  border-color: rgba(139, 169, 194, 0.38);
 }
 
 .ow-hud-resource-panel .border-yellow-400 {
-  border-color: rgba(255, 209, 102, 0.72);
-  background: rgba(255, 209, 102, 0.055);
+  border-color: rgba(255, 209, 102, 0.75);
+  background: rgba(255, 209, 102, 0.06);
 }
 
 .ow-hud-resource-panel input[type="range"] {
   accent-color: var(--ow-hud-blue);
-  filter: drop-shadow(0 0 4px rgba(102, 185, 239, 0.18));
 }
 
 .ow-hud-resource-panel input[type="range"]:focus-visible {
@@ -63,60 +38,31 @@
 .ow-hud-buildbar {
   padding: 0.42rem;
   border: 1px solid var(--ow-hud-line);
-  border-top-color: rgba(126, 174, 210, 0.34);
   border-radius: 13px;
-  background: linear-gradient(
-    180deg,
-    rgba(17, 37, 57, 0.97),
-    rgba(7, 17, 30, 0.97)
-  );
-  box-shadow:
-    0 14px 32px rgba(0, 0, 0, 0.27),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(7, 17, 30, 0.97);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(14px);
 }
 
 .ow-hud-buildbar .ow-hud-build-button {
   min-height: 52px;
-  border: 1px solid rgba(130, 170, 198, 0.24);
+  border: 1px solid rgba(130, 170, 198, 0.3);
   border-radius: 10px;
-  background: linear-gradient(
-    160deg,
-    rgba(24, 45, 65, 0.88),
-    rgba(9, 22, 37, 0.94)
-  );
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.045);
-  transition:
-    border-color 140ms ease,
-    background-color 140ms ease,
-    box-shadow 140ms ease,
-    transform 140ms ease;
+  background: rgba(24, 45, 65, 0.94);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 140ms ease, transform 140ms ease;
 }
 
 .ow-hud-buildbar .ow-hud-build-button:hover {
   border-color: var(--ow-hud-line-strong);
-  background: linear-gradient(
-    160deg,
-    rgba(35, 78, 110, 0.92),
-    rgba(12, 31, 49, 0.98)
-  );
-  box-shadow:
-    0 5px 14px rgba(0, 0, 0, 0.2),
-    0 0 0 1px rgba(102, 185, 239, 0.08);
+  background: rgba(35, 78, 110, 0.96);
   transform: translateY(-1px);
 }
 
 .ow-hud-buildbar .ow-hud-build-button[data-selected="true"] {
-  border-color: rgba(102, 185, 239, 0.82);
-  background: linear-gradient(
-    160deg,
-    rgba(35, 104, 151, 0.5),
-    rgba(12, 37, 60, 0.98)
-  );
-  box-shadow:
-    0 0 0 1px rgba(102, 185, 239, 0.22),
-    0 0 18px rgba(64, 157, 215, 0.16);
+  border-color: var(--ow-hud-blue);
+  background: rgba(35, 104, 151, 0.65);
+  box-shadow: 0 0 0 1px rgba(102, 185, 239, 0.2);
 }
 
 .ow-hud-buildbar .ow-hud-build-button:focus-visible {
@@ -134,16 +80,9 @@
   gap: 0.3rem;
   padding: 0.42rem;
   border: 1px solid var(--ow-hud-line);
-  border-top: 0;
-  border-right: 0;
   border-radius: 0 0 0 13px;
-  background: linear-gradient(
-    160deg,
-    rgba(16, 35, 54, 0.97),
-    rgba(5, 14, 26, 0.97)
-  );
-  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.28);
-  -webkit-backdrop-filter: blur(14px);
+  background: rgba(5, 14, 26, 0.97);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
   backdrop-filter: blur(14px);
 }
 
@@ -155,20 +94,13 @@
   justify-content: center;
   border: 1px solid transparent;
   border-radius: 9px;
-  background: rgba(255, 255, 255, 0.025);
-  transition:
-    border-color 140ms ease,
-    background-color 140ms ease,
-    transform 140ms ease;
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 140ms ease, background-color 140ms ease;
 }
 
 .ow-hud-control-rail > div:has(> img):hover {
   border-color: var(--ow-hud-line-strong);
   background: rgba(59, 130, 180, 0.2);
-}
-
-.ow-hud-control-rail > div:has(> img):active {
-  transform: translateY(1px);
 }
 
 .ow-hud-control-rail > div:has(> img) img {
@@ -177,27 +109,14 @@
 
 .ow-hud-control-rail [data-game-timer] {
   padding: 0.25rem 0.35rem;
-  color: var(--ow-hud-text);
+  color: #eef6fc;
   font-variant-numeric: tabular-nums;
 }
 
 .ow-hud-player-card {
-  border: 1px solid rgba(126, 174, 210, 0.28);
-  background:
-    radial-gradient(
-      ellipse at 15% 0%,
-      rgba(55, 127, 174, 0.16),
-      transparent 52%
-    ),
-    linear-gradient(
-      155deg,
-      rgba(16, 34, 51, 0.98),
-      rgba(7, 15, 27, 0.98)
-    );
-  box-shadow:
-    0 22px 56px rgba(0, 0, 0, 0.44),
-    inset 0 1px 0 rgba(255, 255, 255, 0.05);
-  -webkit-backdrop-filter: blur(16px);
+  border: 1px solid var(--ow-hud-line);
+  background: rgba(7, 15, 27, 0.98);
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.45);
   backdrop-filter: blur(16px);
 }
 
@@ -228,8 +147,7 @@
     transition: none;
   }
 
-  .ow-hud-buildbar .ow-hud-build-button:hover,
-  .ow-hud-control-rail > div:has(> img):active {
+  .ow-hud-buildbar .ow-hud-build-button:hover {
     transform: none;
   }
 }
