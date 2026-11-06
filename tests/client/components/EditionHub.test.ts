@@ -91,7 +91,9 @@ describe("Open War edition hub", () => {
     const onlinePanel = hub.querySelector(".ow-online-operations");
     expect(onlinePanel).not.toBeNull();
     expect(
-      onlinePanel?.querySelector(".ow-online-operations-note")?.textContent?.trim(),
+      onlinePanel
+        ?.querySelector(".ow-online-operations-note")
+        ?.textContent?.trim(),
     ).toBeTruthy();
   });
 
