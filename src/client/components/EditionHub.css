@@ -742,3 +742,668 @@
     margin-left: 0;
   }
 }
+
+/* Larger, clearer Operations command desk across desktop, tablet and mobile. */
+.ow-edition-hub {
+  max-width: 1640px;
+  padding-right: clamp(1rem, 2.2vw, 2rem);
+  padding-left: clamp(1rem, 2.2vw, 2rem);
+}
+
+.ow-operations-dashboard {
+  gap: clamp(1.4rem, 2.2vw, 2.1rem);
+}
+
+.ow-operations-hero {
+  min-height: 390px;
+  grid-template-columns: minmax(0, 1fr) minmax(360px, 1.02fr);
+  border-radius: 22px;
+  background:
+    radial-gradient(
+      ellipse at 78% 14%,
+      rgba(197, 163, 110, 0.12),
+      transparent 34%
+    ),
+    linear-gradient(125deg, #1a2b28 0%, #101b1b 54%, #172522 100%);
+}
+
+.ow-operations-hero-content {
+  padding: clamp(1.7rem, 3.2vw, 3.35rem);
+}
+
+.ow-operations-hero h2 {
+  font-size: clamp(1.9rem, 3.2vw, 3rem);
+}
+
+.ow-theatre-map {
+  min-height: 360px;
+  background-size: auto, auto, cover;
+}
+
+.ow-mission-section {
+  gap: 1.1rem;
+}
+
+.ow-mission-grid {
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 1rem;
+}
+
+.ow-mission-card {
+  min-height: 330px;
+  padding: clamp(1.15rem, 1.55vw, 1.6rem);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(197, 163, 110, 0.13),
+      transparent 48%
+    ),
+    linear-gradient(145deg, rgba(25, 42, 38, 0.99), rgba(10, 20, 20, 0.99));
+  box-shadow: 0 12px 28px rgba(0, 0, 0, 0.12);
+}
+
+.ow-mission-card h4 {
+  font-size: 1.12rem;
+  line-height: 1.35;
+}
+
+.ow-mission-brief {
+  min-height: 4rem;
+  font-size: 0.8rem;
+}
+
+.ow-mission-meta {
+  gap: 0.65rem 0.85rem;
+  font-size: 0.64rem;
+}
+
+.ow-campaign-summary {
+  padding: 1rem 1.15rem;
+}
+
+.ow-system-card {
+  min-height: 210px;
+  padding: 1.3rem;
+}
+
+@media (max-width: 1250px) {
+  .ow-mission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-operations-hero {
+    min-height: 360px;
+    grid-template-columns: minmax(0, 1fr) minmax(300px, 0.95fr);
+  }
+  .ow-theatre-map {
+    min-height: 320px;
+  }
+}
+
+@media (max-width: 900px) {
+  .ow-edition-hub {
+    padding-right: 1rem;
+    padding-left: 1rem;
+  }
+  .ow-operations-hero {
+    grid-template-columns: 1fr;
+    min-height: 0;
+  }
+  .ow-theatre-map {
+    min-height: 260px;
+  }
+  .ow-mission-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+  .ow-mission-card {
+    min-height: 310px;
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-edition-hub {
+    padding-right: 0.75rem;
+    padding-left: 0.75rem;
+  }
+  .ow-operations-hero {
+    border-radius: 16px;
+  }
+  .ow-operations-hero-content {
+    padding: 1.25rem;
+  }
+  .ow-theatre-map {
+    min-height: 205px;
+  }
+  .ow-mission-grid {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.8rem;
+  }
+  .ow-mission-card {
+    min-height: 0;
+    padding: 1.1rem;
+  }
+  .ow-mission-brief {
+    min-height: 0;
+  }
+  .ow-campaign-summary {
+    padding: 0.8rem;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow-operations-hero,
+  .ow-mission-card {
+    transition: none;
+  }
+  .ow-mission-card:hover {
+    transform: none;
+  }
+}
+
+/* Operations is intentionally a preview-only destination until online systems ship. */
+.ow-edition-tab.is-coming-soon {
+  border-style: dashed;
+  border-color: rgba(197, 163, 110, 0.22);
+}
+.ow-edition-tab.is-coming-soon small {
+  color: #d3b27b;
+}
+
+.ow-operations-coming-soon {
+  gap: 1.4rem;
+}
+
+.ow-coming-soon-hero {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.08fr) minmax(280px, 0.92fr);
+  min-height: 350px;
+  overflow: hidden;
+  border: 1px solid rgba(197, 163, 110, 0.26);
+  border-radius: 20px;
+  background:
+    radial-gradient(
+      ellipse at 13% 0%,
+      rgba(193, 150, 89, 0.16),
+      transparent 42%
+    ),
+    linear-gradient(125deg, #1c2b28 0%, #101b1b 58%, #172522 100%);
+  box-shadow: 0 22px 52px rgba(0, 0, 0, 0.22);
+}
+
+.ow-coming-soon-copy {
+  position: relative;
+  z-index: 2;
+  display: flex;
+  flex-direction: column;
+  align-items: flex-start;
+  justify-content: center;
+  padding: clamp(1.5rem, 3.4vw, 3.2rem);
+}
+
+.ow-coming-soon-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin: 0.15rem 0 1rem;
+  padding: 0.42rem 0.7rem;
+  border: 1px solid rgba(213, 168, 93, 0.34);
+  border-radius: 999px;
+  background: rgba(213, 168, 93, 0.09);
+  color: #e3bf83;
+  font-size: 0.66rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.ow-coming-soon-copy h2 {
+  max-width: 40rem;
+  margin: 0;
+  color: #f3f4ee;
+  font-size: clamp(1.9rem, 3.4vw, 3.2rem);
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -0.045em;
+}
+
+.ow-coming-soon-copy p {
+  max-width: 45rem;
+  margin: 1rem 0 1.3rem;
+  color: #bac5bf;
+  font-size: 0.9rem;
+  line-height: 1.9;
+}
+
+.ow-coming-soon-copy .ow-action-primary {
+  margin-top: 0.25rem;
+}
+
+.ow-coming-soon-visual {
+  position: relative;
+  min-height: 300px;
+  overflow: hidden;
+  background:
+    linear-gradient(rgba(217, 230, 219, 0.04) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(217, 230, 219, 0.04) 1px, transparent 1px),
+    radial-gradient(circle at 50% 48%, rgba(72, 125, 109, 0.2), transparent 54%);
+  background-size:
+    32px 32px,
+    32px 32px,
+    auto;
+}
+
+.ow-coming-soon-visual::before,
+.ow-coming-soon-visual::after {
+  position: absolute;
+  inset: 12%;
+  border: 1px solid rgba(193, 177, 133, 0.13);
+  border-radius: 50%;
+  content: "";
+}
+
+.ow-coming-soon-visual::after {
+  inset: 23%;
+  border-color: rgba(193, 177, 133, 0.2);
+}
+
+.ow-coming-soon-radar {
+  position: absolute;
+  width: 68%;
+  aspect-ratio: 1;
+  top: 15%;
+  left: 16%;
+  border: 1px solid rgba(168, 194, 178, 0.12);
+  border-radius: 50%;
+}
+
+.ow-coming-soon-radar-one {
+  transform: scale(0.74);
+}
+
+.ow-coming-soon-radar-two {
+  transform: scale(1.18);
+}
+
+.ow-coming-soon-crosshair {
+  position: absolute;
+  top: 47%;
+  left: 49%;
+  color: #e4c18a;
+  font-size: 2rem;
+  font-weight: 300;
+}
+
+.ow-coming-soon-coordinate {
+  position: absolute;
+  color: rgba(196, 210, 199, 0.62);
+  font:
+    700 0.58rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  letter-spacing: 0.12em;
+}
+
+.ow-coming-soon-coordinate-a {
+  top: 1.25rem;
+  left: 1.25rem;
+}
+
+.ow-coming-soon-coordinate-b {
+  right: 1.25rem;
+  bottom: 1.25rem;
+  text-align: end;
+}
+
+.ow-coming-soon-marker {
+  position: absolute;
+  width: 9px;
+  height: 9px;
+  border: 2px solid #e1bd83;
+  border-radius: 50%;
+  background: #1a2a26;
+  box-shadow: 0 0 0 5px rgba(225, 189, 131, 0.1);
+}
+
+.ow-coming-soon-marker-a {
+  top: 29%;
+  left: 30%;
+}
+
+.ow-coming-soon-marker-b {
+  top: 63%;
+  left: 66%;
+}
+
+.ow-coming-soon-marker-c {
+  top: 32%;
+  left: 73%;
+  border-color: #8cb9a5;
+  box-shadow: 0 0 0 5px rgba(140, 185, 165, 0.1);
+}
+
+.ow-coming-soon-path {
+  position: absolute;
+  top: 40%;
+  left: 28%;
+  width: 47%;
+  height: 25%;
+  border-top: 1px dashed rgba(225, 189, 131, 0.6);
+  border-right: 1px dashed rgba(225, 189, 131, 0.6);
+  transform: skewY(-22deg);
+}
+
+.ow-coming-soon-section {
+  display: grid;
+  gap: 1rem;
+}
+
+.ow-coming-soon-section h3 {
+  margin: 0.25rem 0 0;
+  color: #f1f4ef;
+  font-size: clamp(1.1rem, 1.9vw, 1.55rem);
+  font-weight: 850;
+}
+
+.ow-coming-soon-grid {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 0.85rem;
+}
+
+.ow-coming-soon-card {
+  min-width: 0;
+  padding: 1.25rem;
+  border: 1px solid rgba(169, 191, 182, 0.17);
+  border-radius: 14px;
+  background:
+    radial-gradient(
+      ellipse at 100% 0%,
+      rgba(197, 163, 110, 0.08),
+      transparent 48%
+    ),
+    rgba(12, 23, 22, 0.72);
+}
+
+.ow-coming-soon-card-icon {
+  display: grid;
+  width: 2.4rem;
+  height: 2.4rem;
+  place-items: center;
+  border: 1px solid rgba(197, 163, 110, 0.3);
+  border-radius: 10px;
+  background: rgba(197, 163, 110, 0.08);
+  color: #e0bc80;
+  font-size: 1.4rem;
+}
+
+.ow-coming-soon-card h4 {
+  margin: 0.9rem 0 0.35rem;
+  color: #edf2ed;
+  font-size: 0.95rem;
+  font-weight: 850;
+}
+
+.ow-coming-soon-card p {
+  min-height: 4.3rem;
+  margin: 0;
+  color: #a8b7af;
+  font-size: 0.78rem;
+  line-height: 1.75;
+}
+
+.ow-coming-soon-card-status {
+  display: inline-block;
+  margin-top: 0.9rem;
+  color: #d3b27b;
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+
+.ow-coming-soon-footnote {
+  margin: 0;
+  color: #879890;
+  font-size: 0.72rem;
+  line-height: 1.7;
+}
+
+@media (max-width: 900px) {
+  .ow-coming-soon-hero {
+    grid-template-columns: 1fr;
+  }
+  .ow-coming-soon-visual {
+    min-height: 240px;
+  }
+  .ow-coming-soon-grid {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-coming-soon-hero {
+    border-radius: 16px;
+  }
+  .ow-coming-soon-copy {
+    padding: 1.2rem;
+  }
+  .ow-coming-soon-copy h2 {
+    font-size: 1.8rem;
+  }
+  .ow-coming-soon-visual {
+    min-height: 190px;
+  }
+  .ow-coming-soon-grid {
+    grid-template-columns: 1fr;
+    gap: 0.7rem;
+  }
+  .ow-coming-soon-card {
+    padding: 1rem;
+  }
+  .ow-coming-soon-card p {
+    min-height: 0;
+  }
+}
+
+/* Live multiplayer hub: clear hierarchy, live counts and tactile entry points. */
+.ow-online-battle-hub {
+  --ow-live-border: rgba(166, 193, 179, 0.18);
+  --ow-live-text: #edf4ee;
+  --ow-live-muted: #a8b8af;
+}
+
+.ow-online-hub-header {
+  position: relative;
+  display: grid;
+  grid-template-columns: minmax(0, 1.2fr) minmax(260px, 0.8fr);
+  align-items: center;
+  gap: 1.25rem;
+  min-width: 0;
+  padding: clamp(1.05rem, 2.1vw, 1.65rem);
+  overflow: hidden;
+  border: 1px solid var(--ow-live-border);
+  border-radius: 16px;
+  background:
+    radial-gradient(
+      ellipse at 8% 0%,
+      rgba(47, 117, 111, 0.22),
+      transparent 48%
+    ),
+    linear-gradient(110deg, rgba(20, 39, 36, 0.98), rgba(11, 21, 23, 0.98));
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.17);
+}
+
+.ow-online-hub-header::after {
+  position: absolute;
+  top: -4.5rem;
+  right: -2rem;
+  width: 15rem;
+  height: 15rem;
+  border: 1px solid rgba(166, 193, 179, 0.08);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 26px rgba(166, 193, 179, 0.025),
+    0 0 0 52px rgba(166, 193, 179, 0.02);
+  content: "";
+  pointer-events: none;
+}
+
+.ow-online-hub-copy,
+.ow-online-hub-metrics {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+
+.ow-online-hub-eyebrow {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.55rem;
+  color: #9fc9b7;
+  font-size: 0.62rem;
+  font-weight: 850;
+  letter-spacing: 0.15em;
+}
+
+.ow-online-hub-mark {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #79c69c;
+  box-shadow: 0 0 0 4px rgba(121, 198, 156, 0.12);
+}
+
+.ow-online-hub-copy h2 {
+  margin: 0;
+  color: var(--ow-live-text);
+  font-size: clamp(1.2rem, 2vw, 1.75rem);
+  font-weight: 850;
+  line-height: 1.2;
+  letter-spacing: -0.03em;
+}
+
+.ow-online-hub-copy p {
+  max-width: 42rem;
+  margin: 0.45rem 0 0;
+  color: var(--ow-live-muted);
+  font-size: 0.78rem;
+  line-height: 1.65;
+}
+
+.ow-online-hub-metrics {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  align-items: stretch;
+  gap: 0.6rem;
+}
+
+.ow-online-hub-metric {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 0.2rem;
+  padding: 0.65rem 0.8rem;
+  border: 1px solid rgba(166, 193, 179, 0.13);
+  border-radius: 10px;
+  background: rgba(3, 12, 14, 0.32);
+}
+
+.ow-online-hub-metric span {
+  color: #91a69d;
+  font-size: 0.56rem;
+  font-weight: 800;
+  letter-spacing: 0.1em;
+}
+
+.ow-online-hub-metric strong {
+  color: #f0d19c;
+  font:
+    850 1.35rem ui-monospace,
+    SFMono-Regular,
+    Menlo,
+    monospace;
+  line-height: 1.1;
+  font-variant-numeric: tabular-nums;
+}
+
+.ow-online-hub-connection {
+  display: flex;
+  grid-column: 1 / -1;
+  align-items: center;
+  gap: 0.5rem;
+  min-height: 2rem;
+  color: #9eafa6;
+  font-size: 0.67rem;
+  font-weight: 750;
+}
+
+.ow-online-hub-connection-dot {
+  width: 7px;
+  height: 7px;
+  flex: 0 0 auto;
+  border-radius: 50%;
+  background: #d3aa6a;
+}
+
+.ow-online-hub-connection-dot.is-live {
+  background: #78c99c;
+  box-shadow: 0 0 0 4px rgba(120, 201, 156, 0.12);
+}
+
+.ow-online-hub-connection-dot.is-offline {
+  background: #d97979;
+  box-shadow: 0 0 0 4px rgba(217, 121, 121, 0.1);
+}
+
+.ow-selector-action {
+  min-height: 3.4rem;
+  border: 1px solid rgba(193, 211, 201, 0.17);
+  box-shadow: 0 8px 18px rgba(0, 0, 0, 0.14);
+  letter-spacing: 0.075em;
+}
+
+.ow-selector-action:not(:disabled):hover {
+  border-color: rgba(193, 211, 201, 0.4);
+  box-shadow: 0 12px 24px rgba(0, 0, 0, 0.2);
+}
+
+.ow-online-battle-hub openfront-lobby-card {
+  min-width: 0;
+}
+
+@media (max-width: 900px) {
+  .ow-online-hub-header {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.95rem;
+  }
+  .ow-online-hub-metrics {
+    grid-template-columns: repeat(2, minmax(0, 1fr));
+  }
+}
+
+@media (max-width: 600px) {
+  .ow-online-hub-header {
+    padding: 1rem;
+    border-radius: 13px;
+  }
+  .ow-online-hub-copy h2 {
+    font-size: 1.22rem;
+  }
+  .ow-online-hub-copy p {
+    font-size: 0.74rem;
+  }
+  .ow-online-hub-metric {
+    padding: 0.6rem;
+  }
+  .ow-selector-action {
+    min-height: 3.2rem;
+    padding: 0.4rem;
+    font-size: 0.74rem;
+    letter-spacing: 0.035em;
+  }
+}
+
+/* Format pass is enforced by the branch workflow before merge. */
+
+/* Re-run the formatter on the latest branch head. */

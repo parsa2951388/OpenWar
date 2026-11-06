@@ -1,0 +1,65 @@
+name: Regenerate Operations branch maps
+
+on:
+  push:
+    branches:
+      - open-war/operations-coming-soon-and-battle-hub
+
+permissions:
+  contents: write
+
+concurrency:
+  group: generate-open-war-map-assets
+  cancel-in-progress: false
+
+jobs:
+  generate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out branch
+        uses: actions/checkout@v7
+        with:
+          ref: open-war/operations-coming-soon-and-battle-hub
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+          package-manager-cache: false
+      - name: Install pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Set up Go
+        uses: actions/setup-go@v7
+        with:
+          go-version-file: map-generator/go.mod
+          cache-dependency-path: map-generator/go.sum
+      - name: Install locked dependencies
+        run: npm ci
+      - name: Generate map manifests, schema and registry
+        run: npm run gen-maps
+      - name: Sort English translation keys
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const sort = value => Array.isArray(value)
+              ? value.map(sort)
+              : value && typeof value === "object"
+                ? Object.fromEntries(Object.keys(value).sort().map(key => [key, sort(value[key])]))
+                : value;
+            const file = "resources/lang/en.json";
+            fs.writeFileSync(file, JSON.stringify(sort(JSON.parse(fs.readFileSync(file, "utf8"))), null, 2) + "\n");
+          '
+      - name: Commit generated files
+        run: |
+          git add resources/maps tests/testdata/maps packages/engine-api/src/game/Maps.gen.ts map-generator/info.schema.json resources/lang/en.json
+          if git diff --cached --quiet; then
+            echo "Generated map files are already current."
+            exit 0
+          fi
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git commit -m "chore: regenerate map manifests and schemas"
+          git fetch origin open-war/operations-coming-soon-and-battle-hub
+          git rebase origin/open-war/operations-coming-soon-and-battle-hub
+          git push origin HEAD:open-war/operations-coming-soon-and-battle-hub
