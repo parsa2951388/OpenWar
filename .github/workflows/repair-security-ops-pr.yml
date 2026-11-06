@@ -38,6 +38,7 @@ jobs:
           npx oxfmt --write \
             src/client/components/EditionHub.css \
             tests/client/components/EditionHub.test.ts \
+            tests/client/EditionHub.test.ts \
             src/server/GameApiCors.ts \
             src/server/Master.ts \
             src/server/SecurityHeaders.ts \
@@ -58,7 +59,7 @@ jobs:
         run: |
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
-          git add package-lock.json src/client/components/EditionHub.css tests/client/components/EditionHub.test.ts src/server/GameApiCors.ts src/server/Master.ts src/server/SecurityHeaders.ts src/server/Worker.ts src/server/WorkerLobbyService.ts tests/server/GameApiCors.test.ts tests/server/SecurityHeaders.test.ts .github/workflows/ci.yml
+          git add package-lock.json src/client/components/EditionHub.css tests/client/components/EditionHub.test.ts tests/client/EditionHub.test.ts src/server/GameApiCors.ts src/server/Master.ts src/server/SecurityHeaders.ts src/server/Worker.ts src/server/WorkerLobbyService.ts tests/server/GameApiCors.test.ts tests/server/SecurityHeaders.test.ts .github/workflows/ci.yml
           if git diff --cached --quiet; then
             echo "No automatic fixes were needed."
           else
