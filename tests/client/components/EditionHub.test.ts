@@ -104,6 +104,34 @@ describe("Open War edition hub", () => {
     ).toBe(true);
   });
 
+  it("blocks every Operations online entry point and explains why", async () => {
+    await mountHub();
+
+    tabs()[1].click();
+    await hub.updateComplete;
+
+    const onlinePanel = hub.querySelector(".ow-online-operations");
+    expect(onlinePanel).not.toBeNull();
+    expect(onlinePanel?.textContent).toMatch(/in development|under construction/i);
+
+    const onlineButtons = Array.from(
+      onlinePanel?.querySelectorAll<HTMLButtonElement>("button") ?? [],
+    );
+    expect(onlineButtons).toHaveLength(3);
+    const clicks = vi.fn();
+    for (const button of onlineButtons) {
+      button.addEventListener("click", clicks);
+      expect(button.disabled).toBe(true);
+      button.click();
+    }
+    expect(clicks).not.toHaveBeenCalled();
+
+    // The offline solo campaign is intentionally unaffected.
+    expect(
+      hub.querySelector<HTMLButtonElement>(".ow-mission-launch")?.disabled,
+    ).toBe(false);
+  });
+
   it("resumes the Classic lobby feed on returning to Classic", async () => {
     await mountHub();
 
