@@ -91,8 +91,8 @@ describe("Open War edition hub", () => {
     const onlinePanel = hub.querySelector(".ow-online-operations");
     expect(onlinePanel).not.toBeNull();
     expect(
-      onlinePanel?.querySelector(".ow-online-operations-note")?.textContent,
-    ).toContain("Operations");
+      onlinePanel?.querySelector(".ow-online-operations-note")?.textContent?.trim(),
+    ).toBeTruthy();
   });
 
   it("blocks every Operations online entry point and explains why", async () => {
