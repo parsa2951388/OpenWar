@@ -630,6 +630,53 @@ export class EditionHub extends LitElement {
     `;
   }
 
+  private renderClassicSystems() {
+    return html`
+      <section
+        class="ow-classic-systems"
+        aria-label=${this.t("systems_overview_title")}
+      >
+        <header class="ow-classic-systems-heading">
+          <span class="ow-edition-eyebrow">
+            ${this.t("systems_overview_eyebrow")}
+          </span>
+          <h3>${this.t("systems_overview_title")}</h3>
+          <p>${this.t("systems_overview_description")}</p>
+        </header>
+        <div class="ow-classic-systems-grid">
+          <article class="ow-classic-system-card">
+            <span class="ow-classic-system-index">01</span>
+            <div>
+              <h4>${this.t("system_lobbies_title")}</h4>
+              <p>${this.t("system_lobbies_description")}</p>
+            </div>
+          </article>
+          <article class="ow-classic-system-card">
+            <span class="ow-classic-system-index">02</span>
+            <div>
+              <h4>${this.t("system_diplomacy_title")}</h4>
+              <p>${this.t("system_diplomacy_description")}</p>
+            </div>
+          </article>
+          <article class="ow-classic-system-card">
+            <span class="ow-classic-system-index">03</span>
+            <div>
+              <h4>${this.t("system_warfare_title")}</h4>
+              <p>${this.t("system_warfare_description")}</p>
+            </div>
+          </article>
+          <article class="ow-classic-system-card">
+            <span class="ow-classic-system-index">04</span>
+            <div>
+              <h4>${this.t("system_community_title")}</h4>
+              <p>${this.t("system_community_description")}</p>
+            </div>
+          </article>
+        </div>
+      </section>
+    `;
+  }
+
   private renderOperationsEdition() {
     return canPlayOperationsInCurrentBrowser()
       ? this.renderOperationsDashboard()
@@ -649,6 +696,7 @@ export class EditionHub extends LitElement {
             <h2>${this.t("classic_title")}</h2>
             <p>${this.t("classic_description")}</p>
           </div>
+          ${this.renderClassicSystems()}
           <game-mode-selector></game-mode-selector>
         </section>
         ${this.renderOperationsEdition()}
