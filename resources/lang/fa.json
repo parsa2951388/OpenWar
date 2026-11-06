@@ -1314,7 +1314,9 @@
     "territory_alpha_desc": "میزان کدری پرکردن قلمرو (هرچه کمتر باشد، زمین بیشتر دیده می‌شود)",
     "territory_alpha_label": "کدری قلمرو",
     "territory_sat_desc": "میزان غلظت رنگ‌های پرکردن قلمرو (هرچه کمتر باشد، رنگ‌ها ملایم‌تر می‌شوند)",
-    "territory_sat_label": "اشباع رنگ قلمرو"
+    "territory_sat_label": "اشباع رنگ قلمرو",
+    "preset_battlefield": "میدان نبرد",
+    "preset_battlefield_desc": "زمین با کنتراست بیشتر، مرزهای واضح‌تر و ساختمان‌های خواناتر برای نبردهای سریع"
   },
   "heads_up_message": {
     "catching_up": "درحال بروزرسانی...",
