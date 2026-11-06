@@ -204,7 +204,10 @@ export class UnitDisplay extends LitElement implements Controller {
     }
 
     return html`
-      <div class="border-t border-white/10 p-0.5 w-full" data-radial-click-through>
+      <div
+        class="border-t border-white/10 p-0.5 w-full"
+        data-radial-click-through
+      >
         <div
           class="grid grid-cols-5 sm:grid-cols-11 grid-flow-row gap-1 w-full max-w-full px-1 mx-auto"
         >

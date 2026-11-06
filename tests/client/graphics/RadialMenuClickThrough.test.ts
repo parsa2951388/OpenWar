@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
+import { forwardClickToLayerBelow } from "../../src/client/hud/layers/RadialMenu";
 import {
   FORWARDED_CLICK,
   FORWARDED_TOUCH_CLICK,
 } from "../../src/client/InputHandler";
-import { forwardClickToLayerBelow } from "../../src/client/hud/layers/RadialMenu";
 
 describe("radial-menu click-through", () => {
   afterEach(() => {
@@ -35,7 +35,8 @@ describe("radial-menu click-through", () => {
     );
 
     expect(onClick).toHaveBeenCalledTimes(1);
-    const forwarded = onClick.mock.calls[0][0] as MouseEvent & Record<string, unknown>;
+    const forwarded = onClick.mock.calls[0][0] as MouseEvent &
+      Record<string, unknown>;
     expect(forwarded[FORWARDED_CLICK]).toBe(true);
     expect(forwarded[FORWARDED_TOUCH_CLICK]).toBeUndefined();
     expect(forwarded.clientX).toBe(42);
@@ -56,7 +57,8 @@ describe("radial-menu click-through", () => {
       "touch",
     );
 
-    const forwarded = onClick.mock.calls[0][0] as MouseEvent & Record<string, unknown>;
+    const forwarded = onClick.mock.calls[0][0] as MouseEvent &
+      Record<string, unknown>;
     expect(forwarded[FORWARDED_CLICK]).toBe(true);
     expect(forwarded[FORWARDED_TOUCH_CLICK]).toBe(true);
   });
@@ -71,7 +73,9 @@ describe("radial-menu click-through", () => {
       value: vi.fn(() => target),
     });
 
-    forwardClickToLayerBelow(new MouseEvent("click", { clientX: 1, clientY: 2 }));
+    forwardClickToLayerBelow(
+      new MouseEvent("click", { clientX: 1, clientY: 2 }),
+    );
 
     expect(onClick).not.toHaveBeenCalled();
   });
