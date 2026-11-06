@@ -5,7 +5,6 @@ export function normalizeOpenWarEdition(value: string | null): OpenWarEdition {
   return value === "operations" ? "operations" : "classic";
 }
 
-
 /**
  * Operations is kept available on local development hosts for QA, but the
  * public online edition stays informational until its complete gameplay and
