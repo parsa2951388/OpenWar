@@ -14,6 +14,7 @@ import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
 import "./PlayerStats";
 import type { PlayerStats } from "./PlayerStats";
 import { SpawnBarVisibleEvent } from "./SpawnTimer";
+import "./OpenWarHudSkin";
 import "./TeamStats";
 import type { TeamStats } from "./TeamStats";
 const playerStatsRegularIcon = assetUrl(
@@ -114,7 +115,7 @@ export class GameLeftSidebar extends LitElement implements Controller {
   render() {
     return html`
       <aside
-        class=${`max-lg:fixed max-lg:top-0 max-lg:left-0 max-lg:z-900 lg:pointer-events-auto flex flex-col max-h-[calc(100dvh-80px)] max-lg:overscroll-contain overflow-y-auto p-2 bg-gray-800/92 backdrop-blur-sm shadow-xs rounded-br-lg ${this.isPlayerStatsShown || this.isTeamStatsShown ? "max-[400px]:w-full max-[400px]:rounded-none" : ""} transition-all duration-300 ease-out transform ${
+        class=${`ow-hud-leaderboard-panel max-lg:fixed max-lg:top-0 max-lg:left-0 max-lg:z-900 lg:pointer-events-auto flex flex-col max-h-[calc(100dvh-80px)] max-lg:overscroll-contain overflow-y-auto p-2 bg-gray-800/92 backdrop-blur-sm shadow-xs rounded-br-lg ${this.isPlayerStatsShown || this.isTeamStatsShown ? "max-[400px]:w-full max-[400px]:rounded-none" : ""} transition-all duration-300 ease-out transform ${
           this.isVisible ? "translate-x-0" : "hidden"
         }`}
         style="margin-top: ${this.barOffset}px;"
