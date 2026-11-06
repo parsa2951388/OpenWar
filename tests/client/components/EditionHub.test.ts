@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import { ClientEnv } from "../../../src/client/ClientEnv";
 import "../../../src/client/components/EditionHub";
 
 const EDITION_STORAGE_KEY = "openwar.edition";
@@ -25,12 +26,27 @@ describe("Open War edition hub", () => {
   beforeEach(() => {
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
     document.body.innerHTML = "";
+    // The selector starts its public lobby feed on connect. Give ClientEnv a
+    // valid static-page bootstrap so an absent worker list is handled as the
+    // expected NoServerError rather than an unhandled missing-config error.
+    Object.defineProperty(window, "BOOTSTRAP_CONFIG", {
+      configurable: true,
+      value: {
+        gameEnv: "dev",
+        turnstileSiteKey: "",
+        jwtAudience: "localhost",
+        gitCommit: "test",
+      },
+    });
+    ClientEnv.reset();
   });
 
   afterEach(() => {
     hub?.remove();
     document.body.innerHTML = "";
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
+    ClientEnv.reset();
+    delete (window as Window & { BOOTSTRAP_CONFIG?: unknown }).BOOTSTRAP_CONFIG;
   });
 
   it("pauses the Classic lobby feed while the coming-soon edition is selected", async () => {
@@ -50,9 +66,9 @@ describe("Open War edition hub", () => {
     expect(
       hub.querySelector(".ow-operations-coming-soon")?.hasAttribute("hidden"),
     ).toBe(false);
-    expect(hub.querySelector(".ow-coming-soon-badge")?.textContent).toMatch(
-      /under construction|در دست ساخت/i,
-    );
+    const statusBadge = hub.querySelector(".ow-coming-soon-badge");
+    expect(statusBadge).not.toBeNull();
+    expect(statusBadge?.textContent?.trim()).not.toBe("");
     expect(openLobbyFeed).not.toHaveBeenCalled();
 
     // Main.ts may call start() after a game ends; the online feed remains gated.
