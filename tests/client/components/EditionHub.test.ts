@@ -46,7 +46,7 @@ describe("Open War edition hub", () => {
     document.body.innerHTML = "";
     window.localStorage.removeItem(EDITION_STORAGE_KEY);
     ClientEnv.reset();
-    delete (window as Window & { BOOTSTRAP_CONFIG?: unknown }).BOOTSTRAP_CONFIG;
+    Reflect.deleteProperty(window, "BOOTSTRAP_CONFIG");
   });
 
   it("pauses the Classic lobby feed while the coming-soon edition is selected", async () => {
