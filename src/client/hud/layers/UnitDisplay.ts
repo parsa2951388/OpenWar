@@ -209,13 +209,6 @@ export class UnitDisplay extends LitElement implements Controller {
           class="grid grid-cols-5 sm:grid-cols-11 grid-flow-row gap-1 w-full max-w-full px-1 mx-auto"
         >
           ${this.renderUnitItem(
-            airportIcon,
-            this._airports,
-            UnitType.Airport,
-            "airport",
-            "",
-          )}
-          ${this.renderUnitItem(
             cityIcon,
             this._cities,
             UnitType.City,
@@ -284,6 +277,13 @@ export class UnitDisplay extends LitElement implements Controller {
             UnitType.MIRV,
             "mirv",
             this.getHotkey("buildMIRV", "Digit0"),
+          )}
+          ${this.renderUnitItem(
+            airportIcon,
+            this._airports,
+            UnitType.Airport,
+            "airport",
+            "",
           )}
         </div>
       </div>

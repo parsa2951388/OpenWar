@@ -117,17 +117,18 @@ export class AircraftExecution implements Execution {
       this.airport.tile(),
       mg.config().aircraftRange(),
       [UnitType.Aircraft, UnitType.Airport, UnitType.Warship],
-      (unit) => this.isValidTarget(unit),
+      ({ unit }) => isUnit(unit) && this.isValidTarget(unit),
     );
     let best: { unit: Unit; distSquared: number } | undefined;
     for (const candidate of candidates) {
+      const unit = candidate.unit;
       if (
-        !isUnit(candidate.unit) ||
+        !isUnit(unit) ||
         (best !== undefined && candidate.distSquared >= best.distSquared)
       ) {
         continue;
       }
-      best = { unit: candidate.unit, distSquared: candidate.distSquared };
+      best = { unit, distSquared: candidate.distSquared };
     }
     return best?.unit;
   }

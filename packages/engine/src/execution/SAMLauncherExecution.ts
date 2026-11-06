@@ -419,7 +419,7 @@ export class SAMLauncherExecution implements Execution {
         this.sam.tile(),
         this.mg.config().dynamicSamRange(this.sam, ticks),
         UnitType.Aircraft,
-        (unit) =>
+        ({ unit }) =>
           isUnit(unit) &&
           unit.isActive() &&
           !unit.isUnderConstruction() &&
@@ -432,16 +432,16 @@ export class SAMLauncherExecution implements Execution {
     if (aircraftTarget === undefined || !isUnit(aircraftTarget)) return;
 
     aircraftTarget.setTargetable(false);
-      this.sam.launch();
-      this.mg.addExecution(
-        new SAMMissileExecution(
-          this.sam.tile(),
-          this.sam.owner(),
-          this.sam,
-          aircraftTarget,
-          aircraftTarget.tile(),
-        ),
-      );
+    this.sam.launch();
+    this.mg.addExecution(
+      new SAMMissileExecution(
+        this.sam.tile(),
+        this.sam.owner(),
+        this.sam,
+        aircraftTarget,
+        aircraftTarget.tile(),
+      ),
+    );
   }
   isActive(): boolean {
     return this.active;
