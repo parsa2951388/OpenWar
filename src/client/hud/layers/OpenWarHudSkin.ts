@@ -1,0 +1,164 @@
+const STYLE_ID = "open-war-tactical-hud-skin";
+
+const HUD_STYLES = `
+:root {
+  --ow-hud-panel: rgba(8, 19, 33, 0.96);
+  --ow-hud-line: rgba(126, 174, 210, 0.28);
+  --ow-hud-line-strong: rgba(95, 174, 226, 0.7);
+  --ow-hud-blue: #66b9ef;
+  --ow-hud-gold: #ffd166;
+}
+
+.ow-hud-resource-panel {
+  position: relative;
+  isolation: isolate;
+  padding: 0.55rem 0.65rem;
+  border: 1px solid var(--ow-hud-line);
+  border-radius: 13px;
+  background: var(--ow-hud-panel);
+  box-shadow: 0 12px 30px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
+}
+
+.ow-hud-resource-panel .border-gray-600 {
+  border-color: rgba(139, 169, 194, 0.38);
+}
+
+.ow-hud-resource-panel .border-yellow-400 {
+  border-color: rgba(255, 209, 102, 0.75);
+  background: rgba(255, 209, 102, 0.06);
+}
+
+.ow-hud-resource-panel input[type="range"] {
+  accent-color: var(--ow-hud-blue);
+}
+
+.ow-hud-resource-panel input[type="range"]:focus-visible {
+  outline: 2px solid var(--ow-hud-blue);
+  outline-offset: 3px;
+}
+
+.ow-hud-buildbar {
+  padding: 0.42rem;
+  border: 1px solid var(--ow-hud-line);
+  border-radius: 13px;
+  background: rgba(7, 17, 30, 0.97);
+  box-shadow: 0 14px 32px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
+}
+
+.ow-hud-buildbar .ow-hud-build-button {
+  min-height: 52px;
+  border: 1px solid rgba(130, 170, 198, 0.3);
+  border-radius: 10px;
+  background: rgba(24, 45, 65, 0.94);
+  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.05);
+  transition: border-color 140ms ease, transform 140ms ease;
+}
+
+.ow-hud-buildbar .ow-hud-build-button:hover {
+  border-color: var(--ow-hud-line-strong);
+  background: rgba(35, 78, 110, 0.96);
+  transform: translateY(-1px);
+}
+
+.ow-hud-buildbar .ow-hud-build-button[data-selected="true"] {
+  border-color: var(--ow-hud-blue);
+  background: rgba(35, 104, 151, 0.65);
+  box-shadow: 0 0 0 1px rgba(102, 185, 239, 0.2);
+}
+
+.ow-hud-buildbar .ow-hud-build-button:focus-visible {
+  outline: 2px solid var(--ow-hud-gold);
+  outline-offset: 2px;
+}
+
+.ow-hud-buildbar .ow-hud-build-button img {
+  max-width: 27px;
+  max-height: 27px;
+  filter: drop-shadow(0 2px 3px rgba(0, 0, 0, 0.45));
+}
+
+.ow-hud-control-rail {
+  gap: 0.3rem;
+  padding: 0.42rem;
+  border: 1px solid var(--ow-hud-line);
+  border-radius: 0 0 0 13px;
+  background: rgba(5, 14, 26, 0.97);
+  box-shadow: 0 12px 26px rgba(0, 0, 0, 0.3);
+  backdrop-filter: blur(14px);
+}
+
+.ow-hud-control-rail > div:has(> img) {
+  display: flex;
+  min-width: 38px;
+  min-height: 38px;
+  align-items: center;
+  justify-content: center;
+  border: 1px solid transparent;
+  border-radius: 9px;
+  background: rgba(255, 255, 255, 0.03);
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.ow-hud-control-rail > div:has(> img):hover {
+  border-color: var(--ow-hud-line-strong);
+  background: rgba(59, 130, 180, 0.2);
+}
+
+.ow-hud-control-rail > div:has(> img) img {
+  filter: drop-shadow(0 1px 2px rgba(0, 0, 0, 0.45));
+}
+
+.ow-hud-control-rail [data-game-timer] {
+  padding: 0.25rem 0.35rem;
+  color: #eef6fc;
+  font-variant-numeric: tabular-nums;
+}
+
+.ow-hud-player-card {
+  border: 1px solid var(--ow-hud-line);
+  background: rgba(7, 15, 27, 0.98);
+  box-shadow: 0 22px 56px rgba(0, 0, 0, 0.45);
+  backdrop-filter: blur(16px);
+}
+
+@media (max-width: 1024px) {
+  .ow-hud-buildbar {
+    padding: 0.3rem;
+    border-radius: 11px;
+  }
+
+  .ow-hud-buildbar .ow-hud-build-button {
+    min-height: 46px;
+    border-radius: 8px;
+  }
+
+  .ow-hud-control-rail {
+    padding: 0.3rem;
+  }
+
+  .ow-hud-control-rail > div:has(> img) {
+    min-width: 40px;
+    min-height: 40px;
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .ow-hud-buildbar .ow-hud-build-button,
+  .ow-hud-control-rail > div:has(> img) {
+    transition: none;
+  }
+
+  .ow-hud-buildbar .ow-hud-build-button:hover {
+    transform: none;
+  }
+}
+`;
+
+if (typeof document !== "undefined" && document.head && !document.getElementById(STYLE_ID)) {
+  const style = document.createElement("style");
+  style.id = STYLE_ID;
+  style.textContent = HUD_STYLES;
+  document.head.append(style);
+}
