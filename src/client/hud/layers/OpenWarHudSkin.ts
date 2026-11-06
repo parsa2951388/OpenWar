@@ -127,7 +127,8 @@ const HUD_STYLES = `
   backdrop-filter: blur(16px);
 }
 
-.ow-hud-leaderboard-panel {
+player-stats .stats-table,
+team-stats .stats-table {
   position: relative;
   isolation: isolate;
   border: 1px solid var(--ow-hud-line);
@@ -160,7 +161,8 @@ const HUD_STYLES = `
 }
 
 @media (max-width: 1024px) {
-  .ow-hud-leaderboard-panel {
+  player-stats .stats-table,
+team-stats .stats-table {
     border-radius: 0 0 14px 0;
   }
 
@@ -196,7 +198,8 @@ const HUD_STYLES = `
 }
 
 /* Tactical match HUD: unify the live leaderboard and communications surfaces. */
-.ow-hud-leaderboard-panel {
+player-stats .stats-table,
+team-stats .stats-table {
   border: 1px solid var(--ow-hud-line);
   border-radius: 14px;
   background: rgba(7, 17, 30, 0.94);
@@ -205,49 +208,58 @@ const HUD_STYLES = `
   overflow: hidden;
 }
 
-.ow-hud-leaderboard-panel .stats-table-content {
+player-stats .stats-table-content,
+team-stats .stats-table-content {
   color: #edf5fb;
 }
 
-.ow-hud-leaderboard-panel .stats-table-header {
+player-stats .stats-table-header,
+team-stats .stats-table-header {
   background: linear-gradient(180deg, rgba(26, 52, 75, 0.98), rgba(12, 27, 43, 0.98));
   color: #c8e0f2;
 }
 
-.ow-hud-leaderboard-panel .stats-table-header-cell {
+player-stats .stats-table-header-cell,
+team-stats .stats-table-header-cell {
   border-color: rgba(126, 174, 210, 0.22);
 }
 
-.ow-hud-leaderboard-panel .stats-table-row {
+player-stats .stats-table-row,
+team-stats .stats-table-row {
   background: rgba(12, 26, 41, 0.72);
   transition: background-color 140ms ease;
 }
 
-.ow-hud-leaderboard-panel .stats-table-row:nth-child(even) {
+player-stats .stats-table-row:nth-child(even),
+team-stats .stats-table-row:nth-child(even) {
   background: rgba(16, 34, 51, 0.84);
 }
 
-.ow-hud-leaderboard-panel .stats-table-row:hover {
+player-stats .stats-table-row:hover,
+team-stats .stats-table-row:hover {
   background: rgba(39, 82, 116, 0.66);
 }
 
-.ow-hud-leaderboard-panel .stats-table-pinned-row {
+player-stats .stats-table-pinned-row,
+team-stats .stats-table-pinned-row {
   border-top: 1px solid rgba(102, 185, 239, 0.58);
   background: rgba(25, 78, 112, 0.82) !important;
   color: #ffffff;
 }
 
-.ow-hud-leaderboard-panel .stats-table-scroll {
+player-stats .stats-table-scroll,
+team-stats .stats-table-scroll {
   scrollbar-color: rgba(102, 185, 239, 0.55) rgba(7, 17, 30, 0.8);
   scrollbar-width: thin;
 }
 
-.ow-hud-leaderboard-panel button:focus-visible {
+player-stats button:focus-visible,
+team-stats button:focus-visible {
   outline: 2px solid var(--ow-hud-gold);
   outline-offset: 2px;
 }
 
-.ow-hud-chat-feed {
+chat-display > div {
   border: 1px solid var(--ow-hud-line);
   border-radius: 13px;
   background: rgba(7, 17, 30, 0.94) !important;
@@ -256,31 +268,31 @@ const HUD_STYLES = `
   overflow: hidden;
 }
 
-.ow-hud-chat-feed__header {
+chat-display > div > div > div:first-child {
   border-bottom: 1px solid rgba(126, 174, 210, 0.2);
   background: rgba(15, 34, 52, 0.98) !important;
 }
 
-.ow-hud-chat-feed__toggle,
+chat-display button,
 .ow-hud-chat-feed__collapsed-toggle {
   color: #d9eafa;
   transition: color 140ms ease, background-color 140ms ease;
 }
 
-.ow-hud-chat-feed__toggle:hover,
+chat-display button:hover,
 .ow-hud-chat-feed__collapsed-toggle:hover {
   color: #ffffff;
 }
 
-.ow-hud-chat-feed__table {
+chat-display table {
   background: transparent;
 }
 
-.ow-hud-chat-feed__row {
+chat-display tr {
   border-color: rgba(126, 174, 210, 0.12);
 }
 
-.ow-hud-chat-feed__row:nth-child(even) {
+chat-display tr:nth-child(even) {
   background: rgba(255, 255, 255, 0.025);
 }
 
@@ -348,13 +360,13 @@ const HUD_STYLES = `
 }
 
 .ow-hud-chat-modal button:focus-visible,
-.ow-hud-chat-feed button:focus-visible {
+chat-display button:focus-visible {
   outline: 2px solid var(--ow-hud-gold);
   outline-offset: 2px;
 }
 
 @media (max-width: 600px) {
-  .ow-hud-chat-feed {
+  chat-display > div {
     max-width: min(100vw - 1rem, 30rem);
     border-radius: 11px;
   }
@@ -365,14 +377,15 @@ const HUD_STYLES = `
     overflow-y: auto;
   }
 
-  .ow-hud-leaderboard-panel {
+  player-stats .stats-table,
+team-stats .stats-table {
     max-width: 100%;
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .ow-hud-chat-chip,
-  .ow-hud-chat-feed__toggle,
+  chat-display button,
   .ow-hud-chat-feed__collapsed-toggle,
   .ow-hud-chat-modal button {
     transition: none;

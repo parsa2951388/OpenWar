@@ -11,7 +11,6 @@ import { unsafeHTML, UnsafeHTMLDirective } from "lit/directives/unsafe-html.js";
 import { Controller } from "../../Controller";
 import { GameView } from "../../view";
 import { onlyImages } from "./OnlyImages";
-import "./OpenWarHudSkin";
 
 interface ChatEvent {
   description: string;
@@ -124,51 +123,30 @@ export class ChatDisplay extends LitElement implements Controller {
     if (!this.active) {
       return html``;
     }
-    const feedClass = [
-      "ow-hud-chat-feed pointer-events-auto",
-      this._hidden ? "w-fit px-2.5 py-1.25" : "",
-      "rounded-md bg-black/60 relative max-h-[30vh]",
-      "flex flex-col-reverse overflow-y-auto w-full",
-      "lg:bottom-2.5 lg:right-2.5 z-50",
-      "lg:max-w-[30vw] lg:w-full lg:w-auto",
-    ]
-      .filter(Boolean)
-      .join(" ");
-    const visibleToggleClass = [
-      "ow-hud-chat-feed__toggle text-white cursor-pointer",
-      "pointer-events-auto",
-      this._hidden ? "hidden" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-    const hiddenToggleClass = [
-      "ow-hud-chat-feed__toggle text-white cursor-pointer",
-      "pointer-events-auto",
-      this._hidden ? "" : "hidden",
-    ]
-      .filter(Boolean)
-      .join(" ");
-    const tableClass = [
-      "ow-hud-chat-feed__table w-full border-collapse text-white shadow-lg",
-      "lg:text-xl text-xs pointer-events-none",
-      this._hidden ? "hidden" : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-    const chatHeaderClass = [
-      "ow-hud-chat-feed__header w-full bg-black/80",
-      "sticky top-0 px-2.5",
-    ].join(" ");
     return html`
-      <div class=${feedClass}>
+      <div
+        class="pointer-events-auto ${
+          this._hidden ? "w-fit px-2.5 py-1.25" : ""
+        } rounded-md bg-black/60 relative max-h-[30vh] flex flex-col-reverse overflow-y-auto w-full lg:bottom-2.5 lg:right-2.5 z-50 lg:max-w-[30vw] lg:w-full lg:w-auto"
+      >
         <div>
-          <div class=${chatHeaderClass}>
-            <button class=${visibleToggleClass} @click=${this.toggleHidden}>
+          <div class="w-full bg-black/80 sticky top-0 px-2.5">
+            <button
+              class="text-white cursor-pointer pointer-events-auto ${
+                this._hidden ? "hidden" : ""
+              }"
+              @click=${this.toggleHidden}
+            >
               Hide
             </button>
           </div>
 
-          <button class=${hiddenToggleClass} @click=${this.toggleHidden}>
+          <button
+            class="text-white cursor-pointer pointer-events-auto ${
+              this._hidden ? "" : "hidden"
+            }"
+            @click=${this.toggleHidden}
+          >
             Chat
             <span
               class="${
@@ -178,11 +156,15 @@ export class ChatDisplay extends LitElement implements Controller {
             >
           </button>
 
-          <table class=${tableClass}>
+          <table
+            class="w-full border-collapse text-white shadow-lg lg:text-xl text-xs pointer-events-none ${
+              this._hidden ? "hidden" : ""
+            }"
+          >
             <tbody>
               ${this.chatEvents.map(
                 (chat) => html`
-                  <tr class="ow-hud-chat-feed__row border-b border-gray-200/0">
+                  <tr class="border-b border-gray-200/0">
                     <td class="lg:p-3 p-1 text-left">
                       ${this.getChatContent(chat)}
                     </td>

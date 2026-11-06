@@ -2,7 +2,6 @@ import { LitElement, html, nothing } from "lit";
 import { property, state } from "lit/decorators.js";
 import { repeat } from "lit/directives/repeat.js";
 import "../hud/layers/ColumnPicker";
-import "../hud/layers/OpenWarHudSkin";
 import {
   type ColumnAlignment,
   type ColumnDef,
@@ -206,22 +205,11 @@ export abstract class StatsTable extends LitElement {
     const label = translateText(column.labelKey);
     const visual = this.renderHeaderVisual(column, label);
     const sorted = this.sortKey === column.id;
-    const headerCellClass = [
-      "stats-table-header-cell",
-      CELL_CLASS,
-      "justify-center text-center whitespace-nowrap",
-      "border-b border-b-slate-500",
-      index > 0 ? HEADER_DIVIDER_CLASS : "",
-    ]
-      .filter(Boolean)
-      .join(" ");
-    const sortButtonClass = [
-      "inline-flex items-center justify-center gap-1",
-      "hover:text-sky-200 transition-colors",
-    ].join(" ");
     return html`
       <div
-        class=${headerCellClass}
+        class="stats-table-header-cell ${CELL_CLASS} justify-center text-center whitespace-nowrap border-b border-b-slate-500 ${
+          index > 0 ? HEADER_DIVIDER_CLASS : ""
+        }"
         role="columnheader"
         title=${label}
         aria-sort=${
@@ -237,7 +225,7 @@ export abstract class StatsTable extends LitElement {
         ${
           column.isOrderable
             ? html`<button
-                class=${sortButtonClass}
+                class="inline-flex items-center justify-center gap-1 hover:text-sky-200 transition-colors"
                 aria-label=${label}
                 @click=${() => this.setSort(column.id)}
               >
@@ -361,27 +349,9 @@ export abstract class StatsTable extends LitElement {
       pinnedRow === null
         ? "max-h-[7.5rem] md:max-h-[10rem] lg:max-h-[11.25rem]"
         : "max-h-[6rem] md:max-h-[8rem] lg:max-h-[9rem]";
-    const tableClass = [
-      "stats-table ow-hud-leaderboard-panel relative mt-1",
-      "text-white text-xs lg:text-sm",
-    ].join(" ");
-    const pickerHeaderClass = [
-      CELL_CLASS,
-      "justify-center border-b border-b-slate-500",
-      HEADER_DIVIDER_CLASS,
-    ].join(" ");
-    const scrollClass = [
-      "stats-table-scroll",
-      scrollHeight,
-      "grid col-span-full overflow-y-scroll overflow-x-hidden",
-    ].join(" ");
-    const statsHeaderClass = [
-      "stats-table-header grid col-span-full",
-      "font-bold bg-gray-700/95",
-    ].join(" ");
 
     return html`
-      <div class=${tableClass}>
+      <div class="stats-table relative mt-1 text-white text-xs lg:text-sm">
         <div
           class="overflow-x-auto rounded-lg bg-gray-800/85"
           @contextmenu=${(event: Event) => event.preventDefault()}
@@ -392,7 +362,7 @@ export abstract class StatsTable extends LitElement {
             role="table"
           >
             <div
-              class=${statsHeaderClass}
+              class="stats-table-header grid col-span-full font-bold bg-gray-700/95"
               style="grid-template-columns: subgrid; grid-column: 1 / -1;"
               role="row"
             >
@@ -401,7 +371,10 @@ export abstract class StatsTable extends LitElement {
                 (column) => column.id,
                 (column, index) => this.renderHeaderCell(column, index),
               )}
-              <div class=${pickerHeaderClass} role="columnheader">
+              <div
+                class="${CELL_CLASS} justify-center border-b border-b-slate-500 ${HEADER_DIVIDER_CLASS}"
+                role="columnheader"
+              >
                 <column-picker
                   class="inline-flex"
                   .columns=${columnsFor(this.tableKind).filter(
@@ -414,7 +387,7 @@ export abstract class StatsTable extends LitElement {
             </div>
 
             <div
-              class=${scrollClass}
+              class="stats-table-scroll ${scrollHeight} grid col-span-full overflow-y-scroll overflow-x-hidden"
               style="grid-template-columns: subgrid; grid-column: 1 / -1;"
               role="rowgroup"
               @scroll=${this.onScroll}
