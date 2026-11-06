@@ -198,7 +198,9 @@ it("renders build choices as keyboard-accessible buttons", async () => {
     expect(city?.getAttribute("aria-pressed")).toBe("false");
     city?.focus();
     await display.updateComplete;
-    expect(city?.getAttribute("aria-describedby")).toBe("ow-build-tooltip-city");
+    expect(city?.getAttribute("aria-describedby")).toBe(
+      "ow-build-tooltip-city",
+    );
   } finally {
     display.remove();
   }
