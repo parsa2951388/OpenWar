@@ -1280,6 +1280,8 @@
     "ocean_color_label": "رنگ اقیانوس",
     "plains_color_desc": "رنگ پایه برای زمین‌های پست.",
     "plains_color_label": "رنگ دشت‌ها",
+    "preset_battlefield": "میدان نبرد",
+    "preset_battlefield_desc": "زمین با کنتراست بیشتر، مرزهای واضح‌تر و ساختمان‌های خواناتر برای نبردهای سریع",
     "preset_colorblind": "کور رنگ",
     "preset_colorblind_desc": "رنگ‌های قلمرو و مرز مناسب برای کوررنگی",
     "preset_custom": "سفارشی",
@@ -1314,9 +1316,7 @@
     "territory_alpha_desc": "میزان کدری پرکردن قلمرو (هرچه کمتر باشد، زمین بیشتر دیده می‌شود)",
     "territory_alpha_label": "کدری قلمرو",
     "territory_sat_desc": "میزان غلظت رنگ‌های پرکردن قلمرو (هرچه کمتر باشد، رنگ‌ها ملایم‌تر می‌شوند)",
-    "territory_sat_label": "اشباع رنگ قلمرو",
-    "preset_battlefield": "میدان نبرد",
-    "preset_battlefield_desc": "زمین با کنتراست بیشتر، مرزهای واضح‌تر و ساختمان‌های خواناتر برای نبردهای سریع"
+    "territory_sat_label": "اشباع رنگ قلمرو"
   },
   "heads_up_message": {
     "catching_up": "درحال بروزرسانی...",
@@ -1869,6 +1869,15 @@
     "waiting_for_game": "در انتظار شروع بازی..."
   },
   "mode_selector": {
+    "battle_hub_aria": "مرکز نبردهای آنلاین",
+    "battle_hub_connecting": "در حال دریافت فهرست نبردها…",
+    "battle_hub_description": "نبردهای عمومی را بررسی کن، وارد رتبه‌بندی شو یا با دوستانت اتاق خصوصی بساز.",
+    "battle_hub_eyebrow": "شبکهٔ نبرد زنده",
+    "battle_hub_live": "فهرست نبردها به‌روز است",
+    "battle_hub_offline": "فهرست نبردها فعلاً در دسترس نیست",
+    "battle_hub_private": "اتاق‌های خصوصی",
+    "battle_hub_public": "نبردهای عمومی",
+    "battle_hub_title": "نبردهای زنده",
     "lobbies_unreachable": "در حال حاضر امکان دسترسی به لابی‌های عمومی وجود ندارد",
     "offline_lobbies": "لابی‌های عمومی در حالت آفلاین در دسترس نیستند",
     "ranked_1v1_title": "یک به یک",
@@ -1889,16 +1898,7 @@
     "teams_count": "{teamCount} تیم",
     "teams_of": "{teamCount} تیم {playersPerTeam} نفره",
     "teams_preset": "{preset} ({teams})",
-    "teams_title": "تیم ها",
-    "battle_hub_aria": "مرکز نبردهای آنلاین",
-    "battle_hub_eyebrow": "شبکهٔ نبرد زنده",
-    "battle_hub_title": "نبردهای زنده",
-    "battle_hub_description": "نبردهای عمومی را بررسی کن، وارد رتبه‌بندی شو یا با دوستانت اتاق خصوصی بساز.",
-    "battle_hub_public": "نبردهای عمومی",
-    "battle_hub_private": "اتاق‌های خصوصی",
-    "battle_hub_live": "فهرست نبردها به‌روز است",
-    "battle_hub_connecting": "در حال دریافت فهرست نبردها…",
-    "battle_hub_offline": "فهرست نبردها فعلاً در دسترس نیست"
+    "teams_title": "تیم ها"
   },
   "multi_tab": {
     "detected": "چندین تب بازی باز شناسایی شد.",
