@@ -1,4 +1,4 @@
-/* Open War tactical HUD skin. This is an original presentation layer over the existing game UI. */
+/* Open War tactical HUD skin. Original CSS for the existing game UI. */
 :root {
   --ow-hud-panel: rgba(8, 19, 33, 0.94);
   --ow-hud-panel-raised: rgba(14, 31, 49, 0.96);
