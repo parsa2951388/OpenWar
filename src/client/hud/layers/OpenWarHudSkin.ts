@@ -127,8 +127,43 @@ const HUD_STYLES = `
   backdrop-filter: blur(16px);
 }
 
+.ow-hud-leaderboard-panel {
+  position: relative;
+  isolation: isolate;
+  border: 1px solid var(--ow-hud-line);
+  border-radius: 0 0 14px 0;
+  background: var(--ow-hud-panel);
+  box-shadow: 0 14px 34px rgba(0, 0, 0, 0.32);
+  backdrop-filter: blur(14px);
+}
+
+.ow-hud-leaderboard-panel [role="button"] {
+  border-color: rgba(126, 174, 210, 0.34);
+  border-radius: 9px;
+  background: rgba(20, 42, 62, 0.92);
+  transition: border-color 140ms ease, background-color 140ms ease;
+}
+
+.ow-hud-leaderboard-panel [role="button"]:hover {
+  border-color: var(--ow-hud-line-strong);
+  background: rgba(35, 78, 110, 0.92);
+}
+
+.ow-hud-leaderboard-panel [role="button"]:focus-visible {
+  outline: 2px solid var(--ow-hud-gold);
+  outline-offset: 2px;
+}
+
+.ow-hud-leaderboard-panel player-stats,
+.ow-hud-leaderboard-panel team-stats {
+  min-width: 0;
+}
+
 @media (max-width: 1024px) {
-  .ow-hud-buildbar {
+  .ow-hud-leaderboard-panel {
+    border-radius: 0 0 14px 0;
+  }
+
     padding: 0.3rem;
     border-radius: 11px;
   }
