@@ -63,34 +63,34 @@
         "navalHighlight": true,
         "highlightFillBrighten": 0.5,
         "highlightBrighten": 0.28,
-        "highlightThicken": 2,
-        "territorySaturation": 1,
-        "territoryAlpha": 0.64,
-        "coordinateGridOpacity": 0.22,
-        "friendlyTintColor": "#35c9ef",
-        "embargoTintColor": "#ff626d",
-        "friendlyTintRatio": 0.68,
-        "embargoTintRatio": 0.74
+        "highlightThicken": 3,
+        "territorySaturation": 1.08,
+        "territoryAlpha": 0.7,
+        "coordinateGridOpacity": 0.16,
+        "friendlyTintColor": "#38bdf8",
+        "embargoTintColor": "#fb7185",
+        "friendlyTintRatio": 0.72,
+        "embargoTintRatio": 0.78
       },
       "affiliation": {
-        "selfColor": "#35b9ff",
-        "allyColor": "#ffd166",
-        "enemyColor": "#ff626d"
+        "selfColor": "#38bdf8",
+        "allyColor": "#facc15",
+        "enemyColor": "#fb7185"
       },
       "terrain": {
-        "backgroundColor": "#122131",
-        "oceanColor": "#315f7b",
-        "sandColor": "#ddce9f",
-        "plainsColor": "#b5d486",
-        "highlandColor": "#c9b58a",
-        "mountainColor": "#f2f4f6"
+        "backgroundColor": "#142536",
+        "oceanColor": "#2c6e9a",
+        "sandColor": "#d8c28f",
+        "plainsColor": "#9bc86b",
+        "highlandColor": "#bca47a",
+        "mountainColor": "#f0f2ef"
       },
       "lighting": {
         "ambient": 0.9,
         "falloffPower": 1.15
       },
       "smallPlayerGlow": {
-        "strength": 0.5
+        "strength": 0.65
       }
     }
   },
