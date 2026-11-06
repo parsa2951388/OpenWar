@@ -23,6 +23,7 @@ import "./components/baseComponents/Modal";
 import { BaseModal } from "./components/BaseModal";
 import "./components/GameConfigSettings";
 import { MEDAL_ORDER, medalIcon } from "./components/map/Medals";
+import { canPlayOperationsInCurrentBrowser } from "./components/EditionPreference";
 import { markPendingOperationsMission } from "./components/OperationsCampaign";
 import {
   getOperationsMission,
@@ -921,6 +922,7 @@ export class SinglePlayerModal extends BaseModal {
    * map, difficulty, mode, timer, victory threshold, AI count, and unit bans.
    */
   public openForOperation(mission: OperationsMissionPreset): void {
+    if (!canPlayOperationsInCurrentBrowser()) return;
     this.resetOptions();
     this.selectedMap = mission.map;
     this.selectedDifficulty = mission.difficulty;
@@ -940,10 +942,11 @@ export class SinglePlayerModal extends BaseModal {
 
   protected onOpen(args?: Record<string, unknown>): void {
     const operationId = args?.operation;
-    this.operationsMissionId =
-      typeof operationId === "string"
+    this.operationsMissionId = canPlayOperationsInCurrentBrowser()
+      ? typeof operationId === "string"
         ? (getOperationsMission(operationId)?.id ?? null)
-        : null;
+        : null
+      : null;
     const save = args?.save;
     this.sharedSaveId = typeof save === "string" ? savedGameIdFrom(save) : null;
     // Saves made since the list last loaded (a game played in between).
