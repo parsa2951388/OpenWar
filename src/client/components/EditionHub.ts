@@ -640,6 +640,16 @@ export class EditionHub extends LitElement {
             <span aria-hidden="true">🔒</span>
           </button>
         </div>
+        <div class="ow-online-return-row">
+          <button
+            class="ow-online-return-classic"
+            type="button"
+            @click=${() => this.selectEdition("classic")}
+          >
+            ${this.t("online_return_classic")}
+            <span aria-hidden="true">↗</span>
+          </button>
+        </div>
       </section>
     `;
   }
