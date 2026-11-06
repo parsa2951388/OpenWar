@@ -52,12 +52,22 @@ export function canPlayOperationsInCurrentBrowser(): boolean {
   );
 }
 
+/** Pure gate predicate used by unit tests and the browser route guard. */
+export function shouldBlockOperationsOnlineEntry(
+  edition: OpenWarEdition,
+  hostname: string,
+): boolean {
+  return edition === "operations" && !isOperationsPlayableHost(hostname);
+}
+
 /** The public Operations online route is intentionally closed on production hosts. */
 export function isOperationsOnlineLockedInCurrentBrowser(): boolean {
   return (
     typeof window !== "undefined" &&
-    isOperationsEditionSelected() &&
-    !canPlayOperationsInCurrentBrowser()
+    shouldBlockOperationsOnlineEntry(
+      getOpenWarEditionPreference(),
+      window.location.hostname,
+    )
   );
 }
 
