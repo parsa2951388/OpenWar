@@ -718,32 +718,87 @@ export class StoreModal extends BaseModal {
    */
   private renderAviationPanel(): TemplateResult {
     const items = [
-      { image: "images/AviationFighter.svg", title: "store.aviation_fighter_title", description: "store.aviation_fighter_description" },
-      { image: "images/AviationBomber.svg", title: "store.aviation_bomber_title", description: "store.aviation_bomber_description" },
-      { image: "images/AviationAirfield.svg", title: "store.aviation_airfield_title", description: "store.aviation_airfield_description" },
-      { image: "images/AviationTower.svg", title: "store.aviation_control_tower_title", description: "store.aviation_control_tower_description" },
+      {
+        image: "images/AviationFighter.svg",
+        title: "store.aviation_fighter_title",
+        description: "store.aviation_fighter_description",
+      },
+      {
+        image: "images/AviationBomber.svg",
+        title: "store.aviation_bomber_title",
+        description: "store.aviation_bomber_description",
+      },
+      {
+        image: "images/AviationAirfield.svg",
+        title: "store.aviation_airfield_title",
+        description: "store.aviation_airfield_description",
+      },
+      {
+        image: "images/AviationTower.svg",
+        title: "store.aviation_control_tower_title",
+        description: "store.aviation_control_tower_description",
+      },
     ];
     return html`
-      <section class="w-full px-3 py-4 sm:px-6" data-aviation-showcase aria-label=${translateText("store.aviation_collection_title")}>
-        <header class="mb-5 overflow-hidden rounded-2xl border border-sky-300/15 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-4 sm:p-6">
-          <div class="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1 text-xs font-bold text-sky-200"><span aria-hidden="true">✈</span>${translateText("store.aviation")}</div>
-          <h2 class="text-xl font-black text-white sm:text-2xl">${translateText("store.aviation_collection_title")}</h2>
-          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-300">${translateText("store.aviation_collection_description")}</p>
-          <p class="mt-4 inline-flex items-center gap-2 rounded-lg border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-xs font-bold text-amber-100" data-aviation-no-price><span aria-hidden="true">◷</span>${translateText("store.aviation_no_price")}</p>
+      <section
+        class="w-full px-3 py-4 sm:px-6"
+        data-aviation-showcase
+        aria-label=${translateText("store.aviation_collection_title")}
+      >
+        <header
+          class="mb-5 overflow-hidden rounded-2xl border border-sky-300/15 bg-gradient-to-br from-slate-900 via-slate-950 to-slate-900 p-4 sm:p-6"
+        >
+          <div
+            class="mb-3 inline-flex items-center gap-2 rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1 text-xs font-bold text-sky-200"
+          >
+            <span aria-hidden="true">✈</span>${translateText("store.aviation")}
+          </div>
+          <h2 class="text-xl font-black text-white sm:text-2xl">
+            ${translateText("store.aviation_collection_title")}
+          </h2>
+          <p class="mt-2 max-w-2xl text-sm leading-6 text-slate-300">
+            ${translateText("store.aviation_collection_description")}
+          </p>
+          <p
+            class="mt-4 inline-flex items-center gap-2 rounded-lg border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-xs font-bold text-amber-100"
+            data-aviation-no-price
+          >
+            <span aria-hidden="true">◷</span
+            >${translateText("store.aviation_no_price")}
+          </p>
         </header>
         <div class="grid grid-cols-1 gap-4 sm:grid-cols-2">
-          ${items.map((item) => html`
-            <article class="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80 shadow-lg" data-aviation-preview>
-              <div class="flex h-36 items-center justify-center overflow-hidden border-b border-white/10 bg-gradient-to-br from-slate-800 to-slate-950 p-3 sm:h-44">
-                <img src=${assetUrl(item.image)} alt=${translateText(item.title)} class="h-full w-full object-contain" loading="lazy" />
-              </div>
-              <div class="p-4">
-                <h3 class="text-base font-bold text-white">${translateText(item.title)}</h3>
-                <p class="mt-1 min-h-10 text-sm leading-5 text-slate-400">${translateText(item.description)}</p>
-                <span class="mt-4 inline-flex rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1 text-xs font-bold text-sky-200">${translateText("store.aviation_preview_only")}</span>
-              </div>
-            </article>
-          `)}
+          ${items.map(
+            (item) => html`
+              <article
+                class="overflow-hidden rounded-2xl border border-white/10 bg-slate-950/80 shadow-lg"
+                data-aviation-preview
+              >
+                <div
+                  class="flex h-36 items-center justify-center overflow-hidden border-b border-white/10 bg-gradient-to-br from-slate-800 to-slate-950 p-3 sm:h-44"
+                >
+                  <img
+                    src=${assetUrl(item.image)}
+                    alt=${translateText(item.title)}
+                    class="h-full w-full object-contain"
+                    loading="lazy"
+                  />
+                </div>
+                <div class="p-4">
+                  <h3 class="text-base font-bold text-white">
+                    ${translateText(item.title)}
+                  </h3>
+                  <p class="mt-1 min-h-10 text-sm leading-5 text-slate-400">
+                    ${translateText(item.description)}
+                  </p>
+                  <span
+                    class="mt-4 inline-flex rounded-full border border-sky-300/20 bg-sky-300/10 px-3 py-1 text-xs font-bold text-sky-200"
+                    >${translateText("store.aviation_preview_only")}</span
+                  >
+                </div>
+              </article>
+            `,
+          )}
         </div>
       </section>
     `;

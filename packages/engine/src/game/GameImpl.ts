@@ -1618,13 +1618,15 @@ export class GameImpl implements Game {
 
   conquerPlayer(conqueror: Player, conquered: Player) {
     if (conquered.isDisconnected() && conqueror.isOnSameTeam(conquered)) {
-      const units = conquered.units().filter(
-        (unit) =>
-          unit.type() === UnitType.Warship ||
-          unit.type() === UnitType.TransportShip ||
-          unit.type() === UnitType.Aircraft ||
-          unit.type() === UnitType.Airport,
-      );
+      const units = conquered
+        .units()
+        .filter(
+          (unit) =>
+            unit.type() === UnitType.Warship ||
+            unit.type() === UnitType.TransportShip ||
+            unit.type() === UnitType.Aircraft ||
+            unit.type() === UnitType.Airport,
+        );
 
       for (const unit of units) {
         conqueror.captureUnit(unit);

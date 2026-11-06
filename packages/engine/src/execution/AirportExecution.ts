@@ -40,8 +40,9 @@ export class AirportExecution implements Execution {
 
     const readyAirports = owner
       .units(UnitType.Airport)
-      .filter((airport) => airport.isActive() && !airport.isUnderConstruction())
-      .length;
+      .filter(
+        (airport) => airport.isActive() && !airport.isUnderConstruction(),
+      ).length;
     if (readyAirports === 0) return;
 
     const activeAircraft = owner
@@ -49,14 +50,15 @@ export class AirportExecution implements Execution {
       .filter((aircraft) => aircraft.isActive()).length;
     if (activeAircraft >= readyAirports) return;
 
-    if (
-      mg.ticks() - this.lastSpawnTick <
-      mg.config().aircraftSpawnCooldown()
-    ) {
+    if (mg.ticks() - this.lastSpawnTick < mg.config().aircraftSpawnCooldown()) {
       return;
     }
 
-    const aircraft = owner.buildUnit(UnitType.Aircraft, this.airport.tile(), {});
+    const aircraft = owner.buildUnit(
+      UnitType.Aircraft,
+      this.airport.tile(),
+      {},
+    );
     mg.addExecution(new AircraftExecution(this.airport, aircraft));
     this.lastSpawnTick = mg.ticks();
   }
