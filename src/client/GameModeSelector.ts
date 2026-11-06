@@ -693,7 +693,6 @@ export class GameModeSelector extends LitElement {
     }
   }
 
-
   private renderOnlineHubHeader() {
     const roomCounts = countOnlineBattleRooms(this.lobbies);
     const connectionStatus =

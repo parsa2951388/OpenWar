@@ -263,7 +263,6 @@ describe("PlayerPanel - action buttons follow PlayerActions capability flags", (
   });
 });
 
-
 describe("PlayerPanel - openSendGoldModal suppressNextHide", () => {
   const actions = {
     canAttack: false,

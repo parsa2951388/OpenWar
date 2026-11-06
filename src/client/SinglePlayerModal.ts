@@ -389,38 +389,43 @@ export class SinglePlayerModal extends BaseModal {
       onBack: () => this.close(),
       ariaLabel: translateText("common.back"),
       rightContent: html`<div class="flex flex-wrap items-center gap-2">
-        <lobby-preset-controls
-          .presets=${this.lobbyPresets}
-          .selectedName=${this.selectedPresetName}
-          @preset-select=${this.handlePresetSelect}
-          @preset-load=${this.handlePresetLoad}
-          @preset-save=${this.handlePresetSave}
-          @preset-delete=${this.handlePresetDelete}
-        ></lobby-preset-controls>
-        ${responseHasLinkedIdentity(this.userMeResponse)
-          ? html`<button
-              @click=${this.toggleAchievements}
-              class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all shrink-0 ${
-                this.showAchievements
-                  ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
-                  : "text-white/60"
-              }"
-            >
-              <img
-                src=${assetUrl("images/MedalIconWhite.svg")}
-                class="w-4 h-4 opacity-80 shrink-0"
-                style="${this.showAchievements ? "" : "filter: grayscale(1);"}"
-              />
-              <span
-                class="text-xs font-bold uppercase tracking-wider whitespace-nowrap"
-                >${translateText("single_modal.toggle_achievements")}</span
-              >
-            </button>`
-          : this.renderNotLoggedInBanner()}
-      </div>
-      ${responseHasLinkedIdentity(this.userMeResponse) && this.showAchievements
-        ? this.renderMedalOverview()
-        : null}`,
+          <lobby-preset-controls
+            .presets=${this.lobbyPresets}
+            .selectedName=${this.selectedPresetName}
+            @preset-select=${this.handlePresetSelect}
+            @preset-load=${this.handlePresetLoad}
+            @preset-save=${this.handlePresetSave}
+            @preset-delete=${this.handlePresetDelete}
+          ></lobby-preset-controls>
+          ${
+            responseHasLinkedIdentity(this.userMeResponse)
+              ? html`<button
+                  @click=${this.toggleAchievements}
+                  class="flex items-center gap-2 px-3 py-2 rounded-xl border border-white/10 bg-white/5 hover:bg-white/10 transition-all shrink-0 ${
+                    this.showAchievements
+                      ? "bg-yellow-500/10 border-yellow-500/30 text-yellow-400"
+                      : "text-white/60"
+                  }"
+                >
+                  <img
+                    src=${assetUrl("images/MedalIconWhite.svg")}
+                    class="w-4 h-4 opacity-80 shrink-0"
+                    style="${this.showAchievements ? "" : "filter: grayscale(1);"}"
+                  />
+                  <span
+                    class="text-xs font-bold uppercase tracking-wider whitespace-nowrap"
+                    >${translateText("single_modal.toggle_achievements")}</span
+                  >
+                </button>`
+              : this.renderNotLoggedInBanner()
+          }
+        </div>
+        ${
+          responseHasLinkedIdentity(this.userMeResponse) &&
+          this.showAchievements
+            ? this.renderMedalOverview()
+            : null
+        }`,
     });
   }
 

@@ -337,7 +337,9 @@ export class HostLobbyModal extends BaseModal {
         // no shadow lobby behind it — the invite would silently no-op.
         const invite = this.lobbyId ? inviteFriendsButton() : undefined;
         return invite
-          ? html`<div class="flex items-center gap-2">${presets}${copy}${invite}</div>`
+          ? html`<div class="flex items-center gap-2">
+              ${presets}${copy}${invite}
+            </div>`
           : html`<div class="flex items-center gap-2">${presets}${copy}</div>`;
       })(),
     });

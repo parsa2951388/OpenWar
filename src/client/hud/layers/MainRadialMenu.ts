@@ -167,15 +167,19 @@ export class MainRadialMenu implements Controller {
 
     const request = {};
     this.pendingDonations.add(request);
-    myPlayer.actions(tile).then((actions) => {
-      if (!this.pendingDonations.delete(request)) return;
-      if (this.game.owner(tile) !== recipient) return;
-      if (!recipient.isFriendly(myPlayer) || recipient.isDisconnected()) return;
-      donate(myPlayer, recipient, actions, tile);
-    }).catch((error) => {
-      this.pendingDonations.delete(request);
-      console.warn("Failed to check donation actions:", error);
-    });
+    myPlayer
+      .actions(tile)
+      .then((actions) => {
+        if (!this.pendingDonations.delete(request)) return;
+        if (this.game.owner(tile) !== recipient) return;
+        if (!recipient.isFriendly(myPlayer) || recipient.isDisconnected())
+          return;
+        donate(myPlayer, recipient, actions, tile);
+      })
+      .catch((error) => {
+        this.pendingDonations.delete(request);
+        console.warn("Failed to check donation actions:", error);
+      });
   }
 
   private async updatePlayerActions(

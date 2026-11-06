@@ -848,12 +848,13 @@ export class UserSettingModal extends BaseModal {
   /** Keep the in-game graphics side panel mounted beside the settings shell. */
   render() {
     return html`${super.render()}
-      ${this.inline
+    ${
+      this.inline
         ? nothing
         : html`<graphics-settings-modal
             .mapLayers=${this.mapLayers}
-          ></graphics-settings-modal>`}
-    `;
+          ></graphics-settings-modal>`
+    } `;
   }
 
   /** The inline page expands controls in place; the in-game modal uses a HUD side panel. */
@@ -931,9 +932,11 @@ export class UserSettingModal extends BaseModal {
 
   protected onClose(): void {
     this.graphicsAdvancedOpen = false;
-    this.querySelector<GraphicsSettingsModal>("graphics-settings-modal")?.close({
-      silent: true,
-    });
+    this.querySelector<GraphicsSettingsModal>("graphics-settings-modal")?.close(
+      {
+        silent: true,
+      },
+    );
     this.leaveDisplayTab();
     window.removeEventListener("keydown", this.handleEasterEggKey);
     // Fire once: a caller that reopens us on return would otherwise inherit
@@ -1949,7 +1952,9 @@ export class UserSettingModal extends BaseModal {
         class="w-full p-4 text-left text-white font-bold bg-white/5 border border-white/10 rounded-xl hover:bg-white/10 transition-colors"
         @click=${() => this.openGraphicsPanel()}
       >
-        <span class="block">${translateText("graphics_setting.advanced_label")}</span>
+        <span class="block"
+          >${translateText("graphics_setting.advanced_label")}</span
+        >
         <span class="block text-white/50 text-sm font-normal mt-1">
           ${translateText("graphics_setting.advanced_desc")}
         </span>

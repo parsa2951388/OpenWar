@@ -34,7 +34,7 @@ async function mountGraphics(
   > & { advanced?: boolean },
 ): Promise<TestModal> {
   const el = document.createElement("user-setting") as TestModal;
-  // Exercise the inline page path: the advanced fold expands into this element. 
+  // Exercise the inline page path: the advanced fold expands into this element.
   el.inline = true;
   if (wire?.mapLayers) el.mapLayers = wire.mapLayers;
   if (wire?.onLayerVisibilityChange) {

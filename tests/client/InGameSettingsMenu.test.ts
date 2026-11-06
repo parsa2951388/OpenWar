@@ -187,7 +187,10 @@ describe("in-game menu opens the shared settings modal", () => {
     settings.querySelector<HTMLElement>("[data-open-graphics-panel]")!.click();
     await settle();
     const graphicsPanel = settings.querySelector("graphics-settings-modal") as
-      | (HTMLElement & { updateComplete?: Promise<unknown>; isOpen?: () => boolean })
+      | (HTMLElement & {
+          updateComplete?: Promise<unknown>;
+          isOpen?: () => boolean;
+        })
       | null;
     expect(graphicsPanel).not.toBeNull();
     await graphicsPanel?.updateComplete;
@@ -195,9 +198,13 @@ describe("in-game menu opens the shared settings modal", () => {
 
     // The live advanced controls belong to the dedicated in-game graphics panel.
     expect(graphicsPanel?.isOpen?.()).toBe(true);
-    expect(graphicsPanel?.querySelector("#territory-alpha-slider")).not.toBeNull();
+    expect(
+      graphicsPanel?.querySelector("#territory-alpha-slider"),
+    ).not.toBeNull();
     expect(graphicsPanel?.querySelector("#ocean-color-picker")).not.toBeNull();
-    expect(graphicsPanel?.querySelector("#classic-icons-toggle")).not.toBeNull();
+    expect(
+      graphicsPanel?.querySelector("#classic-icons-toggle"),
+    ).not.toBeNull();
   });
 
   it("keeps the menu open when #game-settings is missing", async () => {
