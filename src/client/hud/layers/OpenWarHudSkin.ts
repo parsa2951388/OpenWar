@@ -164,6 +164,7 @@ const HUD_STYLES = `
     border-radius: 0 0 14px 0;
   }
 
+  .ow-hud-buildbar {
     padding: 0.3rem;
     border-radius: 11px;
   }
