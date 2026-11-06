@@ -34,6 +34,8 @@ async function mountGraphics(
   > & { advanced?: boolean },
 ): Promise<TestModal> {
   const el = document.createElement("user-setting") as TestModal;
+  // Exercise the inline page path: the advanced fold expands into this element.
+  el.inline = true;
   if (wire?.mapLayers) el.mapLayers = wire.mapLayers;
   if (wire?.onLayerVisibilityChange) {
     el.onLayerVisibilityChange = wire.onLayerVisibilityChange;
@@ -45,9 +47,7 @@ async function mountGraphics(
   el.open({ tab: "graphics" });
   await el.updateComplete;
   if (wire?.advanced !== false) {
-    el.querySelector("#graphics-advanced-toggle")!.dispatchEvent(
-      new Event("change", { bubbles: true }),
-    );
+    el.querySelector<HTMLElement>("[data-open-graphics-panel]")!.click();
   }
   await el.updateComplete;
   // The advanced body is a child component with its own update cycle, and the

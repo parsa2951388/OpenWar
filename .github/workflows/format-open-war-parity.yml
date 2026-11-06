@@ -1,0 +1,90 @@
+name: Format Open War parity branch
+
+on:
+  push:
+    branches:
+      - open-war/openbattle-ux-parity-2026-11
+
+permissions:
+  contents: write
+
+concurrency:
+  group: format-open-war-parity
+  cancel-in-progress: false
+
+jobs:
+  format:
+    if: "!contains(github.event.head_commit.message, 'chore: format Open War parity branch')"
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - name: Check out parity branch
+        uses: actions/checkout@v7
+        with:
+          ref: open-war/openbattle-ux-parity-2026-11
+          fetch-depth: 0
+      - name: Set up Node.js
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24.15.0
+          package-manager-cache: false
+      - name: Install repository-pinned npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install locked dependencies
+        run: npm ci --ignore-scripts
+      - name: Sort English locale keys
+        run: |
+          node --input-type=module -e '
+            import fs from "node:fs";
+            const sort = value => Array.isArray(value)
+              ? value.map(sort)
+              : value && typeof value === "object"
+                ? Object.fromEntries(Object.keys(value).sort().map(key => [key, sort(value[key])]))
+                : value;
+            const path = "resources/lang/en.json";
+            fs.writeFileSync(path, JSON.stringify(sort(JSON.parse(fs.readFileSync(path, "utf8"))), null, 2) + "\n");
+          '
+      - name: Format changed source, tests and locales
+        run: |
+          npx oxfmt --write \
+            src/client/GameModeSelector.ts \
+            src/client/HostLobbyModal.ts \
+            src/client/InputHandler.ts \
+            src/client/SinglePlayerModal.ts \
+            src/client/UserSettingModal.ts \
+            src/client/hud/layers/MainRadialMenu.ts \
+            src/client/components/EditionHub.css \
+            resources/lang/en.json \
+            resources/lang/fa.json \
+            tests/GameModeSelectorGatingWiring.test.ts \
+            tests/client/GameModeSelectorBattleHub.test.ts \
+            tests/client/InGameSettingsMenu.test.ts \
+            tests/client/UserSettingModal.graphics.test.ts \
+            tests/client/graphics/layers/PlayerPanelActions.test.ts
+      - name: Commit formatting corrections
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add \
+            src/client/GameModeSelector.ts \
+            src/client/HostLobbyModal.ts \
+            src/client/InputHandler.ts \
+            src/client/SinglePlayerModal.ts \
+            src/client/UserSettingModal.ts \
+            src/client/hud/layers/MainRadialMenu.ts \
+            src/client/components/EditionHub.css \
+            resources/lang/en.json \
+            resources/lang/fa.json \
+            tests/GameModeSelectorGatingWiring.test.ts \
+            tests/client/GameModeSelectorBattleHub.test.ts \
+            tests/client/InGameSettingsMenu.test.ts \
+            tests/client/UserSettingModal.graphics.test.ts \
+            tests/client/graphics/layers/PlayerPanelActions.test.ts
+          if git diff --cached --quiet; then
+            echo "Formatting is already clean."
+            exit 0
+          fi
+          git commit -m "chore: format Open War parity branch"
+          git fetch origin open-war/openbattle-ux-parity-2026-11
+          git rebase origin/open-war/openbattle-ux-parity-2026-11
+          git push origin HEAD:open-war/openbattle-ux-parity-2026-11

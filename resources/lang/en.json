@@ -1581,6 +1581,24 @@
     "lifetime_xp": "{xp} lifetime XP",
     "top_of_track": "The top of the track"
   },
+  "lobby_config": {
+    "preset": {
+      "delete": "Delete",
+      "delete_failed": "Failed to delete preset",
+      "deleted": "Preset deleted",
+      "load": "Load",
+      "loaded": "Preset loaded",
+      "no_presets": "No saved presets",
+      "placeholder": "Preset name...",
+      "save": "Save Current",
+      "save_failed": "Failed to save preset",
+      "save_label": "Save Preset",
+      "saved": "Preset saved",
+      "select": "Select a preset...",
+      "select_label": "Saved Presets",
+      "title": "Presets"
+    }
+  },
   "main": {
     "account": "Account",
     "clans": "Clans",
@@ -1821,6 +1839,15 @@
     "waiting_for_game": "Waiting for game to start..."
   },
   "mode_selector": {
+    "battle_hub_aria": "Online battle hub",
+    "battle_hub_connecting": "Connecting to the battle feed…",
+    "battle_hub_description": "Browse public matches, enter ranked play or set up a private room with friends.",
+    "battle_hub_eyebrow": "LIVE BATTLE NETWORK",
+    "battle_hub_live": "Battle feed is live",
+    "battle_hub_offline": "Battle feed is temporarily unavailable",
+    "battle_hub_private": "PRIVATE ROOMS",
+    "battle_hub_public": "PUBLIC BATTLES",
+    "battle_hub_title": "Online battle command",
     "lobbies_unreachable": "Can't reach the public lobbies right now",
     "offline_lobbies": "Public lobbies aren't available while you're offline",
     "ranked_1v1_title": "1v1",
@@ -2830,6 +2857,10 @@
     "display_ui_scale_label": "UI scale",
     "display_ui_scale_option": "{scale, number, percent}",
     "display_unnamed": "Display {index}",
+    "donate_gold": "Donate Gold",
+    "donate_gold_desc": "Open the gold donation menu for the ally or teammate whose tile is under your cursor.",
+    "donate_troops": "Donate Troops",
+    "donate_troops_desc": "Send your attack ratio's share of troops to the ally or teammate whose tile is under your cursor.",
     "easter_bug_count_desc": "How many bugs you're okay with (0–1000, emotionally)",
     "easter_bug_count_label": "Bug Count",
     "easter_writing_speed_desc": "Adjust how fast you pretend to code (x1–x100)",

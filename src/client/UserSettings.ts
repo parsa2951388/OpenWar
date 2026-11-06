@@ -2,6 +2,11 @@ import { Emoji, flattenedEmojiTable } from "@openfront/engine-api/Schemas";
 import { Cosmetics } from "@openfront/shared/CosmeticSchemas";
 import { PlayerPattern } from "@openfront/shared/WireSchemas";
 import {
+  LOBBY_PRESETS_KEY,
+  type LobbyPreset,
+  parseLobbyPresetsJson,
+} from "./LobbyPresets";
+import {
   GraphicsOverrides,
   GraphicsOverridesSchema,
   GraphicsPresets,
@@ -40,6 +45,8 @@ export function getDefaultKeybinds(isMac: boolean): Record<string, string> {
     requestAlliance: "KeyK",
     breakAlliance: "KeyL",
     targetPlayer: "KeyN",
+    donateTroops: "KeyJ",
+    donateGold: "KeyO",
     emojiMenu: "KeyF",
     quickChat: "KeyR",
     swapDirection: "KeyU",
@@ -1156,6 +1163,48 @@ export class UserSettings {
   // preset UI — used to run the legacy-overrides migration exactly once.
   hasGraphicsPresets(): boolean {
     return this.getString(GRAPHICS_PRESETS_KEY, "") !== "";
+  }
+
+  /**
+   * Reads validated saved lobby configurations for this player's storage scope.
+   * Invalid entries are ignored; storage failures leave the game usable.
+   */
+  getLobbyPresets(): LobbyPreset[] {
+    try {
+      const storageKey = this.storageKey(LOBBY_PRESETS_KEY);
+      const raw = localStorage.getItem(storageKey);
+      UserSettings.cache.set(storageKey, raw);
+      return parseLobbyPresetsJson(raw);
+    } catch {
+      return [];
+    }
+  }
+
+  /** Preserve unknown or older presets when saving or deleting another entry. */
+  getRawLobbyPresets(): unknown[] {
+    try {
+      const storageKey = this.storageKey(LOBBY_PRESETS_KEY);
+      const raw = localStorage.getItem(storageKey);
+      UserSettings.cache.set(storageKey, raw);
+      if (!raw) return [];
+      const parsed: unknown = JSON.parse(raw);
+      return Array.isArray(parsed) ? parsed : [];
+    } catch {
+      return [];
+    }
+  }
+
+  setLobbyPresets(presets: readonly unknown[]): boolean {
+    try {
+      if (presets.length === 0) {
+        this.removeCached(LOBBY_PRESETS_KEY);
+      } else {
+        this.setString(LOBBY_PRESETS_KEY, JSON.stringify(presets));
+      }
+      return true;
+    } catch {
+      return false;
+    }
   }
 
   // In case localStorage was manually edited to be invalid, return an empty object

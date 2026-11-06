@@ -1600,6 +1600,24 @@
     "lifetime_xp": "مجموع امتیاز تجربه (XP) شما: {xp}",
     "top_of_track": "بالاترین نقطه مسیر پیشرفت"
   },
+  "lobby_config": {
+    "preset": {
+      "delete": "حذف",
+      "delete_failed": "حذف مجموعه تنظیمات انجام نشد",
+      "deleted": "مجموعه تنظیمات حذف شد",
+      "load": "بارگذاری",
+      "loaded": "مجموعه تنظیمات بارگذاری شد",
+      "no_presets": "هیچ مجموعه تنظیماتی ذخیره نشده است",
+      "placeholder": "نام مجموعه تنظیمات...",
+      "save": "ذخیره تنظیمات فعلی",
+      "save_failed": "ذخیره مجموعه تنظیمات انجام نشد",
+      "save_label": "ذخیره مجموعه تنظیمات",
+      "saved": "مجموعه تنظیمات ذخیره شد",
+      "select": "یک مجموعه تنظیمات انتخاب کنید...",
+      "select_label": "تنظیمات ذخیره‌شده",
+      "title": "مجموعه تنظیمات"
+    }
+  },
   "main": {
     "account": "حساب",
     "clans": "قبیله ها",
@@ -1864,7 +1882,16 @@
     "teams_count": "{teamCount} تیم",
     "teams_of": "{teamCount} تیم {playersPerTeam} نفره",
     "teams_preset": "{preset} ({teams})",
-    "teams_title": "تیم ها"
+    "teams_title": "تیم ها",
+    "battle_hub_aria": "مرکز نبردهای آنلاین",
+    "battle_hub_eyebrow": "شبکهٔ نبرد زنده",
+    "battle_hub_title": "میدان نبرد آنلاین",
+    "battle_hub_description": "نبردهای عمومی را بررسی کن، وارد رتبه‌بندی شو یا با دوستانت اتاق خصوصی بساز.",
+    "battle_hub_public": "نبردهای عمومی",
+    "battle_hub_private": "اتاق‌های خصوصی",
+    "battle_hub_live": "فهرست نبردها به‌روز است",
+    "battle_hub_connecting": "در حال دریافت فهرست نبردها…",
+    "battle_hub_offline": "فهرست نبردها فعلاً در دسترس نیست"
   },
   "multi_tab": {
     "detected": "چندین تب بازی باز شناسایی شد.",
@@ -2855,6 +2882,10 @@
     "display_ui_scale_label": "مقیاس رابط کاربری",
     "display_ui_scale_option": "{scale, number, percent}",
     "display_unnamed": "نمایشگر شماره {index}",
+    "donate_gold": "اهدای طلا",
+    "donate_gold_desc": "منوی اهدای طلا را برای متحد یا هم‌تیمی زیر نشانگر ماوس باز می‌کند.",
+    "donate_troops": "اهدای نیرو",
+    "donate_troops_desc": "سهم تعیین‌شده با نسبت حمله را به متحد یا هم‌تیمی زیر نشانگر ماوس می‌فرستد.",
     "easter_bug_count_desc": "تعداد باگ‌هایی که تحمل می‌کنید (۰–۱۰۰۰، به صورت احساسی)",
     "easter_bug_count_label": "تعداد باگ‌ها",
     "easter_writing_speed_desc": "سرعت شبیه‌سازی کدنویسی را تنظیم کنید (x1–x100)",
