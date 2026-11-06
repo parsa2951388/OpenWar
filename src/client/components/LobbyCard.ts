@@ -172,6 +172,22 @@ const BADGE = "rounded bg-black/70";
 const CUSTOM_PILL =
   "rounded bg-orange-500 px-2 py-1 text-xs font-bold tracking-widest text-white";
 
+/** Formats live lobby occupancy without exposing placeholder 0/0 values. */
+export function formatLobbyPlayerCount(
+  numClients: number,
+  maxPlayers?: number,
+): string {
+  if (!Number.isFinite(numClients)) return "—";
+  const clients = Math.max(0, Math.floor(numClients));
+  const capacity =
+    typeof maxPlayers === "number" &&
+    Number.isFinite(maxPlayers) &&
+    maxPlayers > 0
+      ? Math.floor(maxPlayers)
+      : null;
+  return capacity === null ? String(clients) : `${clients}/${capacity}`;
+}
+
 /** Extreme aspect ratios (Amazon River is ~20:1) show whole rather than cropped. */
 function fitsByContain(mapType: GameMapType): boolean {
   const ratio = mapAspectRatios.get(mapType);
@@ -206,10 +222,7 @@ export function lobbyCard({
         : mapName;
   // Hosted lobbies don't always advertise a cap; "3/" reads as a missing number.
   const capacity = lobby.gameConfig?.maxPlayers;
-  const playerCount =
-    capacity === undefined
-      ? String(lobby.numClients)
-      : `${lobby.numClients}/${capacity}`;
+  const playerCount = formatLobbyPlayerCount(lobby.numClients, capacity);
   // Longest first, so on a short card the pills that say the most stay legible.
   const modifiers = getModifierLabels(
     lobby.gameConfig?.publicGameModifiers,

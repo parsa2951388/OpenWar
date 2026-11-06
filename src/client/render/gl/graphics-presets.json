@@ -7,7 +7,11 @@
   {
     "nameKey": "graphics_setting.preset_night",
     "descKey": "graphics_setting.preset_night_desc",
-    "overrides": { "lighting": { "ambient": 0.36 } }
+    "overrides": {
+      "lighting": {
+        "ambient": 0.36
+      }
+    }
   },
   {
     "nameKey": "graphics_setting.preset_evans_pick",
@@ -38,6 +42,55 @@
       "lighting": {
         "ambient": 0.76,
         "falloffPower": 1
+      }
+    }
+  },
+  {
+    "nameKey": "graphics_setting.preset_battlefield",
+    "descKey": "graphics_setting.preset_battlefield_desc",
+    "overrides": {
+      "name": {
+        "nameScaleFactor": 0.48,
+        "hoverFadeAlpha": 0.32,
+        "hoverGlowWidth": 8,
+        "hoverGlowAlpha": 0.92
+      },
+      "structure": {
+        "iconSize": 66,
+        "classicIcons": false
+      },
+      "mapOverlay": {
+        "navalHighlight": true,
+        "highlightFillBrighten": 0.5,
+        "highlightBrighten": 0.28,
+        "highlightThicken": 3,
+        "territorySaturation": 1.08,
+        "territoryAlpha": 0.7,
+        "coordinateGridOpacity": 0.16,
+        "friendlyTintColor": "#38bdf8",
+        "embargoTintColor": "#fb7185",
+        "friendlyTintRatio": 0.72,
+        "embargoTintRatio": 0.78
+      },
+      "affiliation": {
+        "selfColor": "#38bdf8",
+        "allyColor": "#facc15",
+        "enemyColor": "#fb7185"
+      },
+      "terrain": {
+        "backgroundColor": "#142536",
+        "oceanColor": "#2c6e9a",
+        "sandColor": "#d8c28f",
+        "plainsColor": "#9bc86b",
+        "highlandColor": "#bca47a",
+        "mountainColor": "#f0f2ef"
+      },
+      "lighting": {
+        "ambient": 0.9,
+        "falloffPower": 1.15
+      },
+      "smallPlayerGlow": {
+        "strength": 0.65
       }
     }
   },

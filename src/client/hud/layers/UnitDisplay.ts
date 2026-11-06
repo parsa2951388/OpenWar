@@ -16,6 +16,7 @@ import { UIState } from "../../UIState";
 import { UserSettings } from "../../UserSettings";
 import { resolveKeybindLabel, translateText } from "../../Utils";
 import { GameView } from "../../view";
+import "./OpenWarHudSkin";
 import {
   airportIcon,
   atomBombIcon,
@@ -204,7 +205,10 @@ export class UnitDisplay extends LitElement implements Controller {
     }
 
     return html`
-      <div class="border-t border-white/10 p-0.5 w-full">
+      <div
+        class="ow-hud-buildbar border-t border-white/10 p-0.5 w-full"
+        data-radial-click-through
+      >
         <div
           class="grid grid-cols-5 sm:grid-cols-11 grid-flow-row gap-1 w-full max-w-full px-1 mx-auto"
         >
@@ -331,6 +335,8 @@ export class UnitDisplay extends LitElement implements Controller {
           hovered
             ? html`
                 <div
+                  id=${"ow-build-tooltip-" + structureKey}
+                  role="tooltip"
                   class="absolute bottom-full left-1/2 -translate-x-1/2 mb-1 text-gray-200 text-center w-max text-xs bg-gray-800/90 backdrop-blur-xs rounded-sm p-1 z-[100] shadow-lg pointer-events-none"
                 >
                   <div class="font-bold text-sm mb-1">
@@ -360,13 +366,20 @@ export class UnitDisplay extends LitElement implements Controller {
               `
             : null
         }
-        <div
-          class="${
+        <button
+          type="button"
+          aria-label=${translateText("unit_type." + structureKey)}
+          aria-pressed=${selected ? "true" : "false"}
+          aria-disabled=${this.canBuild(unitType) ? "false" : "true"}
+          aria-describedby=${hovered ? "ow-build-tooltip-" + structureKey : nothing}
+          class="ow-hud-build-button ${
             this.canBuild(unitType) ? "" : "opacity-40"
           } min-h-11 min-w-0 w-full border border-slate-500 rounded-sm px-1 py-1 flex flex-col items-center justify-center gap-0.5 cursor-pointer touch-manipulation
              ${selected ? "hover:bg-gray-400/10" : "hover:bg-gray-800"}
              rounded-sm text-white ${selected ? "bg-slate-400/20" : ""}
              ${this.tutorialHighlight === unitType ? "tutorial-highlight" : ""}"
+          data-ow-build-button
+          data-selected=${selected ? "true" : "false"}
           @click=${() => {
             if (selected) {
               this.inputHandler.setGhostStructure(null);
@@ -374,6 +387,31 @@ export class UnitDisplay extends LitElement implements Controller {
               this.inputHandler.setGhostStructure(unitType, "GUIclick");
             }
             this.requestUpdate();
+          }}
+          @focus=${() => {
+            this._hoveredUnit = unitType;
+            this.requestUpdate();
+            switch (unitType) {
+              case UnitType.AtomBomb:
+              case UnitType.HydrogenBomb:
+                this.eventBus?.emit(
+                  new ToggleStructureEvent([
+                    UnitType.MissileSilo,
+                    UnitType.SAMLauncher,
+                  ]),
+                );
+                break;
+              case UnitType.Warship:
+                this.eventBus?.emit(new ToggleStructureEvent([UnitType.Port]));
+                break;
+              default:
+                this.eventBus?.emit(new ToggleStructureEvent([unitType]));
+            }
+          }}
+          @blur=${() => {
+            this._hoveredUnit = null;
+            this.requestUpdate();
+            this.eventBus?.emit(new ToggleStructureEvent(null));
           }}
           @mouseenter=${() => {
             switch (unitType) {
@@ -422,7 +460,7 @@ export class UnitDisplay extends LitElement implements Controller {
               >${this.playerBuildables === null ? "…" : renderNumber(this.cost(unitType))}</span
             >
           </div>
-        </div>
+        </button>
       </div>
     `;
   }

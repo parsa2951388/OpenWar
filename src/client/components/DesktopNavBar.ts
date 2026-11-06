@@ -43,7 +43,7 @@ export class DesktopNavBar extends LitElement {
     const currentPage = window.currentPageId;
     return html`
       <nav
-        class="hidden lg:flex w-full bg-zinc-900/90 backdrop-blur-md items-center justify-center gap-8 py-4 shrink-0 z-50 relative compact:[zoom:0.75]"
+        class="hidden lg:flex w-full bg-zinc-950/95 border-b border-white/10 backdrop-blur-xl items-center justify-center gap-5 xl:gap-7 px-4 py-3 shrink-0 z-50 relative compact:[zoom:0.75]"
       >
         <div class="flex flex-col items-center justify-center">
           <div class="h-8">
@@ -62,6 +62,11 @@ export class DesktopNavBar extends LitElement {
           class="nav-menu-item ${currentPage === "page-play" ? "active" : ""} text-white/70 hover:text-malibu-blue font-medium tracking-wider uppercase cursor-pointer transition-colors [&.active]:text-malibu-blue"
           data-page="page-play"
           data-i18n="main.play"
+        ></button>
+        <button
+          class="nav-menu-item ${currentPage === "page-news" ? "active" : ""} text-white/70 hover:text-malibu-blue font-medium tracking-wider uppercase cursor-pointer transition-colors [&.active]:text-malibu-blue"
+          data-page="page-news"
+          data-i18n="main.news"
         ></button>
         <div class="relative no-game-portal">
           <button

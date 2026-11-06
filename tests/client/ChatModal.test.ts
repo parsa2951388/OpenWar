@@ -135,6 +135,12 @@ describe("ChatModal", () => {
     await modal.updateComplete;
   };
 
+  it("applies the tactical in-game chat skin hooks", () => {
+    expect(modal.querySelector(".ow-hud-chat-modal")).not.toBeNull();
+    expect(modal.querySelector(".ow-hud-chat-category-title")).not.toBeNull();
+    expect(modal.querySelector(".ow-hud-chat-chip")).not.toBeNull();
+  });
+
   it("shows the core phrases of every category at once", () => {
     expect(headings()).toEqual([
       "Help",

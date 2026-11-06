@@ -10,6 +10,7 @@ import { CloseViewEvent, ShowChatMenuEvent } from "../../InputHandler";
 import { TransformHandler } from "../../TransformHandler";
 import { SendQuickChatEvent } from "../../Transport";
 import { hasOwnTranslation, translateText } from "../../Utils";
+import "./OpenWarHudSkin";
 
 export type QuickChatPhrase = {
   key: string;
@@ -131,13 +132,13 @@ export class ChatModal extends LitElement {
     }
     return html`
       <div
-        class="fixed inset-0 bg-black/15 flex items-start sm:items-center justify-center z-10002 pt-4 sm:pt-0"
+        class="ow-hud-chat-overlay fixed inset-0 bg-black/15 flex items-start sm:items-center justify-center z-10002 pt-4 sm:pt-0"
         @click=${(e: MouseEvent) =>
           e.target === e.currentTarget && this.close()}
       >
         <div class="relative">
           <button
-            class="absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center
+            class="ow-hud-chat-close absolute -top-3 -right-3 w-7 h-7 flex items-center justify-center
                     bg-zinc-700 hover:bg-red-500 text-white rounded-full shadow-sm transition-colors z-10004"
             aria-label=${translateText("common.close")}
             @click=${() => this.close()}
@@ -145,7 +146,7 @@ export class ChatModal extends LitElement {
             ✕
           </button>
           <div
-            class="bg-zinc-900/95 p-3 rounded-xl shadow-2xl shadow-black/50 ring-1 ring-white/10 text-white
+            class="ow-hud-chat-modal bg-zinc-900/95 p-3 rounded-xl shadow-2xl shadow-black/50 ring-1 ring-white/10 text-white
                    w-[min(44rem,calc(100vw-32px))] max-h-[calc(100vh-60px)] overflow-y-auto
                    flex flex-col gap-3"
             @contextmenu=${(e: MouseEvent) => e.preventDefault()}
@@ -168,7 +169,7 @@ export class ChatModal extends LitElement {
   private renderAllPhrasesSwitch() {
     return html`
       <button
-        class="ms-auto shrink-0 flex items-center gap-2 text-sm text-zinc-300 hover:text-white cursor-pointer"
+        class="ow-hud-chat-all-switch ms-auto shrink-0 flex items-center gap-2 text-sm text-zinc-300 hover:text-white cursor-pointer"
         role="switch"
         aria-checked=${this.showAll}
         @click=${() => (this.showAll = !this.showAll)}
@@ -220,7 +221,7 @@ export class ChatModal extends LitElement {
               ({ id, phrases }) => html`
                 <section>
                   <h3
-                    class="mb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-400"
+                    class="ow-hud-chat-category-title mb-1 text-[11px] font-semibold uppercase tracking-wider text-zinc-400"
                   >
                     ${translateText(`chat.cat.${id}`)}
                   </h3>
@@ -281,7 +282,7 @@ export class ChatModal extends LitElement {
     const full = translateText(`chat.${category}.${phrase.key}`);
     return html`
       <button
-        class="max-w-[15rem] truncate px-2.5 py-1 rounded-md text-sm text-left
+        class="ow-hud-chat-chip max-w-[15rem] truncate px-2.5 py-1 rounded-md text-sm text-left
                bg-white/5 hover:bg-white/15 active:bg-white/25 transition-colors cursor-pointer"
         title=${full.replace(PLAYER_PLACEHOLDER, "___")}
         @click=${() => this.pickPhrase(category, phrase)}

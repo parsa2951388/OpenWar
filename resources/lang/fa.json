@@ -885,8 +885,8 @@
     "edition_switch_label": "حالت بازی",
     "experience_design_status": "طراحی تجربه",
     "in_development": "در حال توسعه",
-    "intro_description": "تجربهٔ کلاسیک را برای نبرد سریع انتخاب کن یا وارد میز عملیات و مسیر توسعهٔ جدید شو.",
-    "intro_title": "دنیای Open War را انتخاب کن",
+    "intro_description": "وارد نبردهای زنده شو، یک مسابقهٔ انفرادی آغاز کن یا با دوستانت اتاق خصوصی بساز.",
+    "intro_title": "ورود به میدان نبرد",
     "join_code_action": "پیوستن با کد",
     "mechanic_design_status": "طراحی مکانیک",
     "mission_alliances_disabled": "اتحادها غیرفعال",
@@ -952,7 +952,7 @@
     "operations_eyebrow": "میز فرماندهی · کمپین عملیات",
     "operations_headline": "هر نبرد، یک عملیات استراتژیک",
     "operations_label": "عملیات جدید",
-    "operations_subtitle": "فرماندهی و لجستیک",
+    "operations_subtitle": "در دست ساخت",
     "practice_action": "شروع عملیات دروازهٔ آهنین",
     "private_room_description": "اتاق خصوصی هنوز از قوانین استاندارد لابی استفاده می‌کند؛ قوانین اختصاصی چندنفرهٔ Operations فعال نشده‌اند.",
     "private_room_title": "اتاق خصوصی برای دوستانت بساز",
@@ -974,7 +974,7 @@
     "systems_overview_title": "میدان نبردی فراتر از تصرف قلمرو",
     "systems_title": "چیزی فراتر از قلمروگیری",
     "theatre_map_alt": "نمای مفهومی نقشهٔ عملیاتی با خطوط ارتفاع و مسیرهای تدارکاتی",
-    "top_eyebrow": "دو مسیر، یک جهان"
+    "top_eyebrow": "OPEN WAR  /  شبکهٔ نبرد زنده"
   },
   "effects": {
     "nukeType": {
@@ -1157,6 +1157,9 @@
     "hvn": "انسان‌ها در برابر ملت‌ها",
     "teams": "تیم‌‌ها"
   },
+  "game_right_sidebar": {
+    "share_link": "اشتراک‌گذاری پیوند"
+  },
   "game_settings": {
     "bots": "قبیله ها: ",
     "compact_map": "نقشه فشرده",
@@ -1277,6 +1280,8 @@
     "ocean_color_label": "رنگ اقیانوس",
     "plains_color_desc": "رنگ پایه برای زمین‌های پست.",
     "plains_color_label": "رنگ دشت‌ها",
+    "preset_battlefield": "میدان نبرد اقیانوسی",
+    "preset_battlefield_desc": "اقیانوس‌های آبی روشن، زمین‌های سبز زنده، مرزهای دقیق قلمرو و ساختمان‌های خواناتر برای نبرد سریع",
     "preset_colorblind": "کور رنگ",
     "preset_colorblind_desc": "رنگ‌های قلمرو و مرز مناسب برای کوررنگی",
     "preset_custom": "سفارشی",
@@ -1864,6 +1869,16 @@
     "waiting_for_game": "در انتظار شروع بازی..."
   },
   "mode_selector": {
+    "battle_hub_aria": "مرکز نبردهای آنلاین",
+    "battle_hub_connecting": "در حال دریافت فهرست نبردها…",
+    "battle_hub_description": "نبردهای عمومی را بررسی کن، وارد رتبه‌بندی شو یا با دوستانت اتاق خصوصی بساز.",
+    "battle_hub_eyebrow": "شبکهٔ نبرد زنده",
+    "battle_hub_live": "فهرست نبردها به‌روز است",
+    "battle_hub_offline": "فهرست نبردها فعلاً در دسترس نیست",
+    "battle_hub_private": "اتاق‌های خصوصی",
+    "battle_hub_players": "بازیکنان آنلاین",
+    "battle_hub_public": "نبردهای عمومی",
+    "battle_hub_title": "نبردهای زنده",
     "lobbies_unreachable": "در حال حاضر امکان دسترسی به لابی‌های عمومی وجود ندارد",
     "offline_lobbies": "لابی‌های عمومی در حالت آفلاین در دسترس نیستند",
     "ranked_1v1_title": "یک به یک",
@@ -1884,16 +1899,7 @@
     "teams_count": "{teamCount} تیم",
     "teams_of": "{teamCount} تیم {playersPerTeam} نفره",
     "teams_preset": "{preset} ({teams})",
-    "teams_title": "تیم ها",
-    "battle_hub_aria": "مرکز نبردهای آنلاین",
-    "battle_hub_eyebrow": "شبکهٔ نبرد زنده",
-    "battle_hub_title": "میدان نبرد آنلاین",
-    "battle_hub_description": "نبردهای عمومی را بررسی کن، وارد رتبه‌بندی شو یا با دوستانت اتاق خصوصی بساز.",
-    "battle_hub_public": "نبردهای عمومی",
-    "battle_hub_private": "اتاق‌های خصوصی",
-    "battle_hub_live": "فهرست نبردها به‌روز است",
-    "battle_hub_connecting": "در حال دریافت فهرست نبردها…",
-    "battle_hub_offline": "فهرست نبردها فعلاً در دسترس نیست"
+    "teams_title": "تیم ها"
   },
   "multi_tab": {
     "detected": "چندین تب بازی باز شناسایی شد.",

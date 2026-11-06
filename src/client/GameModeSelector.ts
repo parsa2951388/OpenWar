@@ -90,6 +90,31 @@ export function countOnlineBattleRooms(
 }
 
 /**
+ * Counts connected players across the current public and hosted lobby snapshot.
+ */
+export function countOnlineBattlePlayers(
+  lobbies: PublicGames | null,
+): number | null {
+  if (lobbies === null) return null;
+
+  const games = lobbies.games;
+  const allGames = [
+    ...(games?.ffa ?? []),
+    ...(games?.team ?? []),
+    ...(games?.special ?? []),
+    ...(games?.hosted ?? []),
+  ];
+
+  return allGames.reduce((total, game) => {
+    const clients = game.numClients;
+    if (typeof clients !== "number" || !Number.isFinite(clients)) {
+      return total;
+    }
+    return total + Math.max(0, Math.floor(clients));
+  }, 0);
+}
+
+/**
  * THE REACHABILITY RULE (OPE-439). Stated once, here; every other call site
  * in this feature points back at this comment rather than restating it.
  *
@@ -695,6 +720,7 @@ export class GameModeSelector extends LitElement {
 
   private renderOnlineHubHeader() {
     const roomCounts = countOnlineBattleRooms(this.lobbies);
+    const livePlayers = countOnlineBattlePlayers(this.lobbies);
     const connectionStatus =
       this.lobbies !== null
         ? translateText("mode_selector.battle_hub_live")
@@ -723,6 +749,13 @@ export class GameModeSelector extends LitElement {
           <div class="ow-online-hub-metric">
             <span>${translateText("mode_selector.battle_hub_private")}</span>
             <strong>${roomCounts.hostedRooms ?? "—"}</strong>
+          </div>
+          <div
+            class="ow-online-hub-metric ow-online-hub-metric-live"
+            data-testid="battle-hub-live-players"
+          >
+            <span>${translateText("mode_selector.battle_hub_players")}</span>
+            <strong>${livePlayers ?? "—"}</strong>
           </div>
           <div class="ow-online-hub-connection" aria-live="polite">
             <span

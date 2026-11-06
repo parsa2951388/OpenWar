@@ -146,21 +146,25 @@ export class EditionHub extends LitElement {
   private renderEditionControl() {
     return html`
       <section
-        class="ow-edition-header"
+        class="ow-edition-header ow-launcher-header"
         aria-label=${this.t("choose_experience")}
       >
-        <div class="ow-edition-heading">
-          <span class="ow-edition-eyebrow">${this.t("top_eyebrow")}</span>
+        <div class="ow-edition-heading ow-launcher-heading">
+          <span class="ow-edition-eyebrow">
+            <span class="ow-launcher-live-mark" aria-hidden="true"></span>
+            ${this.t("top_eyebrow")}
+          </span>
           <h1>${this.t("intro_title")}</h1>
           <p>${this.t("intro_description")}</p>
         </div>
         <div
-          class="ow-edition-switch"
+          class="ow-edition-switch ow-launcher-edition-switch"
           role="group"
           aria-label=${this.t("edition_switch_label")}
         >
           <button
             type="button"
+            data-testid="edition-classic"
             class="ow-edition-tab ${this.edition === "classic" ? "is-active" : ""}"
             aria-pressed=${this.edition === "classic" ? "true" : "false"}
             @click=${() => this.selectEdition("classic")}
@@ -174,7 +178,8 @@ export class EditionHub extends LitElement {
           </button>
           <button
             type="button"
-            class="ow-edition-tab ${this.edition === "operations" ? "is-active" : ""}"
+            data-testid="edition-operations"
+            class="ow-edition-tab ow-edition-tab-operations ${this.edition === "operations" ? "is-active" : ""}"
             aria-pressed=${this.edition === "operations" ? "true" : "false"}
             @click=${() => this.selectEdition("operations")}
           >
@@ -689,17 +694,13 @@ export class EditionHub extends LitElement {
 
   render() {
     return html`
-      <main class="ow-edition-hub">
+      <main class="ow-edition-hub ow-battle-launcher">
         ${this.renderEditionControl()}
         <section
           class="ow-classic-edition"
+          data-testid="classic-edition"
           ?hidden=${this.edition !== "classic"}
         >
-          <div class="ow-classic-heading">
-            <span class="ow-edition-eyebrow">${this.t("classic_eyebrow")}</span>
-            <h2>${this.t("classic_title")}</h2>
-            <p>${this.t("classic_description")}</p>
-          </div>
           <game-mode-selector></game-mode-selector>
         </section>
         ${this.renderOperationsEdition()}
