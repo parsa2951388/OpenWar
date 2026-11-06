@@ -209,7 +209,8 @@ export abstract class StatsTable extends LitElement {
     const headerCellClass = [
       "stats-table-header-cell",
       CELL_CLASS,
-      "justify-center text-center whitespace-nowrap border-b border-b-slate-500",
+      "justify-center text-center whitespace-nowrap",
+      "border-b border-b-slate-500",
       index > 0 ? HEADER_DIVIDER_CLASS : "",
     ].filter(Boolean).join(" ");
     const sortButtonClass = [
@@ -372,6 +373,10 @@ export abstract class StatsTable extends LitElement {
       scrollHeight,
       "grid col-span-full overflow-y-scroll overflow-x-hidden",
     ].join(" ");
+    const statsHeaderClass = [
+      "stats-table-header grid col-span-full",
+      "font-bold bg-gray-700/95",
+    ].join(" ");
 
     return html`
       <div class=${tableClass}>
@@ -385,7 +390,7 @@ export abstract class StatsTable extends LitElement {
             role="table"
           >
             <div
-              class="stats-table-header grid col-span-full font-bold bg-gray-700/95"
+              class=${statsHeaderClass}
               style="grid-template-columns: subgrid; grid-column: 1 / -1;"
               role="row"
             >
