@@ -29,6 +29,7 @@ The key distinction is **code presence versus verified production behavior**. A 
 ### OpenFront latest release snapshot (verified 2026-11-06)
 
 The official OpenFront releases page lists **v0.35.11**, released November 4, 2026, as the latest release at the time of this audit. Recent additions relevant to Open War include:
+
 - A guided tutorial covering spawn, expansion, troops and first attacks (v0.35.7).
 - Progression with XP, player levels, prestige, ranked FFA and Clan Wars, plus a seekable replay viewer (v0.35.0).
 - Clan territory map, clan donation leaderboard and continuing public-lobby/team fixes (v0.35.7–v0.35.11).
