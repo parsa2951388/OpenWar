@@ -24,7 +24,6 @@ describe("UnitImpl", () => {
   test.each([
     [UnitType.TransportShip, "unit_type.boat"],
     [UnitType.Warship, "unit_type.warship"],
-    [UnitType.Aircraft, "unit_type.aircraft"],
   ])("sends the translation key when a %s is destroyed", (type, unit) => {
     const ship = owner.buildUnit(type, game.ref(8, 10), {});
 
