@@ -1953,3 +1953,24 @@
     box-shadow: none;
   }
 }
+
+
+/* OpenBattle-inspired live metrics: three comparable counts, one clear status. */
+@media (min-width: 901px) {
+  .ow-online-hub-metrics {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+  }
+}
+
+.ow-online-hub-metric-live {
+  border-color: rgba(102, 185, 239, 0.24);
+  background: rgba(8, 34, 53, 0.58);
+}
+
+.ow-online-hub-metric-live strong {
+  color: #78d6f4;
+}
+
+.ow-online-hub-connection {
+  color: #a9c6d8;
+}
