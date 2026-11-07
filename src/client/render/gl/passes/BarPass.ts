@@ -49,7 +49,12 @@ export function unitHealthBarMaxHealth(
       veterancyHealthBonus,
     );
   }
-  if (unitType === UnitType.Aircraft) return aircraftMaxHealth;
+  if (
+    unitType === UnitType.Aircraft ||
+    unitType === UnitType.CommercialAircraft
+  ) {
+    return aircraftMaxHealth;
+  }
   if (unitType === UnitType.Airport) return airportMaxHealth;
   return 0;
 }
