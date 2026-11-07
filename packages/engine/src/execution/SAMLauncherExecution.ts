@@ -410,9 +410,12 @@ export class SAMLauncherExecution implements Execution {
       }
     }
 
-    if (this.sam.isInCooldown() || this.mg.unitCount(UnitType.Aircraft) +
-      this.mg.unitCount(UnitType.CommercialAircraft) ===
-      0) {
+    if (
+      this.sam.isInCooldown() ||
+      this.mg.unitCount(UnitType.Aircraft) +
+        this.mg.unitCount(UnitType.CommercialAircraft) ===
+        0
+    ) {
       return;
     }
 

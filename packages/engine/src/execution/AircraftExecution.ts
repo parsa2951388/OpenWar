@@ -116,7 +116,12 @@ export class AircraftExecution implements Execution {
     const candidates = mg.nearbyUnits(
       this.airport.tile(),
       mg.config().aircraftRange(),
-      [UnitType.Aircraft, UnitType.CommercialAircraft, UnitType.Airport, UnitType.Warship],
+      [
+        UnitType.Aircraft,
+        UnitType.CommercialAircraft,
+        UnitType.Airport,
+        UnitType.Warship,
+      ],
       ({ unit }) => isUnit(unit) && this.isValidTarget(unit),
     );
     let best: { unit: Unit; distSquared: number } | undefined;

@@ -6,8 +6,8 @@ import {
 import { AirportExecution } from "@openfront/engine/execution/AirportExecution";
 import { Game, Player } from "@openfront/engine/game/Game";
 import { setup } from "./util/Setup";
-import { executeTicks } from "./util/utils";
 import { expectSnapshotRoundTrip } from "./util/Snapshot";
+import { executeTicks } from "./util/utils";
 
 describe("AirportExecution", () => {
   let game: Game;

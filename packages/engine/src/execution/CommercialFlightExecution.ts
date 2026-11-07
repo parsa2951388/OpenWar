@@ -3,9 +3,9 @@ import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { zRef } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { z } from "zod";
 import { Execution, Game, Unit } from "../game/Game";
-import { execSnapshotType } from "../snapshot/ExecutionSnapshot";
 import { PathFinding } from "../pathfinding/PathFinder";
 import { PathStatus, SteppingPathFinder } from "../pathfinding/types";
+import { execSnapshotType } from "../snapshot/ExecutionSnapshot";
 import {
   AirPathFinderSchema,
   airPathFinderState,
@@ -88,10 +88,7 @@ export class CommercialFlightExecution implements Execution {
     const targetAirport = this.returning
       ? this.sourceAirport
       : this.destinationAirport;
-    const result = pathFinder.next(
-      this.aircraft.tile(),
-      targetAirport.tile(),
-    );
+    const result = pathFinder.next(this.aircraft.tile(), targetAirport.tile());
 
     switch (result.status) {
       case PathStatus.NEXT:
@@ -110,7 +107,10 @@ export class CommercialFlightExecution implements Execution {
           .commercialFlightGold(distance, destinationOwner);
 
         sourceOwner.addGold(sourceGold, this.sourceAirport.tile());
-        destinationOwner.addGold(destinationGold, this.destinationAirport.tile());
+        destinationOwner.addGold(
+          destinationGold,
+          this.destinationAirport.tile(),
+        );
         sourceOwner.addTradeGold(sourceGold);
         destinationOwner.addTradeGold(destinationGold);
 

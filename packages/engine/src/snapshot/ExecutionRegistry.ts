@@ -1,6 +1,5 @@
 // Every entry is `<ClassName>Snapshot`, exported next to its class.
 import { AircraftExecutionSnapshot } from "../execution/AircraftExecution";
-import { CommercialFlightExecutionSnapshot } from "../execution/CommercialFlightExecution";
 import { AirportExecutionSnapshot } from "../execution/AirportExecution";
 import { AllianceExtensionExecutionSnapshot } from "../execution/alliance/AllianceExtensionExecution";
 import { AllianceRejectExecutionSnapshot } from "../execution/alliance/AllianceRejectExecution";
@@ -9,6 +8,7 @@ import { BreakAllianceExecutionSnapshot } from "../execution/alliance/BreakAllia
 import { AttackExecutionSnapshot } from "../execution/AttackExecution";
 import { BoatRetreatExecutionSnapshot } from "../execution/BoatRetreatExecution";
 import { CityExecutionSnapshot } from "../execution/CityExecution";
+import { CommercialFlightExecutionSnapshot } from "../execution/CommercialFlightExecution";
 import { ConstructionExecutionSnapshot } from "../execution/ConstructionExecution";
 import { DefensePostExecutionSnapshot } from "../execution/DefensePostExecution";
 import { DeleteUnitExecutionSnapshot } from "../execution/DeleteUnitExecution";

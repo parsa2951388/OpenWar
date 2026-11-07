@@ -92,7 +92,10 @@ export class AirportExecution implements Execution {
 
     const destinations = mg
       .players()
-      .filter((player) => player !== owner && player.isAlive() && owner.canTrade(player))
+      .filter(
+        (player) =>
+          player !== owner && player.isAlive() && owner.canTrade(player),
+      )
       .flatMap((player) => player.units(UnitType.Airport))
       .filter(
         (airport) =>
@@ -112,8 +115,7 @@ export class AirportExecution implements Execution {
     const cycle = Math.floor(
       tick / mg.config().commercialFlightSpawnCooldown(),
     );
-    const destination =
-      destinations[cycle % destinations.length] as Unit;
+    const destination = destinations[cycle % destinations.length] as Unit;
 
     const aircraft = owner.buildUnit(
       UnitType.CommercialAircraft,
