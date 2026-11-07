@@ -9,21 +9,27 @@ import type {
   SnapshotWriter,
 } from "../snapshot/SnapshotContext";
 import { AircraftExecution } from "./AircraftExecution";
+import { CommercialFlightExecution } from "./CommercialFlightExecution";
 
 /**
- * One active airframe per completed airport. If an aircraft is destroyed,
- * the airfield produces a replacement after a short cooldown.
+ * An active airport maintains one defensive aircraft and one commercial
+ * service slot per completed airfield. Commercial flights only connect live
+ * airports whose owners can trade, and the global owner cap prevents an
+ * airport-rich player from spawning an unbounded fleet.
  */
 export class AirportExecution implements Execution {
   private active = true;
   private mg: Game | undefined;
   private lastSpawnTick = -1_000_000_000;
+  private lastCommercialFlightTick = -1_000_000_000;
 
   constructor(private airport: Unit) {}
 
   init(mg: Game): void {
     this.mg = mg;
     this.lastSpawnTick = mg.ticks() - mg.config().aircraftSpawnCooldown();
+    this.lastCommercialFlightTick =
+      mg.ticks() - mg.config().commercialFlightSpawnCooldown();
   }
 
   tick(): void {
@@ -45,22 +51,79 @@ export class AirportExecution implements Execution {
       ).length;
     if (readyAirports === 0) return;
 
-    const activeAircraft = owner
-      .units(UnitType.Aircraft)
-      .filter((aircraft) => aircraft.isActive()).length;
-    if (activeAircraft >= readyAirports) return;
+    const tick = mg.ticks();
 
-    if (mg.ticks() - this.lastSpawnTick < mg.config().aircraftSpawnCooldown()) {
+    if (
+      !mg.config().isUnitDisabled(UnitType.Aircraft) &&
+      owner.units(UnitType.Aircraft).filter((aircraft) => aircraft.isActive())
+        .length < readyAirports &&
+      tick - this.lastSpawnTick >= mg.config().aircraftSpawnCooldown()
+    ) {
+      const aircraft = owner.buildUnit(
+        UnitType.Aircraft,
+        this.airport.tile(),
+        {},
+      );
+      mg.addExecution(new AircraftExecution(this.airport, aircraft));
+      this.lastSpawnTick = tick;
+    }
+
+    this.spawnCommercialFlight(mg, owner, readyAirports, tick);
+  }
+
+  private spawnCommercialFlight(
+    mg: Game,
+    owner: ReturnType<Unit["owner"]>,
+    readyAirports: number,
+    tick: number,
+  ): void {
+    if (mg.config().isUnitDisabled(UnitType.CommercialAircraft)) return;
+    if (
+      tick - this.lastCommercialFlightTick <
+      mg.config().commercialFlightSpawnCooldown()
+    ) {
       return;
     }
 
+    const activeFlights = owner
+      .units(UnitType.CommercialAircraft)
+      .filter((aircraft) => aircraft.isActive()).length;
+    if (activeFlights >= readyAirports) return;
+
+    const destinations = mg
+      .players()
+      .filter((player) => player !== owner && player.isAlive() && owner.canTrade(player))
+      .flatMap((player) => player.units(UnitType.Airport))
+      .filter(
+        (airport) =>
+          airport.isActive() &&
+          !airport.isUnderConstruction() &&
+          airport.owner().canTrade(owner),
+      )
+      .sort(
+        (left, right) =>
+          mg.manhattanDist(this.airport.tile(), left.tile()) -
+          mg.manhattanDist(this.airport.tile(), right.tile()),
+      );
+
+    if (destinations.length === 0) return;
+
+    // Rotate deterministically through the nearest available trade partners.
+    const cycle = Math.floor(
+      tick / mg.config().commercialFlightSpawnCooldown(),
+    );
+    const destination =
+      destinations[cycle % destinations.length] as Unit;
+
     const aircraft = owner.buildUnit(
-      UnitType.Aircraft,
+      UnitType.CommercialAircraft,
       this.airport.tile(),
       {},
     );
-    mg.addExecution(new AircraftExecution(this.airport, aircraft));
-    this.lastSpawnTick = mg.ticks();
+    mg.addExecution(
+      new CommercialFlightExecution(this.airport, destination, aircraft),
+    );
+    this.lastCommercialFlightTick = tick;
   }
 
   isActive(): boolean {
@@ -77,6 +140,7 @@ export class AirportExecution implements Execution {
       initialized: this.mg !== undefined,
       airport: w.unit(this.airport),
       lastSpawnTick: this.lastSpawnTick,
+      lastCommercialFlightTick: this.lastCommercialFlightTick,
     });
   }
 
@@ -85,6 +149,7 @@ export class AirportExecution implements Execution {
     if (s.initialized) this.mg = r.game;
     this.airport = r.unit(s.airport);
     this.lastSpawnTick = s.lastSpawnTick;
+    this.lastCommercialFlightTick = s.lastCommercialFlightTick;
   }
 }
 
@@ -93,12 +158,24 @@ const AirportStateSchema = z.object({
   initialized: z.boolean(),
   airport: zRef(),
   lastSpawnTick: zInt(),
+  lastCommercialFlightTick: zInt(),
 });
 type AirportState = z.infer<typeof AirportStateSchema>;
 
 export const AirportExecutionSnapshot = execSnapshotType({
   name: "Airport",
-  version: 1,
+  version: 2,
   schema: AirportStateSchema,
+  migrations: {
+    1: (data) => ({
+      ...(data as z.infer<typeof z.object({
+        active: z.boolean(),
+        initialized: z.boolean(),
+        airport: zRef(),
+        lastSpawnTick: zInt(),
+      })>),
+      lastCommercialFlightTick: -1_000_000_000,
+    }),
+  },
   cls: () => AirportExecution,
 });
