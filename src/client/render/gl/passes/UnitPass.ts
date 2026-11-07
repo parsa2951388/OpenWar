@@ -13,7 +13,7 @@
  *   Ground/sea (boats, trains) → rendered below structures
  *   Missiles (nukes, shells, SAM, MIRV warheads) → rendered above structures
  *
- * Atlas layout (12 base columns × 13px cells, plus the appended aircraft column):
+ * Atlas layout (12 base columns × 13px cells, plus one aircraft column):
  *   Col 0: Transport (5×5)
  *   Col 1: Trade Ship (5×5)
  *   Col 2: Warship (11×11)
@@ -410,7 +410,14 @@ export class UnitPass {
     );
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      atlas,
+    );
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   }
