@@ -2,7 +2,8 @@
  * StructurePass — GPU-rendered structures with icon sprites.
  *
  * Renders a filled circle in player color with a white icon overlay,
- * sampled from a pre-built 7-column sprite atlas (generate-sprite-atlases.mjs).
+ * sampled from a pre-built 7-column sprite atlas
+ * (generate-sprite-atlases.mjs).
  *
  * Two LODs based on zoom:
  *   - zoom > 0.5: full icon with circle background
@@ -292,7 +293,14 @@ export class StructurePass {
     const gl = this.gl;
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas);
+    gl.texImage2D(
+      gl.TEXTURE_2D,
+      0,
+      gl.RGBA,
+      gl.RGBA,
+      gl.UNSIGNED_BYTE,
+      atlas,
+    );
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(
       gl.TEXTURE_2D,
