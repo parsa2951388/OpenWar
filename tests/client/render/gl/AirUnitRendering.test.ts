@@ -1,8 +1,6 @@
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { describe, expect, test } from "vitest";
-import {
-  unitHealthBarMaxHealth,
-} from "../../../../src/client/render/gl/passes/BarPass";
+import { unitHealthBarMaxHealth } from "../../../../src/client/render/gl/passes/BarPass";
 import {
   ALL_UNIT_TYPES,
   STRUCTURE_TYPES,
@@ -31,14 +29,7 @@ describe("air unit renderer integration", () => {
       unitHealthBarMaxHealth(UnitType.Airport, 0, 1000, 650, 2500, 20),
     ).toBe(2500);
     expect(
-      unitHealthBarMaxHealth(
-        UnitType.TransportShip,
-        0,
-        1000,
-        650,
-        2500,
-        20,
-      ),
+      unitHealthBarMaxHealth(UnitType.TransportShip, 0, 1000, 650, 2500, 20),
     ).toBe(0);
   });
 });
