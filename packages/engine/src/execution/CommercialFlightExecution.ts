@@ -3,6 +3,7 @@ import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { zRef } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { z } from "zod";
 import { Execution, Game, Unit } from "../game/Game";
+import { execSnapshotType } from "../snapshot/ExecutionSnapshot";
 import { PathFinding } from "../pathfinding/PathFinder";
 import { PathStatus, SteppingPathFinder } from "../pathfinding/types";
 import {
@@ -171,9 +172,9 @@ const CommercialFlightStateSchema = z.object({
 });
 type CommercialFlightState = z.infer<typeof CommercialFlightStateSchema>;
 
-export const CommercialFlightExecutionSnapshot = {
+export const CommercialFlightExecutionSnapshot = execSnapshotType({
   name: "CommercialFlight",
   version: 1,
   schema: CommercialFlightStateSchema,
   cls: () => CommercialFlightExecution,
-};
+});
