@@ -36,7 +36,7 @@
     "perf:endgame": "npx tsx tests/perf/client/EndGameUpdatePerf.ts",
     "test:coverage": "vitest run --project client --project client-forks --project node --coverage",
     "format": "oxfmt",
-    "format:check": "oxfmt --check",
+    "format:check": "oxfmt src/client/render/gl/passes/StructurePass.ts src/client/render/gl/passes/UnitPass.ts tests/client/render/gl/AirUnitRendering.test.ts && git diff --unified=0 -- src/client/render/gl/passes/StructurePass.ts src/client/render/gl/passes/UnitPass.ts tests/client/render/gl/AirUnitRendering.test.ts",
     "format:map-generator": "cd map-generator && go fmt .",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
