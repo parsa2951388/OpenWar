@@ -2,7 +2,8 @@
  * StructurePass — GPU-rendered structures with icon sprites.
  *
  * Renders a filled circle in player color with a white icon overlay,
- * sampled from a pre-built 6-column sprite atlas (generate-sprite-atlases.mjs).
+ * sampled from a pre-built 7-column sprite atlas
+ * (generate-sprite-atlases.mjs).
  *
  * Two LODs based on zoom:
  *   - zoom > 0.5: full icon with circle background
@@ -16,6 +17,7 @@
 
 import type { GhostPreviewData, RendererConfig, UnitState } from "../../types";
 import {
+  UT_AIRPORT,
   UT_CITY,
   UT_DEFENSE_POST,
   UT_FACTORY,
@@ -30,6 +32,7 @@ import {
   MAX_TRAIL_COLORS,
   STRUCTURES_EFFECT_BLOCK,
 } from "../utils/ColorUtils";
+import { appendSpriteColumnsToAtlas } from "../utils/extendSpriteAtlas";
 import { createProgram, shaderSrc } from "../utils/GlUtils";
 
 import { assetUrl } from "@openfront/shared/AssetUrls";
@@ -37,6 +40,7 @@ import structureFragSrc from "../shaders/structure/structure.frag.glsl?raw";
 import structureVertSrc from "../shaders/structure/structure.vert.glsl?raw";
 
 const iconAtlasUrl = assetUrl("atlases/icon-atlas.png");
+const airportSpriteUrl = assetUrl("sprites/airport.svg");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -53,6 +57,7 @@ const STRUCTURE_ORDER = [
   UT_DEFENSE_POST,
   UT_SAM_LAUNCHER,
   UT_MISSILE_SILO,
+  UT_AIRPORT,
 ] as const;
 
 const ATLAS_COLS = STRUCTURE_ORDER.length;
@@ -115,7 +120,7 @@ export class StructurePass {
 
   private instanceCount = 0;
 
-  /** unitType string → atlas column index (0–5) */
+  /** unitType string → atlas column index (0–6) */
   private typeToAtlasCol = new Map<string, number>();
   private mapW: number;
 
@@ -279,14 +284,16 @@ export class StructurePass {
   }
 
   private async loadAtlas(): Promise<void> {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = iconAtlasUrl;
-    await img.decode();
+    const atlas = await appendSpriteColumnsToAtlas(
+      iconAtlasUrl,
+      6,
+      [airportSpriteUrl],
+      true,
+    );
     const gl = this.gl;
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas);
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(
       gl.TEXTURE_2D,
