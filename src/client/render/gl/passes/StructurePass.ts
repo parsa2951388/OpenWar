@@ -32,8 +32,8 @@ import {
   MAX_TRAIL_COLORS,
   STRUCTURES_EFFECT_BLOCK,
 } from "../utils/ColorUtils";
-import { createProgram, shaderSrc } from "../utils/GlUtils";
 import { appendSpriteColumnsToAtlas } from "../utils/extendSpriteAtlas";
+import { createProgram, shaderSrc } from "../utils/GlUtils";
 
 import { assetUrl } from "@openfront/shared/AssetUrls";
 import structureFragSrc from "../shaders/structure/structure.frag.glsl?raw";
