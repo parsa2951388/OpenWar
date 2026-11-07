@@ -216,6 +216,7 @@ export enum UnitType {
   Factory = "Factory",
   Airport = "Airport",
   Aircraft = "Aircraft",
+  CommercialAircraft = "Commercial Aircraft",
 }
 
 export enum TrainType {
