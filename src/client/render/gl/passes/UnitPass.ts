@@ -61,8 +61,8 @@ import {
   TRAIN_EFFECT_BLOCK,
   WARSHIP_EFFECT_BLOCK,
 } from "../utils/ColorUtils";
-import { createProgram, shaderSrc } from "../utils/GlUtils";
 import { appendSpriteColumnsToAtlas } from "../utils/extendSpriteAtlas";
+import { createProgram, shaderSrc } from "../utils/GlUtils";
 
 const unitAtlasUrl = assetUrl("atlases/unit-atlas.png");
 const aircraftSpriteUrl = assetUrl("sprites/aircraft.svg");
