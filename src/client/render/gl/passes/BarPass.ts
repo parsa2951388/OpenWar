@@ -34,11 +34,12 @@ const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
 // BarPass
 // ---------------------------------------------------------------------------
 
-export function mobileUnitBarMaxHealth(
+export function unitHealthBarMaxHealth(
   unitType: string,
   veterancy: number,
   warshipMaxHealth: number,
   aircraftMaxHealth: number,
+  airportMaxHealth: number,
   veterancyHealthBonus: number,
 ): number {
   if (unitType === UnitType.Warship) {
@@ -49,6 +50,7 @@ export function mobileUnitBarMaxHealth(
     );
   }
   if (unitType === UnitType.Aircraft) return aircraftMaxHealth;
+  if (unitType === UnitType.Airport) return airportMaxHealth;
   return 0;
 }
 
@@ -84,6 +86,7 @@ export class BarPass {
   private mapW: number;
   private warshipMaxHealth: number;
   private aircraftMaxHealth: number;
+  private airportMaxHealth: number;
   private veterancyHealthBonus: number;
 
   constructor(
@@ -97,6 +100,7 @@ export class BarPass {
     this.mapW = header.mapWidth;
     this.warshipMaxHealth = config.unitInfo(UnitType.Warship).maxHealth ?? 0;
     this.aircraftMaxHealth = config.unitInfo(UnitType.Aircraft).maxHealth ?? 0;
+    this.airportMaxHealth = config.unitInfo(UnitType.Airport).maxHealth ?? 0;
     this.veterancyHealthBonus = config.warshipVeterancyHealthBonus();
 
     // --- Shader program ---
@@ -162,11 +166,12 @@ export class BarPass {
     // --- Health bars (warships + aircraft) and warship veterancy pips ---
     for (const unit of mobileUnits.values()) {
       if (unit.health === null || unit.health <= 0) continue;
-      const maxHealth = mobileUnitBarMaxHealth(
+      const maxHealth = unitHealthBarMaxHealth(
         unit.unitType,
         unit.veterancy,
         this.warshipMaxHealth,
         this.aircraftMaxHealth,
+        this.airportMaxHealth,
         this.veterancyHealthBonus,
       );
       if (maxHealth <= 0) continue;
@@ -178,9 +183,29 @@ export class BarPass {
       }
     }
 
-    // --- Progress bars (structures) ---
+    // --- Airport health + progress bars (structures) ---
     for (const unit of structures.values()) {
       if (!unit.isActive) continue;
+      if (
+        unit.unitType === UnitType.Airport &&
+        unit.health !== null &&
+        unit.health > 0 &&
+        unit.health < this.airportMaxHealth
+      ) {
+        this.pushHealth(
+          unit,
+          unitHealthBarMaxHealth(
+            unit.unitType,
+            unit.veterancy,
+            this.warshipMaxHealth,
+            this.aircraftMaxHealth,
+            this.airportMaxHealth,
+            this.veterancyHealthBonus,
+          ) > 0
+            ? unit.health / this.airportMaxHealth
+            : 0,
+        );
+      }
       const progress = this.computeStructureProgress(unit, gameTick);
       if (progress !== null) this.pushProgress(unit, progress);
     }
