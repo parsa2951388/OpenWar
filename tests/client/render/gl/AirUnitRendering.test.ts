@@ -1,14 +1,14 @@
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { describe, expect, test } from "vitest";
 import {
+  unitHealthBarMaxHealth,
+} from "../../../../src/client/render/gl/passes/BarPass";
+import {
   ALL_UNIT_TYPES,
   STRUCTURE_TYPES,
   UT_AIRCRAFT,
   UT_AIRPORT,
 } from "../../../../src/client/render/types";
-import {
-  unitHealthBarMaxHealth,
-} from "../../../../src/client/render/gl/passes/BarPass";
 
 describe("air unit renderer integration", () => {
   test("registers airports as structures and aircraft as mobile units", () => {
