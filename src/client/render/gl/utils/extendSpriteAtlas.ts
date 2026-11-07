@@ -41,13 +41,18 @@ export async function appendSpriteColumnsToAtlas(
   context.drawImage(atlas, 0, 0);
 
   for (let index = 0; index < sprites.length; index++) {
-    context.drawImage(
-      sprites[index],
-      atlas.width + index * cellWidth,
-      0,
-      cellWidth,
-      atlas.height,
+    // Preserve the sprite's aspect ratio (the structure atlas cells are
+    // intentionally taller than they are wide). Center it in the cell.
+    const sprite = sprites[index];
+    const scale = Math.min(
+      cellWidth / sprite.naturalWidth,
+      atlas.height / sprite.naturalHeight,
     );
+    const width = sprite.naturalWidth * scale;
+    const height = sprite.naturalHeight * scale;
+    const x = atlas.width + index * cellWidth + (cellWidth - width) / 2;
+    const y = (atlas.height - height) / 2;
+    context.drawImage(sprite, x, y, width, height);
   }
 
   return canvas;
