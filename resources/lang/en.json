@@ -195,7 +195,7 @@
   "build_menu": {
     "cost_label": "Build cost",
     "desc": {
-      "airport": "Build an airfield. Aircraft launch automatically and defend against enemy targets within their operational radius.",
+      "airport": "Build an airfield. It fields a defensive aircraft and, when a trade partner has an airport, launches commercial flights that pay both sides. Fighters and SAMs can intercept those flights.",
       "atom_bomb": "Small explosion",
       "city": "Increases max population",
       "defense_post": "Increases defenses of nearby borders",
