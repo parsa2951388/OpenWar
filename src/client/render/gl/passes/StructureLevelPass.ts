@@ -145,7 +145,7 @@ export class StructureLevelPass {
   private charCodes = new Uint8Array(MAX_CHARS);
   private cursors = new Float32Array(MAX_CHARS);
 
-  /** unitType string → atlas column index (0–5). */
+  /** unitType string → atlas column index (0–6). */
   private typeToAtlasCol = new Map<string, number>();
   /** Build-button hover highlight bitmask (0 = off). */
   private highlightMask = 0;
