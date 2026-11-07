@@ -49,6 +49,14 @@ This file is the durable checkpoint for the Open War **Gold** milestone. Update 
 - Therefore production multiplayer readiness is **not verified**. Do not promote Gold to production until the health endpoint, Pages proxy, workers, authentication, WebSocket path, and two-client smoke tests all pass.
 - Render account shows a workspace named `My Workspace`, but no workspace was selected. Do not inspect or change Render services/deployments until the user explicitly confirms that workspace.
 
+## Gold identity pass (2026-11-07)
+
+- [x] Added the Gold edition label to the Persian and English launcher eyebrow.
+- [x] Changed the localized application title to Open War Gold.
+- [x] Updated Open Graph title and structured-data alternate name to identify the Gold edition without changing the underlying product identity.
+- [x] Updated the PWA install name and short name to Open War Gold / OW Gold.
+- [ ] Re-run the production build and localization/metadata checks on the Gold branch.
+
 ## Milestones
 
 - [x] M0 — Research OpenBattle and audit the current Open War repository.
@@ -69,4 +77,4 @@ This file is the durable checkpoint for the Open War **Gold** milestone. Update 
 
 ## Current status
 
-**Gold branch created; research, baseline checks, and hosting audit recorded. Implementation and production release are not complete.**
+**Gold branch created; research, baseline checks, hosting audit, and the first Gold identity pass are recorded. Feature implementation and production release are not complete.**
