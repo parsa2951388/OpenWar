@@ -6,7 +6,7 @@ import {
   UT_AIRCRAFT,
   UT_AIRPORT,
 } from "../../../../src/client/render/types";
-import { mobileUnitBarMaxHealth } from "../../../../src/client/render/gl/passes/BarPass";
+import { unitHealthBarMaxHealth } from "../../../../src/client/render/gl/passes/BarPass";
 
 describe("air unit renderer integration", () => {
   test("registers airports as structures and aircraft as mobile units", () => {
@@ -19,8 +19,24 @@ describe("air unit renderer integration", () => {
   });
 
   test("uses aircraft health instead of warship health for aircraft bars", () => {
-    expect(mobileUnitBarMaxHealth(UnitType.Aircraft, 0, 1000, 650, 20)).toBe(650);
-    expect(mobileUnitBarMaxHealth(UnitType.Warship, 2, 1000, 650, 20)).toBe(1400);
-    expect(mobileUnitBarMaxHealth(UnitType.TransportShip, 0, 1000, 650, 20)).toBe(0);
+    expect(
+      unitHealthBarMaxHealth(UnitType.Aircraft, 0, 1000, 650, 2500, 20),
+    ).toBe(650);
+    expect(
+      unitHealthBarMaxHealth(UnitType.Warship, 2, 1000, 650, 2500, 20),
+    ).toBe(1400);
+    expect(
+      unitHealthBarMaxHealth(UnitType.Airport, 0, 1000, 650, 2500, 20),
+    ).toBe(2500);
+    expect(
+      unitHealthBarMaxHealth(
+        UnitType.TransportShip,
+        0,
+        1000,
+        650,
+        2500,
+        20,
+      ),
+    ).toBe(0);
   });
 });
