@@ -57,6 +57,18 @@ This file is the durable checkpoint for the Open War **Gold** milestone. Update 
 - [x] Updated the PWA install name and short name to Open War Gold / OW Gold.
 - [ ] Re-run the production build and localization/metadata checks on the Gold branch.
 
+## Gold aviation milestone (2026-11-07)
+
+- [x] Added a separate `CommercialAircraft` unit type, health profile, zero player-build cost, ownership/stat tracking, and renderer registration.
+- [x] Added an original commercial-aircraft SVG sprite, atlas entry, and health-bar rendering.
+- [x] Added a deterministic round-trip flight execution between trade-partner airports; both owners receive distance-scaled gold at each arrival and revenue is included in trade statistics.
+- [x] Added fighter and SAM targeting of commercial aircraft.
+- [x] Versioned Airport execution snapshots to v2 with a v1-to-v2 migration; added commercial-flight snapshot registration.
+- [x] Added localized English/Persian Airport help copy for the new route/economy behavior.
+- [ ] Pass the new commercial-flight snapshot/revenue test plus full CI on branch `gold`.
+- [ ] Verify interceptions, destroyed/captured airports, embargo changes and disabled-unit behavior with focused tests.
+- [ ] Perform two-client browser verification after the live server health issue is resolved.
+
 ## Milestones
 
 - [x] M0 — Research OpenBattle and audit the current Open War repository.
@@ -77,4 +89,4 @@ This file is the durable checkpoint for the Open War **Gold** milestone. Update 
 
 ## Current status
 
-**Gold branch created; research, baseline checks, hosting audit, and the first Gold identity pass are recorded. Feature implementation and production release are not complete.**
+**Gold branch created; Gold identity and the first commercial aviation gameplay slice are committed. CI and multiplayer verification are still pending; production release is not complete.**
