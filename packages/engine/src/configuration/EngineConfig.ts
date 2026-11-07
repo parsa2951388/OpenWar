@@ -272,6 +272,11 @@ export class EngineConfig extends Config {
     return BigInt(Math.floor(baseGold * this.goldMultiplierFor(player)));
   }
 
+  /** Commercial aviation pays half the equivalent trade-ship route value. */
+  commercialFlightGold(dist: number, player: PlayerLike): Gold {
+    return this.tradeShipGold(dist, player) / 2n;
+  }
+
   /**
    * Global spawn throttle for the trade-ship economy. A capacity sigmoid
    * damps spawning past the ~330-ship midpoint. The damping flattens onto
@@ -392,6 +397,7 @@ export class EngineConfig extends Config {
           UnitType.Airport,
         );
       case UnitType.Aircraft:
+      case UnitType.CommercialAircraft:
         return () => 0n;
       case UnitType.TransportShip:
       case UnitType.Shell:
