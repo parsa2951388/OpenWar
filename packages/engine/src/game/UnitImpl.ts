@@ -125,6 +125,7 @@ export class UnitImpl implements Unit {
       case UnitType.Factory:
       case UnitType.Airport:
       case UnitType.Aircraft:
+      case UnitType.CommercialAircraft:
         this.mg.stats().unitBuild(_owner, this._type);
     }
   }
