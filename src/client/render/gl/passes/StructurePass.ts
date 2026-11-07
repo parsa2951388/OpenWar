@@ -16,6 +16,7 @@
 
 import type { GhostPreviewData, RendererConfig, UnitState } from "../../types";
 import {
+  UT_AIRPORT,
   UT_CITY,
   UT_DEFENSE_POST,
   UT_FACTORY,
@@ -31,12 +32,14 @@ import {
   STRUCTURES_EFFECT_BLOCK,
 } from "../utils/ColorUtils";
 import { createProgram, shaderSrc } from "../utils/GlUtils";
+import { appendSpriteColumnsToAtlas } from "../utils/extendSpriteAtlas";
 
 import { assetUrl } from "@openfront/shared/AssetUrls";
 import structureFragSrc from "../shaders/structure/structure.frag.glsl?raw";
 import structureVertSrc from "../shaders/structure/structure.vert.glsl?raw";
 
 const iconAtlasUrl = assetUrl("atlases/icon-atlas.png");
+const airportSpriteUrl = assetUrl("sprites/airport.svg");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -279,14 +282,16 @@ export class StructurePass {
   }
 
   private async loadAtlas(): Promise<void> {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = iconAtlasUrl;
-    await img.decode();
+    const atlas = await appendSpriteColumnsToAtlas(
+      iconAtlasUrl,
+      6,
+      [airportSpriteUrl],
+      true,
+    );
     const gl = this.gl;
     gl.activeTexture(gl.TEXTURE1);
     gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas);
     gl.generateMipmap(gl.TEXTURE_2D);
     gl.texParameteri(
       gl.TEXTURE_2D,

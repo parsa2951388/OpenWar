@@ -34,6 +34,24 @@ const BYTES_PER_INSTANCE = FLOATS_PER_INSTANCE * 4;
 // BarPass
 // ---------------------------------------------------------------------------
 
+export function mobileUnitBarMaxHealth(
+  unitType: string,
+  veterancy: number,
+  warshipMaxHealth: number,
+  aircraftMaxHealth: number,
+  veterancyHealthBonus: number,
+): number {
+  if (unitType === UnitType.Warship) {
+    return maxHealthWithVeterancy(
+      warshipMaxHealth,
+      veterancy,
+      veterancyHealthBonus,
+    );
+  }
+  if (unitType === UnitType.Aircraft) return aircraftMaxHealth;
+  return 0;
+}
+
 export class BarPass {
   private gl: WebGL2RenderingContext;
   private settings: RenderSettings;
@@ -65,6 +83,7 @@ export class BarPass {
 
   private mapW: number;
   private warshipMaxHealth: number;
+  private aircraftMaxHealth: number;
   private veterancyHealthBonus: number;
 
   constructor(
@@ -77,6 +96,7 @@ export class BarPass {
     this.settings = settings;
     this.mapW = header.mapWidth;
     this.warshipMaxHealth = config.unitInfo(UnitType.Warship).maxHealth ?? 0;
+    this.aircraftMaxHealth = config.unitInfo(UnitType.Aircraft).maxHealth ?? 0;
     this.veterancyHealthBonus = config.warshipVeterancyHealthBonus();
 
     // --- Shader program ---
@@ -139,22 +159,21 @@ export class BarPass {
     this.progressCount = 0;
     this.veterancyCount = 0;
 
-    // --- Health bars + veterancy pips (warships) ---
-    // Only warships carry health among mobile units, so this loop is effectively
-    // warship-only.
+    // --- Health bars (warships + aircraft) and warship veterancy pips ---
     for (const unit of mobileUnits.values()) {
       if (unit.health === null || unit.health <= 0) continue;
-      // Veteran warships have a higher effective max health, so a full veteran
-      // ship reads as full. Shared with the engine's UnitImpl.maxHealth().
-      const maxHealth = maxHealthWithVeterancy(
-        this.warshipMaxHealth,
+      const maxHealth = mobileUnitBarMaxHealth(
+        unit.unitType,
         unit.veterancy,
+        this.warshipMaxHealth,
+        this.aircraftMaxHealth,
         this.veterancyHealthBonus,
       );
+      if (maxHealth <= 0) continue;
       if (unit.health < maxHealth) {
         this.pushHealth(unit, unit.health / maxHealth);
       }
-      if (unit.veterancy > 0) {
+      if (unit.unitType === UnitType.Warship && unit.veterancy > 0) {
         this.pushVeterancy(unit);
       }
     }

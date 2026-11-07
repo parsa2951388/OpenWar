@@ -38,6 +38,7 @@ import type { RendererConfig, UnitState } from "../../types";
 import {
   SMOOTHED_NUKE_TYPES,
   TrainType,
+  UT_AIRCRAFT,
   UT_ATOM_BOMB,
   UT_HYDROGEN_BOMB,
   UT_MIRV,
@@ -60,8 +61,10 @@ import {
   WARSHIP_EFFECT_BLOCK,
 } from "../utils/ColorUtils";
 import { createProgram, shaderSrc } from "../utils/GlUtils";
+import { appendSpriteColumnsToAtlas } from "../utils/extendSpriteAtlas";
 
 const unitAtlasUrl = assetUrl("atlases/unit-atlas.png");
+const aircraftSpriteUrl = assetUrl("sprites/aircraft.svg");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -85,6 +88,7 @@ const UNIT_ORDER = [
   "TrainEngine",
   "TrainCarriage",
   "TrainCarriageLoaded",
+  UT_AIRCRAFT,
 ] as const;
 
 const ATLAS_COLS = UNIT_ORDER.length;
@@ -94,6 +98,8 @@ const HYDROGEN_BOMB_COL = UNIT_ORDER.indexOf(UT_HYDROGEN_BOMB);
 
 /** Atlas column of the warship — gates the warship cosmetic effect. */
 const WARSHIP_COL = UNIT_ORDER.indexOf(UT_WARSHIP);
+/** Last of the three train-specific atlas columns. */
+const TRAIN_LAST_COL = UNIT_ORDER.indexOf("TrainCarriageLoaded");
 
 /** First atlas column of the train sprites (engine, carriage, loaded
  *  carriage are contiguous) — gates the train cosmetic effect. */
@@ -141,6 +147,7 @@ const FLICKER_TYPES: ReadonlySet<string> = new Set([
 /** Missile/projectile types — rendered on top of structures in the layer order.
  *  Ground/sea units (boats, trains) render below structures. */
 const MISSILE_TYPES: ReadonlySet<string> = new Set([
+  UT_AIRCRAFT,
   UT_ATOM_BOMB,
   UT_HYDROGEN_BOMB,
   UT_MIRV,
@@ -297,6 +304,7 @@ export class UnitPass {
         WARSHIP_COL,
         WARSHIP_EFFECT_ROW_BASE: WARSHIP_EFFECT_BLOCK * MAX_TRAIL_COLORS,
         TRAIN_FIRST_COL,
+        TRAIN_LAST_COL,
         TRAIN_EFFECT_ROW_BASE: TRAIN_EFFECT_BLOCK * MAX_TRAIL_COLORS,
       }),
       "UnitPass",
@@ -393,13 +401,15 @@ export class UnitPass {
   }
 
   private async loadAtlas(): Promise<void> {
-    const img = new Image();
-    img.crossOrigin = "anonymous";
-    img.src = unitAtlasUrl;
-    await img.decode();
+    const atlas = await appendSpriteColumnsToAtlas(
+      unitAtlasUrl,
+      12,
+      [aircraftSpriteUrl],
+      false,
+    );
     const gl = this.gl;
     gl.bindTexture(gl.TEXTURE_2D, this.atlasTex);
-    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, img);
+    gl.texImage2D(gl.TEXTURE_2D, 0, gl.RGBA, gl.RGBA, gl.UNSIGNED_BYTE, atlas);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MIN_FILTER, gl.NEAREST);
     gl.texParameteri(gl.TEXTURE_2D, gl.TEXTURE_MAG_FILTER, gl.NEAREST);
   }
