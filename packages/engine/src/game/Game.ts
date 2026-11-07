@@ -74,6 +74,8 @@ export interface UnitParamsMap {
 
   [UnitType.Aircraft]: Record<string, never>;
 
+  [UnitType.CommercialAircraft]: Record<string, never>;
+
   [UnitType.AtomBomb]: {
     targetTile?: number;
     trajectory: TileRef[];
