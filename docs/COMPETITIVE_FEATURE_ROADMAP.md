@@ -17,7 +17,7 @@ The key distinction is **code presence versus verified production behavior**. A 
 | ------------------ | --------------------------------------------------------------------------------------- | -------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------- |
 | Entry modes        | Solo, private room create/join, ranked 1v1                                              | Solo, public FFA/team, private rooms, ranked 1v1/2v2/FFA, Clan Wars, spectator                     | GameModeSelector, SinglePlayerModal, Operations missions                                                                                              |
 | Lobby setup        | Map, tribes/nations, Doomsday Clock, disabled units, start delay                        | Extensive map, bot, nation, team, alliance, timer, economy and unit-ban controls                   | Existing game configuration and single-player/lobby components; live server support needs verification                                                |
-| Economy/buildings  | City, Defense Post, Port, Factory, Warship, Missile Silo, SAM, nukes; Airport is listed | City, Port, Factory/trains, Defense Post, Warship, Missile Silo, SAM, nukes, transport/trade ships | Core OpenFront-derived building/economy engine; no Airport/AirTransport unit found in the inspected unit definitions                                  |
+| Economy/buildings  | City, Defense Post, Port, Factory, Warship, Missile Silo, SAM, nukes; Airport is listed | City, Port, Factory/trains, Defense Post, Warship, Missile Silo, SAM, nukes, transport/trade ships | Existing core economy plus Gold Airport, defensive Aircraft and trade-partner CommercialAircraft routes; carrier and specialist aircraft roles remain future work |
 | Diplomacy          | Alliances, sharing and betrayal penalties                                               | Alliances, renewal, betrayal, embargo, donations and shared vision                                 | Inherited engine systems; verify against live matches                                                                                                 |
 | Maps               | World, Europe, Americas, Asia, Africa, Japan and special maps                           | 60+ documented maps and ongoing additions                                                          | Inherited map library and map-generation pipeline; map inventory should be audited separately                                                         |
 | Competitive        | Ranked 1v1; 2v2 shown as coming soon                                                    | Ranked 1v1, 2v2, FFA and Clan Wars                                                                 | Leaderboard UI includes 1v1, 2v2, FFA, clans and tribes; queue/service readiness is not established by UI alone                                       |
@@ -105,7 +105,7 @@ The public-host experience is intentionally narrower than the local development 
 
 ### P2 — OpenBattle-inspired differentiation
 
-1. Add an independently designed Airport/Air Transport system. This must be a complete simulation feature, not a decorative building: placement rules, cost, aircraft lifecycle, route/path behavior, troop capacity, interception/counterplay, serialization, rendering, AI behavior and deterministic tests all need implementation.
+1. Extend the Gold aviation foundation into a broader air-war system: specialist fighter/stealth/ground-attack roles, aircraft carrier logistics, player-facing flight controls and mission/maintenance rules. Preserve deterministic snapshots, configurable balance, counterplay and multiplayer synchronization.
 2. Evaluate SMS/OTP authentication for users who cannot reliably use external OAuth providers. Keep provider secrets server-side and add rate limits, abuse controls and account recovery.
 3. Evaluate a PWA install path and mobile-first touch controls, with real-device testing before claiming mobile readiness.
 4. Consider a community announcement integration (for example, a bot that posts release notes and tournaments) only after moderation, secrets and operational ownership are defined.
@@ -119,7 +119,7 @@ The public-host experience is intentionally narrower than the local development 
 
 ## Airport/Air Transport design boundary
 
-OpenBattle lists Airport, but its working behavior could not be verified from the public interface. OpenFront's public wiki describes Airport as an abandoned prototype rather than a shipped building. Open War should not copy a hidden implementation or imply compatibility with one. A differentiated Open War implementation should define its own balance and mechanics, then ship only after deterministic engine tests and multiplayer synchronization tests pass.
+OpenBattle lists Airport, but its full working behavior could not be verified from the public interface. OpenFront's public wiki describes Airport as an abandoned prototype rather than a shipped building. Open War Gold now has an original airport implementation: a defensive aircraft per completed airport, a separate commercial-aircraft unit, deterministic partner-airport routes, distance-scaled revenue for both trading owners, fighter/SAM interception, versioned snapshots and original WebGL sprites. This does not claim feature parity with every aircraft toggle observed on OpenBattle: aircraft carriers, troop transport, specialist fighter roles, fuel/maintenance controls and live multiplayer validation remain incomplete.
 
 ## Licensing and attribution
 
@@ -139,6 +139,11 @@ Open War is an OpenFront-derived fork. Before reusing or modifying upstream mate
 - [OpenFront Wiki](https://openfront.wiki/)
 - [OpenFront licensing notes](https://github.com/openfrontio/openfront-verified/blob/main/LICENSING.md)
 - [OpenFront official releases](https://github.com/openfrontio/OpenFrontIO/releases)
+
+## Open War implementation update — 2026-11-07 (Gold)
+
+- Added a distinct Commercial Aircraft simulation unit. Each active airport can dispatch a trade-partner flight within a per-owner fleet cap; both partners receive route-scaled gold at each arrival. Flights reverse and return continuously, are saved/restored with their air-path state, and can be intercepted by fighters and SAM launchers. The renderer uses an original commercial-aircraft sprite and displays its health bar.
+- Added a version-2 Airport execution snapshot with a migration from version 1. Deterministic route/revenue and snapshot round-trip tests are being added and must pass CI before release claims are made.
 
 ## Open War implementation update — 2026-11-06
 
