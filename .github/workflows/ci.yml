@@ -11,7 +11,7 @@ on:
 # Recheck the final production source, generated maps, and release container.
 # Validate the production branch, including deterministic simulation and release packaging.
 # Validate the self-hosted production branch on every push.
-    branches: [main, open-war/independent-self-host]
+    branches: [main, open-war/independent-self-host, gold]
 
 permissions:
   contents: read
