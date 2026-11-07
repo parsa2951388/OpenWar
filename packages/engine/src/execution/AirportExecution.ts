@@ -168,12 +168,7 @@ export const AirportExecutionSnapshot = execSnapshotType({
   schema: AirportStateSchema,
   migrations: {
     1: (data) => ({
-      ...(data as z.infer<typeof z.object({
-        active: z.boolean(),
-        initialized: z.boolean(),
-        airport: zRef(),
-        lastSpawnTick: zInt(),
-      })>),
+      ...data,
       lastCommercialFlightTick: -1_000_000_000,
     }),
   },
