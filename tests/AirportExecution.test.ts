@@ -43,7 +43,11 @@ describe("AirportExecution", () => {
   it("flies between trading airports and pays both partners deterministically", async () => {
     const network = await setup(
       "plains",
-      { infiniteGold: true, instantBuild: true },
+      {
+        infiniteGold: true,
+        instantBuild: true,
+        disabledUnits: [UnitType.Aircraft],
+      },
       [
         new PlayerInfo("origin", PlayerType.Human, null, "origin_id"),
         new PlayerInfo("partner", PlayerType.Human, null, "partner_id"),
