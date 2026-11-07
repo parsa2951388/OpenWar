@@ -40,6 +40,7 @@ import {
   SMOOTHED_NUKE_TYPES,
   TrainType,
   UT_AIRCRAFT,
+  UT_COMMERCIAL_AIRCRAFT,
   UT_ATOM_BOMB,
   UT_HYDROGEN_BOMB,
   UT_MIRV,
@@ -66,6 +67,7 @@ import { createProgram, shaderSrc } from "../utils/GlUtils";
 
 const unitAtlasUrl = assetUrl("atlases/unit-atlas.png");
 const aircraftSpriteUrl = assetUrl("sprites/aircraft.svg");
+const commercialAircraftSpriteUrl = assetUrl("sprites/commercial-aircraft.svg");
 
 // ---------------------------------------------------------------------------
 // Constants
@@ -90,6 +92,7 @@ const UNIT_ORDER = [
   "TrainCarriage",
   "TrainCarriageLoaded",
   UT_AIRCRAFT,
+  UT_COMMERCIAL_AIRCRAFT,
 ] as const;
 
 const ATLAS_COLS = UNIT_ORDER.length;
@@ -149,6 +152,7 @@ const FLICKER_TYPES: ReadonlySet<string> = new Set([
  *  Ground/sea units (boats, trains) render below structures. */
 const MISSILE_TYPES: ReadonlySet<string> = new Set([
   UT_AIRCRAFT,
+  UT_COMMERCIAL_AIRCRAFT,
   UT_ATOM_BOMB,
   UT_HYDROGEN_BOMB,
   UT_MIRV,
@@ -405,7 +409,7 @@ export class UnitPass {
     const atlas = await appendSpriteColumnsToAtlas(
       unitAtlasUrl,
       12,
-      [aircraftSpriteUrl],
+      [aircraftSpriteUrl, commercialAircraftSpriteUrl],
       false,
     );
     const gl = this.gl;
