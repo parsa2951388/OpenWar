@@ -215,6 +215,10 @@ export class Config {
     return 60 * 10;
   }
 
+  commercialFlightSpawnCooldown(): Tick {
+    return 60 * 10;
+  }
+
   unitInfo(type: UnitType): UnitInfo {
     const cached = this.unitInfoCache.get(type);
     if (cached !== undefined) {
@@ -266,6 +270,7 @@ export class Config {
         };
         break;
       case UnitType.Aircraft:
+      case UnitType.CommercialAircraft:
         info = { maxHealth: 650 };
         break;
       case UnitType.TransportShip:
