@@ -410,7 +410,9 @@ export class SAMLauncherExecution implements Execution {
       }
     }
 
-    if (this.sam.isInCooldown() || this.mg.unitCount(UnitType.Aircraft) === 0) {
+    if (this.sam.isInCooldown() || this.mg.unitCount(UnitType.Aircraft) +
+      this.mg.unitCount(UnitType.CommercialAircraft) ===
+      0) {
       return;
     }
 
@@ -418,7 +420,7 @@ export class SAMLauncherExecution implements Execution {
       .nearbyUnits(
         this.sam.tile(),
         this.mg.config().dynamicSamRange(this.sam, ticks),
-        UnitType.Aircraft,
+        [UnitType.Aircraft, UnitType.CommercialAircraft],
         ({ unit }) =>
           isUnit(unit) &&
           unit.isActive() &&
