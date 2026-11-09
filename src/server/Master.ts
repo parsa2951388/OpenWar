@@ -283,7 +283,11 @@ export async function startMaster() {
       `Restarted worker ${workerId} (New PID: ${newWorker.process.pid})`,
     );
   });
-  const PORT = 3000;
+  // Render and other managed hosts inject PORT. Keep the local default for development.
+  const PORT = Number(process.env.PORT ?? 3000);
+  if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
+    throw new Error(`Invalid PORT: ${JSON.stringify(process.env.PORT)}`);
+  }
   server.listen(PORT, () => {
     log.info(`Master HTTP server listening on port ${PORT}`);
   });
