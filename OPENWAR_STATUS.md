@@ -4,7 +4,23 @@ Last updated: 2026-11-09
 
 ## Baseline status
 
-The repository is a fork of OpenFrontIO. The inherited core includes a territorial real-time strategy client, deterministic game engine, game server, map catalogue, land and naval gameplay, and browser UI. The current public static-site deployment builds the browser client. It does not yet have a dedicated Open War multiplayer API or game-server deployment.
+The repository is a fork of OpenFrontIO. The inherited core includes a territorial real-time strategy client, deterministic game engine, game server, map catalogue, land and naval gameplay, and browser UI.
+
+### Deployment and smoke-test results (2026-11-09)
+
+- [x] Public Node game service deployed at https://open-war-online.onrender.com/.
+- [x] Render starts the Master process and one Worker.
+- [x] Master listens on the managed Render PORT.
+- [x] HTTP routes under `/wN/*`, random game-creation HTTP routes, and WebSocket upgrades are proxied to the selected Worker.
+- [x] Server-rendered EJS page injects BOOTSTRAP_CONFIG; the static-only blank-page deployment was retired.
+- [x] Browser smoke test: title and complete lobby UI render; controls respond.
+- [x] SOLO smoke test: WORLD map opens, a spawn point is selected, the player enters the active match, and the timer/HUD advance.
+- [ ] Multiplayer acceptance test with two independent browser clients.
+- [ ] Independent Open War account/authentication API and production cluster/server registry.
+- [ ] Production Turnstile, OAuth, and persistent-account configuration.
+- [ ] Desktop and mobile compatibility tests beyond the current browser smoke tests.
+
+The current Render service uses the upstream development-mode compatibility profile and one Worker. The client and game server are deployed, but this is **not** a complete production multiplayer backend or account system. Do not describe public matchmaking, OAuth, or two-client multiplayer as verified.
 
 ## Air-combat expansion — NOT IMPLEMENTED
 
