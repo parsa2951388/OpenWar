@@ -93,7 +93,7 @@ function proxyWorkerHttp(
 
 function proxyWorkerUpgrade(
   req: http.IncomingMessage,
-  socket: import("net").Socket,
+  socket: import("stream").Duplex,
   head: Buffer,
   workerId: number,
 ): void {
