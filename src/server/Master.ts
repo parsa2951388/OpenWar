@@ -52,7 +52,7 @@ const RANDOM_WORKER_PATHS = new Set([
 ]);
 
 function workerIdFromPath(pathname: string): number | null {
-  const match = /^\\/w(\\d+)(?:\\/|$)/.exec(pathname);
+  const match = /^\/w(\d+)(?:\/|$)/.exec(pathname);
   if (!match) return null;
   const id = Number(match[1]);
   const count = ServerEnv.numWorkers();
@@ -108,12 +108,12 @@ function proxyWorkerUpgrade(
 
   upstream.on("upgrade", (response, upstreamSocket, upstreamHead) => {
     socket.write(
-      `HTTP/1.1 ${response.statusCode ?? 101} ${response.statusMessage ?? "Switching Protocols"}\\r\\n`,
+      `HTTP/1.1 ${response.statusCode ?? 101} ${response.statusMessage ?? "Switching Protocols"}\r\n`,
     );
     for (let i = 0; i < response.rawHeaders.length; i += 2) {
-      socket.write(`${response.rawHeaders[i]}: ${response.rawHeaders[i + 1]}\\r\\n`);
+      socket.write(`${response.rawHeaders[i]}: ${response.rawHeaders[i + 1]}\r\n`);
     }
-    socket.write("\\r\\n");
+    socket.write("\r\n");
     if (upstreamHead.length > 0) socket.write(upstreamHead);
     if (head.length > 0) upstreamSocket.write(head);
     upstreamSocket.pipe(socket);
@@ -122,13 +122,13 @@ function proxyWorkerUpgrade(
 
   upstream.on("response", (response) => {
     socket.write(
-      `HTTP/1.1 ${response.statusCode ?? 502} ${response.statusMessage ?? "Bad Gateway"}\\r\\n`,
+      `HTTP/1.1 ${response.statusCode ?? 502} ${response.statusMessage ?? "Bad Gateway"}\r\n`,
     );
     for (const [name, value] of Object.entries(response.headers)) {
       if (value === undefined) continue;
-      socket.write(`${name}: ${Array.isArray(value) ? value.join(", ") : value}\\r\\n`);
+      socket.write(`${name}: ${Array.isArray(value) ? value.join(", ") : value}\r\n`);
     }
-    socket.write("\\r\\n");
+    socket.write("\r\n");
     response.pipe(socket);
   });
 
@@ -144,7 +144,7 @@ function proxyWorkerUpgrade(
 
 app.use((req, res, next) => {
   const pathname = (req.url ?? "/").split("?")[0];
-  const match = /^\\/w(\\d+)(?:\\/|$)/.exec(pathname);
+  const match = /^\/w(\d+)(?:\/|$)/.exec(pathname);
   if (match) {
     const workerId = workerIdFromPath(pathname);
     if (workerId === null || workerId < 0) {
