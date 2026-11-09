@@ -124,6 +124,19 @@ export function multiplayerAllowedForBackend(backendOutage: boolean): boolean {
 }
 
 /**
+ * A static site shell needs the server-list API to discover where to create
+ * a lobby. A page rendered by a game server already has that server's host,
+ * worker map and instance letter injected, so it can use the same-origin
+ * fallback while the separate account/cluster API is unavailable.
+ */
+export function backendOutageBlocksMultiplayer(
+  backendOutage: boolean,
+  servedByGameServer: boolean,
+): boolean {
+  return backendOutage && !servedByGameServer;
+}
+
+/**
  * Whether a multiplayer entry point should refuse to act. Exported for tests
  * and kept free of component state so the rule is checkable in isolation.
  * A null update/session means that bridge is absent (the web build), so it
@@ -425,7 +438,10 @@ export class GameModeSelector extends LitElement {
     // unreachable on the web, and the heartbeat's first attempts often settle
     // before this element exists (it is started in Main's initialize, we are
     // rendered by <play-page> later), so the event alone would miss them.
-    this.backendOutage = backendUnreachableConfirmed();
+    this.backendOutage = backendOutageBlocksMultiplayer(
+      backendUnreachableConfirmed(),
+      ClientEnv.servedByGameServer(),
+    );
     document.addEventListener(
       "backend-reachability",
       this.onBackendReachability,
@@ -518,9 +534,10 @@ export class GameModeSelector extends LitElement {
   };
 
   private onBackendReachability = (e: Event) => {
-    this.backendOutage = (
-      e as CustomEvent<BackendReachabilityDetail>
-    ).detail.confirmed;
+    this.backendOutage = backendOutageBlocksMultiplayer(
+      (e as CustomEvent<BackendReachabilityDetail>).detail.confirmed,
+      ClientEnv.servedByGameServer(),
+    );
   };
 
   public stop() {
