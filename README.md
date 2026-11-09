@@ -1,3 +1,26 @@
+# Open War
+
+**Open War** is a community game fork based on [OpenFrontIO](https://github.com/openfrontio/OpenFrontIO). This repository currently contains the upstream territorial-strategy foundation. The Open War aircraft expansion is a planned modification and is not represented as complete yet.
+
+The live web build is published at: https://open-war-syt7.onrender.com/
+
+## Open War development status
+
+- Base: OpenFront territorial strategy client and game engine.
+- Project identity: Open War.
+- Planned air systems: airports, commercial aircraft, Air Fighter, Stealth Fighter, Ground Attacker, carrier-based aircraft, squadron assignment, fuel, range, refuelling, repair, air defence interaction, and synchronized multiplayer state.
+- Aircraft and airport gameplay is not yet implemented in this initial baseline.
+
+## Licensing and attribution
+
+This project is derived from OpenFrontIO. Its source code remains under **GNU AGPL v3**. Modified versions must keep the upstream copyright notice visible and provide the complete corresponding source to users interacting with the game over a network. The visible game footer retains **© OpenFront and Contributors**.
+
+OpenFront assets under `/resources` are separately governed by CC BY-SA 4.0. Assets under `/proprietary` and externally hosted assets are not granted for independent reuse; do not copy, extract, or repackage them separately. See [LICENSE](LICENSE) and [LICENSE-ASSETS](LICENSE-ASSETS).
+
+Open War is an independent community fork and is not an official OpenFront release.
+
+---
+
 <p align="center">
   <picture>
     <source media="(prefers-color-scheme: dark)" srcset="proprietary/images/OpenFrontLogoDark.svg">
