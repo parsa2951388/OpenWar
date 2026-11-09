@@ -198,6 +198,29 @@ describe("the multiplayer gate at its real call sites", () => {
     expect(hostOpen).not.toHaveBeenCalled();
   });
 
+  it("keeps multiplayer available during a list-API outage when this page has its own server", async () => {
+    // A server-rendered game page has enough information in BOOTSTRAP_CONFIG
+    // to use its own host and worker map without the separate cluster API.
+    window.BOOTSTRAP_CONFIG = {
+      ...window.BOOTSTRAP_CONFIG,
+      cluster: { a: { host: "open-war-online.onrender.com", numWorkers: 1 } },
+      instanceLetter: "a",
+    };
+    ClientEnv.reset();
+    document.dispatchEvent(
+      new CustomEvent("backend-reachability", {
+        detail: { reachable: false, confirmed: true },
+      }),
+    );
+    await selector.updateComplete;
+
+    clickEveryButton();
+
+    expect(hostOpen).toHaveBeenCalled();
+    expect(joinOpen).toHaveBeenCalled();
+    expect(wiggle).not.toHaveBeenCalled();
+  });
+
   it("does not refuse on a failure the player cannot retry away", async () => {
     await setUpdateState({
       status: "failed",
