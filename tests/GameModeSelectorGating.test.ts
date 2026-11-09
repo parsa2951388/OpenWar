@@ -2,6 +2,7 @@
 import { GameType } from "@openfront/engine-api/game/GameTypes";
 import { describe, expect, it } from "vitest";
 import {
+  backendOutageBlocksMultiplayer,
   joinIsGateable,
   multiplayerAllowedForBackend,
   shouldBlockJoin,
@@ -138,6 +139,21 @@ describe("multiplayerAllowedForBackend", () => {
 
   it("blocks multiplayer on a confirmed outage", () => {
     expect(multiplayerAllowedForBackend(true)).toBe(false);
+  });
+});
+
+describe("backendOutageBlocksMultiplayer", () => {
+  it("uses the injected game server when the page was server-rendered", () => {
+    expect(backendOutageBlocksMultiplayer(true, true)).toBe(false);
+  });
+
+  it("blocks a static page with no known game server during an outage", () => {
+    expect(backendOutageBlocksMultiplayer(true, false)).toBe(true);
+  });
+
+  it("does not block either page when the API is healthy", () => {
+    expect(backendOutageBlocksMultiplayer(false, true)).toBe(false);
+    expect(backendOutageBlocksMultiplayer(false, false)).toBe(false);
   });
 });
 
