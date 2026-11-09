@@ -2,14 +2,19 @@
 
 **Open War** is a community game fork based on [OpenFrontIO](https://github.com/openfrontio/OpenFrontIO). This repository currently contains the upstream territorial-strategy foundation. The Open War aircraft expansion is a planned modification and is not represented as complete yet.
 
-The live web build is published at: https://open-war-syt7.onrender.com/
+The live Node game service is published at: https://open-war-online.onrender.com/
 
 ## Open War development status
 
-- Base: OpenFront territorial strategy client and game engine.
+- Base: OpenFront territorial strategy client, deterministic game engine, and Node game server.
 - Project identity: Open War.
+- Deployment: Render Node web service with one Master process and one game Worker; HTTP game routes and WebSocket upgrades are proxied to the Worker.
+- Verified: browser shell and EJS bootstrap render; SOLO mode launches; WORLD map renders; player spawn works; game timer, tutorial, HUD, and map interaction were smoke-tested.
+- Not yet verified: two independent browsers completing a multiplayer match, production account/OAuth flows, or a dedicated Open War cluster/account API.
+- Server compatibility mode: the current Render deployment runs with the upstream development environment settings. The service is online, but this is not a production account/API deployment.
 - Planned air systems: airports, commercial aircraft, Air Fighter, Stealth Fighter, Ground Attacker, carrier-based aircraft, squadron assignment, fuel, range, refuelling, repair, air defence interaction, and synchronized multiplayer state.
-- Aircraft and airport gameplay is not yet implemented in this initial baseline.
+- Aircraft and airport gameplay is **not implemented**. These are roadmap items, not shipped features.
+- The four separately named user bundle files were not present in the supplied source set; this repository is a licensed OpenFrontIO fork with Open War branding, not a line-for-line reconstruction of those missing bundles.
 
 ## Licensing and attribution
 
