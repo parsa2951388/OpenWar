@@ -144,6 +144,30 @@ function proxyWorkerUpgrade(
 
 app.use((req, res, next) => {
   const pathname = (req.url ?? "/").split("?")[0];
+
+  // A shared lobby URL is a browser document, not a Worker asset or API call.
+  // Serve the EJS shell from the Master so Main.handleUrl() can read
+  // /wN/game/<id> and open JoinLobbyModal. Proxying this path to Worker would
+  // strip /wN and then return a 404 because Worker only serves assets/APIs.
+  // Keep all other /wN/* requests on the owning Worker, including HTTP APIs.
+  const gameDocumentPath = /^\/(?:v\/[^/]+\/)?w\d+\/game\/[^/]+\/?$/.test(
+    pathname,
+  );
+  if (
+    req.method === "GET" &&
+    gameDocumentPath &&
+    (req.headers.accept ?? "").includes("text/html")
+  ) {
+    void renderAppShell(
+      res,
+      path.join(__dirname, "../../static/index.html"),
+    ).catch((error) => {
+      log.error("Error rendering shared game page:", error);
+      if (!res.headersSent) res.status(500).send("Internal Server Error");
+    });
+    return;
+  }
+
   const match = /^\/w(\d+)(?:\/|$)/.exec(pathname);
   if (match) {
     const workerId = workerIdFromPath(pathname);
