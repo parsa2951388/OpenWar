@@ -13,6 +13,8 @@ export const terrainMapFileLoader = new FetchGameMapLoader((path) =>
 );
 
 const terrainMaps = new Map<string, TerrainMapData>();
+// Share an in-flight map build between callers (lobby preview, game start, replay).
+const terrainMapLoads = new Map<string, Promise<TerrainMapData>>();
 const manifests = new Map<GameMapType, Promise<MapManifest>>();
 
 /** A map's manifest, fetched once. */
@@ -27,16 +29,36 @@ export function loadCachedManifest(map: GameMapType): Promise<MapManifest> {
 }
 
 /** The maps the client draws on, built once per map and size. */
-export async function loadCachedTerrainMap(
+export function loadCachedTerrainMap(
   map: GameMapType,
   mapSize: GameMapSize,
 ): Promise<TerrainMapData> {
   const key = `${map}:${mapSize}`;
   const cached = terrainMaps.get(key);
-  if (cached !== undefined) return cached;
-  const terrain = await loadTerrainMap(
-    await loadMapFiles(terrainMapFileLoader, map, mapSize),
+  if (cached !== undefined) return Promise.resolve(cached);
+
+  const inFlight = terrainMapLoads.get(key);
+  if (inFlight !== undefined) return inFlight;
+
+  const load = Promise.resolve().then(async () => {
+    const terrain = await loadTerrainMap(
+      await loadMapFiles(terrainMapFileLoader, map, mapSize),
+    );
+    terrainMaps.set(key, terrain);
+    return terrain;
+  });
+  terrainMapLoads.set(key, load);
+
+  // Keep only completed terrain data; remove the in-flight entry on both
+  // success and failure. A failed fetch can then be retried by the next join.
+  void load.then(
+    () => {
+      if (terrainMapLoads.get(key) === load) terrainMapLoads.delete(key);
+    },
+    () => {
+      if (terrainMapLoads.get(key) === load) terrainMapLoads.delete(key);
+    },
   );
-  terrainMaps.set(key, terrain);
-  return terrain;
+
+  return load;
 }

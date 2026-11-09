@@ -5,9 +5,47 @@
     "overrides": {}
   },
   {
+    "nameKey": "Performance",
+    "descKey": "Simplified map colors and fewer visual effects for smoother play on low-power devices.",
+    "overrides": {
+      "passEnabled": {
+        "fx": false,
+        "fallout": false
+      },
+      "smallPlayerGlow": {
+        "strength": 0
+      },
+      "structure": {
+        "showDots": true
+      },
+      "name": {
+        "hoverFadeAlpha": 1,
+        "hoverGlowWidth": 0,
+        "hoverGlowAlpha": 0
+      },
+      "mapOverlay": {
+        "highlightThicken": 1,
+        "highlightBrighten": 0.08,
+        "highlightFillBrighten": 0.15
+      },
+      "terrain": {
+        "backgroundColor": "#111820",
+        "oceanColor": "#234154",
+        "sandColor": "#b6a477",
+        "plainsColor": "#82995b",
+        "highlandColor": "#a9a080",
+        "mountainColor": "#c1c4c3"
+      }
+    }
+  },
+  {
     "nameKey": "graphics_setting.preset_night",
     "descKey": "graphics_setting.preset_night_desc",
-    "overrides": { "lighting": { "ambient": 0.36 } }
+    "overrides": {
+      "lighting": {
+        "ambient": 0.36
+      }
+    }
   },
   {
     "nameKey": "graphics_setting.preset_evans_pick",
