@@ -85,3 +85,12 @@ Do not mark an item complete until its implementation and relevant tests are pre
 - [ ] The newly built aircraft update is not yet live on Render. The public Render service still serves the previously deployed main commit until this branch is merged and deployment completes.
 
 The production build reports non-fatal inherited CSS host-context warnings and a large-chunk warning. These did not prevent the build from completing.
+
+## Aircraft release — 2026-11-10
+
+- Airport construction, commercial aircraft routes and trading, aircraft carrier support, and three combat aircraft roles are implemented in the engine and client.
+- Aircraft missions, fuel/range rules, return-to-base, base servicing, air-to-air missiles, flare evasion, ground attack and area bombing are integrated with execution snapshots.
+- Aircraft sprites, UI icons, build menu entries, rendering and client/server message handling are included.
+- Performance improvements include shared terrain-map loading and a low-power graphics preset.
+- Local verification: `npm run typecheck` passed; focused regression suite passed (68 tests across 7 files); `npm run format:check` passed; `npm run build-prod` passed.
+- Full repository test suite and two-browser multiplayer acceptance were not verified as passing in this release.
