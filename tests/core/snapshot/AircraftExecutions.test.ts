@@ -37,11 +37,10 @@ function conquerRect(
 
 describe("aircraft execution snapshots", () => {
   test("airbases, flights, fighters and air attacks round-trip", async () => {
-    const game = await setup(
-      MAP,
-      { infiniteGold: true, instantBuild: true },
-      [human("alice"), human("bob")],
-    );
+    const game = await setup(MAP, { infiniteGold: true, instantBuild: true }, [
+      human("alice"),
+      human("bob"),
+    ]);
     const alice = game.player("alice");
     const bob = game.player("bob");
 
@@ -63,11 +62,9 @@ describe("aircraft execution snapshots", () => {
       game.ref(20, 20),
       { patrolTile: game.ref(22, 20) },
     );
-    const bobFighter = bob.buildUnit(
-      UnitType.AirFighter,
-      game.ref(78, 78),
-      { patrolTile: game.ref(76, 78) },
-    );
+    const bobFighter = bob.buildUnit(UnitType.AirFighter, game.ref(78, 78), {
+      patrolTile: game.ref(76, 78),
+    });
 
     game.addExecution(
       new AirportExecution(sourceAirport),
