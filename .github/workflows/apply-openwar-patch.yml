@@ -3,6 +3,7 @@ name: Apply staged Open War patch
 on:
   push:
     branches:
+      - main
       - openwar-performance-optimization
     paths:
       - ".openwar-patch/**"
