@@ -701,7 +701,7 @@ export class RadialMenu implements Controller {
           const radius = measuredRadius > 0 ? measuredRadius : 1;
           const ux = cx / radius;
           const uy = cy / radius;
-          const showBuildCaption = Boolean(d.data.caption || d.data.priceLabel);
+          const showBuildCaption = Boolean(d.data.caption ?? d.data.priceLabel);
           const iconSize = showBuildCaption ? Math.min(this.config.iconSize, 24) : this.config.iconSize;
           const iconCenterX = cx - (showBuildCaption ? ux * 10 : 0);
           const iconCenterY = cy - (showBuildCaption ? uy * 10 : 0);
