@@ -67,6 +67,10 @@ export interface MenuElement {
   color?: string | ((params: MenuElementParams) => string);
   icon?: string;
   text?: string;
+  /** Visible item name for build and attack choices on touch screens. */
+  caption?: string;
+  /** Current gold price displayed below the item name. */
+  priceLabel?: string;
   fontSize?: string;
   tooltipItems?: TooltipItem[];
   tooltipKeys?: TooltipKey[];
@@ -445,6 +449,8 @@ function createMenuElements(
               : COLORS.building
             : COLORS.building,
         icon: item.icon,
+        caption: translateText(item.key ?? ""),
+        priceLabel: `${renderNumber(params.buildMenu.cost(item))} ${translateText("player_panel.gold")}`,
         tooltipItems: [
           { text: translateText(item.key ?? ""), className: "title" },
           {

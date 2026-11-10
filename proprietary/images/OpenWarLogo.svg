@@ -1,0 +1,22 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 176" role="img" aria-labelledby="title">
+  <title id="title">Open War</title>
+  <defs>
+    <linearGradient id="owMark" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#58eadb"/><stop offset="1" stop-color="#159c9d"/></linearGradient>
+    <linearGradient id="owAmber" x1="0" y1="0" x2="1" y2="1"><stop offset="0" stop-color="#ffd18e"/><stop offset="1" stop-color="#f49b42"/></linearGradient>
+  </defs>
+  <g transform="translate(8 8)">
+    <path d="M78 2 145 39v82l-67 39-67-39V39z" fill="#0b202c" stroke="#4edbce" stroke-width="4"/>
+    <path d="m78 18 51 29v65l-51 29-51-29V47z" fill="#102f3b" stroke="#236b73" stroke-width="2"/>
+    <path d="M42 105 78 34l36 71H94L78 72l-16 33z" fill="url(#owMark)"/>
+    <path d="m78 86 20 35H58z" fill="url(#owAmber)"/>
+    <path d="m78 15 8 15-8 12-8-12z" fill="#f6c77e"/>
+    <path d="M31 123 47 113M109 113l16 10" fill="none" stroke="#f5fbff" stroke-width="4" stroke-linecap="round"/>
+    <circle cx="78" cy="83" r="5" fill="#f5fbff"/>
+  </g>
+  <g font-family="Inter, Arial, sans-serif" font-weight="900">
+    <text x="182" y="94" font-size="66" letter-spacing="4" fill="#f3fbff">OPEN</text>
+    <text x="382" y="94" font-size="66" letter-spacing="4" fill="#58e0d2">WAR</text>
+    <path d="M184 112h420" stroke="#f3a84e" stroke-width="4" stroke-linecap="round"/>
+    <text x="186" y="140" font-size="14" letter-spacing="5" fill="#9bb9c2">COMMAND THE MAP</text>
+  </g>
+</svg>
