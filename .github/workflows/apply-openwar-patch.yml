@@ -21,6 +21,11 @@ jobs:
           fetch-depth: 0
           persist-credentials: true
 
+      - name: Install project tools
+        run: |
+          npm install --global --ignore-scripts npm@12.1.0
+          npm run inst
+
       - name: Rebuild, format and apply patch
         shell: bash
         run: |
