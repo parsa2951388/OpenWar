@@ -4,10 +4,8 @@ on:
   push:
     branches:
       - main
-      - openwar-performance-optimization
     paths:
-      - ".openwar-patch/**"
-      - ".github/workflows/apply-openwar-patch.yml"
+      - ".openwar-patch/READY"
 
 permissions:
   contents: write
@@ -16,10 +14,10 @@ jobs:
   apply-patch:
     runs-on: ubuntu-latest
     steps:
-      - name: Checkout branch
+      - name: Checkout main
         uses: actions/checkout@v4
         with:
-          ref: ${{ github.ref_name }}
+          ref: main
           fetch-depth: 0
           persist-credentials: true
 
@@ -30,7 +28,7 @@ jobs:
           : > /tmp/openwar.patch.b64
           while IFS= read -r file; do
             base64 --decode "$file" >> /tmp/openwar.patch.b64
-          done < <(find .openwar-patch -type f -name 'chunk_*.b64' | sort)
+          done < <(find .openwar-patch -type f -name 'piece_*.b64' | sort)
           base64 --decode /tmp/openwar.patch.b64 | gzip --decompress | git apply --binary -
           git diff --check
           rm -rf .openwar-patch
@@ -39,4 +37,4 @@ jobs:
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add -A
           git commit -m "Implement aircraft warfare, airports and performance refinements"
-          git push origin "HEAD:${{ github.ref_name }}"
+          git push origin main
