@@ -8,7 +8,6 @@ import {
   QUICK_BUILD_TYPES,
   type UnitDisplay,
 } from "../../src/client/hud/layers/UnitDisplay";
-import "../../src/client/hud/layers/UnitDisplay";
 import {
   FORWARDED_TOUCH_CLICK,
   ToggleStructureEvent,

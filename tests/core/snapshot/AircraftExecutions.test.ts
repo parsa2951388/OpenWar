@@ -66,6 +66,7 @@ describe("aircraft execution snapshots", () => {
       patrolTile: game.ref(76, 78),
     });
 
+    game.reserveFighterAamTarget(aliceFighter.id(), bobFighter.id());
     game.addExecution(
       new AirportExecution(sourceAirport),
       new AirportExecution(destinationAirport),
@@ -84,8 +85,10 @@ describe("aircraft execution snapshots", () => {
       new MoveFighterExecution(alice, [aliceFighter.id()], game.ref(24, 24)),
     );
 
-    // The first round-trip covers uninitialized executions; subsequent ticks
-    // cover the active pathfinders, aircraft state and spawned air ordnance.
+    // Initialize pathfinders and execution-owned state before taking the
+    // first snapshot. The AAM reservation is created by the normal game
+    // command path, so this fixture reserves the same pair explicitly.
+    game.executeNextTick();
     await expectSnapshotRoundTrip(game, MAP, 5);
   }, 60_000);
 });
