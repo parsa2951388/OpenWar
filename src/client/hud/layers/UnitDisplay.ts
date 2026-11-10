@@ -614,6 +614,9 @@ export class UnitDisplay extends LitElement implements Controller {
       return html``;
     }
     const selected = this.uiState.ghostStructure === unitType;
+    const availableCost = this.playerBuildables?.find(
+      (buildable) => buildable.type === unitType,
+    )?.cost;
     const displayHotkey = hotkey
       .replace("Digit", "")
       .replace("Key", "")
@@ -621,7 +624,7 @@ export class UnitDisplay extends LitElement implements Controller {
 
     return html`
       <div
-        class="flex flex-col items-center relative"
+        class="flex flex-col items-center relative min-w-0"
         @mouseenter=${(event: MouseEvent) => {
           const item = event.currentTarget as HTMLElement;
           this._hoveredUnitTooltip = {
@@ -642,7 +645,7 @@ export class UnitDisplay extends LitElement implements Controller {
         <div
           class="${
             this.canBuild(unitType) ? "" : "opacity-40"
-          } border border-slate-500 rounded-sm max-lg:h-7.5 w-full px-1 pb-0.5 flex items-center justify-center gap-0.5 cursor-pointer lg:px-0.5 lg:justify-start landscape:px-0.5
+          } border border-slate-500 rounded-sm max-lg:min-h-[30px] max-lg:h-auto w-full px-1 py-0.5 flex items-center justify-center gap-0.5 cursor-pointer lg:px-0.5 lg:justify-start landscape:px-0.5
              ${
             selected
               ? "pointer-fine:hover:bg-gray-400/10"
@@ -727,6 +730,16 @@ export class UnitDisplay extends LitElement implements Controller {
                 : null
             }
           </div>
+        </div>
+        <div class="unit-display-entry-label flex w-full min-w-0 flex-col items-center px-0.5 pb-0.5 text-center leading-none">
+          <span
+            class="unit-display-name block w-full max-w-[54px] truncate text-[7px] font-semibold text-slate-200 lg:max-w-[64px] lg:text-[8px]"
+            title=${translateText("unit_type." + structureKey)}
+          >${translateText("unit_type." + structureKey)}</span>
+          <span class="unit-display-cost mt-0.5 flex min-h-[9px] items-center justify-center gap-0.5 whitespace-nowrap text-[7px] font-semibold text-amber-300 lg:text-[8px]">
+            <img src=${goldCoinIcon} width="8" height="8" alt="" />
+            <span>${availableCost === undefined ? "—" : renderNumber(availableCost)}</span>
+          </span>
         </div>
       </div>
     `;
