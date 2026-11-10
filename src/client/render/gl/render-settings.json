@@ -9,10 +9,10 @@
     "structure": true,
     "unit": true,
     "name": true,
-    "falloutBloom": false,
-    "falloutLight": false,
+    "falloutBloom": true,
+    "falloutLight": true,
     "railroad": true,
-    "fx": false,
+    "fx": true,
     "bar": true,
     "nameDebug": false
   },
@@ -349,10 +349,14 @@
     "gradientSolidEnd": 0.1
   },
   "smallPlayerGlow": {
-    "color": [1, 0.12, 0.1],
+    "color": [
+      1,
+      0.12,
+      0.1
+    ],
     "alpha": 0.9,
     "pulseSpeed": 0.003,
-    "strength": 0
+    "strength": 0.35
   },
   "altView": {
     "gridFontSize": 24,
