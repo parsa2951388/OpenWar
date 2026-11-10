@@ -11,13 +11,7 @@ import {
 } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { findMinimumBy } from "@openfront/engine-lib/Util";
 import { z } from "zod";
-import {
-  Execution,
-  Game,
-  isUnit,
-  OwnerComp,
-  Unit,
-} from "../game/Game";
+import { Execution, Game, isUnit, OwnerComp, Unit } from "../game/Game";
 import { WaterPathFinder } from "../pathfinding/PathFinder";
 import { PathStatus } from "../pathfinding/types";
 import { execSnapshotType } from "../snapshot/ExecutionSnapshot";

@@ -118,19 +118,35 @@ export class PlayPage extends LitElement {
           ></streaming-now>
         </div>
 
-
         <section class="ow-home-hero" aria-label="Open War command overview">
           <div class="ow-home-hero-brand">
-            <img src=${assetUrl("images/OpenWarLogo.svg")} alt="Open War" class="ow-home-wordmark" width="720" height="176" />
-            <div class="ow-home-brand-stamp"><span class="ow-home-stamp-dot"></span>INDEPENDENT STRATEGY COMMAND</div>
+            <img
+              src=${assetUrl("images/OpenWarLogo.svg")}
+              alt="Open War"
+              class="ow-home-wordmark"
+              width="720"
+              height="176"
+            />
+            <div class="ow-home-brand-stamp">
+              <span class="ow-home-stamp-dot"></span>INDEPENDENT STRATEGY
+              COMMAND
+            </div>
           </div>
           <div class="ow-home-hero-copy">
             <div class="ow-home-kicker">REAL-TIME TERRITORY STRATEGY</div>
             <h1>Every border is a decision.</h1>
-            <p>Build your economy, command land and air forces, and shape the map through tactical choices.</p>
-            <div class="ow-home-feature-line"><span>ECONOMY</span><span>ALLIANCES</span><span>AIR &amp; NAVAL</span></div>
+            <p>
+              Build your economy, command land and air forces, and shape the map
+              through tactical choices.
+            </p>
+            <div class="ow-home-feature-line">
+              <span>ECONOMY</span><span>ALLIANCES</span
+              ><span>AIR &amp; NAVAL</span>
+            </div>
           </div>
-          <div class="ow-home-coordinate" aria-hidden="true">OW / THEATER 01</div>
+          <div class="ow-home-coordinate" aria-hidden="true">
+            OW / THEATER 01
+          </div>
         </section>
         <game-mode-selector></game-mode-selector>
 

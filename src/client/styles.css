@@ -46,7 +46,8 @@
   --shadow-malibu-blue-pill: 0 0 6px rgba(23, 189, 180, 0.35);
   --shadow-malibu-blue-ring-sm: 0 0 0 4px rgba(23, 189, 180, 0.2);
   --shadow-malibu-blue-ring-lg: 0 0 0 6px rgba(23, 189, 180, 0.3);
-  --shadow-lobby-card-hover: 0 0 0 2px #0084d1, 0 0 20px rgba(23, 189, 180, 0.5);
+  --shadow-lobby-card-hover:
+    0 0 0 2px #0084d1, 0 0 20px rgba(23, 189, 180, 0.5);
   --shadow-action-card-hover:
     0 0 0 1px #0084d1, 0 0 12px rgba(23, 189, 180, 0.35);
 }
@@ -905,20 +906,186 @@ unit-display .tutorial-highlight::after {
 }
 
 /* Open War home screen: command-console identity, independent of the in-game HUD. */
-#page-play .ow-home-hero{position:relative;isolation:isolate;display:grid;grid-template-columns:minmax(180px,.82fr) minmax(0,1.7fr);align-items:center;gap:clamp(1rem,3vw,2.5rem);min-height:164px;overflow:hidden;padding:clamp(1rem,2.2vw,1.8rem);border:1px solid rgba(69,221,207,.28);border-radius:18px;background:radial-gradient(ellipse at 9% 105%,rgba(255,173,85,.15),transparent 42%),radial-gradient(ellipse at 92% 6%,rgba(41,210,196,.18),transparent 40%),linear-gradient(118deg,#0b202c 0%,#102a35 48%,#101e2c 100%);box-shadow:0 16px 42px rgba(0,0,0,.24),inset 0 1px rgba(255,255,255,.045)}
-#page-play .ow-home-hero:before{position:absolute;z-index:-1;inset:0;content:"";opacity:.18;background-image:linear-gradient(rgba(118,205,201,.22) 1px,transparent 1px),linear-gradient(90deg,rgba(118,205,201,.22) 1px,transparent 1px);background-size:34px 34px;mask-image:linear-gradient(90deg,#000,transparent 92%)}
-#page-play .ow-home-hero:after{position:absolute;z-index:-1;top:-72px;right:8%;width:220px;height:220px;border:1px solid rgba(69,221,207,.22);border-radius:50%;box-shadow:0 0 0 22px rgba(69,221,207,.035),0 0 0 48px rgba(69,221,207,.025);content:""}
-#page-play .ow-home-hero-brand,#page-play .ow-home-hero-copy{position:relative;z-index:1;min-width:0}
-#page-play .ow-home-wordmark{display:block;width:min(100%,300px);height:auto;filter:drop-shadow(0 8px 20px rgba(0,0,0,.28))}
-#page-play .ow-home-brand-stamp{display:inline-flex;align-items:center;gap:.45rem;margin-top:.65rem;color:#a9c5cb;font-size:.58rem;font-weight:800;letter-spacing:.16em}
-#page-play .ow-home-stamp-dot{width:7px;height:7px;border-radius:50%;background:#ffb653;box-shadow:0 0 11px rgba(255,182,83,.85)}
-#page-play .ow-home-kicker{margin-bottom:.42rem;color:#65e4d8;font-size:.64rem;font-weight:900;letter-spacing:.2em}
-#page-play .ow-home-hero-copy h1{margin:0;color:#f4fbff;font-family:var(--font-display);font-size:clamp(1.25rem,2.6vw,2.15rem);font-weight:850;line-height:1.12;letter-spacing:-.035em}
-#page-play .ow-home-hero-copy p{max-width:620px;margin:.55rem 0 0;color:#b7cbd1;font-size:clamp(.75rem,1vw,.9rem);line-height:1.55}
-#page-play .ow-home-feature-line{display:flex;flex-wrap:wrap;gap:.45rem;margin-top:.85rem}
-#page-play .ow-home-feature-line span{padding:.27rem .52rem;border:1px solid rgba(101,228,216,.25);border-radius:999px;background:rgba(4,16,24,.32);color:#d8eeef;font-size:.57rem;font-weight:850;letter-spacing:.1em}
-#page-play .ow-home-feature-line span:last-child{border-color:rgba(255,182,83,.35);color:#ffd39b}
-#page-play .ow-home-coordinate{position:absolute;right:1rem;bottom:.55rem;color:rgba(183,203,209,.45);font-size:.54rem;font-weight:800;letter-spacing:.16em}
-#page-play .ow-home-hero+game-mode-selector{margin-top:.15rem}
-@media(max-width:767px){#page-play .ow-home-hero{grid-template-columns:minmax(0,1fr);gap:.55rem;min-height:0;padding:.95rem 1rem 1.25rem;border-radius:0 0 14px 14px}#page-play .ow-home-wordmark{width:164px;max-width:56vw}#page-play .ow-home-brand-stamp{margin-top:.35rem;font-size:.5rem}#page-play .ow-home-kicker{margin-bottom:.25rem;font-size:.56rem}#page-play .ow-home-hero-copy h1{font-size:clamp(1.15rem,5vw,1.55rem)}#page-play .ow-home-hero-copy p{margin-top:.35rem;font-size:.72rem}#page-play .ow-home-feature-line{gap:.3rem;margin-top:.55rem}#page-play .ow-home-coordinate{right:.7rem;bottom:.45rem;font-size:.45rem}}
-@media(prefers-reduced-motion:reduce){#page-play .ow-home-hero,#page-play .ow-home-hero *{scroll-behavior:auto;transition-duration:.01ms!important;animation-duration:.01ms!important}}
+#page-play .ow-home-hero {
+  position: relative;
+  isolation: isolate;
+  display: grid;
+  grid-template-columns: minmax(180px, 0.82fr) minmax(0, 1.7fr);
+  align-items: center;
+  gap: clamp(1rem, 3vw, 2.5rem);
+  min-height: 164px;
+  overflow: hidden;
+  padding: clamp(1rem, 2.2vw, 1.8rem);
+  border: 1px solid rgba(69, 221, 207, 0.28);
+  border-radius: 18px;
+  background:
+    radial-gradient(
+      ellipse at 9% 105%,
+      rgba(255, 173, 85, 0.15),
+      transparent 42%
+    ),
+    radial-gradient(
+      ellipse at 92% 6%,
+      rgba(41, 210, 196, 0.18),
+      transparent 40%
+    ),
+    linear-gradient(118deg, #0b202c 0%, #102a35 48%, #101e2c 100%);
+  box-shadow:
+    0 16px 42px rgba(0, 0, 0, 0.24),
+    inset 0 1px rgba(255, 255, 255, 0.045);
+}
+#page-play .ow-home-hero:before {
+  position: absolute;
+  z-index: -1;
+  inset: 0;
+  content: "";
+  opacity: 0.18;
+  background-image:
+    linear-gradient(rgba(118, 205, 201, 0.22) 1px, transparent 1px),
+    linear-gradient(90deg, rgba(118, 205, 201, 0.22) 1px, transparent 1px);
+  background-size: 34px 34px;
+  mask-image: linear-gradient(90deg, #000, transparent 92%);
+}
+#page-play .ow-home-hero:after {
+  position: absolute;
+  z-index: -1;
+  top: -72px;
+  right: 8%;
+  width: 220px;
+  height: 220px;
+  border: 1px solid rgba(69, 221, 207, 0.22);
+  border-radius: 50%;
+  box-shadow:
+    0 0 0 22px rgba(69, 221, 207, 0.035),
+    0 0 0 48px rgba(69, 221, 207, 0.025);
+  content: "";
+}
+#page-play .ow-home-hero-brand,
+#page-play .ow-home-hero-copy {
+  position: relative;
+  z-index: 1;
+  min-width: 0;
+}
+#page-play .ow-home-wordmark {
+  display: block;
+  width: min(100%, 300px);
+  height: auto;
+  filter: drop-shadow(0 8px 20px rgba(0, 0, 0, 0.28));
+}
+#page-play .ow-home-brand-stamp {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.45rem;
+  margin-top: 0.65rem;
+  color: #a9c5cb;
+  font-size: 0.58rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+#page-play .ow-home-stamp-dot {
+  width: 7px;
+  height: 7px;
+  border-radius: 50%;
+  background: #ffb653;
+  box-shadow: 0 0 11px rgba(255, 182, 83, 0.85);
+}
+#page-play .ow-home-kicker {
+  margin-bottom: 0.42rem;
+  color: #65e4d8;
+  font-size: 0.64rem;
+  font-weight: 900;
+  letter-spacing: 0.2em;
+}
+#page-play .ow-home-hero-copy h1 {
+  margin: 0;
+  color: #f4fbff;
+  font-family: var(--font-display);
+  font-size: clamp(1.25rem, 2.6vw, 2.15rem);
+  font-weight: 850;
+  line-height: 1.12;
+  letter-spacing: -0.035em;
+}
+#page-play .ow-home-hero-copy p {
+  max-width: 620px;
+  margin: 0.55rem 0 0;
+  color: #b7cbd1;
+  font-size: clamp(0.75rem, 1vw, 0.9rem);
+  line-height: 1.55;
+}
+#page-play .ow-home-feature-line {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 0.45rem;
+  margin-top: 0.85rem;
+}
+#page-play .ow-home-feature-line span {
+  padding: 0.27rem 0.52rem;
+  border: 1px solid rgba(101, 228, 216, 0.25);
+  border-radius: 999px;
+  background: rgba(4, 16, 24, 0.32);
+  color: #d8eeef;
+  font-size: 0.57rem;
+  font-weight: 850;
+  letter-spacing: 0.1em;
+}
+#page-play .ow-home-feature-line span:last-child {
+  border-color: rgba(255, 182, 83, 0.35);
+  color: #ffd39b;
+}
+#page-play .ow-home-coordinate {
+  position: absolute;
+  right: 1rem;
+  bottom: 0.55rem;
+  color: rgba(183, 203, 209, 0.45);
+  font-size: 0.54rem;
+  font-weight: 800;
+  letter-spacing: 0.16em;
+}
+#page-play .ow-home-hero + game-mode-selector {
+  margin-top: 0.15rem;
+}
+@media (max-width: 767px) {
+  #page-play .ow-home-hero {
+    grid-template-columns: minmax(0, 1fr);
+    gap: 0.55rem;
+    min-height: 0;
+    padding: 0.95rem 1rem 1.25rem;
+    border-radius: 0 0 14px 14px;
+  }
+  #page-play .ow-home-wordmark {
+    width: 164px;
+    max-width: 56vw;
+  }
+  #page-play .ow-home-brand-stamp {
+    margin-top: 0.35rem;
+    font-size: 0.5rem;
+  }
+  #page-play .ow-home-kicker {
+    margin-bottom: 0.25rem;
+    font-size: 0.56rem;
+  }
+  #page-play .ow-home-hero-copy h1 {
+    font-size: clamp(1.15rem, 5vw, 1.55rem);
+  }
+  #page-play .ow-home-hero-copy p {
+    margin-top: 0.35rem;
+    font-size: 0.72rem;
+  }
+  #page-play .ow-home-feature-line {
+    gap: 0.3rem;
+    margin-top: 0.55rem;
+  }
+  #page-play .ow-home-coordinate {
+    right: 0.7rem;
+    bottom: 0.45rem;
+    font-size: 0.45rem;
+  }
+}
+@media (prefers-reduced-motion: reduce) {
+  #page-play .ow-home-hero,
+  #page-play .ow-home-hero * {
+    scroll-behavior: auto;
+    transition-duration: 0.01ms !important;
+    animation-duration: 0.01ms !important;
+  }
+}

@@ -702,7 +702,9 @@ export class RadialMenu implements Controller {
           const ux = cx / radius;
           const uy = cy / radius;
           const showBuildCaption = Boolean(d.data.caption ?? d.data.priceLabel);
-          const iconSize = showBuildCaption ? Math.min(this.config.iconSize, 24) : this.config.iconSize;
+          const iconSize = showBuildCaption
+            ? Math.min(this.config.iconSize, 24)
+            : this.config.iconSize;
           const iconCenterX = cx - (showBuildCaption ? ux * 10 : 0);
           const iconCenterY = cy - (showBuildCaption ? uy * 10 : 0);
           const imgSel = content
@@ -729,7 +731,8 @@ export class RadialMenu implements Controller {
           });
 
           if (d.data.caption) {
-            content.append("text")
+            content
+              .append("text")
               .attr("class", "menu-item-caption")
               .attr("text-anchor", "middle")
               .attr("dominant-baseline", "central")
@@ -749,7 +752,8 @@ export class RadialMenu implements Controller {
               .text(d.data.caption);
           }
           if (d.data.priceLabel) {
-            content.append("text")
+            content
+              .append("text")
               .attr("class", "menu-item-price")
               .attr("text-anchor", "middle")
               .attr("dominant-baseline", "central")
