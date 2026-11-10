@@ -1,6 +1,5 @@
 import {
   BuildableUnit,
-  BuildMenus,
   Gold,
   PlayerBuildableUnitType,
   UnitType,
@@ -37,6 +36,20 @@ import {
   warshipIcon,
 } from "../HotbarIcons";
 import { TutorialHighlight, TutorialHighlightEvent } from "../Tutorial";
+
+/** Units rendered by the compact quick-build bar; aircraft use the radial menu. */
+export const QUICK_BUILD_TYPES: readonly PlayerBuildableUnitType[] = [
+  UnitType.City,
+  UnitType.Factory,
+  UnitType.Port,
+  UnitType.DefensePost,
+  UnitType.MissileSilo,
+  UnitType.SAMLauncher,
+  UnitType.Warship,
+  UnitType.AtomBomb,
+  UnitType.HydrogenBomb,
+  UnitType.MIRV,
+];
 
 /** How long a build button has to be held before it shows its details (cost etc.) */
 const PEEK_HOLD_MS = 450;
@@ -113,7 +126,7 @@ export class UnitDisplay extends LitElement implements Controller {
     // the onboarding tutorial fires its atom bomb from here on every screen.
     if (this.tutorialMode) this.classList.remove("hidden");
 
-    this.enabledUnitCount = BuildMenus.types.filter((unitType) =>
+    this.enabledUnitCount = QUICK_BUILD_TYPES.filter((unitType) =>
       this.isUnitDisplayed(unitType),
     ).length;
     this.allDisabled = this.enabledUnitCount === 0;
@@ -450,7 +463,7 @@ export class UnitDisplay extends LitElement implements Controller {
     const player = this.game?.myPlayer();
     if (!player) return;
     player
-      .buildables(undefined, BuildMenus.types)
+      .buildables(undefined, QUICK_BUILD_TYPES)
       .then((buildables) => {
         this.playerBuildables = buildables;
       })

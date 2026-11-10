@@ -1,11 +1,13 @@
 import {
-  BuildMenus,
   PlayerBuildableUnitType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, test, vi } from "vitest";
-import type { UnitDisplay } from "../../src/client/hud/layers/UnitDisplay";
+import {
+  QUICK_BUILD_TYPES,
+  type UnitDisplay,
+} from "../../src/client/hud/layers/UnitDisplay";
 import "../../src/client/hud/layers/UnitDisplay";
 import {
   FORWARDED_TOUCH_CLICK,
@@ -119,9 +121,9 @@ describe("mobile UnitDisplay layout", () => {
       await display.updateComplete;
 
       const grid = display.querySelector<HTMLElement>(".unit-display-grid");
-      expect(grid?.children).toHaveLength(BuildMenus.types.length - 1);
+      expect(grid?.children).toHaveLength(QUICK_BUILD_TYPES.length - 1);
       expect(grid?.style.getPropertyValue("--unit-display-columns")).toBe(
-        String(BuildMenus.types.length - 1),
+        String(QUICK_BUILD_TYPES.length - 1),
       );
       expect(grid?.classList.contains("lg:grid-cols-none")).toBe(true);
       expect(grid?.classList.contains("lg:auto-cols-max")).toBe(true);
