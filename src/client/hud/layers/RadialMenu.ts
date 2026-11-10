@@ -697,7 +697,8 @@ export class RadialMenu implements Controller {
             .text(d.data.text);
         } else {
           const [cx, cy] = arc.centroid(d);
-          const radius = Math.max(1, Math.hypot(cx, cy));
+          const measuredRadius = Math.hypot(cx, cy);
+          const radius = measuredRadius > 0 ? measuredRadius : 1;
           const ux = cx / radius;
           const uy = cy / radius;
           const showBuildCaption = Boolean(d.data.caption || d.data.priceLabel);

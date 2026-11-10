@@ -3,7 +3,6 @@ import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import {
   zInt,
   zPlayerRef,
-  zTiles,
 } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { z } from "zod";
 import { Execution, Game, Player } from "../game/Game";

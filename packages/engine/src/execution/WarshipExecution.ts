@@ -17,7 +17,6 @@ import {
   isUnit,
   OwnerComp,
   Unit,
-  UnitParams,
 } from "../game/Game";
 import { WaterPathFinder } from "../pathfinding/PathFinder";
 import { PathStatus } from "../pathfinding/types";

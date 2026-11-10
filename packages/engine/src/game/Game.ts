@@ -7,7 +7,6 @@ import {
   Difficulty,
   EmojiMessage,
   FighterState,
-  FighterType,
   GameUpdates,
   Gold,
   MessageType,
