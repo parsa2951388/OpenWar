@@ -1,0 +1,42 @@
+name: Apply staged Open War patch
+
+on:
+  push:
+    branches:
+      - main
+      - openwar-performance-optimization
+    paths:
+      - ".openwar-patch/**"
+      - ".github/workflows/apply-openwar-patch.yml"
+
+permissions:
+  contents: write
+
+jobs:
+  apply-patch:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v4
+        with:
+          ref: ${{ github.ref_name }}
+          fetch-depth: 0
+          persist-credentials: true
+
+      - name: Rebuild and apply patch
+        shell: bash
+        run: |
+          set -euo pipefail
+          : > /tmp/openwar.patch.b64
+          while IFS= read -r file; do
+            base64 --decode "$file" >> /tmp/openwar.patch.b64
+          done < <(find .openwar-patch -type f -name 'chunk_*.b64' | sort)
+          base64 --decode /tmp/openwar.patch.b64 | gzip --decompress | git apply --binary -
+          git diff --check
+          rm -rf .openwar-patch
+          rm -f .github/workflows/apply-openwar-patch.yml
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add -A
+          git commit -m "Implement aircraft warfare, airports and performance refinements"
+          git push origin "HEAD:${{ github.ref_name }}"

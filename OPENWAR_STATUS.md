@@ -22,6 +22,16 @@ The repository is a fork of OpenFrontIO. The inherited core includes a territori
 
 The current Render service uses the upstream development-mode compatibility profile and one Worker. The client and game server are deployed, but this is **not** a complete production multiplayer backend or account system. Do not describe public matchmaking, OAuth, or two-client multiplayer as verified.
 
+## Verified progress in the performance/air-rules branch
+
+- [x] Shared in-flight terrain-map loading: concurrent callers reuse one map build, and failed loads are evicted so a later attempt can retry.
+- [x] Low-end graphics preset: simplified terrain palette, reduced highlight work, structure dots, and expensive glow/fallout effects disabled.
+- [x] Pure aircraft-rule foundation added under `packages/engine/src/aircombat/AircraftRules.ts`: direct flight distance, round-trip fuel with reserve, safe fuel consumption, base-only refuelling and repair, damage/destruction, stealth detection, commercial-aircraft non-combat rules, flight duration, and carrier launch eligibility.
+- [x] Focused regression tests: 11 graphics-preset tests and 12 aircraft-rule tests pass.
+- [x] `npm run typecheck` passes after these additions.
+
+**Important boundary:** these are performance changes and aircraft domain rules only. There are still no airport/aircraft `UnitType` values, airport placement/build menu, aircraft mission intents/executions, synchronized aircraft state, or playable aircraft in a match. Air-combat gameplay remains unimplemented.
+
 ## Air-combat expansion — NOT IMPLEMENTED
 
 The following features are requirements, not completed features:

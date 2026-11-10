@@ -26,6 +26,20 @@ describe("built-in graphics presets", () => {
     }
   });
 
+  it("performance preset disables expensive effects and simplifies map rendering", () => {
+    const performance = builtinPresets.find(
+      (preset) => preset.nameKey === "Performance",
+    );
+    expect(performance).toBeDefined();
+
+    const overrides = GraphicsOverridesSchema.parse(performance!.overrides);
+    expect(overrides.passEnabled?.fx).toBe(false);
+    expect(overrides.passEnabled?.fallout).toBe(false);
+    expect(overrides.smallPlayerGlow?.strength).toBe(0);
+    expect(overrides.structure?.showDots).toBe(true);
+    expect(overrides.terrain?.oceanColor).toBe("#234154");
+  });
+
   it("colorblind preset applies the Okabe-Ito friend-foe colors and theme", () => {
     const colorblind = builtinPresets.find(
       (p) => p.nameKey === "graphics_setting.preset_colorblind",
