@@ -35,10 +35,7 @@ jobs:
             base64 --decode "$file" >> /tmp/openwar.patch.b64
           done < <(find .openwar-patch -type f -name 'piece_*.b64' | sort)
           base64 --decode /tmp/openwar.patch.b64 | gzip --decompress | git apply --binary -
-          changed_files=$(git diff --name-only --diff-filter=ACM | grep -E '\\.(ts|tsx|js|jsx|json|md|yml|yaml|css|scss|html)$' || true)
-          if [ -n "$changed_files" ]; then
-            printf '%s\\n' "$changed_files" | xargs npx oxfmt
-          fi
+          git diff --name-only --diff-filter=ACM -z | xargs -0 -r npx oxfmt
           npm run format:check
           git diff --check
           rm -rf .openwar-patch
