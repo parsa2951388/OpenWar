@@ -731,14 +731,21 @@ export class UnitDisplay extends LitElement implements Controller {
             }
           </div>
         </div>
-        <div class="unit-display-entry-label flex w-full min-w-0 flex-col items-center px-0.5 pb-0.5 text-center leading-none">
+        <div
+          class="unit-display-entry-label flex w-full min-w-0 flex-col items-center px-0.5 pb-0.5 text-center leading-none"
+        >
           <span
             class="unit-display-name block w-full max-w-[54px] truncate text-[7px] font-semibold text-slate-200 lg:max-w-[64px] lg:text-[8px]"
             title=${translateText("unit_type." + structureKey)}
-          >${translateText("unit_type." + structureKey)}</span>
-          <span class="unit-display-cost mt-0.5 flex min-h-[9px] items-center justify-center gap-0.5 whitespace-nowrap text-[7px] font-semibold text-amber-300 lg:text-[8px]">
+            >${translateText("unit_type." + structureKey)}</span
+          >
+          <span
+            class="unit-display-cost mt-0.5 flex min-h-[9px] items-center justify-center gap-0.5 whitespace-nowrap text-[7px] font-semibold text-amber-300 lg:text-[8px]"
+          >
             <img src=${goldCoinIcon} width="8" height="8" alt="" />
-            <span>${availableCost === undefined ? "—" : renderNumber(availableCost)}</span>
+            <span
+              >${availableCost === undefined ? "—" : renderNumber(availableCost)}</span
+            >
           </span>
         </div>
       </div>

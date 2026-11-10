@@ -134,9 +134,11 @@ describe("mobile UnitDisplay layout", () => {
   test("quick-build buttons keep their name and gold cost visible", async () => {
     const { display } = makeDisplay();
     try {
-      (display as unknown as {
-        playerBuildables: { type: UnitType; cost: bigint }[];
-      }).playerBuildables = QUICK_BUILD_TYPES.map((type) => ({
+      (
+        display as unknown as {
+          playerBuildables: { type: UnitType; cost: bigint }[];
+        }
+      ).playerBuildables = QUICK_BUILD_TYPES.map((type) => ({
         type,
         cost: 1250n,
       }));
@@ -145,8 +147,12 @@ describe("mobile UnitDisplay layout", () => {
       const city = display.querySelector<HTMLElement>(
         ".unit-display-grid > div",
       );
-      expect(city?.querySelector(".unit-display-name")?.textContent?.trim()).toBeTruthy();
-      expect(city?.querySelector(".unit-display-cost")?.textContent?.trim()).toBeTruthy();
+      expect(
+        city?.querySelector(".unit-display-name")?.textContent?.trim(),
+      ).toBeTruthy();
+      expect(
+        city?.querySelector(".unit-display-cost")?.textContent?.trim(),
+      ).toBeTruthy();
       expect(city?.querySelector(".unit-display-cost img")).not.toBeNull();
     } finally {
       display.remove();
