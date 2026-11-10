@@ -1615,7 +1615,14 @@ export class PlayerImpl implements Player {
       case UnitType.Port:
         return this.portSpawn(targetTile, validTiles);
       case UnitType.Warship:
+      case UnitType.AircraftCarrier:
         return this.warshipSpawn(targetTile);
+      case UnitType.StealthFighter:
+      case UnitType.GroundAttacker:
+      case UnitType.AirFighter:
+        return this.fighterSpawn(targetTile);
+      case UnitType.CommercialAircraft:
+      case UnitType.AirMissile:
       case UnitType.Shell:
       case UnitType.SAMMissile:
         return targetTile;
@@ -1630,6 +1637,7 @@ export class PlayerImpl implements Player {
       case UnitType.SAMLauncher:
       case UnitType.City:
       case UnitType.Factory:
+      case UnitType.Airport:
         return this.landBasedStructureSpawn(targetTile, validTiles);
       default:
         assertNever(unitType);
@@ -1715,6 +1723,36 @@ export class PlayerImpl implements Player {
     );
 
     return bestPort?.tile() ?? false;
+  }
+
+  fighterSpawn(targetTile: TileRef): TileRef | false {
+    const airports = this.units(UnitType.Airport).filter(
+      (airport) => airport.isActive() && !airport.isUnderConstruction(),
+    );
+    if (airports.length === 0) return false;
+
+    // Prefer the closest airport with free service capacity. Each airport
+    // level provides one simultaneous fighter service slot.
+    const available = airports.filter((airport) => {
+      const servicing = this.mg
+        .nearbyUnits(airport.tile(), this.mg.config().fighterRefuelRange(), [
+          UnitType.StealthFighter,
+          UnitType.GroundAttacker,
+          UnitType.AirFighter,
+        ])
+        .filter(({ unit }) => {
+          if (unit.owner() !== this) return false;
+          const state = unit.fighterState();
+          return state.state === "returning" || state.state === "refueling";
+        });
+      return servicing.length < airport.level();
+    });
+    const candidates = available.length > 0 ? available : airports;
+    return (
+      findClosestBy(candidates, (airport) =>
+        this.mg.manhattanDist(airport.tile(), targetTile),
+      )?.tile() ?? false
+    );
   }
 
   landBasedUnitSpawn(tile: TileRef): TileRef | false {

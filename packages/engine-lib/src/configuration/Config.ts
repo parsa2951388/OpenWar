@@ -214,6 +214,27 @@ export class Config {
       case UnitType.Warship:
         info = { maxHealth: 1000 };
         break;
+      case UnitType.AircraftCarrier:
+        info = { maxHealth: 3000 };
+        break;
+      case UnitType.Airport:
+        info = {
+          constructionDuration: this.instantBuild() ? 0 : 80,
+          upgradable: true,
+        };
+        break;
+      case UnitType.StealthFighter:
+        info = { maxHealth: 100 };
+        break;
+      case UnitType.GroundAttacker:
+        info = { maxHealth: 120 };
+        break;
+      case UnitType.AirFighter:
+        info = { maxHealth: 110 };
+        break;
+      case UnitType.AirMissile:
+        info = { damage: 100 };
+        break;
       case UnitType.Shell:
         info = { damage: 250 };
         break;
@@ -248,6 +269,7 @@ export class Config {
         };
         break;
       case UnitType.TransportShip:
+      case UnitType.CommercialAircraft:
       case UnitType.SAMMissile:
       case UnitType.AtomBomb:
       case UnitType.HydrogenBomb:

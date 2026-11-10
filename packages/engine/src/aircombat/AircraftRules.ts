@@ -79,7 +79,10 @@ function validateProfile(profile: AircraftProfile): void {
   ) {
     throw new RangeError("detectionMultiplier must be between 0 and 1");
   }
-  if (profile.role === "commercial" && (profile.airDamage !== 0 || profile.groundDamage !== 0)) {
+  if (
+    profile.role === "commercial" &&
+    (profile.airDamage !== 0 || profile.groundDamage !== 0)
+  ) {
     throw new RangeError("commercial aircraft cannot carry combat damage");
   }
 }
@@ -100,10 +103,15 @@ export function canLaunchFromBase(
 }
 
 /** Euclidean map distance, matching direct air travel rather than land pathfinding. */
-export function aircraftDistance(from: AircraftPoint, to: AircraftPoint): number {
+export function aircraftDistance(
+  from: AircraftPoint,
+  to: AircraftPoint,
+): number {
   validatePoint(from, "from");
   validatePoint(to, "to");
-  return Math.hypot(to.x - from.x, to.y - from.y);
+  const dx = to.x - from.x;
+  const dy = to.y - from.y;
+  return Math.sqrt(dx * dx + dy * dy);
 }
 
 /** Fuel required for a route, rounded up so partial tiles are never free. */
@@ -114,7 +122,11 @@ export function aircraftFuelForDistance(
 ): number {
   validateProfile(profile);
   assertFiniteNonNegative(distance, "distance");
-  if (!Number.isFinite(reserveFraction) || reserveFraction < 0 || reserveFraction > 1) {
+  if (
+    !Number.isFinite(reserveFraction) ||
+    reserveFraction < 0 ||
+    reserveFraction > 1
+  ) {
     throw new RangeError("reserveFraction must be between 0 and 1");
   }
   return Math.ceil(distance * profile.fuelPerTile * (1 + reserveFraction));
@@ -141,7 +153,11 @@ export function planAircraftMission(
     outboundDistance + returnDistance,
     reserveFraction,
   );
-  if (state.status === "destroyed" || state.status === "in-flight" || state.status === "returning") {
+  if (
+    state.status === "destroyed" ||
+    state.status === "in-flight" ||
+    state.status === "returning"
+  ) {
     return null;
   }
   if (state.fuel < requiredFuel) return null;
@@ -153,7 +169,10 @@ export function planAircraftMission(
   };
 }
 
-function validateAircraftState(state: AircraftState, profile: AircraftProfile): void {
+function validateAircraftState(
+  state: AircraftState,
+  profile: AircraftProfile,
+): void {
   assertFiniteNonNegative(state.fuel, "fuel");
   assertFiniteNonNegative(state.health, "health");
   if (state.fuel > profile.fuelCapacity) {
@@ -212,7 +231,10 @@ export function repairAircraft(
 }
 
 /** Applies damage with a hard zero floor and a terminal destroyed state. */
-export function damageAircraft(state: AircraftState, damage: number): AircraftState {
+export function damageAircraft(
+  state: AircraftState,
+  damage: number,
+): AircraftState {
   assertFiniteNonNegative(damage, "damage");
   if (state.status === "destroyed") return state;
   const health = Math.max(0, state.health - damage);

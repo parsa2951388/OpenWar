@@ -704,6 +704,7 @@ export function getMessageTypeClasses(type: MessageType): string {
     case MessageType.CAPTURED_ENEMY_UNIT:
     case MessageType.CONQUERED_PLAYER:
     case MessageType.ALLIANCE_ACCEPTED:
+    case MessageType.RECEIVED_GOLD_FROM_TRADE:
       return severityColors["success"];
     case MessageType.ATTACK_FAILED:
     case MessageType.ALLIANCE_REJECTED:
@@ -719,6 +720,7 @@ export function getMessageTypeClasses(type: MessageType): string {
     case MessageType.MIRV_INBOUND:
     case MessageType.NUKE_INBOUND:
     case MessageType.HYDROGEN_BOMB_INBOUND:
+    case MessageType.BOMB_DROPPED:
     case MessageType.SAM_MISS:
     case MessageType.ALLIANCE_EXPIRED:
     case MessageType.NAVAL_INVASION_INBOUND:

@@ -1,5 +1,9 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
-import { Tick, UnitType } from "@openfront/engine-api/game/GameTypes";
+import {
+  FighterType,
+  Tick,
+  UnitType,
+} from "@openfront/engine-api/game/GameTypes";
 import {
   zInt,
   zPlayerRef,
@@ -14,9 +18,11 @@ import type {
   SnapshotReader,
   SnapshotWriter,
 } from "../snapshot/SnapshotContext";
+import { AirportExecution } from "./AirportExecution";
 import { CityExecution } from "./CityExecution";
 import { DefensePostExecution } from "./DefensePostExecution";
 import { FactoryExecution } from "./FactoryExecution";
+import { FighterExecution } from "./FighterExecution";
 import { MirvExecution } from "./MIRVExecution";
 import { MissileSiloExecution } from "./MissileSiloExecution";
 import { NukeExecution } from "./NukeExecution";
@@ -144,8 +150,47 @@ export class ConstructionExecution implements Execution {
           new WarshipExecution({ owner: player, patrolTile: this.tile }),
         );
         break;
+      case UnitType.AircraftCarrier:
+        this.mg.addExecution(
+          new WarshipExecution({
+            owner: player,
+            patrolTile: this.tile,
+            unitType: UnitType.AircraftCarrier,
+          }),
+        );
+        break;
       case UnitType.Port:
         this.mg.addExecution(new PortExecution(this.structure!));
+        break;
+      case UnitType.Airport:
+        this.mg.addExecution(new AirportExecution(this.structure!));
+        break;
+      case UnitType.StealthFighter:
+        this.mg.addExecution(
+          new FighterExecution({
+            owner: player,
+            patrolTile: this.tile,
+            fighterType: FighterType.Stealth,
+          }),
+        );
+        break;
+      case UnitType.GroundAttacker:
+        this.mg.addExecution(
+          new FighterExecution({
+            owner: player,
+            patrolTile: this.tile,
+            fighterType: FighterType.Ground,
+          }),
+        );
+        break;
+      case UnitType.AirFighter:
+        this.mg.addExecution(
+          new FighterExecution({
+            owner: player,
+            patrolTile: this.tile,
+            fighterType: FighterType.Air,
+          }),
+        );
         break;
       case UnitType.MissileSilo:
         this.mg.addExecution(new MissileSiloExecution(this.structure!));
@@ -175,6 +220,7 @@ export class ConstructionExecution implements Execution {
   private isStructure(type: UnitType): boolean {
     switch (type) {
       case UnitType.Port:
+      case UnitType.Airport:
       case UnitType.MissileSilo:
       case UnitType.DefensePost:
       case UnitType.SAMLauncher:

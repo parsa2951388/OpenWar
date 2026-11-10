@@ -6,6 +6,8 @@ import {
   Cell,
   Difficulty,
   EmojiMessage,
+  FighterState,
+  FighterType,
   GameUpdates,
   Gold,
   MessageType,
@@ -65,6 +67,32 @@ export interface UnitParamsMap {
 
   [UnitType.Warship]: {
     patrolTile: TileRef;
+  };
+
+  [UnitType.AircraftCarrier]: {
+    patrolTile: TileRef;
+  };
+
+  [UnitType.Airport]: Record<string, never>;
+
+  [UnitType.CommercialAircraft]: {
+    targetUnit: Unit;
+  };
+
+  [UnitType.StealthFighter]: {
+    patrolTile: TileRef;
+  };
+
+  [UnitType.GroundAttacker]: {
+    patrolTile: TileRef;
+  };
+
+  [UnitType.AirFighter]: {
+    patrolTile: TileRef;
+  };
+
+  [UnitType.AirMissile]: {
+    targetUnit: Unit;
   };
 
   [UnitType.Shell]: Record<string, never>;
@@ -253,6 +281,8 @@ export interface Unit extends UnitLike {
   hasHealth(): boolean;
   warshipState(): WarshipState;
   updateWarshipState(update: Partial<WarshipState>): void;
+  fighterState(): FighterState;
+  updateFighterState(update: Partial<FighterState>): void;
   transportShipState(): TransportShipState;
   updateTransportShipState(update: Partial<TransportShipState>): void;
   nukeState(): NukeState;
@@ -612,6 +642,10 @@ export interface Game extends GameLike {
 
   addExecution(...exec: Execution[]): void;
   executions(): Execution[];
+  recordFighterBombAlert(fighterId: number, tile: TileRef): boolean;
+  clearFighterBombAlerts(fighterId: number): void;
+  reserveFighterAamTarget(fighterId: number, targetId: number): boolean;
+  clearFighterAamTarget(fighterId: number, targetId: number): void;
   removeExecution(exec: Execution): void;
   takeoverPlayer(player: Player | PlayerID, localClientID: ClientID): void;
   convertHumanToNation(player: Player | PlayerID, gameID: GameID): Execution;

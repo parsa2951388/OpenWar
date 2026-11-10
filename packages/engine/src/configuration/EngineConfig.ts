@@ -7,6 +7,7 @@ import {
   TerrainType,
   TerraNullius,
   Tick,
+  FighterType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
 import { PlayerLike } from "@openfront/engine-api/game/ReadViews";
@@ -329,10 +330,211 @@ export class EngineConfig extends Config {
     );
   }
 
+  // Commercial-aircraft spawn saturation from the uploaded Worker.
+  commercialAircraftSpawnRate(
+    rejections: number,
+    aircraftCount: number,
+  ): number {
+    const saturation = 1 - sigmoid(aircraftCount, Math.LN2 / 50, 400);
+    const rejectionModifier = 1 / (rejections + 1);
+    return Math.max(1, Math.floor((100 * rejectionModifier) / saturation));
+  }
+
   private hasInfiniteGoldFor(player: PlayerLike): boolean {
     if (this.infiniteGold()) return true;
     const hc = this._gameConfig.hostCheats;
     return (hc?.infiniteGold ?? false) && player.isLobbyCreator();
+  }
+
+  // Air-combat tuning mirrored from the inspected OpenBattle worker rules.
+  fighterMaxFuel(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 1200;
+      case FighterType.Ground:
+        return 800;
+      case FighterType.Air:
+        return 1000;
+    }
+  }
+
+  fighterMaxAam(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 2;
+      case FighterType.Ground:
+        return 0;
+      case FighterType.Air:
+        return 4;
+    }
+  }
+
+  fighterMaxBomb(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 1;
+      case FighterType.Ground:
+        return 5;
+      case FighterType.Air:
+        return 0;
+    }
+  }
+
+  fighterMaxGunAmmo(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 0;
+      case FighterType.Ground:
+        return 1000;
+      case FighterType.Air:
+        return 0;
+    }
+  }
+
+  fighterMaxFlares(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 3;
+      case FighterType.Ground:
+        return 2;
+      case FighterType.Air:
+        return 4;
+    }
+  }
+
+  fighterLowFuelThreshold(type: FighterType): number {
+    return Math.floor(
+      this.fighterMaxFuel(type) * (type === FighterType.Ground ? 0.3 : 0.25),
+    );
+  }
+
+  fighterFullyServicedFuelRatio(): number {
+    return 0.9;
+  }
+  fighterRefuelRange(): number {
+    return 10;
+  }
+  fighterFuelReturnSafetyBuffer(): number {
+    return 2;
+  }
+  fighterFlareEvasionOdds(): number {
+    return 2;
+  }
+
+  fighterRefuelTicks(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 40;
+      case FighterType.Ground:
+        return 30;
+      case FighterType.Air:
+        return 35;
+    }
+  }
+
+  fighterTargetRange(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 100;
+      case FighterType.Ground:
+        return 50;
+      case FighterType.Air:
+        return 80;
+    }
+  }
+
+  fighterAamAttackRange(): number {
+    return 40;
+  }
+
+  fighterAamAttackDamage(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 80;
+      case FighterType.Ground:
+        return 0;
+      case FighterType.Air:
+        return 50;
+    }
+  }
+
+  fighterGunAirRange(): number {
+    return 6;
+  }
+  fighterGunAirDamage(): number {
+    return 20;
+  }
+
+  fighterBombAttackRange(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 4;
+      case FighterType.Ground:
+        return 15;
+      case FighterType.Air:
+        return 0;
+    }
+  }
+
+  fighterBombTroopDamage(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 0;
+      case FighterType.Ground:
+        return 500;
+      case FighterType.Air:
+        return 0;
+    }
+  }
+
+  fighterBombRadius(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 3;
+      case FighterType.Ground:
+        return 1;
+      case FighterType.Air:
+        return 1.5;
+    }
+  }
+
+  fighterGroundAttackDamage(type: FighterType): number {
+    const efficiency =
+      type === FighterType.Stealth
+        ? 0.5
+        : type === FighterType.Ground
+          ? 1.5
+          : 0.7;
+    return Math.floor(20 * efficiency);
+  }
+
+  fighterOrbitRadius(type: FighterType): number {
+    return type === FighterType.Ground ? 14 : 10;
+  }
+
+  fighterStealthRange(): number {
+    return 30;
+  }
+
+  fighterSpeed(type: FighterType): number {
+    switch (type) {
+      case FighterType.Stealth:
+        return 1.5;
+      case FighterType.Ground:
+        return 1;
+      case FighterType.Air:
+        return 1.875;
+    }
+  }
+
+  fighterCommercialCaptureSpeed(type: FighterType): number {
+    return type === FighterType.Air
+      ? this.fighterSpeed(type) * 2
+      : this.fighterSpeed(type);
+  }
+
+  aircraftCarrierTicksPerMove(): number {
+    return 5;
   }
 
   override unitInfo(type: UnitType): EngineUnitInfo {
@@ -395,6 +597,35 @@ export class EngineConfig extends Config {
           UnitType.Factory,
           UnitType.Port,
         );
+      case UnitType.AircraftCarrier:
+        return this.costWrapper(
+          (numUnits: number) => Math.min(2_000_000, (numUnits + 1) * 500_000),
+          UnitType.AircraftCarrier,
+        );
+      case UnitType.Airport:
+        return this.costWrapper(
+          (numUnits: number) => Math.min(1_500_000, 2 ** numUnits * 200_000),
+          UnitType.Airport,
+        );
+      case UnitType.StealthFighter:
+        return this.costWrapper(
+          (numUnits: number) =>
+            Math.min(15_000_000, (numUnits + 1) * 5_000_000),
+          UnitType.StealthFighter,
+        );
+      case UnitType.GroundAttacker:
+        return this.costWrapper(
+          (numUnits: number) =>
+            Math.min(12_000_000, (numUnits + 1) * 3_000_000),
+          UnitType.GroundAttacker,
+        );
+      case UnitType.AirFighter:
+        return this.costWrapper(
+          (numUnits: number) => Math.min(2_500_000, (numUnits + 1) * 500_000),
+          UnitType.AirFighter,
+        );
+      case UnitType.AirMissile:
+      case UnitType.CommercialAircraft:
       case UnitType.TransportShip:
       case UnitType.Shell:
       case UnitType.SAMMissile:

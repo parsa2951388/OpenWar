@@ -14,6 +14,12 @@
 export const UT_TRANSPORT = "Transport" as const;
 export const UT_TRADE_SHIP = "Trade Ship" as const;
 export const UT_WARSHIP = "Warship" as const;
+export const UT_AIRCRAFT_CARRIER = "Aircraft Carrier" as const;
+export const UT_COMMERCIAL_AIRCRAFT = "Commercial Aircraft" as const;
+export const UT_STEALTH_FIGHTER = "Stealth Fighter" as const;
+export const UT_GROUND_ATTACKER = "Ground Attacker" as const;
+export const UT_AIR_FIGHTER = "Air Fighter" as const;
+export const UT_AIR_MISSILE = "Air Missile" as const;
 export const UT_ATOM_BOMB = "Atom Bomb" as const;
 export const UT_HYDROGEN_BOMB = "Hydrogen Bomb" as const;
 export const UT_MIRV = "MIRV" as const;
@@ -29,6 +35,7 @@ export const UT_FACTORY = "Factory" as const;
 export const UT_DEFENSE_POST = "Defense Post" as const;
 export const UT_SAM_LAUNCHER = "SAM Launcher" as const;
 export const UT_MISSILE_SILO = "Missile Silo" as const;
+export const UT_AIRPORT = "Airport" as const;
 
 // ---------------------------------------------------------------------------
 // Derived sets
@@ -41,6 +48,7 @@ export const STRUCTURE_TYPES: ReadonlySet<string> = new Set([
   UT_DEFENSE_POST,
   UT_SAM_LAUNCHER,
   UT_MISSILE_SILO,
+  UT_AIRPORT,
 ]);
 
 export const NUKE_TYPES: ReadonlySet<string> = new Set([
@@ -99,4 +107,11 @@ export const ALL_UNIT_TYPES = [
   UT_SAM_LAUNCHER,
   UT_MISSILE_SILO,
   UT_TRAIN,
+  UT_AIRCRAFT_CARRIER,
+  UT_COMMERCIAL_AIRCRAFT,
+  UT_STEALTH_FIGHTER,
+  UT_GROUND_ATTACKER,
+  UT_AIR_FIGHTER,
+  UT_AIR_MISSILE,
+  UT_AIRPORT,
 ] as const;

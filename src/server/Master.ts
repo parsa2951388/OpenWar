@@ -111,7 +111,9 @@ function proxyWorkerUpgrade(
       `HTTP/1.1 ${response.statusCode ?? 101} ${response.statusMessage ?? "Switching Protocols"}\r\n`,
     );
     for (let i = 0; i < response.rawHeaders.length; i += 2) {
-      socket.write(`${response.rawHeaders[i]}: ${response.rawHeaders[i + 1]}\r\n`);
+      socket.write(
+        `${response.rawHeaders[i]}: ${response.rawHeaders[i + 1]}\r\n`,
+      );
     }
     socket.write("\r\n");
     if (upstreamHead.length > 0) socket.write(upstreamHead);
@@ -126,7 +128,9 @@ function proxyWorkerUpgrade(
     );
     for (const [name, value] of Object.entries(response.headers)) {
       if (value === undefined) continue;
-      socket.write(`${name}: ${Array.isArray(value) ? value.join(", ") : value}\r\n`);
+      socket.write(
+        `${name}: ${Array.isArray(value) ? value.join(", ") : value}\r\n`,
+      );
     }
     socket.write("\r\n");
     response.pipe(socket);

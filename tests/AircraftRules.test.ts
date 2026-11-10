@@ -34,7 +34,13 @@ const parked: AircraftState = {
 
 describe("aircraft flight and fuel rules", () => {
   it("allows only carrier-capable aircraft to use carrier bases", () => {
-    const commercial = { ...fighter, role: "commercial" as const, airDamage: 0, groundDamage: 0, carrierCapable: false };
+    const commercial = {
+      ...fighter,
+      role: "commercial" as const,
+      airDamage: 0,
+      groundDamage: 0,
+      carrierCapable: false,
+    };
     expect(canLaunchFromBase(fighter, "airport")).toBe(true);
     expect(canLaunchFromBase(fighter, "carrier")).toBe(true);
     expect(canLaunchFromBase(commercial, "carrier")).toBe(false);
@@ -88,13 +94,21 @@ describe("aircraft flight and fuel rules", () => {
   });
 
   it("refuels only at a friendly base and clamps to capacity", () => {
-    expect(refuelAircraft(fighter, { ...parked, fuel: 90 }, 50, true).fuel).toBe(100);
-    expect(refuelAircraft(fighter, { ...parked, fuel: 20 }, 50, false).fuel).toBe(20);
+    expect(
+      refuelAircraft(fighter, { ...parked, fuel: 90 }, 50, true).fuel,
+    ).toBe(100);
+    expect(
+      refuelAircraft(fighter, { ...parked, fuel: 20 }, 50, false).fuel,
+    ).toBe(20);
   });
 
   it("repairs at a friendly base and clamps health", () => {
-    expect(repairAircraft({ ...parked, health: 70 }, 50, true).health).toBe(100);
-    expect(repairAircraft({ ...parked, health: 70 }, 50, false).health).toBe(70);
+    expect(repairAircraft({ ...parked, health: 70 }, 50, true).health).toBe(
+      100,
+    );
+    expect(repairAircraft({ ...parked, health: 70 }, 50, false).health).toBe(
+      70,
+    );
   });
 
   it("marks an aircraft destroyed at zero health", () => {
@@ -105,8 +119,17 @@ describe("aircraft flight and fuel rules", () => {
   });
 
   it("keeps commercial aircraft unarmed and models stealth detection", () => {
-    const commercial = { ...fighter, role: "commercial" as const, airDamage: 0, groundDamage: 0 };
-    const stealth = { ...fighter, role: "stealth-fighter" as const, detectionMultiplier: 0.25 };
+    const commercial = {
+      ...fighter,
+      role: "commercial" as const,
+      airDamage: 0,
+      groundDamage: 0,
+    };
+    const stealth = {
+      ...fighter,
+      role: "stealth-fighter" as const,
+      detectionMultiplier: 0.25,
+    };
     expect(aircraftDamageAgainst(commercial, "air")).toBe(0);
     expect(aircraftDetectionChance(stealth, 0.8)).toBe(0.2);
     expect(aircraftDamageAgainst(fighter, "air")).toBe(30);
@@ -117,10 +140,21 @@ describe("aircraft flight and fuel rules", () => {
   });
 
   it("rejects malformed profiles and invalid inputs", () => {
-    expect(() => aircraftDistance({ x: Number.NaN, y: 0 }, { x: 1, y: 1 })).toThrow();
-    expect(() => aircraftFlightTicks({ ...fighter, speedTilesPerTick: 0 }, 1)).toThrow();
-    expect(() => aircraftDamageAgainst({
-      ...fighter, role: "commercial", airDamage: 10
-    }, "ground")).toThrow();
+    expect(() =>
+      aircraftDistance({ x: Number.NaN, y: 0 }, { x: 1, y: 1 }),
+    ).toThrow();
+    expect(() =>
+      aircraftFlightTicks({ ...fighter, speedTilesPerTick: 0 }, 1),
+    ).toThrow();
+    expect(() =>
+      aircraftDamageAgainst(
+        {
+          ...fighter,
+          role: "commercial",
+          airDamage: 10,
+        },
+        "ground",
+      ),
+    ).toThrow();
   });
 });

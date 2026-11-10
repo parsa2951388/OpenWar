@@ -1,4 +1,5 @@
 // Every entry is `<ClassName>Snapshot`, exported next to its class.
+import { AirportExecutionSnapshot } from "../execution/AirportExecution";
 import { AllianceExtensionExecutionSnapshot } from "../execution/alliance/AllianceExtensionExecution";
 import { AllianceRejectExecutionSnapshot } from "../execution/alliance/AllianceRejectExecution";
 import { AllianceRequestExecutionSnapshot } from "../execution/alliance/AllianceRequestExecution";
@@ -6,6 +7,7 @@ import { BreakAllianceExecutionSnapshot } from "../execution/alliance/BreakAllia
 import { AttackExecutionSnapshot } from "../execution/AttackExecution";
 import { BoatRetreatExecutionSnapshot } from "../execution/BoatRetreatExecution";
 import { CityExecutionSnapshot } from "../execution/CityExecution";
+import { CommercialAircraftExecutionSnapshot } from "../execution/CommercialAircraftExecution";
 import { ConstructionExecutionSnapshot } from "../execution/ConstructionExecution";
 import { DefensePostExecutionSnapshot } from "../execution/DefensePostExecution";
 import { DeleteUnitExecutionSnapshot } from "../execution/DeleteUnitExecution";
@@ -16,9 +18,13 @@ import { EmbargoAllExecutionSnapshot } from "../execution/EmbargoAllExecution";
 import { EmbargoExecutionSnapshot } from "../execution/EmbargoExecution";
 import { EmojiExecutionSnapshot } from "../execution/EmojiExecution";
 import { FactoryExecutionSnapshot } from "../execution/FactoryExecution";
+import { FighterAamExecutionSnapshot } from "../execution/FighterAamExecution";
+import { FighterBombExecutionSnapshot } from "../execution/FighterBombExecution";
+import { FighterExecutionSnapshot } from "../execution/FighterExecution";
 import { MarkDisconnectedExecutionSnapshot } from "../execution/MarkDisconnectedExecution";
 import { MirvExecutionSnapshot } from "../execution/MIRVExecution";
 import { MissileSiloExecutionSnapshot } from "../execution/MissileSiloExecution";
+import { MoveFighterExecutionSnapshot } from "../execution/MoveFighterExecution";
 import { MoveWarshipExecutionSnapshot } from "../execution/MoveWarshipExecution";
 import { NationExecutionSnapshot } from "../execution/NationExecution";
 import { NoOpExecutionSnapshot } from "../execution/NoOpExecution";
@@ -53,6 +59,11 @@ import type { ExecutionSnapshotType } from "./ExecutionSnapshot";
  * replaced it.
  */
 export const EXECUTION_SNAPSHOT_TYPES = [
+  AirportExecutionSnapshot,
+  FighterAamExecutionSnapshot,
+  FighterBombExecutionSnapshot,
+  CommercialAircraftExecutionSnapshot,
+  FighterExecutionSnapshot,
   AllianceExtensionExecutionSnapshot,
   AllianceRejectExecutionSnapshot,
   AllianceRequestExecutionSnapshot,
@@ -74,6 +85,7 @@ export const EXECUTION_SNAPSHOT_TYPES = [
   MirvExecutionSnapshot,
   MissileSiloExecutionSnapshot,
   MoveWarshipExecutionSnapshot,
+  MoveFighterExecutionSnapshot,
   NationExecutionSnapshot,
   NoOpExecutionSnapshot,
   NukeExecutionSnapshot,

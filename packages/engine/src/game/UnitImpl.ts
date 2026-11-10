@@ -1,6 +1,8 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
 import {
   MessageType,
+  FighterState,
+  FighterType,
   NukeState,
   SamLauncherState,
   TerraNullius,
@@ -35,6 +37,19 @@ import { AllUnitParams, EngineUnitInfo, Player, Unit } from "./Game";
 import { GameImpl } from "./GameImpl";
 import { PlayerImpl } from "./PlayerImpl";
 
+function fighterTypeForUnit(type: UnitType): FighterType | undefined {
+  switch (type) {
+    case UnitType.StealthFighter:
+      return FighterType.Stealth;
+    case UnitType.GroundAttacker:
+      return FighterType.Ground;
+    case UnitType.AirFighter:
+      return FighterType.Air;
+    default:
+      return undefined;
+  }
+}
+
 export class UnitImpl implements Unit {
   private _active = true;
   private _targetTile: TileRef | undefined;
@@ -44,6 +59,7 @@ export class UnitImpl implements Unit {
   private _lastTile: TileRef;
   private _transportShipState: TransportShipState | undefined = undefined;
   private _warshipState: WarshipState | undefined = undefined;
+  private _fighterState: FighterState | undefined = undefined;
   private _nukeState: NukeState | undefined = undefined;
   private _reachedTarget = false;
   private _wasDestroyedByEnemy: boolean = false;
@@ -100,13 +116,34 @@ export class UnitImpl implements Unit {
         duration: this.mg.config().samUpgradeDuration(),
       };
     }
-    if ("patrolTile" in params) {
+    if (
+      (this._type === UnitType.Warship ||
+        this._type === UnitType.AircraftCarrier) &&
+      "patrolTile" in params
+    ) {
       this._warshipState = {
         state: "patrolling",
         patrolTile: params.patrolTile,
         lastCombatTick: -100,
         veterancy: 0,
         veterancyProgress: 0,
+      };
+    }
+    const fighterType = fighterTypeForUnit(this._type);
+    if (fighterType !== undefined) {
+      const patrolTile =
+        "patrolTile" in params ? params.patrolTile : this._tile;
+      const config = this.mg.config();
+      this._fighterState = {
+        state: "patrolling",
+        fighterType,
+        patrolTile,
+        fuel: config.fighterMaxFuel(fighterType),
+        aam: config.fighterMaxAam(fighterType),
+        bomb: config.fighterMaxBomb(fighterType),
+        ammo: config.fighterMaxGunAmmo(fighterType),
+        flares: config.fighterMaxFlares(fighterType),
+        lastCombatTick: -100,
       };
     }
     this._targetUnit =
@@ -169,6 +206,10 @@ export class UnitImpl implements Unit {
       warshipState:
         this._warshipState !== undefined
           ? { ...this.warshipState() }
+          : undefined,
+      fighterState:
+        this._fighterState !== undefined
+          ? { ...this.fighterState() }
           : undefined,
       transportShipState:
         this._transportShipState !== undefined
@@ -477,6 +518,28 @@ export class UnitImpl implements Unit {
     if (!wasInCombat) {
       this.mg.addUpdate(this.toUpdate());
     }
+  }
+
+  fighterState(): FighterState {
+    if (this._fighterState === undefined) {
+      throw new Error("fighterState called on non-fighter unit");
+    }
+    return { ...this._fighterState };
+  }
+
+  updateFighterState(update: Partial<FighterState>): void {
+    if (this._fighterState === undefined) {
+      throw new Error("updateFighterState called on non-fighter unit");
+    }
+    const next: FighterState = { ...this._fighterState, ...update };
+    if (update.isInCombat === true) {
+      next.lastCombatTick = this.mg.ticks();
+    }
+    const keys = Object.keys(update) as Array<keyof FighterState>;
+    const changed = keys.some((key) => next[key] !== this._fighterState![key]);
+    if (!changed) return;
+    this._fighterState = next;
+    this.mg.addUpdate(this.toUpdate());
   }
 
   transportShipState(): TransportShipState {
@@ -829,6 +892,23 @@ export class UnitImpl implements Unit {
             veterancyProgress: this._warshipState.veterancyProgress,
           }
         : null,
+      fighterState: this._fighterState
+        ? {
+            state: this._fighterState.state,
+            fighterType: this._fighterState.fighterType,
+            patrolTile: this._fighterState.patrolTile,
+            retreatAirbase: this._fighterState.retreatAirbase,
+            refuelSourceUnitId: this._fighterState.refuelSourceUnitId,
+            refuelStartTick: this._fighterState.refuelStartTick,
+            fuel: this._fighterState.fuel,
+            aam: this._fighterState.aam,
+            bomb: this._fighterState.bomb,
+            ammo: this._fighterState.ammo,
+            flares: this._fighterState.flares,
+            isInCombat: this._fighterState.isInCombat,
+            lastCombatTick: this._fighterState.lastCombatTick,
+          }
+        : null,
       nukeState: nuke
         ? {
             trajectoryTiles: Uint32Array.from(nuke.trajectory ?? []),
@@ -880,6 +960,7 @@ export class UnitImpl implements Unit {
       ? { ...s.transportShipState }
       : undefined;
     this._warshipState = s.warshipState ? { ...s.warshipState } : undefined;
+    this._fighterState = s.fighterState ? { ...s.fighterState } : undefined;
     const nuke = s.nukeState;
     this._nukeState = nuke
       ? {
@@ -937,6 +1018,24 @@ export const UnitSnapshot = snapshotType({
         veterancyProgress: zInt(),
       })
       .nullable(),
+    fighterState: z
+      .object({
+        state: z.enum(["patrolling", "returning", "refueling", "crashed"]),
+        fighterType: z.enum(FighterType),
+        patrolTile: zTile(),
+        retreatAirbase: zTile().optional(),
+        refuelSourceUnitId: zInt().optional(),
+        refuelStartTick: zInt().optional(),
+        fuel: zNum(),
+        aam: zInt(),
+        bomb: zInt(),
+        ammo: zInt(),
+        flares: zInt(),
+        isInCombat: z.boolean().optional(),
+        lastCombatTick: zInt().optional(),
+      })
+      .nullable()
+      .optional(),
     nukeState: z
       .object({
         trajectoryTiles: zTiles(),

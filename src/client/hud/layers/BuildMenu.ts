@@ -27,6 +27,11 @@ import {
 import { UIState } from "../../UIState";
 import { GameView } from "../../view";
 const warshipIcon = assetUrl("images/BattleshipIconWhite.svg");
+const aircraftCarrierIcon = assetUrl("images/AircraftCarrierIcon.svg");
+const airportIcon = assetUrl("images/AirportIcon.svg");
+const airFighterIcon = assetUrl("images/AirFighterIcon.svg");
+const stealthFighterIcon = assetUrl("images/StealthFighterIcon.svg");
+const groundAttackerIcon = assetUrl("images/GroundAttackerIcon.svg");
 const cityIcon = assetUrl("images/CityIconWhite.svg");
 const factoryIcon = assetUrl("images/FactoryIconWhite.svg");
 const goldCoinIcon = assetUrl("images/GoldCoinIcon.svg");
@@ -74,6 +79,41 @@ const buildTable: BuildItemDisplay[][] = [
       icon: warshipIcon,
       description: "build_menu.desc.warship",
       key: "unit_type.warship",
+      countable: true,
+    },
+    {
+      unitType: UnitType.AircraftCarrier,
+      icon: aircraftCarrierIcon,
+      description: "build_menu.desc.aircraft_carrier",
+      key: "unit_type.aircraft_carrier",
+      countable: true,
+    },
+    {
+      unitType: UnitType.Airport,
+      icon: airportIcon,
+      description: "build_menu.desc.airport",
+      key: "unit_type.airport",
+      countable: true,
+    },
+    {
+      unitType: UnitType.AirFighter,
+      icon: airFighterIcon,
+      description: "build_menu.desc.air_fighter",
+      key: "unit_type.air_fighter",
+      countable: true,
+    },
+    {
+      unitType: UnitType.StealthFighter,
+      icon: stealthFighterIcon,
+      description: "build_menu.desc.stealth_fighter",
+      key: "unit_type.stealth_fighter",
+      countable: true,
+    },
+    {
+      unitType: UnitType.GroundAttacker,
+      icon: groundAttackerIcon,
+      description: "build_menu.desc.ground_attacker",
+      key: "unit_type.ground_attacker",
       countable: true,
     },
     {

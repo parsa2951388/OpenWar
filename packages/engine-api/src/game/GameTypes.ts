@@ -17,6 +17,28 @@ export type Tick = number;
 
 export type Gold = bigint;
 
+export enum FighterType {
+  Stealth = "SFighter",
+  Ground = "GFighter",
+  Air = "AFighter",
+}
+
+export type FighterState = {
+  state: "patrolling" | "returning" | "refueling" | "crashed";
+  fighterType: FighterType;
+  patrolTile: TileRef;
+  retreatAirbase?: TileRef;
+  refuelSourceUnitId?: number;
+  refuelStartTick?: number;
+  fuel: number;
+  aam: number;
+  bomb: number;
+  ammo: number;
+  flares: number;
+  isInCombat?: boolean;
+  lastCombatTick?: number;
+};
+
 export type WarshipState = {
   state: "patrolling" | "retreating" | "docked";
   patrolTile?: TileRef;
@@ -208,6 +230,13 @@ export enum UnitType {
   MIRVWarhead = "MIRV Warhead",
   Train = "Train",
   Factory = "Factory",
+  AircraftCarrier = "Aircraft Carrier",
+  Airport = "Airport",
+  CommercialAircraft = "Commercial Aircraft",
+  StealthFighter = "Stealth Fighter",
+  GroundAttacker = "Ground Attacker",
+  AirFighter = "Air Fighter",
+  AirMissile = "Air Missile",
 }
 
 export enum TrainType {
@@ -228,6 +257,10 @@ export const BuildableAttacks = unitTypeGroup([
   UnitType.HydrogenBomb,
   UnitType.MIRV,
   UnitType.Warship,
+  UnitType.AircraftCarrier,
+  UnitType.StealthFighter,
+  UnitType.GroundAttacker,
+  UnitType.AirFighter,
 ] as const);
 
 export const Structures = unitTypeGroup([
@@ -237,6 +270,7 @@ export const Structures = unitTypeGroup([
   UnitType.MissileSilo,
   UnitType.Port,
   UnitType.Factory,
+  UnitType.Airport,
 ] as const);
 
 export const BuildMenus = unitTypeGroup([
@@ -470,8 +504,10 @@ export enum MessageType {
   ALLIANCE_EXPIRED,
   DONATION_SENT,
   DONATION_RECEIVED,
+  RECEIVED_GOLD_FROM_TRADE,
   CHAT,
   RENEW_ALLIANCE,
+  BOMB_DROPPED,
 }
 
 // Message categories used for filtering events in the EventsDisplay
@@ -507,6 +543,8 @@ export const MESSAGE_TYPE_CATEGORIES: Record<MessageType, MessageCategory> = {
   [MessageType.DONATION_SENT]: MessageCategory.TRADE,
   [MessageType.DONATION_RECEIVED]: MessageCategory.TRADE,
   [MessageType.CHAT]: MessageCategory.CHAT,
+  [MessageType.BOMB_DROPPED]: MessageCategory.ATTACK,
+  [MessageType.RECEIVED_GOLD_FROM_TRADE]: MessageCategory.TRADE,
 } as const;
 
 /**

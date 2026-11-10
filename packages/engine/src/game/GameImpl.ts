@@ -170,6 +170,8 @@ export class GameImpl implements Game {
   private _mirvsLaunched = 0;
   private shipStaggers = { tradeShip: 0, transportShip: 0 };
   private _nationMirvTargets = new Map<PlayerID, Tick>();
+  private fighterBombAlertedTiles = new Map<number, Set<TileRef>>();
+  private fighterAamTargetsInFlight = new Map<number, Set<number>>();
 
   private _isPaused: boolean = false;
   private _winner: Player | Team | null = null;
@@ -1268,6 +1270,39 @@ export class GameImpl implements Game {
       return undefined;
     }
     return areas[teamIndex];
+  }
+
+  reserveFighterAamTarget(fighterId: number, targetId: number): boolean {
+    let targets = this.fighterAamTargetsInFlight.get(fighterId);
+    if (targets === undefined) {
+      targets = new Set<number>();
+      this.fighterAamTargetsInFlight.set(fighterId, targets);
+    }
+    if (targets.has(targetId)) return false;
+    targets.add(targetId);
+    return true;
+  }
+
+  clearFighterAamTarget(fighterId: number, targetId: number): void {
+    const targets = this.fighterAamTargetsInFlight.get(fighterId);
+    if (targets === undefined) return;
+    targets.delete(targetId);
+    if (targets.size === 0) this.fighterAamTargetsInFlight.delete(fighterId);
+  }
+
+  recordFighterBombAlert(fighterId: number, tile: TileRef): boolean {
+    let alerted = this.fighterBombAlertedTiles.get(fighterId);
+    if (alerted === undefined) {
+      alerted = new Set<TileRef>();
+      this.fighterBombAlertedTiles.set(fighterId, alerted);
+    }
+    if (alerted.has(tile)) return false;
+    alerted.add(tile);
+    return true;
+  }
+
+  clearFighterBombAlerts(fighterId: number): void {
+    this.fighterBombAlertedTiles.delete(fighterId);
   }
 
   displayMessage(

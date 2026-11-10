@@ -10,6 +10,7 @@ import {
   renderHtmlContent,
   setAppShellCacheHeaders,
 } from "../../src/server/RenderHtml";
+import { getRuntimeAssetManifest } from "../../src/server/RuntimeAssetManifest";
 import { ServerEnv } from "../../src/server/ServerEnv";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -352,7 +353,7 @@ describe("RenderHtml environment-only render", () => {
       [
         "      window.BOOTSTRAP_CONFIG = {",
         '        gitCommit: "abc",',
-        "        assetManifest: {},",
+        `        assetManifest: ${JSON.stringify(await getRuntimeAssetManifest())},`,
         '        cdnBase: "",',
         `        gameEnv: ${JSON.stringify(ServerEnv.gameEnvName())},`,
         `        cluster: ${JSON.stringify(ServerEnv.cluster())},`,
@@ -398,6 +399,6 @@ describe("RenderHtml environment-only render", () => {
     expect(match).not.toBeNull();
     const data = JSON.parse(match![1]);
     expect(data["@type"]).toBe("VideoGame");
-    expect(data.name).toBe("OpenFront");
+    expect(data.name).toBe("Open War");
   });
 });

@@ -81,6 +81,7 @@ import { GoToPlayerEvent } from "./TransformHandler";
 import {
   counterAttackTroops,
   MoveWarshipIntentEvent,
+  MoveFighterIntentEvent,
   NewLobbyEvent,
   SendAllianceExtensionIntentEvent,
   SendAllianceRequestIntentEvent,
@@ -631,6 +632,16 @@ function mountWebGLFrameLoop(
     const firstUnit = gameView.unit(e.unitIds[0]);
     if (firstUnit === undefined) return;
     view.showMoveIndicator(tx, ty, firstUnit.owner().smallID());
+  });
+
+  eventBus.on(MoveFighterIntentEvent, (e) => {
+    const firstUnit = gameView.unit(e.unitIds[0]);
+    if (firstUnit === undefined) return;
+    view.showMoveIndicator(
+      gameView.x(e.tile),
+      gameView.y(e.tile),
+      firstUnit.owner().smallID(),
+    );
   });
 
   // Self-driving RAF: syncCamera reads the latest camera state from

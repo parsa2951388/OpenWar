@@ -2,6 +2,7 @@ import { AllPlayersStats, ClientID, Winner } from "../Schemas";
 import { TileRef } from "./GameMap";
 import {
   EmojiMessage,
+  FighterState,
   GameUpdates,
   Gold,
   MessageType,
@@ -207,6 +208,7 @@ export interface UnitUpdate {
   isActive: boolean;
   reachedTarget: boolean;
   warshipState?: WarshipState;
+  fighterState?: FighterState;
   transportShipState?: TransportShipState;
   nukeState?: NukeState;
   targetable: boolean;
