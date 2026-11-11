@@ -2,11 +2,11 @@ import { TileRef } from "@openfront/engine-api/game/GameMap";
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, it } from "vitest";
-import { UnitSelectionEvent } from "../../../src/client/InputHandler";
 import { FighterSelectionController } from "../../../src/client/controllers/FighterSelectionController";
-import { MoveFighterIntentEvent } from "../../../src/client/Transport";
+import { UnitSelectionEvent } from "../../../src/client/InputHandler";
 import { MapRenderer } from "../../../src/client/render/gl";
 import { TransformHandler } from "../../../src/client/TransformHandler";
+import { MoveFighterIntentEvent } from "../../../src/client/Transport";
 import { GameView, UnitView } from "../../../src/client/view";
 
 type FakeFighter = {
@@ -147,7 +147,9 @@ describe("FighterSelectionController", () => {
     expect(h.selected()).toEqual([]);
   });
 
-  it("preserves another unit selection when it clears its own aircraft selection", () => {
+  it(
+    "preserves another unit selection when it clears its own aircraft selection",
+    () => {
     const h = makeHarness([
       { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
     ]);
@@ -165,6 +167,7 @@ describe("FighterSelectionController", () => {
         { id: () => 77 } as unknown as UnitView,
       ]),
     );
-    expect(h.selected()).toEqual([77]);
-  });
+      expect(h.selected()).toEqual([77]);
+    },
+  );
 });
