@@ -1,5 +1,6 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  FighterType,
   UnitType,
   MessageType,
 } from "../packages/engine-api/src/game/GameTypes";
@@ -16,6 +17,41 @@ describe("uploaded Worker aircraft parity", () => {
     expect(config.commercialAircraftSpawnRate(1, 0)).toBe(50);
     expect(config.commercialAircraftSpawnRate(0, 400)).toBe(200);
     expect(config.commercialAircraftSpawnRate(1, 400)).toBe(100);
+  });
+
+  it("keeps fighter fuel, weapons, speed and service values aligned with the reference Worker", () => {
+    const config = Object.create(EngineConfig.prototype) as EngineConfig;
+
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxFuel(type),
+      ),
+    ).toEqual([1200, 800, 1000]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxAam(type),
+      ),
+    ).toEqual([2, 0, 4]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxBomb(type),
+      ),
+    ).toEqual([1, 5, 0]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxGunAmmo(type),
+      ),
+    ).toEqual([0, 1000, 0]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxFlares(type),
+      ),
+    ).toEqual([3, 2, 4]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterSpeed(type),
+      ),
+    ).toEqual([1.5, 1, 1.875]);
   });
 
   it("reserves each air-to-air target only once and releases it on completion", () => {
