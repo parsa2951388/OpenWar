@@ -40,6 +40,7 @@ jobs:
       - name: Format generated source and manifests
         run: |
           git diff --name-only --diff-filter=ACMR | grep -E '\.(json|ts|css)$' | xargs -r npx oxfmt --write
+          npx oxfmt --write src/client/render/gl/render-settings.json tests/client/UnitDisplay.test.ts
       - run: npm run format:check
       - name: Remove helper and commit generated output
         run: |
