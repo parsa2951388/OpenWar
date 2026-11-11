@@ -1416,15 +1416,22 @@ export class InputHandler {
         return;
       }
 
-      if (
-        !this.userSettings.leftClickOpensMenu() ||
-        event.shiftKey ||
-        this.gameView.inSpawnPhase() || // No Radial Menu during spawn phase, only spawn point selection
-        this.uiState.ghostStructure !== null || // Block radial menu on left click if building
-        this.gameView.config().gameConfig().tutorial === true // The tutorial teaches the click that attacks
-      ) {
-        this.eventBus.emit(new MouseUpEvent(event.x, event.y, event.shiftKey));
-      } else {
+      // Let map controllers claim a unit click before opening the radial menu.
+      // Otherwise enabling "left click opens menu" blocks aircraft selection.
+      const mouseUpEvent = new MouseUpEvent(
+        event.x,
+        event.y,
+        event.shiftKey,
+      );
+      this.eventBus.emit(mouseUpEvent);
+
+      const shouldOpenRadialMenu =
+        this.userSettings.leftClickOpensMenu() &&
+        !event.shiftKey &&
+        !this.gameView.inSpawnPhase() &&
+        this.uiState.ghostStructure === null &&
+        this.gameView.config().gameConfig().tutorial !== true;
+      if (shouldOpenRadialMenu && !mouseUpEvent.handled) {
         this.eventBus.emit(new ContextMenuEvent(event.clientX, event.clientY));
       }
       return;

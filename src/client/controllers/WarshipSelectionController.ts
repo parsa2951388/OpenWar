@@ -179,9 +179,9 @@ export class WarshipSelectionController implements Controller {
       clickRef = this.game.ref(cell.x, cell.y);
     }
     if (!this.game.isWater(clickRef)) return;
-    event.handled = true;
 
     if (this.multiSelectedWarships.length > 0) {
+      event.handled = true;
       const myPlayer = this.game.myPlayer();
       const activeIds = this.multiSelectedWarships
         .filter((u) => u.isActive() && u.owner() === myPlayer)
@@ -195,6 +195,7 @@ export class WarshipSelectionController implements Controller {
     }
 
     if (this.selectedUnit) {
+      event.handled = true;
       this.eventBus.emit(
         new MoveWarshipIntentEvent([this.selectedUnit.id()], clickRef),
       );
@@ -204,6 +205,7 @@ export class WarshipSelectionController implements Controller {
 
     nearbyWarships ??= this.findWarshipsNearCell(clickRef);
     if (nearbyWarships.length > 0) {
+      event.handled = true;
       this.eventBus.emit(new UnitSelectionEvent(nearbyWarships[0], true));
     }
   }
