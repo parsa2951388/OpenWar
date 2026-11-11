@@ -98,12 +98,13 @@ export class FighterSelectionController implements Controller {
 
     // Query the unit spatial grid around the pointer instead of rebuilding and
     // sorting a list of every aircraft in the match on every click/tap.
-    // The exact Manhattan radius is retained after the broader grid query.
+    // UnitGrid predicates receive { unit, distSquared }, not UnitLike itself.
+    // The grid already excludes inactive and under-construction units.
     const nearby = this.game.nearbyUnits(
       tile,
       FIGHTER_SELECT_RADIUS,
       FIGHTER_TYPES,
-      (unit) => unit.isActive() && unit.owner() === owner,
+      ({ unit }) => unit.owner().id() === owner.id(),
     );
 
     let closest: UnitView | undefined;
