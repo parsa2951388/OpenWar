@@ -1697,32 +1697,102 @@
       "name": "Harare",
       "flag": "zw"
     },
-
-    { "coordinates": [5594, 1573], "name": "Aepeia" },
-    { "coordinates": [5855, 1571], "name": "Akkad" },
-    { "coordinates": [5281, 1455], "name": "Apeitheion" },
-    { "coordinates": [5507, 1744], "name": "Arsinoe" },
-    { "coordinates": [5606, 1381], "name": "Boryza" },
-    { "coordinates": [7583, 2281], "name": "Cattigara" },
-    { "coordinates": [6091, 1546], "name": "Charax" },
-    { "coordinates": [6428, 1432], "name": "Cyropolis" },
-    { "coordinates": [5071, 1501], "name": "Imachara" },
-    { "coordinates": [4530, 1511], "name": "Lastigi" },
-    { "coordinates": [6738, 1618], "name": "Boukephala" },
-    { "coordinates": [6759, 1637], "name": "Nikaia" },
-    { "coordinates": [5151, 1225], "name": "Noreia" },
-    { "coordinates": [2237, 2020], "name": "Ocomtún" },
-    { "coordinates": [5859, 1356], "name": "Onoguris" },
-    { "coordinates": [7891, 2821], "name": "Pamatan" },
-    { "coordinates": [2600, 2889], "name": "Peñico" },
-    { "coordinates": [6107, 1702], "name": "Persepolis" },
-    { "coordinates": [2695, 2949], "name": "Sacsayhuamán" },
-    { "coordinates": [4698, 1069], "name": "Sitomagus" },
-    { "coordinates": [1973, 2062], "name": "Teotihuacan" },
-    { "coordinates": [5600, 2072], "name": "Thinis" },
-    { "coordinates": [4928, 1428], "name": "Tibula" },
-    { "coordinates": [5783, 1508], "name": "Wassukanni" },
-
+    {
+      "coordinates": [5594, 1573],
+      "name": "Aepeia"
+    },
+    {
+      "coordinates": [5855, 1571],
+      "name": "Akkad"
+    },
+    {
+      "coordinates": [5281, 1455],
+      "name": "Apeitheion"
+    },
+    {
+      "coordinates": [5507, 1744],
+      "name": "Arsinoe"
+    },
+    {
+      "coordinates": [5606, 1381],
+      "name": "Boryza"
+    },
+    {
+      "coordinates": [7583, 2281],
+      "name": "Cattigara"
+    },
+    {
+      "coordinates": [6091, 1546],
+      "name": "Charax"
+    },
+    {
+      "coordinates": [6428, 1432],
+      "name": "Cyropolis"
+    },
+    {
+      "coordinates": [5071, 1501],
+      "name": "Imachara"
+    },
+    {
+      "coordinates": [4530, 1511],
+      "name": "Lastigi"
+    },
+    {
+      "coordinates": [6738, 1618],
+      "name": "Boukephala"
+    },
+    {
+      "coordinates": [6759, 1637],
+      "name": "Nikaia"
+    },
+    {
+      "coordinates": [5151, 1225],
+      "name": "Noreia"
+    },
+    {
+      "coordinates": [2237, 2020],
+      "name": "Ocomtún"
+    },
+    {
+      "coordinates": [5859, 1356],
+      "name": "Onoguris"
+    },
+    {
+      "coordinates": [7891, 2821],
+      "name": "Pamatan"
+    },
+    {
+      "coordinates": [2600, 2889],
+      "name": "Peñico"
+    },
+    {
+      "coordinates": [6107, 1702],
+      "name": "Persepolis"
+    },
+    {
+      "coordinates": [2695, 2949],
+      "name": "Sacsayhuamán"
+    },
+    {
+      "coordinates": [4698, 1069],
+      "name": "Sitomagus"
+    },
+    {
+      "coordinates": [1973, 2062],
+      "name": "Teotihuacan"
+    },
+    {
+      "coordinates": [5600, 2072],
+      "name": "Thinis"
+    },
+    {
+      "coordinates": [4928, 1428],
+      "name": "Tibula"
+    },
+    {
+      "coordinates": [5783, 1508],
+      "name": "Wassukanni"
+    },
     {
       "coordinates": [4964, 4999],
       "name": "Amundsen Scott",
@@ -1799,42 +1869,11 @@
       "flag": "ua"
     }
   ],
-
   "additionalNations": [
-    {
-      "name": "Patrick Plays Badly",
-      "flag": ""
-    },
-    {
-      "name": "TriStar",
-      "flag": ""
-    },
-    {
-      "name": "Crunchyb",
-      "flag": ""
-    },
-    {
-      "name": "FloPinguin",
-      "flag": ""
-    },
-    {
-      "name": "Nikola123",
-      "flag": ""
-    }
-  ],
-
-  "layers": [
-    {
-      "id": "w10kland",
-      "placement": "land",
-      "alpha": 0.75,
-      "nukeable": true
-    },
-    {
-      "id": "w10kwater",
-      "placement": "water",
-      "alpha": 0.3,
-      "nukeable": false
-    }
+    { "name": "Patrick Plays Badly", "flag": "" },
+    { "name": "TriStar", "flag": "" },
+    { "name": "Crunchyb", "flag": "" },
+    { "name": "FloPinguin", "flag": "" },
+    { "name": "Nikola123", "flag": "" }
   ]
 }

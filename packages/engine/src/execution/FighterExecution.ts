@@ -2,7 +2,6 @@ import { TileRef } from "@openfront/engine-api/game/GameMap";
 import {
   FighterState,
   FighterType,
-  MessageType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
 import { PseudoRandom } from "@openfront/engine-lib/PseudoRandom";
@@ -95,10 +94,6 @@ function isFighterUnit(type: UnitType): boolean {
   return FIGHTER_UNIT_TYPES.includes(
     type as (typeof FIGHTER_UNIT_TYPES)[number],
   );
-}
-
-function isAircraft(type: UnitType): boolean {
-  return isFighterUnit(type) || type === UnitType.CommercialAircraft;
 }
 
 function isWarshipLike(type: UnitType): boolean {

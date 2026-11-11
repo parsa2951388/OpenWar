@@ -1,12 +1,13 @@
 import {
-  BuildMenus,
   PlayerBuildableUnitType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, test, vi } from "vitest";
-import type { UnitDisplay } from "../../src/client/hud/layers/UnitDisplay";
-import "../../src/client/hud/layers/UnitDisplay";
+import {
+  QUICK_BUILD_TYPES,
+  type UnitDisplay,
+} from "../../src/client/hud/layers/UnitDisplay";
 import {
   FORWARDED_TOUCH_CLICK,
   ToggleStructureEvent,
@@ -96,16 +97,10 @@ describe("mobile UnitDisplay layout", () => {
       expect(scroller).not.toBeNull();
       expect(scroller?.classList.contains("touch-pan-x")).toBe(true);
       expect(scroller?.classList.contains("lg:overflow-visible")).toBe(true);
-      expect(grid?.classList.contains("max-lg:landscape:grid-flow-col")).toBe(
-        true,
-      );
-      expect(
-        grid?.classList.contains("max-lg:landscape:auto-cols-[47px]"),
-      ).toBe(true);
-      expect(grid?.classList.contains("max-[360px]:grid-flow-col")).toBe(true);
-      expect(grid?.classList.contains("max-[360px]:auto-cols-[44px]")).toBe(
-        true,
-      );
+      expect(grid?.classList.contains("max-lg:grid-flow-col")).toBe(true);
+      expect(grid?.classList.contains("max-lg:grid-cols-none")).toBe(true);
+      expect(grid?.classList.contains("max-lg:auto-cols-[58px]")).toBe(true);
+      expect(grid?.classList.contains("max-lg:w-max")).toBe(true);
       expect(grid?.children).toHaveLength(10);
       expect(grid?.style.getPropertyValue("--unit-display-columns")).toBe("10");
     } finally {
@@ -119,13 +114,70 @@ describe("mobile UnitDisplay layout", () => {
       await display.updateComplete;
 
       const grid = display.querySelector<HTMLElement>(".unit-display-grid");
-      expect(grid?.children).toHaveLength(BuildMenus.types.length - 1);
+      expect(grid?.children).toHaveLength(QUICK_BUILD_TYPES.length - 1);
       expect(grid?.style.getPropertyValue("--unit-display-columns")).toBe(
-        String(BuildMenus.types.length - 1),
+        String(QUICK_BUILD_TYPES.length - 1),
       );
       expect(grid?.classList.contains("lg:grid-cols-none")).toBe(true);
       expect(grid?.classList.contains("lg:auto-cols-max")).toBe(true);
     } finally {
+      display.remove();
+    }
+  });
+
+  test("quick-build buttons keep their name and gold cost visible", async () => {
+    const { display } = makeDisplay();
+    try {
+      (
+        display as unknown as {
+          playerBuildables: { type: UnitType; cost: bigint }[];
+        }
+      ).playerBuildables = QUICK_BUILD_TYPES.map((type) => ({
+        type,
+        cost: 1250n,
+      }));
+      await display.updateComplete;
+
+      const city = display.querySelector<HTMLElement>(
+        ".unit-display-grid > div",
+      );
+      expect(
+        city?.querySelector(".unit-display-name")?.textContent?.trim(),
+      ).toBeTruthy();
+      expect(
+        city?.querySelector(".unit-display-cost")?.textContent?.trim(),
+      ).toBeTruthy();
+      expect(city?.querySelector(".unit-display-cost img")).not.toBeNull();
+    } finally {
+      display.remove();
+    }
+  });
+  test("throttles buildable-cost refreshes instead of requesting them every frame", async () => {
+    const { display } = makeDisplay();
+    const player = display.game.myPlayer() as any;
+    const buildables = vi
+      .fn()
+      .mockResolvedValue(
+        QUICK_BUILD_TYPES.map((type) => ({ type, cost: 1250n })),
+      );
+    player.buildables = buildables;
+    player.totalUnitLevels = vi.fn().mockReturnValue(0);
+    const now = vi.spyOn(Date, "now").mockReturnValue(10_000);
+
+    try {
+      display.tick();
+      display.tick();
+      expect(buildables).toHaveBeenCalledTimes(1);
+
+      now.mockReturnValue(10_500);
+      await vi.waitFor(() => {
+        display.tick();
+        expect(buildables).toHaveBeenCalledTimes(2);
+      });
+      display.tick();
+      expect(buildables).toHaveBeenCalledTimes(2);
+    } finally {
+      now.mockRestore();
       display.remove();
     }
   });

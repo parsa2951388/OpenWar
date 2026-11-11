@@ -25,7 +25,7 @@ export class AirportExecution implements Execution {
   private commercialSpawnRejections = 0;
   private cachedTradingAirports: Unit[] = [];
   private nextTradingAirportsRefreshTick = 0;
-  private readonly tradingAirportRefreshInterval = 50;
+  private static readonly TRADING_AIRPORT_REFRESH_INTERVAL = 50;
 
   constructor(airport: Unit) {
     this.airport = airport;
@@ -126,7 +126,7 @@ export class AirportExecution implements Execution {
 
     this.cachedTradingAirports = weighted;
     this.nextTradingAirportsRefreshTick =
-      now + this.tradingAirportRefreshInterval;
+      now + AirportExecution.TRADING_AIRPORT_REFRESH_INTERVAL;
     return this.cachedTradingAirports;
   }
 

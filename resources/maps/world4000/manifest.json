@@ -3,20 +3,6 @@
   "featured_rank": 1,
   "forced_modifiers": ["isCrowded:50"],
   "id": "World4000",
-  "layers": [
-    {
-      "alpha": 0.75,
-      "id": "w4kland",
-      "nukeable": true,
-      "placement": "land"
-    },
-    {
-      "alpha": 0.3,
-      "id": "w4kwater",
-      "nukeable": false,
-      "placement": "water"
-    }
-  ],
   "map": {
     "height": 2060,
     "num_land_tiles": 2486582,

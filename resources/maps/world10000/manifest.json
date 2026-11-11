@@ -23,20 +23,6 @@
   ],
   "categories": ["new", "world"],
   "id": "World10000",
-  "layers": [
-    {
-      "alpha": 0.75,
-      "id": "w10kland",
-      "nukeable": true,
-      "placement": "land"
-    },
-    {
-      "alpha": 0.3,
-      "id": "w10kwater",
-      "nukeable": false,
-      "placement": "water"
-    }
-  ],
   "map": {
     "height": 5000,
     "num_land_tiles": 14395954,

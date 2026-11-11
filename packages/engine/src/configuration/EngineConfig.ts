@@ -604,7 +604,7 @@ export class EngineConfig extends Config {
         );
       case UnitType.Airport:
         return this.costWrapper(
-          (numUnits: number) => Math.min(1_500_000, 2 ** numUnits * 200_000),
+          (numUnits: number) => Math.min(1_500_000, pow2(numUnits) * 200_000),
           UnitType.Airport,
         );
       case UnitType.StealthFighter:

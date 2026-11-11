@@ -196,7 +196,18 @@ describe.each(VARIANTS)("full game snapshots: %s", (_, overrides) => {
       if (Object.keys(overrides).length > 0) return; // checked once, on FFA
       // Runs during the spawn phase and finishes inside init, so it is never
       // alive at a tick boundary. BasicExecutions.test.ts covers it directly.
-      const neverStored = new Set(["Pause"]);
+      // The scripted FFA scenario does not create airports, aircraft or
+      // flight orders. Their snapshot round-trips are covered separately in
+      // AircraftExecutions.test.ts.
+      const neverStored = new Set([
+        "Pause",
+        "Airport",
+        "FighterAAM",
+        "FighterBomb",
+        "CommercialAircraft",
+        "Fighter",
+        "MoveFighter",
+      ]);
       const missing = EXECUTION_SNAPSHOT_TYPES.map((t) => t.name).filter(
         (name) => !reference.execTypes.has(name) && !neverStored.has(name),
       );
