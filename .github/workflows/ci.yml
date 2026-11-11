@@ -145,3 +145,64 @@ jobs:
             git --no-pager diff
             exit 1
           fi
+
+  # Report dependency advisories without blocking unrelated gameplay fixes.
+  # The npm audit JSON is retained as a short-lived artifact so maintainers can
+  # review exact package/range/fix information instead of only the install count.
+  dependency-audit:
+    name: 🛡️ Dependency advisory report
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v7
+        with:
+          submodules: false
+      - name: Setup Node
+        uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Setup npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - run: npm ci
+      - name: Collect npm advisory report
+        run: |
+          npm audit --json > npm-audit.json || true
+          node <<'NODE'
+          const fs = require("node:fs");
+          let report;
+          try {
+            report = JSON.parse(fs.readFileSync("npm-audit.json", "utf8"));
+          } catch {
+            console.log("npm audit did not return a parseable JSON report.");
+            process.exit(0);
+          }
+
+          const vulnerabilities = report.vulnerabilities ?? {};
+          for (const [name, advisory] of Object.entries(vulnerabilities).sort(
+            ([a], [b]) => a.localeCompare(b),
+          )) {
+            console.log(
+              `${String(advisory.severity).toUpperCase()} ${name} direct=${advisory.isDirect} range=${advisory.range} fixAvailable=${JSON.stringify(advisory.fixAvailable)}`,
+            );
+            for (const item of advisory.via ?? []) {
+              if (typeof item === "object") {
+                console.log(
+                  `  - ${item.title ?? item.name} range=${item.range ?? "n/a"} advisory=${item.source ?? "n/a"}`,
+                );
+              }
+            }
+          }
+          console.log(
+            "npm audit summary:",
+            JSON.stringify(report.metadata?.vulnerabilities ?? {}),
+          );
+          NODE
+      - name: Upload complete npm audit JSON
+        if: always()
+        uses: actions/upload-artifact@v7
+        with:
+          name: npm-audit-report
+          path: npm-audit.json
+          if-no-files-found: ignore
+          retention-days: 3
