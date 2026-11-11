@@ -1,14 +1,55 @@
 import { describe, expect, it, vi } from "vitest";
 import {
+  FighterType,
   UnitType,
   MessageType,
 } from "../packages/engine-api/src/game/GameTypes";
 import { EngineConfig } from "../packages/engine/src/configuration/EngineConfig";
 import { FighterBombExecution } from "../packages/engine/src/execution/FighterBombExecution";
+import { FighterExecution } from "../packages/engine/src/execution/FighterExecution";
 import type { Game, Player, Unit } from "../packages/engine/src/game/Game";
 import { GameImpl } from "../packages/engine/src/game/GameImpl";
 
 describe("uploaded Worker aircraft parity", () => {
+  it("does not let ground attackers target other ground attackers with the air gun", () => {
+    const gameOwner = { canAttackPlayer: () => true };
+    const enemyOwner = {};
+    const groundAttacker = {
+      type: () => UnitType.GroundAttacker,
+      owner: () => enemyOwner,
+      isActive: () => true,
+    } as unknown as Unit;
+    const fighter = {
+      fighterState: () => ({ ammo: 10 }),
+      owner: () => gameOwner,
+      tile: () => 7,
+    } as unknown as Unit;
+    const game = {
+      config: () => ({ fighterGunAirRange: () => 6 }),
+      nearbyUnits: vi.fn(
+        (_tile: number, _range: number, types: readonly UnitType[]) =>
+          types.includes(UnitType.GroundAttacker)
+            ? [{ unit: groundAttacker, distSquared: 1 }]
+            : [],
+      ),
+    } as unknown as Game;
+    const execution = Object.create(
+      FighterExecution.prototype,
+    ) as FighterExecution;
+    (execution as unknown as { fighter: Unit }).fighter = fighter;
+    (execution as unknown as { mg: Game }).mg = game;
+
+    expect(
+      (
+        execution as unknown as { findAirGunTarget(): Unit | undefined }
+      ).findAirGunTarget(),
+    ).toBeUndefined();
+    expect(game.nearbyUnits).toHaveBeenCalledWith(7, 6, [
+      UnitType.StealthFighter,
+      UnitType.AirFighter,
+    ]);
+  });
+
   it("uses the Worker commercial aircraft saturation and rejection curve", () => {
     const config = Object.create(EngineConfig.prototype) as EngineConfig;
 
@@ -16,6 +57,41 @@ describe("uploaded Worker aircraft parity", () => {
     expect(config.commercialAircraftSpawnRate(1, 0)).toBe(50);
     expect(config.commercialAircraftSpawnRate(0, 400)).toBe(200);
     expect(config.commercialAircraftSpawnRate(1, 400)).toBe(100);
+  });
+
+  it("keeps fighter fuel, weapons, speed and service values aligned with the reference Worker", () => {
+    const config = Object.create(EngineConfig.prototype) as EngineConfig;
+
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxFuel(type),
+      ),
+    ).toEqual([1200, 800, 1000]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxAam(type),
+      ),
+    ).toEqual([2, 0, 4]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxBomb(type),
+      ),
+    ).toEqual([1, 5, 0]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxGunAmmo(type),
+      ),
+    ).toEqual([0, 1000, 0]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterMaxFlares(type),
+      ),
+    ).toEqual([3, 2, 4]);
+    expect(
+      [FighterType.Stealth, FighterType.Ground, FighterType.Air].map((type) =>
+        config.fighterSpeed(type),
+      ),
+    ).toEqual([1.5, 1, 1.875]);
   });
 
   it("reserves each air-to-air target only once and releases it on completion", () => {

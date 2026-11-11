@@ -14,7 +14,7 @@ import { TransformHandler } from "../TransformHandler";
 import { MoveFighterIntentEvent } from "../Transport";
 import { GameView, UnitView } from "../view";
 
-const FIGHTER_SELECT_RADIUS = 9;
+const FIGHTER_SELECT_RADIUS = 3;
 const FIGHTER_TYPES = [
   UnitType.StealthFighter,
   UnitType.GroundAttacker,
@@ -23,10 +23,20 @@ const FIGHTER_TYPES = [
 
 /**
  * Click-to-select and click-to-move air-unit controls.
- * The selected marker uses the same GPU selection buffer as naval units.
+ * Shift-click adds/removes aircraft; a normal second click issues a shared
+ * patrol order to the current selection.
  */
 export class FighterSelectionController implements Controller {
-  private selected: UnitView | null = null;
+  private readonly selected = new Map<number, UnitView>();
+  private readonly onMouseUpEvent = (event: MouseUpEvent) =>
+    this.onMouseUp(event);
+  private readonly onTouchEvent = (event: TouchEvent) => this.onTouch(event);
+  private readonly onContextMenuEvent = () => this.clearSelection();
+  private readonly onCloseViewEvent = () => this.clearSelection();
+  private readonly onUnitSelectionEvent = (event: UnitSelectionEvent) => {
+    // The warship controller owns the renderer selection after this event.
+    if (event.isSelected) this.clearSelection(false);
+  };
 
   constructor(
     private game: GameView,
@@ -36,24 +46,49 @@ export class FighterSelectionController implements Controller {
   ) {}
 
   init(): void {
-    this.eventBus.on(MouseUpEvent, (event) => this.onMouseUp(event));
-    this.eventBus.on(TouchEvent, (event) => this.onTouch(event));
-    this.eventBus.on(ContextMenuEvent, () => this.clearSelection());
-    this.eventBus.on(CloseViewEvent, () => this.clearSelection());
-    this.eventBus.on(UnitSelectionEvent, (event) => {
-      if (event.isSelected) this.clearSelection();
-    });
+    // Keep one subscription per event, even if the renderer is reinitialized.
+    this.disposeSubscriptions();
+    this.eventBus.on(MouseUpEvent, this.onMouseUpEvent);
+    this.eventBus.on(TouchEvent, this.onTouchEvent);
+    this.eventBus.on(ContextMenuEvent, this.onContextMenuEvent);
+    this.eventBus.on(CloseViewEvent, this.onCloseViewEvent);
+    this.eventBus.on(UnitSelectionEvent, this.onUnitSelectionEvent);
+  }
+
+  dispose(): void {
+    this.disposeSubscriptions();
+    this.selected.clear();
+    this.view.setSelectedUnits([]);
+  }
+
+  private disposeSubscriptions(): void {
+    this.eventBus.off(MouseUpEvent, this.onMouseUpEvent);
+    this.eventBus.off(TouchEvent, this.onTouchEvent);
+    this.eventBus.off(ContextMenuEvent, this.onContextMenuEvent);
+    this.eventBus.off(CloseViewEvent, this.onCloseViewEvent);
+    this.eventBus.off(UnitSelectionEvent, this.onUnitSelectionEvent);
   }
 
   tick(): void {
-    if (this.selected !== null && !this.selected.isActive()) {
-      this.clearSelection();
+    const owner = this.game.myPlayer();
+    let changed = false;
+    for (const [id, unit] of this.selected) {
+      if (
+        !unit.isActive() ||
+        owner === null ||
+        owner === undefined ||
+        unit.owner() !== owner
+      ) {
+        this.selected.delete(id);
+        changed = true;
+      }
     }
+    if (changed) this.syncSelection();
   }
 
   private localFighters(): UnitView[] {
     const owner = this.game.myPlayer();
-    if (owner === undefined) return [];
+    if (owner === null || owner === undefined) return [];
     return FIGHTER_TYPES.flatMap((type) => this.game.units(type)).filter(
       (unit) => unit.isActive() && unit.owner() === owner,
     );
@@ -79,35 +114,75 @@ export class FighterSelectionController implements Controller {
   }
 
   private onMouseUp(event: MouseUpEvent): void {
+    if (event.handled) return;
     const tile = this.tileFromScreen(event.x, event.y);
-    if (tile !== undefined) this.handleWorldClick(tile);
+    if (tile !== undefined) {
+      event.handled = this.handleWorldClick(tile, event.shiftKey);
+    }
   }
 
   private onTouch(event: TouchEvent): void {
+    if (event.handled) return;
     const tile = this.tileFromScreen(event.x, event.y);
-    if (tile !== undefined) this.handleWorldClick(tile);
+    if (tile !== undefined) event.handled = this.handleWorldClick(tile);
   }
 
-  private handleWorldClick(tile: TileRef): void {
+  private handleWorldClick(tile: TileRef, additive = false): boolean {
     const clickedFighter = this.closestFighter(tile);
     if (clickedFighter !== undefined) {
-      this.select(clickedFighter);
-      return;
+      const isSelected = this.selected.has(clickedFighter.id());
+      const directHit = clickedFighter.tile() === tile;
+
+      if (additive) {
+        this.select(clickedFighter, true);
+        return true;
+      }
+      if (this.selected.size === 0) {
+        this.select(clickedFighter);
+        return true;
+      }
+      // Clicking a selected plane's sprite keeps the group selected. A click
+      // near it (but not on its tile) is a destination, not another selection.
+      if (directHit && isSelected) return true;
+      if (directHit && !isSelected) {
+        this.select(clickedFighter);
+        return true;
+      }
     }
 
-    if (this.selected === null || !this.selected.isActive()) return;
-    this.eventBus.emit(new MoveFighterIntentEvent([this.selected.id()], tile));
+    const selectedIds = [...this.selected.values()]
+      .filter((unit) => unit.isActive())
+      .map((unit) => unit.id());
+    if (selectedIds.length === 0) {
+      this.clearSelection();
+      return false;
+    }
+
+    this.eventBus.emit(new MoveFighterIntentEvent(selectedIds, tile));
     this.clearSelection();
+    return true;
   }
 
-  private select(unit: UnitView): void {
-    this.selected = unit;
-    this.view.setSelectedUnits([unit.id()]);
+  private select(unit: UnitView, additive = false): void {
+    // Clear any naval selection first. The fighter selection is then applied
+    // last so the common WebGL selection marker displays the aircraft group.
+    this.eventBus.emit(new UnitSelectionEvent(null, false));
+    if (!additive) this.selected.clear();
+    if (additive && this.selected.has(unit.id())) {
+      this.selected.delete(unit.id());
+    } else {
+      this.selected.set(unit.id(), unit);
+    }
+    this.syncSelection();
   }
 
-  private clearSelection(): void {
-    if (this.selected === null) return;
-    this.selected = null;
-    this.view.setSelectedUnits([]);
+  private syncSelection(): void {
+    this.view.setSelectedUnits([...this.selected.keys()]);
+  }
+
+  private clearSelection(updateRenderer = true): void {
+    if (this.selected.size === 0) return;
+    this.selected.clear();
+    if (updateRenderer) this.view.setSelectedUnits([]);
   }
 }

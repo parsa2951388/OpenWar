@@ -972,10 +972,12 @@ export class FighterExecution implements Execution {
     if (state.ammo <= 0) return undefined;
     const owner = this.fighter!.owner();
     const range = this.mg!.config().fighterGunAirRange();
+    // The Worker only lets air fighters and stealth fighters be targets for
+    // the ground attacker's defensive gun; ground attackers are not air targets.
     for (const { unit, distSquared } of this.mg!.nearbyUnits(
       this.fighter!.tile(),
       range,
-      FIGHTER_UNIT_TYPES,
+      [UnitType.StealthFighter, UnitType.AirFighter],
     )) {
       if (
         unit.owner() !== owner &&
