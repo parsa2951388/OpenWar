@@ -3,8 +3,29 @@ import { describe, expect, it, vi } from "vitest";
 // Side-effect import: the @customElement decorator registers <build-menu>
 // when the module is evaluated, and a type-only reference would not evaluate it.
 import { BuildableUnit, UnitType } from "@openfront/engine-api/game/GameTypes";
-import "../../../../src/client/hud/layers/BuildMenu";
+import { flattenedBuildTable } from "../../../../src/client/hud/layers/BuildMenu";
 import type { BuildMenu } from "../../../../src/client/hud/layers/BuildMenu";
+
+
+describe("BuildMenu aircraft symbols", () => {
+  it("maps every aircraft build item to its dedicated SVG icon", () => {
+    const expected: Array<[UnitType, string]> = [
+      [UnitType.AircraftCarrier, "AircraftCarrierIcon.svg"],
+      [UnitType.Airport, "AirportIcon.svg"],
+      [UnitType.AirFighter, "AirFighterIcon.svg"],
+      [UnitType.StealthFighter, "StealthFighterIcon.svg"],
+      [UnitType.GroundAttacker, "GroundAttackerIcon.svg"],
+    ];
+
+    for (const [unitType, iconName] of expected) {
+      const item = flattenedBuildTable.find(
+        (entry) => entry.unitType === unitType,
+      );
+      expect(item, `missing build item for ${unitType}`).toBeDefined();
+      expect(item!.icon).toContain(iconName);
+    }
+  });
+});
 
 function makeMenu(): BuildMenu {
   return document.createElement("build-menu") as BuildMenu;
