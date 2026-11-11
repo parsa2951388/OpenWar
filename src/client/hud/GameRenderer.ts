@@ -50,7 +50,7 @@ import { SpawnTimer } from "./layers/SpawnTimer";
 import { TutorialPanel } from "./layers/TutorialPanel";
 import { UnitDisplay } from "./layers/UnitDisplay";
 import { WinModal } from "./layers/WinModal";
-import { loadAllSprites } from "./SpriteLoader";
+import { clearColoredSpriteCache, loadAllSprites } from "./SpriteLoader";
 
 export function createRenderer(
   inputEl: HTMLElement,
@@ -437,6 +437,7 @@ export class GameRenderer {
       this.layers[i].dispose?.();
     }
     this.layerTickState.clear();
+    clearColoredSpriteCache();
   }
 
   tick() {

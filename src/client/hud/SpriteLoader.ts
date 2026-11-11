@@ -49,44 +49,64 @@ const SPRITE_CONFIG: Partial<Record<UnitType | TrainTypeSprite, string>> = {
 };
 
 const spriteMap: Map<UnitType | TrainTypeSprite, ImageBitmap> = new Map();
+const spriteLoadPromises = new Map<UnitType | TrainTypeSprite, Promise<void>>();
 
-// preload all images
+// Preload once per asset. Reusing completed sprites and sharing in-flight loads
+// prevents repeated ImageBitmap allocations when players rejoin matches.
 export const loadAllSprites = async (): Promise<void> => {
   const entries = Object.entries(SPRITE_CONFIG);
-  const totalSprites = entries.length;
-  let loadedCount = 0;
 
   await Promise.all(
     entries.map(async ([unitType, url]) => {
       const typedUnitType = unitType as UnitType | TrainTypeSprite;
-
       if (!url || url === "") {
         console.warn(`No sprite URL for ${typedUnitType}, skipping...`);
         return;
       }
+      if (spriteMap.has(typedUnitType)) return;
 
-      try {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.src = url;
+      const pending = spriteLoadPromises.get(typedUnitType);
+      if (pending !== undefined) {
+        await pending;
+        return;
+      }
 
-        await new Promise<void>((resolve, reject) => {
-          img.onload = () => resolve();
-          img.onerror = (err) => reject(err);
-        });
+      const load = (async () => {
+        try {
+          const img = new Image();
+          img.crossOrigin = "anonymous";
+          await new Promise<void>((resolve, reject) => {
+            img.onload = () => resolve();
+            img.onerror = (err) => reject(err);
+            img.src = url;
+          });
 
-        const bitmap = await createImageBitmap(img);
-        spriteMap.set(typedUnitType, bitmap);
-        loadedCount++;
-
-        if (loadedCount === totalSprites) {
-          console.log("All sprites loaded.");
+          const bitmap = await createImageBitmap(img);
+          if (!spriteMap.has(typedUnitType)) {
+            spriteMap.set(typedUnitType, bitmap);
+          } else {
+            bitmap.close();
+          }
+        } catch (err) {
+          // Keep failures retryable on the next game initialization.
+          console.warn(`Failed to load sprite for ${typedUnitType}:`, err);
         }
-      } catch (err) {
-        console.warn(`Failed to load sprite for ${typedUnitType}:`, err);
+      })();
+
+      spriteLoadPromises.set(typedUnitType, load);
+      try {
+        await load;
+      } finally {
+        if (spriteLoadPromises.get(typedUnitType) === load) {
+          spriteLoadPromises.delete(typedUnitType);
+        }
       }
     }),
   );
+
+  if (spriteMap.size === entries.length) {
+    console.log("All sprites loaded.");
+  }
 };
 
 /**
@@ -117,6 +137,11 @@ const getSpriteForUnit = (unit: UnitView): ImageBitmap | null => {
 };
 
 const coloredSpriteCache: Map<string, HTMLCanvasElement> = new Map();
+
+/** Drop per-player canvases when a match ends; raw ImageBitmaps remain reusable. */
+export const clearColoredSpriteCache = (): void => {
+  coloredSpriteCache.clear();
+};
 
 /**
  * Load a canvas and replace grayscale with border colors
