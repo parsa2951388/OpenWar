@@ -11,6 +11,22 @@ export const DEVELOPMENT_API_KEY =
 export const DEVELOPMENT_ADMIN_BOT_API_KEY =
   "WARNING_DEV_ADMIN_BOT_KEY_DO_NOT_USE_IN_PRODUCTION";
 
+function isPublicAudienceDomain(value: string | undefined): boolean {
+  if (!value || value.length > 253 || value.toLowerCase() === "localhost") {
+    return false;
+  }
+  const labels = value.split(".");
+  return (
+    labels.length >= 2 &&
+    labels.every(
+      (label) =>
+        label.length >= 1 &&
+        label.length <= 63 &&
+        /^[a-z0-9](?:[a-z0-9-]*[a-z0-9])?$/i.test(label),
+    )
+  );
+}
+
 export function configureRenderEnvironment(env: NodeJS.ProcessEnv): void {
   const onRender = env.RENDER === "true";
 
@@ -42,9 +58,15 @@ export function configureRenderEnvironment(env: NodeJS.ProcessEnv): void {
     );
   }
 
-  if (onRender && env.RENDER_GIT_COMMIT) {
-    env.GIT_COMMIT ??= env.RENDER_GIT_COMMIT;
-  } else if (!onRender && gameEnv === "dev") {
+  if (onRender) {
+    if (!/^[0-9a-f]{7,40}$/i.test(env.RENDER_GIT_COMMIT ?? "")) {
+      throw new Error(
+        "Render did not provide a valid RENDER_GIT_COMMIT; refusing to use a stale GIT_COMMIT.",
+      );
+    }
+    // The platform SHA always wins over an explicitly configured/stale value.
+    env.GIT_COMMIT = env.RENDER_GIT_COMMIT;
+  } else if (gameEnv === "dev") {
     env.GIT_COMMIT ??= "OPENWAR";
   }
 
@@ -65,13 +87,25 @@ export function configureRenderEnvironment(env: NodeJS.ProcessEnv): void {
   }
 
   const missing: string[] = [];
-  if (!env.DOMAIN) missing.push("DOMAIN");
+  if (!isPublicAudienceDomain(env.DOMAIN)) {
+    missing.push("public DOMAIN (a DNS domain, not localhost or a URL)");
+  }
   if (!env.API_KEY || env.API_KEY === DEVELOPMENT_API_KEY) {
     missing.push("API_KEY");
   }
   if (!env.TURNSTILE_SITE_KEY) missing.push("TURNSTILE_SITE_KEY");
-  if (!env.NUM_WORKERS) missing.push("NUM_WORKERS");
-  if (!env.INSTANCE_LETTER) missing.push("INSTANCE_LETTER");
+
+  const workerCount = Number(env.NUM_WORKERS);
+  if (
+    !env.NUM_WORKERS ||
+    !Number.isSafeInteger(workerCount) ||
+    workerCount < 1
+  ) {
+    missing.push("NUM_WORKERS (positive integer)");
+  }
+  if (!/^[a-z]$/.test(env.INSTANCE_LETTER ?? "")) {
+    missing.push("INSTANCE_LETTER (one registered lowercase letter)");
+  }
 
   if (
     gameEnv === "prod" &&

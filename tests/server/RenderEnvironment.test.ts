@@ -65,11 +65,37 @@ describe("configureRenderEnvironment", () => {
     expect(env.TURNSTILE_SITE_KEY).toBe(DEVELOPMENT_TURNSTILE_SITE_KEY);
   });
 
+  test("always uses Render's current deployed commit over a stale value", () => {
+    const env: NodeJS.ProcessEnv = {
+      RENDER: "true",
+      GAME_ENV: "dev",
+      ALLOW_INSECURE_RENDER_DEV: "true",
+      RENDER_GIT_COMMIT: "0123456789abcdef",
+      GIT_COMMIT: "OPENWAR",
+    };
+
+    configureRenderEnvironment(env);
+
+    expect(env.GIT_COMMIT).toBe("0123456789abcdef");
+  });
+
+  test("rejects a missing or malformed Render commit even when GIT_COMMIT exists", () => {
+    expect(() =>
+      configureRenderEnvironment({
+        RENDER: "true",
+        GAME_ENV: "dev",
+        ALLOW_INSECURE_RENDER_DEV: "true",
+        GIT_COMMIT: "OPENWAR",
+      }),
+    ).toThrow(/valid RENDER_GIT_COMMIT/);
+  });
+
   test("uses Render's deployed commit and preserves configured secrets", () => {
     const env: NodeJS.ProcessEnv = {
       RENDER: "true",
       GAME_ENV: "staging",
       RENDER_GIT_COMMIT: "0123456789abcdef",
+      GIT_COMMIT: "OPENWAR",
       DOMAIN: "example.test",
       API_KEY: "configured-api-key",
       TURNSTILE_SITE_KEY: DEVELOPMENT_TURNSTILE_SITE_KEY,
@@ -82,6 +108,36 @@ describe("configureRenderEnvironment", () => {
     expect(env.GIT_COMMIT).toBe("0123456789abcdef");
     expect(env.API_KEY).toBe("configured-api-key");
     expect(env.TURNSTILE_SITE_KEY).toBe(DEVELOPMENT_TURNSTILE_SITE_KEY);
+  });
+
+  test("rejects localhost as a deployed API audience domain", () => {
+    expect(() =>
+      configureRenderEnvironment({
+        RENDER: "true",
+        GAME_ENV: "staging",
+        RENDER_GIT_COMMIT: "0123456789abcdef",
+        DOMAIN: "localhost",
+        API_KEY: "configured-api-key",
+        TURNSTILE_SITE_KEY: "staging-site-key",
+        NUM_WORKERS: "2",
+        INSTANCE_LETTER: "a",
+      }),
+    ).toThrow(/public DOMAIN/);
+  });
+
+  test("rejects malformed worker counts and unregistered instance letters", () => {
+    expect(() =>
+      configureRenderEnvironment({
+        RENDER: "true",
+        GAME_ENV: "staging",
+        RENDER_GIT_COMMIT: "0123456789abcdef",
+        DOMAIN: "example.test",
+        API_KEY: "configured-api-key",
+        TURNSTILE_SITE_KEY: "staging-site-key",
+        NUM_WORKERS: "0",
+        INSTANCE_LETTER: "AB",
+      }),
+    ).toThrow(/NUM_WORKERS.*INSTANCE_LETTER/);
   });
 
   test("rejects the public Turnstile test key in production", () => {
@@ -122,7 +178,7 @@ describe("configureRenderEnvironment", () => {
         RENDER_GIT_COMMIT: "0123456789abcdef",
       }),
     ).toThrow(
-      /DOMAIN, API_KEY, TURNSTILE_SITE_KEY, NUM_WORKERS, INSTANCE_LETTER/,
+      /public DOMAIN.*API_KEY.*TURNSTILE_SITE_KEY.*NUM_WORKERS.*INSTANCE_LETTER/,
     );
   });
 
