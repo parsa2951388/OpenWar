@@ -28,6 +28,15 @@ const FIGHTER_TYPES = [
  */
 export class FighterSelectionController implements Controller {
   private readonly selected = new Map<number, UnitView>();
+  private readonly onMouseUpEvent = (event: MouseUpEvent) =>
+    this.onMouseUp(event);
+  private readonly onTouchEvent = (event: TouchEvent) => this.onTouch(event);
+  private readonly onContextMenuEvent = () => this.clearSelection();
+  private readonly onCloseViewEvent = () => this.clearSelection();
+  private readonly onUnitSelectionEvent = (event: UnitSelectionEvent) => {
+    // The warship controller owns the renderer selection after this event.
+    if (event.isSelected) this.clearSelection(false);
+  };
 
   constructor(
     private game: GameView,
@@ -37,14 +46,27 @@ export class FighterSelectionController implements Controller {
   ) {}
 
   init(): void {
-    this.eventBus.on(MouseUpEvent, (event) => this.onMouseUp(event));
-    this.eventBus.on(TouchEvent, (event) => this.onTouch(event));
-    this.eventBus.on(ContextMenuEvent, () => this.clearSelection());
-    this.eventBus.on(CloseViewEvent, () => this.clearSelection());
-    this.eventBus.on(UnitSelectionEvent, (event) => {
-      // The warship controller owns the renderer selection after this event.
-      if (event.isSelected) this.clearSelection(false);
-    });
+    // Keep one subscription per event, even if the renderer is reinitialized.
+    this.disposeSubscriptions();
+    this.eventBus.on(MouseUpEvent, this.onMouseUpEvent);
+    this.eventBus.on(TouchEvent, this.onTouchEvent);
+    this.eventBus.on(ContextMenuEvent, this.onContextMenuEvent);
+    this.eventBus.on(CloseViewEvent, this.onCloseViewEvent);
+    this.eventBus.on(UnitSelectionEvent, this.onUnitSelectionEvent);
+  }
+
+  dispose(): void {
+    this.disposeSubscriptions();
+    this.selected.clear();
+    this.view.setSelectedUnits([]);
+  }
+
+  private disposeSubscriptions(): void {
+    this.eventBus.off(MouseUpEvent, this.onMouseUpEvent);
+    this.eventBus.off(TouchEvent, this.onTouchEvent);
+    this.eventBus.off(ContextMenuEvent, this.onContextMenuEvent);
+    this.eventBus.off(CloseViewEvent, this.onCloseViewEvent);
+    this.eventBus.off(UnitSelectionEvent, this.onUnitSelectionEvent);
   }
 
   tick(): void {
@@ -92,16 +114,20 @@ export class FighterSelectionController implements Controller {
   }
 
   private onMouseUp(event: MouseUpEvent): void {
+    if (event.handled) return;
     const tile = this.tileFromScreen(event.x, event.y);
-    if (tile !== undefined) this.handleWorldClick(tile, event.shiftKey);
+    if (tile !== undefined) {
+      event.handled = this.handleWorldClick(tile, event.shiftKey);
+    }
   }
 
   private onTouch(event: TouchEvent): void {
+    if (event.handled) return;
     const tile = this.tileFromScreen(event.x, event.y);
-    if (tile !== undefined) this.handleWorldClick(tile);
+    if (tile !== undefined) event.handled = this.handleWorldClick(tile);
   }
 
-  private handleWorldClick(tile: TileRef, additive = false): void {
+  private handleWorldClick(tile: TileRef, additive = false): boolean {
     const clickedFighter = this.closestFighter(tile);
     if (clickedFighter !== undefined) {
       const isSelected = this.selected.has(clickedFighter.id());
@@ -109,18 +135,18 @@ export class FighterSelectionController implements Controller {
 
       if (additive) {
         this.select(clickedFighter, true);
-        return;
+        return true;
       }
       if (this.selected.size === 0) {
         this.select(clickedFighter);
-        return;
+        return true;
       }
       // Clicking a selected plane's sprite keeps the group selected. A click
       // near it (but not on its tile) is a destination, not another selection.
-      if (directHit && isSelected) return;
+      if (directHit && isSelected) return true;
       if (directHit && !isSelected) {
         this.select(clickedFighter);
-        return;
+        return true;
       }
     }
 
@@ -129,11 +155,12 @@ export class FighterSelectionController implements Controller {
       .map((unit) => unit.id());
     if (selectedIds.length === 0) {
       this.clearSelection();
-      return;
+      return false;
     }
 
     this.eventBus.emit(new MoveFighterIntentEvent(selectedIds, tile));
     this.clearSelection();
+    return true;
   }
 
   private select(unit: UnitView, additive = false): void {

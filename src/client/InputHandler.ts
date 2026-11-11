@@ -19,6 +19,9 @@ import { ReplaySpeedMultiplier } from "./utilities/ReplaySpeedMultiplier";
 import { GameView, UnitView } from "./view";
 
 export class MouseUpEvent implements GameEvent {
+  /** Set by a controller that has handled this world click. */
+  public handled = false;
+
   constructor(
     public readonly x: number,
     public readonly y: number,
@@ -33,6 +36,9 @@ export class MouseOverEvent implements GameEvent {
   ) {}
 }
 export class TouchEvent implements GameEvent {
+  /** Set by a controller that has handled this world tap. */
+  public handled = false;
+
   constructor(
     public readonly x: number,
     public readonly y: number,

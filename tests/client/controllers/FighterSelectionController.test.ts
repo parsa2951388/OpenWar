@@ -5,7 +5,11 @@ import { describe, expect, it } from "vitest";
 import {
   FighterSelectionController,
 } from "../../../src/client/controllers/FighterSelectionController";
-import { UnitSelectionEvent } from "../../../src/client/InputHandler";
+import {
+  MouseUpEvent,
+  TouchEvent,
+  UnitSelectionEvent,
+} from "../../../src/client/InputHandler";
 import { MapRenderer } from "../../../src/client/render/gl";
 import { TransformHandler } from "../../../src/client/TransformHandler";
 import { MoveFighterIntentEvent } from "../../../src/client/Transport";
@@ -35,6 +39,8 @@ function makeHarness(fighters: FakeFighter[]) {
     myPlayer: () => owner,
     units,
     manhattanDist: (a: number, b: number) => Math.abs(a - b),
+    isValidCoord: () => true,
+    ref: (x: number) => x as TileRef,
   } as unknown as GameView;
   const emitted: unknown[] = [];
   const listeners = new Map<unknown, Array<(event: any) => void>>();
@@ -43,6 +49,11 @@ function makeHarness(fighters: FakeFighter[]) {
       const current = listeners.get(eventType) ?? [];
       current.push(listener);
       listeners.set(eventType, current);
+    },
+    off: (eventType: unknown, listener: (event: any) => void) => {
+      const current = listeners.get(eventType) ?? [];
+      const index = current.indexOf(listener);
+      if (index >= 0) current.splice(index, 1);
     },
     emit: (event: any) => {
       emitted.push(event);
@@ -60,7 +71,9 @@ function makeHarness(fighters: FakeFighter[]) {
   const controller = new FighterSelectionController(
     game,
     eventBus,
-    {} as TransformHandler,
+    {
+      screenToWorldCoordinates: (x: number, y: number) => ({ x, y }),
+    } as unknown as TransformHandler,
     view,
   );
   controller.init();
@@ -82,6 +95,8 @@ function makeHarness(fighters: FakeFighter[]) {
   return {
     click,
     emitted,
+    controller,
+    emit: (event: any) => eventBus.emit(event),
     selected: () => selectedIds,
     setExternalSelection,
     emitSelection,
@@ -146,6 +161,29 @@ describe("FighterSelectionController", () => {
     ]);
 
     h.click(14);
+    expect(h.selected()).toEqual([]);
+  });
+
+  it("claims aircraft clicks and unregisters input listeners on dispose", () => {
+    const h = makeHarness([
+      { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
+    ]);
+
+    const mouse = new MouseUpEvent(10, 0);
+    h.emit(mouse);
+    expect(mouse.handled).toBe(true);
+    expect(h.selected()).toEqual([1]);
+
+    const touch = new TouchEvent(10, 0);
+    h.emit(touch);
+    expect(touch.handled).toBe(true);
+
+    h.controller.dispose();
+    expect(h.selected()).toEqual([]);
+
+    const afterDispose = new MouseUpEvent(80, 0);
+    h.emit(afterDispose);
+    expect(afterDispose.handled).toBe(false);
     expect(h.selected()).toEqual([]);
   });
 

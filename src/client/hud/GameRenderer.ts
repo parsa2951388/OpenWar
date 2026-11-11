@@ -335,8 +335,10 @@ export function createRenderer(
   onboardingOverlay.uiState = uiState;
 
   const layers: Controller[] = [
-    new WarshipSelectionController(game, eventBus, transformHandler, view),
+    // Aircraft input gets first refusal so a selected plane and a selected
+    // warship cannot both receive the same destination click.
     new FighterSelectionController(game, eventBus, transformHandler, view),
+    new WarshipSelectionController(game, eventBus, transformHandler, view),
     new BuildPreviewController(
       game,
       eventBus,
@@ -398,6 +400,7 @@ export function createRenderer(
 
 export class GameRenderer {
   private layerTickState = new Map<Controller, { lastTickAtMs: number }>();
+  private disposed = false;
 
   constructor(
     public transformHandler: TransformHandler,
@@ -424,7 +427,16 @@ export class GameRenderer {
   }
 
   dispose() {
+    if (this.disposed) return;
+    this.disposed = true;
     window.removeEventListener("resize", this.onResize);
+
+    // Controllers subscribe to the page-wide EventBus. Release them when a
+    // match ends so an old game cannot keep reacting to the next game's input.
+    for (let i = this.layers.length - 1; i >= 0; i--) {
+      this.layers[i].dispose?.();
+    }
+    this.layerTickState.clear();
   }
 
   tick() {

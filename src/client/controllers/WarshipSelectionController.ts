@@ -169,6 +169,7 @@ export class WarshipSelectionController implements Controller {
     clickRef?: TileRef,
     nearbyWarships?: UnitView[],
   ) {
+    if (event.handled) return;
     if (clickRef === undefined) {
       const cell = this.transformHandler.screenToWorldCoordinates(
         event.x,
@@ -178,6 +179,7 @@ export class WarshipSelectionController implements Controller {
       clickRef = this.game.ref(cell.x, cell.y);
     }
     if (!this.game.isWater(clickRef)) return;
+    event.handled = true;
 
     if (this.multiSelectedWarships.length > 0) {
       const myPlayer = this.game.myPlayer();
@@ -211,6 +213,7 @@ export class WarshipSelectionController implements Controller {
    * back to opening the radial menu.
    */
   private onTouch(event: TouchEvent) {
+    if (event.handled) return;
     const cell = this.transformHandler.screenToWorldCoordinates(
       event.x,
       event.y,

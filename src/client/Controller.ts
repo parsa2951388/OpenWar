@@ -22,6 +22,9 @@ export interface Controller {
    */
   tick?: () => void;
 
+  /** Called once when the game renderer is disposed; release subscriptions and resources. */
+  dispose?: () => void;
+
   /** Optional throttle on tick frequency, in milliseconds. */
   getTickIntervalMs?: () => number;
 }
