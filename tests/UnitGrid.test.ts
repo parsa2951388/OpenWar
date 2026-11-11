@@ -100,6 +100,27 @@ describe("Unit Grid range tests", () => {
       },
     );
 
+    test("Exact-radius units across a vertical cell boundary are included", async () => {
+      const game = await setup("big_plains", {
+        infiniteGold: true,
+        instantBuild: true,
+      });
+      const grid = new UnitGrid(game.map());
+      const player = game.addPlayer(
+        new PlayerInfo("test_player", PlayerType.Human, null, "test_id"),
+      );
+      const unitTile = game.map().ref(50, 100);
+      grid.addUnit(player.buildUnit(UnitType.City, unitTile, {}));
+      const tileToCheck = game.map().ref(50, 50);
+
+      expect(grid.nearbyUnits(tileToCheck, 50, [UnitType.City])).toHaveLength(
+        1,
+      );
+      expect(
+        grid.hasUnitNearby(tileToCheck, 50, UnitType.City, "test_id"),
+      ).toBe(true);
+    });
+
     test("Wrong unit type in range", async () => {
       const game = await setup("plains", {
         infiniteGold: true,
