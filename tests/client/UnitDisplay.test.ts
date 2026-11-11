@@ -97,16 +97,10 @@ describe("mobile UnitDisplay layout", () => {
       expect(scroller).not.toBeNull();
       expect(scroller?.classList.contains("touch-pan-x")).toBe(true);
       expect(scroller?.classList.contains("lg:overflow-visible")).toBe(true);
-      expect(grid?.classList.contains("max-lg:landscape:grid-flow-col")).toBe(
-        true,
-      );
-      expect(
-        grid?.classList.contains("max-lg:landscape:auto-cols-[47px]"),
-      ).toBe(true);
-      expect(grid?.classList.contains("max-[360px]:grid-flow-col")).toBe(true);
-      expect(grid?.classList.contains("max-[360px]:auto-cols-[44px]")).toBe(
-        true,
-      );
+      expect(grid?.classList.contains("max-lg:grid-flow-col")).toBe(true);
+      expect(grid?.classList.contains("max-lg:grid-cols-none")).toBe(true);
+      expect(grid?.classList.contains("max-lg:auto-cols-[58px]")).toBe(true);
+      expect(grid?.classList.contains("max-lg:w-max")).toBe(true);
       expect(grid?.children).toHaveLength(10);
       expect(grid?.style.getPropertyValue("--unit-display-columns")).toBe("10");
     } finally {
@@ -158,6 +152,32 @@ describe("mobile UnitDisplay layout", () => {
       display.remove();
     }
   });
+  test("throttles buildable-cost refreshes instead of requesting them every frame", async () => {
+    const { display } = makeDisplay();
+    const player = display.game.myPlayer() as any;
+    const buildables = vi.fn().mockResolvedValue(
+      QUICK_BUILD_TYPES.map((type) => ({ type, cost: 1250n })),
+    );
+    player.buildables = buildables;
+    player.totalUnitLevels = vi.fn().mockReturnValue(0);
+    const now = vi.spyOn(Date, "now").mockReturnValue(10_000);
+
+    try {
+      display.tick();
+      display.tick();
+      expect(buildables).toHaveBeenCalledTimes(1);
+
+      await Promise.resolve();
+      await Promise.resolve();
+      now.mockReturnValue(10_500);
+      display.tick();
+      expect(buildables).toHaveBeenCalledTimes(2);
+    } finally {
+      now.mockRestore();
+      display.remove();
+    }
+  });
+
   test("tutorial shows only enabled atom button after silo is captured", async () => {
     const { display } = makeDisplay(null, [], true, true);
     try {

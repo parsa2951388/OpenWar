@@ -701,6 +701,10 @@ export class RadialMenu implements Controller {
           const radius = measuredRadius > 0 ? measuredRadius : 1;
           const ux = cx / radius;
           const uy = cy / radius;
+          const denseLabels = arcs.size() >= 10;
+          const captionFontSize = denseLabels ? "7px" : "9px";
+          const priceFontSize = denseLabels ? "6.5px" : "8px";
+          const labelTextLength = denseLabels ? "42" : "56";
           const showBuildCaption = Boolean(d.data.caption ?? d.data.priceLabel);
           const iconSize = showBuildCaption
             ? Math.min(this.config.iconSize, 24)
@@ -736,17 +740,17 @@ export class RadialMenu implements Controller {
               .attr("class", "menu-item-caption")
               .attr("text-anchor", "middle")
               .attr("dominant-baseline", "central")
-              .attr("x", ux * (radius + 10))
-              .attr("y", uy * (radius + 10))
+              .attr("x", ux * (radius + 9))
+              .attr("y", uy * (radius + 9))
               .attr("fill", "#f4fbff")
-              .attr("font-size", "8px")
+              .attr("font-size", captionFontSize)
               .attr("font-family", "Arial, sans-serif")
               .attr("font-weight", "700")
               .attr("paint-order", "stroke")
               .attr("stroke", "rgba(7, 21, 31, 0.95)")
               .attr("stroke-width", "2px")
               .attr("stroke-linejoin", "round")
-              .attr("textLength", "42")
+              .attr("textLength", labelTextLength)
               .attr("lengthAdjust", "spacingAndGlyphs")
               .style("opacity", disabled ? 0.5 : 1)
               .text(d.data.caption);
@@ -760,7 +764,7 @@ export class RadialMenu implements Controller {
               .attr("x", ux * (radius + 20))
               .attr("y", uy * (radius + 20))
               .attr("fill", "#ffd08c")
-              .attr("font-size", "7px")
+              .attr("font-size", priceFontSize)
               .attr("font-family", "Arial, sans-serif")
               .attr("font-weight", "800")
               .attr("paint-order", "stroke")

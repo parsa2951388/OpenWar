@@ -459,15 +459,24 @@ export class UnitDisplay extends LitElement implements Controller {
     );
   }
 
+  private _lastBuildablesRefreshAt = 0;
+  private _buildablesRefreshInFlight = false;
+  private static readonly BUILDABLES_REFRESH_INTERVAL_MS = 500;
+
   tick() {
     const player = this.game?.myPlayer();
-    if (!player) return;
-    player
-      .buildables(undefined, QUICK_BUILD_TYPES)
-      .then((buildables) => {
-        this.playerBuildables = buildables;
-      })
-      .catch((error) => console.warn("Failed to refresh unit costs", error));
+    if (!player || this._buildablesRefreshInFlight) return;
+
+    const now = Date.now();
+    if (
+      now - this._lastBuildablesRefreshAt <
+      UnitDisplay.BUILDABLES_REFRESH_INTERVAL_MS
+    ) {
+      return;
+    }
+    this._lastBuildablesRefreshAt = now;
+    this._buildablesRefreshInFlight = true;
+
     this._cities = player.totalUnitLevels(UnitType.City);
     this._missileSilo = player.totalUnitLevels(UnitType.MissileSilo);
     this._port = player.totalUnitLevels(UnitType.Port);
@@ -476,6 +485,17 @@ export class UnitDisplay extends LitElement implements Controller {
     this._factories = player.totalUnitLevels(UnitType.Factory);
     this._warships = player.totalUnitLevels(UnitType.Warship);
     this.requestUpdate();
+
+    void player
+      .buildables(undefined, QUICK_BUILD_TYPES)
+      .then((buildables) => {
+        this.playerBuildables = buildables;
+        this.requestUpdate();
+      })
+      .catch((error) => console.warn("Failed to refresh unit costs", error))
+      .finally(() => {
+        this._buildablesRefreshInFlight = false;
+      });
   }
 
   render() {
@@ -512,7 +532,7 @@ export class UnitDisplay extends LitElement implements Controller {
           @scroll=${this.onScroll}
         >
           <div
-            class="unit-display-grid grid grid-cols-[repeat(var(--unit-display-columns),minmax(0,1fr))] gap-0.5 w-full mx-auto lg:grid-rows-1 lg:grid-flow-col lg:grid-cols-none lg:auto-cols-max lg:w-fit max-lg:landscape:grid-rows-1 max-lg:landscape:grid-flow-col max-lg:landscape:grid-cols-none max-lg:landscape:auto-cols-[47px] max-lg:landscape:w-max max-[360px]:grid-cols-none max-[360px]:grid-flow-col max-[360px]:auto-cols-[44px] max-[360px]:w-max"
+            class="unit-display-grid grid grid-cols-[repeat(var(--unit-display-columns),minmax(0,1fr))] gap-0.5 w-full mx-auto lg:grid-rows-1 lg:grid-flow-col lg:grid-cols-none lg:auto-cols-max lg:w-fit max-lg:grid-rows-1 max-lg:grid-flow-col max-lg:grid-cols-none max-lg:auto-cols-[58px] max-lg:w-max"
             style=${`--unit-display-columns: ${this.enabledUnitCount}`}
           >
             ${this.renderUnitItem(
@@ -735,14 +755,14 @@ export class UnitDisplay extends LitElement implements Controller {
           class="unit-display-entry-label flex w-full min-w-0 flex-col items-center px-0.5 pb-0.5 text-center leading-none"
         >
           <span
-            class="unit-display-name block w-full max-w-[54px] truncate text-[7px] font-semibold text-slate-200 lg:max-w-[64px] lg:text-[8px]"
+            class="unit-display-name block w-full max-w-[58px] min-h-[18px] break-words whitespace-normal text-[8px] leading-[1.1] font-semibold text-slate-200 lg:max-w-[64px] lg:min-h-0 lg:truncate lg:whitespace-nowrap lg:text-[8px]"
             title=${translateText("unit_type." + structureKey)}
             >${translateText("unit_type." + structureKey)}</span
           >
           <span
-            class="unit-display-cost mt-0.5 flex min-h-[9px] items-center justify-center gap-0.5 whitespace-nowrap text-[7px] font-semibold text-amber-300 lg:text-[8px]"
+            class="unit-display-cost mt-0.5 flex min-h-[10px] items-center justify-center gap-0.5 whitespace-nowrap text-[8px] font-semibold text-amber-300 lg:text-[8px]"
           >
-            <img src=${goldCoinIcon} width="8" height="8" alt="" />
+            <img src=${goldCoinIcon} width="9" height="9" alt="" />
             <span
               >${availableCost === undefined ? "—" : renderNumber(availableCost)}</span
             >
