@@ -117,6 +117,10 @@ jobs:
       - name: Setup npm
         run: npm install --global --ignore-scripts npm@12.1.0
       - run: npm ci
+      - name: Format aircraft test diagnostic
+        run: |
+          npm run format -- tests/AircraftWorkerParity.test.ts
+          cat tests/AircraftWorkerParity.test.ts
       - run: npm run format:check
 
   gen-maps:
