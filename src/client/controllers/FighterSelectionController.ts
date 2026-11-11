@@ -51,7 +51,12 @@ export class FighterSelectionController implements Controller {
     const owner = this.game.myPlayer();
     let changed = false;
     for (const [id, unit] of this.selected) {
-      if (!unit.isActive() || owner === null || owner === undefined || unit.owner() !== owner) {
+      if (
+        !unit.isActive() ||
+        owner === null ||
+        owner === undefined ||
+        unit.owner() !== owner
+      ) {
         this.selected.delete(id);
         changed = true;
       }
