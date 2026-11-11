@@ -10,14 +10,17 @@ server.
 Configure these values in the Render service's **Environment** page. Do not
 commit secret values to Git.
 
-| Variable | Requirement |
-| --- | --- |
-| `GAME_ENV` | Explicitly set to `staging` or `prod`. Render refuses implicit or accidental `dev` mode. |
-| `DOMAIN` | API audience domain. The server constructs the issuer as `https://api.<DOMAIN>`. |
-| `API_KEY` | Valid server-to-API key. Development placeholders are rejected. |
-| `TURNSTILE_SITE_KEY` | Site key matching the environment. Production rejects the public test key. |
-| `NUM_WORKERS` | Positive integer matching this instance's worker routing. |
-| `INSTANCE_LETTER` | One registered lowercase letter. Never reuse a retired letter. |
+- **`GAME_ENV`**: Explicitly set to `staging` or `prod`. Render refuses
+  implicit or accidental `dev` mode.
+- **`DOMAIN`**: API audience domain. The server constructs the issuer as
+  `https://api.<DOMAIN>`.
+- **`API_KEY`**: Valid server-to-API key. Development placeholders are
+  rejected.
+- **`TURNSTILE_SITE_KEY`**: Site key matching the environment. Production
+  rejects the public test key.
+- **`NUM_WORKERS`**: Positive integer matching this instance's worker routing.
+- **`INSTANCE_LETTER`**: One registered lowercase letter. Never reuse a
+  retired letter.
 
 Render supplies `RENDER_GIT_COMMIT`; the launcher uses it as `GIT_COMMIT`
 when no explicit commit value is supplied. This keeps the UI and server version
