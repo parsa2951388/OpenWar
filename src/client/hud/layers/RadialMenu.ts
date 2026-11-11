@@ -771,7 +771,7 @@ export class RadialMenu implements Controller {
               .attr("stroke", "rgba(7, 21, 31, 0.95)")
               .attr("stroke-width", "2px")
               .attr("stroke-linejoin", "round")
-              .attr("textLength", "42")
+              .attr("textLength", labelTextLength)
               .attr("lengthAdjust", "spacingAndGlyphs")
               .style("opacity", disabled ? 0.5 : 1)
               .text(d.data.priceLabel);
