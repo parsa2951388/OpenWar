@@ -3,19 +3,21 @@ import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, it } from "vitest";
 import { FighterSelectionController } from "../../../src/client/controllers/FighterSelectionController";
-import { MouseUpEvent, TouchEvent, UnitSelectionEvent } from "../../../src/client/InputHandler";
+import {
+  MouseUpEvent,
+  TouchEvent,
+  UnitSelectionEvent,
+} from "../../../src/client/InputHandler";
 import { MapRenderer } from "../../../src/client/render/gl";
 import { TransformHandler } from "../../../src/client/TransformHandler";
 import { MoveFighterIntentEvent } from "../../../src/client/Transport";
 import { GameView, UnitView } from "../../../src/client/view";
-
 type FakeFighter = {
   id: number;
   tile: number;
   type: UnitType;
   active: boolean;
 };
-
 function makeHarness(fighters: FakeFighter[]) {
   const owner = {};
   const units = (type: UnitType) =>
@@ -31,7 +33,6 @@ function makeHarness(fighters: FakeFighter[]) {
             owner: () => owner,
           }) as unknown as UnitView,
       );
-
   const game = {
     myPlayer: () => owner,
     units,
@@ -88,7 +89,6 @@ function makeHarness(fighters: FakeFighter[]) {
         handleWorldClick(tile: TileRef, additive?: boolean): void;
       }
     ).handleWorldClick(tile as TileRef, shiftKey);
-
   return {
     click,
     emitted,
@@ -99,99 +99,77 @@ function makeHarness(fighters: FakeFighter[]) {
     emitSelection,
   };
 }
-
 describe("FighterSelectionController", () => {
   it("selects fighters and supports additive Shift-click selection", () => {
     const h = makeHarness([
       { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
       { id: 2, tile: 30, type: UnitType.StealthFighter, active: true },
     ]);
-
     h.click(10);
     expect(h.selected()).toEqual([1]);
-
     h.click(30, true);
     expect(h.selected()).toEqual([1, 2]);
-
     h.click(30, true);
     expect(h.selected()).toEqual([1]);
   });
-
   it("sends one move intent for every selected active aircraft", () => {
     const h = makeHarness([
       { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
       { id: 2, tile: 30, type: UnitType.GroundAttacker, active: true },
     ]);
-
     h.click(10);
     h.click(30, true);
     h.click(80);
-
     const move = h.emitted.find(
       (event) => event instanceof MoveFighterIntentEvent,
     ) as MoveFighterIntentEvent | undefined;
-
     expect(move?.unitIds).toEqual([1, 2]);
     expect(move?.tile).toBe(80);
     expect(h.selected()).toEqual([]);
   });
-
   it("does not mistake a nearby destination for the selected aircraft", () => {
     const h = makeHarness([
       { id: 1, tile: 10, type: UnitType.GroundAttacker, active: true },
     ]);
-
     h.click(10);
     h.click(12);
-
     const move = h.emitted.find(
       (event) => event instanceof MoveFighterIntentEvent,
     ) as MoveFighterIntentEvent | undefined;
-
     expect(move?.unitIds).toEqual([1]);
     expect(move?.tile).toBe(12);
   });
-
   it("does not select an aircraft outside the short click radius", () => {
     const h = makeHarness([
       { id: 1, tile: 10, type: UnitType.StealthFighter, active: true },
     ]);
-
     h.click(14);
     expect(h.selected()).toEqual([]);
   });
-
   it("claims aircraft clicks and unregisters input listeners on dispose", () => {
     const h = makeHarness([
       { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
     ]);
-
     const mouse = new MouseUpEvent(10, 0);
     h.emit(mouse);
     expect(mouse.handled).toBe(true);
     expect(h.selected()).toEqual([1]);
-
     const touch = new TouchEvent(10, 0);
     h.emit(touch);
     expect(touch.handled).toBe(true);
-
     h.controller.dispose();
     expect(h.selected()).toEqual([]);
-
     const afterDispose = new MouseUpEvent(80, 0);
     h.emit(afterDispose);
     expect(afterDispose.handled).toBe(false);
     expect(h.selected()).toEqual([]);
   });
-
   it("keeps another unit selection after aircraft deselection", () => {
     const h = makeHarness([
       { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
     ]);
-
     h.click(10);
     expect(h.selected()).toEqual([1]);
-
     const renderer = h as unknown as {
       setExternalSelection(ids: number[]): void;
       emitSelection(event: UnitSelectionEvent): void;
