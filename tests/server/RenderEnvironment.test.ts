@@ -121,7 +121,9 @@ describe("configureRenderEnvironment", () => {
         GAME_ENV: "prod",
         RENDER_GIT_COMMIT: "0123456789abcdef",
       }),
-    ).toThrow(/DOMAIN, API_KEY, TURNSTILE_SITE_KEY, NUM_WORKERS, INSTANCE_LETTER/);
+    ).toThrow(
+      /DOMAIN, API_KEY, TURNSTILE_SITE_KEY, NUM_WORKERS, INSTANCE_LETTER/,
+    );
   });
 
   test("removes the optional documented admin-bot placeholder", () => {

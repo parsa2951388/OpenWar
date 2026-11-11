@@ -13,11 +13,11 @@ commit secret values to Git.
 | Variable | Requirement |
 | --- | --- |
 | `GAME_ENV` | Explicitly set to `staging` or `prod`. Render refuses implicit or accidental `dev` mode. |
-| `DOMAIN` | API audience domain. The current server constructs its API issuer as `https://api.<DOMAIN>` (or localhost for local development). |
-| `API_KEY` | Valid server-to-API key. A development warning placeholder is rejected. |
-| `TURNSTILE_SITE_KEY` | Site key matching the selected environment. Production rejects Cloudflare's public test key. |
-| `NUM_WORKERS` | Positive integer; must match the worker routing topology for the instance letter. |
-| `INSTANCE_LETTER` | One lowercase letter registered for this server. Never reuse a retired letter. |
+| `DOMAIN` | API audience domain. The server constructs the issuer as `https://api.<DOMAIN>`. |
+| `API_KEY` | Valid server-to-API key. Development placeholders are rejected. |
+| `TURNSTILE_SITE_KEY` | Site key matching the environment. Production rejects the public test key. |
+| `NUM_WORKERS` | Positive integer matching this instance's worker routing. |
+| `INSTANCE_LETTER` | One registered lowercase letter. Never reuse a retired letter. |
 
 Render supplies `RENDER_GIT_COMMIT`; the launcher uses it as `GIT_COMMIT`
 when no explicit commit value is supplied. This keeps the UI and server version

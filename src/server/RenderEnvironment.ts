@@ -5,16 +5,13 @@
  * Local use keeps the familiar development defaults, but a Render service
  * must opt into an environment explicitly and provide its own credentials.
  */
-export const DEVELOPMENT_TURNSTILE_SITE_KEY =
-  "1x00000000000000000000AA";
+export const DEVELOPMENT_TURNSTILE_SITE_KEY = "1x00000000000000000000AA";
 export const DEVELOPMENT_API_KEY =
   "WARNING_DEV_API_KEY_DO_NOT_USE_IN_PRODUCTION";
 export const DEVELOPMENT_ADMIN_BOT_API_KEY =
   "WARNING_DEV_ADMIN_BOT_KEY_DO_NOT_USE_IN_PRODUCTION";
 
-export function configureRenderEnvironment(
-  env: NodeJS.ProcessEnv,
-): void {
+export function configureRenderEnvironment(env: NodeJS.ProcessEnv): void {
   const onRender = env.RENDER === "true";
 
   if (!env.GAME_ENV) {
@@ -40,16 +37,15 @@ export function configureRenderEnvironment(
   ) {
     throw new Error(
       "Refusing to run GAME_ENV=dev on Render. Set GAME_ENV=staging or prod; " +
-        "use ALLOW_INSECURE_RENDER_DEV=true only for an intentional isolated dev service.",
+        "use ALLOW_INSECURE_RENDER_DEV=true only for an intentional isolated " +
+        "dev service.",
     );
   }
 
-  if (!env.GIT_COMMIT) {
-    if (onRender && env.RENDER_GIT_COMMIT) {
-      env.GIT_COMMIT = env.RENDER_GIT_COMMIT;
-    } else if (!onRender && gameEnv === "dev") {
-      env.GIT_COMMIT = "OPENWAR";
-    }
+  if (onRender && env.RENDER_GIT_COMMIT) {
+    env.GIT_COMMIT ??= env.RENDER_GIT_COMMIT;
+  } else if (!onRender && gameEnv === "dev") {
+    env.GIT_COMMIT ??= "OPENWAR";
   }
 
   if (!env.GIT_COMMIT) {
@@ -59,9 +55,8 @@ export function configureRenderEnvironment(
   }
 
   if (gameEnv === "dev") {
-    if (!env.TURNSTILE_SITE_KEY) {
-      env.TURNSTILE_SITE_KEY = DEVELOPMENT_TURNSTILE_SITE_KEY;
-    }
+    env.TURNSTILE_SITE_KEY ??= DEVELOPMENT_TURNSTILE_SITE_KEY;
+
     // The admin-bot key is optional. Never ship the documented warning value.
     if (env.ADMIN_BOT_API_KEY === DEVELOPMENT_ADMIN_BOT_API_KEY) {
       delete env.ADMIN_BOT_API_KEY;
@@ -77,13 +72,21 @@ export function configureRenderEnvironment(
   if (!env.TURNSTILE_SITE_KEY) missing.push("TURNSTILE_SITE_KEY");
   if (!env.NUM_WORKERS) missing.push("NUM_WORKERS");
   if (!env.INSTANCE_LETTER) missing.push("INSTANCE_LETTER");
-  if (gameEnv === "prod" && env.TURNSTILE_SITE_KEY === DEVELOPMENT_TURNSTILE_SITE_KEY) {
-    missing.push("live TURNSTILE_SITE_KEY (the configured key is the public test key)");
+
+  if (
+    gameEnv === "prod" &&
+    env.TURNSTILE_SITE_KEY === DEVELOPMENT_TURNSTILE_SITE_KEY
+  ) {
+    missing.push(
+      "live TURNSTILE_SITE_KEY (the configured key is the public test key)",
+    );
   }
 
   if (missing.length > 0) {
     throw new Error(
-      `Invalid GAME_ENV=${gameEnv} runtime configuration. Missing or unsafe: ${missing.join(", ")}. Configure these in the Render Environment settings; no secret values are printed.`,
+      `Invalid GAME_ENV=${gameEnv} runtime configuration. Missing or unsafe: ` +
+        `${missing.join(", ")}. Configure these in the Render Environment ` +
+        "settings; no secret values are printed.",
     );
   }
 
