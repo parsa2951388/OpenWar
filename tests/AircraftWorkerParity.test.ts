@@ -1,3 +1,4 @@
+
 import { describe, expect, it, vi } from "vitest";
 import {
   FighterType,
@@ -5,8 +6,8 @@ import {
   MessageType,
 } from "../packages/engine-api/src/game/GameTypes";
 import { EngineConfig } from "../packages/engine/src/configuration/EngineConfig";
-import { FighterExecution } from "../packages/engine/src/execution/FighterExecution";
 import { FighterBombExecution } from "../packages/engine/src/execution/FighterBombExecution";
+import { FighterExecution } from "../packages/engine/src/execution/FighterExecution";
 import type { Game, Player, Unit } from "../packages/engine/src/game/Game";
 import { GameImpl } from "../packages/engine/src/game/GameImpl";
 
@@ -40,14 +41,14 @@ describe("uploaded Worker aircraft parity", () => {
     (execution as unknown as { mg: Game }).mg = game;
 
     expect(
-      (execution as unknown as { findAirGunTarget(): Unit | undefined })
-        .findAirGunTarget(),
+      (
+        execution as unknown as { findAirGunTarget(): Unit | undefined }
+      ).findAirGunTarget(),
     ).toBeUndefined();
-    expect(game.nearbyUnits).toHaveBeenCalledWith(
-      7,
-      6,
-      [UnitType.StealthFighter, UnitType.AirFighter],
-    );
+    expect(game.nearbyUnits).toHaveBeenCalledWith(7, 6, [
+      UnitType.StealthFighter,
+      UnitType.AirFighter,
+    ]);
   });
 
   it("uses the Worker commercial aircraft saturation and rejection curve", () => {
