@@ -2,7 +2,9 @@ import { TileRef } from "@openfront/engine-api/game/GameMap";
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, it } from "vitest";
-import { FighterSelectionController } from "../../../src/client/controllers/FighterSelectionController";
+import {
+  FighterSelectionController,
+} from "../../../src/client/controllers/FighterSelectionController";
 import { UnitSelectionEvent } from "../../../src/client/InputHandler";
 import { MapRenderer } from "../../../src/client/render/gl";
 import { TransformHandler } from "../../../src/client/TransformHandler";
@@ -150,23 +152,23 @@ describe("FighterSelectionController", () => {
   it(
     "preserves another unit selection when it clears its own aircraft selection",
     () => {
-    const h = makeHarness([
-      { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
-    ]);
+      const h = makeHarness([
+        { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
+      ]);
 
-    h.click(10);
-    expect(h.selected()).toEqual([1]);
+      h.click(10);
+      expect(h.selected()).toEqual([1]);
 
-    const renderer = h as unknown as {
-      setExternalSelection(ids: number[]): void;
-      emitSelection(event: UnitSelectionEvent): void;
-    };
-    renderer.setExternalSelection([77]);
-    renderer.emitSelection(
-      new UnitSelectionEvent(null, true, [
-        { id: () => 77 } as unknown as UnitView,
-      ]),
-    );
+      const renderer = h as unknown as {
+        setExternalSelection(ids: number[]): void;
+        emitSelection(event: UnitSelectionEvent): void;
+      };
+      renderer.setExternalSelection([77]);
+      renderer.emitSelection(
+        new UnitSelectionEvent(null, true, [
+          { id: () => 77 } as unknown as UnitView,
+        ]),
+      );
       expect(h.selected()).toEqual([77]);
     },
   );
