@@ -149,27 +149,24 @@ describe("FighterSelectionController", () => {
     expect(h.selected()).toEqual([]);
   });
 
-  it(
-    "keeps another unit selection after aircraft deselection",
-    () => {
-      const h = makeHarness([
-        { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
-      ]);
+  it("keeps another unit selection after aircraft deselection", () => {
+    const h = makeHarness([
+      { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
+    ]);
 
-      h.click(10);
-      expect(h.selected()).toEqual([1]);
+    h.click(10);
+    expect(h.selected()).toEqual([1]);
 
-      const renderer = h as unknown as {
-        setExternalSelection(ids: number[]): void;
-        emitSelection(event: UnitSelectionEvent): void;
-      };
-      renderer.setExternalSelection([77]);
-      renderer.emitSelection(
-        new UnitSelectionEvent(null, true, [
-          { id: () => 77 } as unknown as UnitView,
-        ]),
-      );
-      expect(h.selected()).toEqual([77]);
-    },
-  );
+    const renderer = h as unknown as {
+      setExternalSelection(ids: number[]): void;
+      emitSelection(event: UnitSelectionEvent): void;
+    };
+    renderer.setExternalSelection([77]);
+    renderer.emitSelection(
+      new UnitSelectionEvent(null, true, [
+        { id: () => 77 } as unknown as UnitView,
+      ]),
+    );
+    expect(h.selected()).toEqual([77]);
+  });
 });
