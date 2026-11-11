@@ -304,12 +304,12 @@ describe("Graphics tab: advanced options in the graphics panel", () => {
     flip(el, "naval-highlight-toggle");
     expect(overrides().mapOverlay?.navalHighlight).toBe(true);
 
-    // Costly visual effects are disabled by default in the lightweight profile.
+    // The full-fidelity OpenFront profile enables these visual effects by default.
     flip(el, "special-effects-toggle");
     flip(el, "fallout-toggle");
     expect(overrides().passEnabled).toMatchObject({
-      fx: true,
-      fallout: true,
+      fx: false,
+      fallout: false,
     });
   });
 
