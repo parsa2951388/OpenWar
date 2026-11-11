@@ -39,7 +39,7 @@ jobs:
         run: npm run gen-maps
       - name: Format generated source and manifests
         run: |
-          git diff --name-only --diff-filter=ACMR | grep -E '\.(json|ts|css)$' | xargs -r npx oxfmt
+          git diff --name-only --diff-filter=ACMR | grep -E '\.(json|ts|css)$' | xargs -r npx oxfmt --write
       - run: npm run format:check
       - name: Remove helper and commit generated output
         run: |
