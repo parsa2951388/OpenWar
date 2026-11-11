@@ -1418,11 +1418,7 @@ export class InputHandler {
 
       // Let map controllers claim a unit click before opening the radial menu.
       // Otherwise enabling "left click opens menu" blocks aircraft selection.
-      const mouseUpEvent = new MouseUpEvent(
-        event.x,
-        event.y,
-        event.shiftKey,
-      );
+      const mouseUpEvent = new MouseUpEvent(event.x, event.y, event.shiftKey);
       this.eventBus.emit(mouseUpEvent);
 
       const shouldOpenRadialMenu =
