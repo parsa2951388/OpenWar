@@ -24,9 +24,24 @@ jobs:
           go-version-file: map-generator/go.mod
           cache-dependency-path: map-generator/go.sum
       - run: npm ci
-      - name: Regenerate maps and language map index
-        run: npm run gen-maps
-      - name: Format modified source and generated JSON
+      - name: Format source metadata first
+        run: >-
+          npx oxfmt --write
+          map-generator/assets/maps/amazonriver/info.json
+          map-generator/assets/maps/archipelagosea/info.json
+          map-generator/assets/maps/didier/info.json
+          map-generator/assets/maps/didierfrance/info.json
+          map-generator/assets/maps/fourislands/info.json
+          map-generator/assets/maps/marenostrum/info.json
+          map-generator/assets/maps/sol/info.json
+          map-generator/assets/maps/warshipwarship/info.json
+      - name: Regenerate only the maps whose descriptions changed
+        run: |
+          cd map-generator
+          go run -tags nodynamic . --maps=amazonriver,archipelagesea,didier,didierfrance,fourislands,marenostrum,sol,warshipwarship
+          cd ..
+          npm run gen-map-schema
+      - name: Format generated source and manifests
         run: |
           git diff --name-only --diff-filter=ACMR | grep -E '\.(json|ts|css)$' | xargs -r npx oxfmt
       - run: npm run format:check
