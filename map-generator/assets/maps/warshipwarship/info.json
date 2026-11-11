@@ -3,56 +3,88 @@
   "name": "Warship Warship",
   "id": "WarshipWarship",
   "translation_key": "map.warshipwarship",
-  "categories": ["arcade"],
+  "categories": [
+    "arcade"
+  ],
   "author": "crunchybbb",
-  "description": "Two massive warship-shaped islands. The map is inspired by a meme created by the Openfront Youtuber Ultimus_Rex when he says the catchphrase 'Warship Warship' when deploying them",
+  "description": "Two massive warship-shaped islands. The map is inspired by a meme created by the Open War Youtuber Ultimus_Rex when he says the catchphrase 'Warship Warship' when deploying them",
   "nations": [
     {
-      "coordinates": [750, 680],
+      "coordinates": [
+        750,
+        680
+      ],
       "name": "Isle of Infestation",
       "flag": "Republic of Pirates"
     },
     {
-      "coordinates": [1775, 435],
+      "coordinates": [
+        1775,
+        435
+      ],
       "name": "Poort",
       "flag": "Republic of Pirates"
     },
     {
-      "coordinates": [1884, 1064],
+      "coordinates": [
+        1884,
+        1064
+      ],
       "name": "Battleship Bay",
       "flag": "Republic of Pirates"
     },
     {
-      "coordinates": [1116, 1000],
+      "coordinates": [
+        1116,
+        1000
+      ],
       "name": "Piracity",
       "flag": "Republic of Pirates"
     },
     {
-      "coordinates": [413, 378],
+      "coordinates": [
+        413,
+        378
+      ],
       "name": "Robbery Rock",
       "flag": "Republic of Pirates"
     },
     {
-      "coordinates": [1009, 272],
+      "coordinates": [
+        1009,
+        272
+      ],
       "name": "Warship Wastelands",
       "flag": "Republic of Pirates"
     },
     {
-      "coordinates": [388, 1027],
+      "coordinates": [
+        388,
+        1027
+      ],
       "name": "Port Pirate",
       "flag": "Republic of Pirates"
     },
     {
-      "coordinates": [2688, 968],
+      "coordinates": [
+        2688,
+        968
+      ],
       "name": "Cape Caribbean",
       "flag": "bs"
     },
     {
-      "coordinates": [2222, 686],
+      "coordinates": [
+        2222,
+        686
+      ],
       "name": "Evil island man"
     },
     {
-      "coordinates": [2597, 405],
+      "coordinates": [
+        2597,
+        405
+      ],
       "name": "Somalian Sound",
       "flag": "so"
     }
