@@ -2,14 +2,8 @@ import { TileRef } from "@openfront/engine-api/game/GameMap";
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, it } from "vitest";
-import {
-  FighterSelectionController,
-} from "../../../src/client/controllers/FighterSelectionController";
-import {
-  MouseUpEvent,
-  TouchEvent,
-  UnitSelectionEvent,
-} from "../../../src/client/InputHandler";
+import { FighterSelectionController } from "../../../src/client/controllers/FighterSelectionController";
+import { MouseUpEvent, TouchEvent, UnitSelectionEvent } from "../../../src/client/InputHandler";
 import { MapRenderer } from "../../../src/client/render/gl";
 import { TransformHandler } from "../../../src/client/TransformHandler";
 import { MoveFighterIntentEvent } from "../../../src/client/Transport";
@@ -27,13 +21,16 @@ function makeHarness(fighters: FakeFighter[]) {
   const units = (type: UnitType) =>
     fighters
       .filter((fighter) => fighter.type === type)
-      .map((fighter) => ({
-        id: () => fighter.id,
-        tile: () => fighter.tile as TileRef,
-        type: () => fighter.type,
-        isActive: () => fighter.active,
-        owner: () => owner,
-      }) as unknown as UnitView);
+      .map(
+        (fighter) =>
+          ({
+            id: () => fighter.id,
+            tile: () => fighter.tile as TileRef,
+            type: () => fighter.type,
+            isActive: () => fighter.active,
+            owner: () => owner,
+          }) as unknown as UnitView,
+      );
 
   const game = {
     myPlayer: () => owner,
