@@ -155,9 +155,11 @@ describe("mobile UnitDisplay layout", () => {
   test("throttles buildable-cost refreshes instead of requesting them every frame", async () => {
     const { display } = makeDisplay();
     const player = display.game.myPlayer() as any;
-    const buildables = vi.fn().mockResolvedValue(
-      QUICK_BUILD_TYPES.map((type) => ({ type, cost: 1250n })),
-    );
+    const buildables = vi
+      .fn()
+      .mockResolvedValue(
+        QUICK_BUILD_TYPES.map((type) => ({ type, cost: 1250n })),
+      );
     player.buildables = buildables;
     player.totalUnitLevels = vi.fn().mockReturnValue(0);
     const now = vi.spyOn(Date, "now").mockReturnValue(10_000);
