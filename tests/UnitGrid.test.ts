@@ -52,6 +52,7 @@ describe("Unit Grid range tests", () => {
   const hasUnitCases = [
     ["plains", 0, 10, 0, true], // Same spot
     ["plains", 0, 10, 10, true], // Exactly on the range
+    ["big_plains", 100, 50, 50, true], // Exact range across a cell boundary
     ["plains", 0, 10, 11, false], // Exactly 1px outside
     ["big_plains", 0, 198, 42, true], // Inside huge range
     ["big_plains", 0, 198, 199, false], // Exactly 1px outside huge range
@@ -78,6 +79,7 @@ describe("Unit Grid range tests", () => {
     ["plains", 0, 10, 0, [UnitType.City, UnitType.Port], 2], // 2 in range
     ["plains", 0, 10, 0, [], 0], // no unit
     ["plains", 0, 10, 10, [UnitType.City], 1], // Exactly on the range
+    ["big_plains", 100, 50, 50, [UnitType.City], 1], // Exact range across a cell boundary
     ["plains", 0, 10, 11, [UnitType.DefensePost], 0], // 1px outside
     ["big_plains", 0, 198, 42, [UnitType.TradeShip], 1], // Inside huge range
     ["big_plains", 0, 198, 199, [UnitType.TransportShip], 0], // 1px outside
