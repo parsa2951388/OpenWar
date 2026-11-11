@@ -1,8 +1,8 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
-import { UnitSelectionEvent } from "../../../src/client/InputHandler";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, it } from "vitest";
+import { UnitSelectionEvent } from "../../../src/client/InputHandler";
 import { FighterSelectionController } from "../../../src/client/controllers/FighterSelectionController";
 import { MoveFighterIntentEvent } from "../../../src/client/Transport";
 import { MapRenderer } from "../../../src/client/render/gl";
@@ -64,7 +64,11 @@ function makeHarness(fighters: FakeFighter[]) {
   controller.init();
   const setExternalSelection = (ids: number[]) => view.setSelectedUnits(ids);
   const emitSelection = (event: UnitSelectionEvent) => {
-    (eventBus as unknown as { emit(event: UnitSelectionEvent): void }).emit(event);
+    (
+      eventBus as unknown as {
+        emit(event: UnitSelectionEvent): void;
+      }
+    ).emit(event);
   };
   const click = (tile: number, shiftKey = false) =>
     (
@@ -79,7 +83,6 @@ function makeHarness(fighters: FakeFighter[]) {
     selected: () => selectedIds,
     setExternalSelection,
     emitSelection,
-    fighters,
   };
 }
 
@@ -157,9 +160,11 @@ describe("FighterSelectionController", () => {
       emitSelection(event: UnitSelectionEvent): void;
     };
     renderer.setExternalSelection([77]);
-    renderer.emitSelection(new UnitSelectionEvent(null, true, [
-      { id: () => 77 } as unknown as UnitView,
-    ]));
+    renderer.emitSelection(
+      new UnitSelectionEvent(null, true, [
+        { id: () => 77 } as unknown as UnitView,
+      ]),
+    );
     expect(h.selected()).toEqual([77]);
   });
 });
