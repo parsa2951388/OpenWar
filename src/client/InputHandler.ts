@@ -22,6 +22,7 @@ export class MouseUpEvent implements GameEvent {
   constructor(
     public readonly x: number,
     public readonly y: number,
+    public readonly shiftKey: boolean = false,
   ) {}
 }
 
@@ -1416,7 +1417,7 @@ export class InputHandler {
         this.uiState.ghostStructure !== null || // Block radial menu on left click if building
         this.gameView.config().gameConfig().tutorial === true // The tutorial teaches the click that attacks
       ) {
-        this.eventBus.emit(new MouseUpEvent(event.x, event.y));
+        this.eventBus.emit(new MouseUpEvent(event.x, event.y, event.shiftKey));
       } else {
         this.eventBus.emit(new ContextMenuEvent(event.clientX, event.clientY));
       }
