@@ -2,9 +2,7 @@ import { TileRef } from "@openfront/engine-api/game/GameMap";
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, it, vi } from "vitest";
-import {
-  FighterSelectionController,
-} from "../../../src/client/controllers/FighterSelectionController";
+import { FighterSelectionController } from "../../../src/client/controllers/FighterSelectionController";
 import {
   MouseUpEvent,
   TouchEvent,
