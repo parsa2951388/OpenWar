@@ -21,7 +21,7 @@ type FakeFighter = {
 };
 
 function makeHarness(fighters: FakeFighter[]) {
-  const owner = {};
+  const owner = { id: () => "local-player" };
   const unitView = (fighter: FakeFighter) =>
     ({
       id: () => fighter.id,
@@ -35,21 +35,22 @@ function makeHarness(fighters: FakeFighter[]) {
       tile: number,
       radius: number,
       types: UnitType | readonly UnitType[],
-      predicate?: (unit: UnitView) => boolean,
+      predicate?: (value: { unit: UnitView; distSquared: number }) => boolean,
     ) =>
       fighters
         .filter(
           (fighter) =>
             (Array.isArray(types)
-              ? types.includes(fighter.type)
+              ? (types as readonly UnitType[]).includes(fighter.type)
               : fighter.type === types) &&
-            Math.abs(fighter.tile - tile) <= radius,
+            Math.abs(fighter.tile - tile) <= radius &&
+            fighter.active,
         )
         .map((fighter) => ({
           unit: unitView(fighter),
           distSquared: (fighter.tile - tile) ** 2,
         }))
-        .filter(({ unit }) => predicate?.(unit) ?? true),
+        .filter((entry) => predicate?.(entry) ?? true),
   );
   const game = {
     myPlayer: () => owner,
