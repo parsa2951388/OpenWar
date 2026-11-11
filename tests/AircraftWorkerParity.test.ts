@@ -5,11 +5,51 @@ import {
   MessageType,
 } from "../packages/engine-api/src/game/GameTypes";
 import { EngineConfig } from "../packages/engine/src/configuration/EngineConfig";
+import { FighterExecution } from "../packages/engine/src/execution/FighterExecution";
 import { FighterBombExecution } from "../packages/engine/src/execution/FighterBombExecution";
 import type { Game, Player, Unit } from "../packages/engine/src/game/Game";
 import { GameImpl } from "../packages/engine/src/game/GameImpl";
 
 describe("uploaded Worker aircraft parity", () => {
+  it("does not let ground attackers target other ground attackers with the air gun", () => {
+    const gameOwner = { canAttackPlayer: () => true };
+    const enemyOwner = {};
+    const groundAttacker = {
+      type: () => UnitType.GroundAttacker,
+      owner: () => enemyOwner,
+      isActive: () => true,
+    } as unknown as Unit;
+    const fighter = {
+      fighterState: () => ({ ammo: 10 }),
+      owner: () => gameOwner,
+      tile: () => 7,
+    } as unknown as Unit;
+    const game = {
+      config: () => ({ fighterGunAirRange: () => 6 }),
+      nearbyUnits: vi.fn(
+        (_tile: number, _range: number, types: readonly UnitType[]) =>
+          types.includes(UnitType.GroundAttacker)
+            ? [{ unit: groundAttacker, distSquared: 1 }]
+            : [],
+      ),
+    } as unknown as Game;
+    const execution = Object.create(
+      FighterExecution.prototype,
+    ) as FighterExecution;
+    (execution as unknown as { fighter: Unit }).fighter = fighter;
+    (execution as unknown as { mg: Game }).mg = game;
+
+    expect(
+      (execution as unknown as { findAirGunTarget(): Unit | undefined })
+        .findAirGunTarget(),
+    ).toBeUndefined();
+    expect(game.nearbyUnits).toHaveBeenCalledWith(
+      7,
+      6,
+      [UnitType.StealthFighter, UnitType.AirFighter],
+    );
+  });
+
   it("uses the Worker commercial aircraft saturation and rejection curve", () => {
     const config = Object.create(EngineConfig.prototype) as EngineConfig;
 
