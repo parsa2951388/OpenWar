@@ -150,7 +150,7 @@ describe("FighterSelectionController", () => {
   });
 
   it(
-    "preserves another unit selection when it clears its own aircraft selection",
+    "keeps another unit selection after aircraft deselection",
     () => {
       const h = makeHarness([
         { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
