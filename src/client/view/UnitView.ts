@@ -1,5 +1,6 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
 import {
+  FighterState,
   NukeState,
   Tick,
   TrainType,
@@ -36,6 +37,7 @@ export class UnitView implements UnitLike {
   /** Engine-only fields not in UnitState. Use warshipState() / transportShipState() to read. */
   private _warshipState?: WarshipState;
   private _transportShipState?: TransportShipState;
+  private _fighterState?: FighterState;
   private _nukeState?: NukeState;
   private _createdAt: Tick;
 
@@ -46,6 +48,7 @@ export class UnitView implements UnitLike {
     this.state = unitStateFromUpdate(data);
     this._warshipState = data.warshipState;
     this._transportShipState = data.transportShipState;
+    this._fighterState = data.fighterState;
     this._nukeState = data.nukeState;
     this.lastPos.push(data.pos);
     this._createdAt = this.gameView.ticks();
@@ -80,6 +83,7 @@ export class UnitView implements UnitLike {
     applyUnitUpdateInPlace(this.state, data);
     this._warshipState = data.warshipState;
     this._transportShipState = data.transportShipState;
+    this._fighterState = data.fighterState;
     this._nukeState = data.nukeState;
     // constructionStartTick: set on transition into underConstruction.
     if (this.state.underConstruction && !wasUnderConstruction) {
@@ -130,6 +134,15 @@ export class UnitView implements UnitLike {
   }
   updateWarshipState(_update: Partial<WarshipState>): void {
     throw new Error("updateWarshipState is not supported on UnitView");
+  }
+  fighterState(): FighterState {
+    if (this._fighterState === undefined) {
+      throw new Error("fighterState called on non-fighter unit");
+    }
+    return this._fighterState;
+  }
+  updateFighterState(_update: Partial<FighterState>): void {
+    throw new Error("updateFighterState is not supported on UnitView");
   }
   isInCombat(): boolean {
     return this._warshipState?.isInCombat ?? false;
