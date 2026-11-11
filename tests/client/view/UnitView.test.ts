@@ -6,6 +6,8 @@
  */
 
 import {
+  FighterState,
+  FighterType,
   TrainType,
   TransportShipState,
   UnitType,
@@ -163,6 +165,57 @@ describe("UnitView accessors", () => {
     } as unknown as WarshipState;
     const u = new UnitView(game, makeUnitUpdate({ warshipState: state }));
     expect(u.warshipState()).toBe(state);
+  });
+
+  it("forwards fighter state on construction and refreshes it on update", () => {
+    const game = makeGameView();
+    const firstState: FighterState = {
+      state: "patrolling",
+      fighterType: FighterType.Air,
+      patrolTile: 100,
+      fuel: 900,
+      aam: 4,
+      bomb: 0,
+      ammo: 0,
+      flares: 4,
+    };
+    const nextState: FighterState = {
+      ...firstState,
+      state: "returning",
+      fuel: 420,
+      patrolTile: 140,
+    };
+    const fighter = new UnitView(
+      game,
+      makeUnitUpdate({
+        unitType: UnitType.AirFighter,
+        fighterState: firstState,
+      }),
+    );
+
+    expect(fighter.fighterState()).toBe(firstState);
+    fighter.update(
+      makeUnitUpdate({
+        unitType: UnitType.AirFighter,
+        fighterState: nextState,
+      }),
+    );
+    expect(fighter.fighterState()).toBe(nextState);
+    expect(fighter.fighterState().state).toBe("returning");
+    expect(fighter.fighterState().fuel).toBe(420);
+  });
+
+  it("fighterState() throws for units that do not carry fighter state", () => {
+    const unit = new UnitView(
+      makeGameView(),
+      makeUnitUpdate({ unitType: UnitType.City }),
+    );
+    expect(() => unit.fighterState()).toThrow(
+      "fighterState called on non-fighter unit",
+    );
+    expect(() => unit.updateFighterState({ fuel: 1 })).toThrow(
+      "updateFighterState is not supported on UnitView",
+    );
   });
 
   it("isInCombat() reflects warshipState.isInCombat (or false if missing)", () => {
