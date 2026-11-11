@@ -22,9 +22,10 @@ commit secret values to Git.
 - **`INSTANCE_LETTER`**: One registered lowercase letter. Never reuse a
   retired letter.
 
-Render supplies `RENDER_GIT_COMMIT`; the launcher uses it as `GIT_COMMIT`
-when no explicit commit value is supplied. This keeps the UI and server version
-identifiable instead of showing the generic `vx.xx.xx` placeholder.
+Render supplies `RENDER_GIT_COMMIT`; the launcher always copies this deployed
+SHA into `GIT_COMMIT`, even when a stale manual `GIT_COMMIT` is present. This
+keeps the UI and server version tied to the running deploy instead of showing
+the generic `vx.xx.xx` placeholder.
 
 `ADMIN_BOT_API_KEY` is optional. Leave it unset to disable the admin-bot
 endpoint. Do not use the documented development placeholder as a credential.
@@ -43,6 +44,15 @@ only for an isolated, non-production service.
 3. Set a live Turnstile site key for `GAME_ENV=prod`.
 4. Verify the service can reach `https://api.<DOMAIN>` from the Render region.
 5. Only then change the live service's start configuration and deploy.
+
+## Ranked matchmaking diagnostics
+
+Ranked workers call `https://api.<DOMAIN>/matchmaking/checkin`. When that
+request fails, the worker log records the public API hostname and the nested
+network error code (for example, a TLS alert). It does not log request headers
+or the API key. Confirm that the hostname is the API host for the selected
+audience and that outbound TLS to it succeeds from the Render service. Do not
+disable certificate validation or downgrade the request to HTTP.
 
 The launcher intentionally does not change Render service settings, domains,
 databases, or existing production variables.
