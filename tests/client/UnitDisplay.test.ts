@@ -169,9 +169,11 @@ describe("mobile UnitDisplay layout", () => {
       display.tick();
       expect(buildables).toHaveBeenCalledTimes(1);
 
-      await Promise.resolve();
-      await Promise.resolve();
       now.mockReturnValue(10_500);
+      await vi.waitFor(() => {
+        display.tick();
+        expect(buildables).toHaveBeenCalledTimes(2);
+      });
       display.tick();
       expect(buildables).toHaveBeenCalledTimes(2);
     } finally {
