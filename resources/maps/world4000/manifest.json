@@ -3,9 +3,21 @@
   "featured_rank": 1,
   "forced_modifiers": ["isCrowded:50"],
   "id": "World4000",
-  "map": { "height": 2060, "num_land_tiles": 2486582, "width": 4120 },
-  "map16x": { "height": 515, "num_land_tiles": 141729, "width": 1030 },
-  "map4x": { "height": 1030, "num_land_tiles": 600603, "width": 2060 },
+  "map": {
+    "height": 2060,
+    "num_land_tiles": 2486582,
+    "width": 4120
+  },
+  "map16x": {
+    "height": 515,
+    "num_land_tiles": 141729,
+    "width": 1030
+  },
+  "map4x": {
+    "height": 1030,
+    "num_land_tiles": 600603,
+    "width": 2060
+  },
   "name": "World 4000",
   "nations": [
     {

@@ -3,9 +3,21 @@
   "featured_rank": 1,
   "forced_modifiers": ["isCrowded:50"],
   "id": "World",
-  "map": { "height": 1032, "num_land_tiles": 620903, "width": 2064 },
-  "map16x": { "height": 258, "num_land_tiles": 35509, "width": 516 },
-  "map4x": { "height": 516, "num_land_tiles": 149650, "width": 1032 },
+  "map": {
+    "height": 1032,
+    "num_land_tiles": 620903,
+    "width": 2064
+  },
+  "map16x": {
+    "height": 258,
+    "num_land_tiles": 35509,
+    "width": 516
+  },
+  "map4x": {
+    "height": 516,
+    "num_land_tiles": 149650,
+    "width": 1032
+  },
   "name": "World",
   "nations": [
     {
