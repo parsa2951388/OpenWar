@@ -181,52 +181,54 @@ describe("FighterSelectionController", () => {
   it(
     "selects the nearest local aircraft from the spatial query, even in a large match",
     () => {
-    const fighters: FakeFighter[] = Array.from(
-      { length: 20_000 },
-      (_, index) => ({
-      id: index + 1,
-      tile: 1000 + index * 10,
-      type: UnitType.AirFighter,
-        active: true,
-      }),
-    );
-    fighters.push(
-      { id: 30_002, tile: 502, type: UnitType.StealthFighter, active: true },
-      { id: 30_001, tile: 501, type: UnitType.GroundAttacker, active: true },
-    );
-    const h = makeHarness(fighters);
-    h.click(500);
-    expect(h.selected()).toEqual([30_001]);
-    expect(h.nearbyUnits).toHaveBeenCalledOnce();
-    expect(h.nearbyUnits).toHaveBeenCalledWith(
-      500,
-      3,
-      [UnitType.StealthFighter, UnitType.GroundAttacker, UnitType.AirFighter],
-      expect.any(Function),
-    );
-    expect(h.game.units).not.toHaveBeenCalled();
-  });
+      const fighters: FakeFighter[] = Array.from(
+        { length: 20_000 },
+        (_, index) => ({
+          id: index + 1,
+          tile: 1000 + index * 10,
+          type: UnitType.AirFighter,
+          active: true,
+        }),
+      );
+      fighters.push(
+        { id: 30_002, tile: 502, type: UnitType.StealthFighter, active: true },
+        { id: 30_001, tile: 501, type: UnitType.GroundAttacker, active: true },
+      );
+      const h = makeHarness(fighters);
+      h.click(500);
+      expect(h.selected()).toEqual([30_001]);
+      expect(h.nearbyUnits).toHaveBeenCalledOnce();
+      expect(h.nearbyUnits).toHaveBeenCalledWith(
+        500,
+        3,
+        [UnitType.StealthFighter, UnitType.GroundAttacker, UnitType.AirFighter],
+        expect.any(Function),
+      );
+      expect(h.game.units).not.toHaveBeenCalled();
+    },
+  );
 
   it(
     "claims aircraft clicks and unregisters input listeners on dispose",
     () => {
-    const h = makeHarness([
-      { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
-    ]);
-    const mouse = new MouseUpEvent(10, 0);
-    h.emit(mouse);
-    expect(mouse.handled).toBe(true);
-    expect(h.selected()).toEqual([1]);
-    const touch = new TouchEvent(10, 0);
-    h.emit(touch);
-    expect(touch.handled).toBe(true);
-    h.controller.dispose();
-    expect(h.selected()).toEqual([]);
-    const afterDispose = new MouseUpEvent(80, 0);
-    h.emit(afterDispose);
-    expect(afterDispose.handled).toBe(false);
-    expect(h.selected()).toEqual([]);
-  });
+      const h = makeHarness([
+        { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
+      ]);
+      const mouse = new MouseUpEvent(10, 0);
+      h.emit(mouse);
+      expect(mouse.handled).toBe(true);
+      expect(h.selected()).toEqual([1]);
+      const touch = new TouchEvent(10, 0);
+      h.emit(touch);
+      expect(touch.handled).toBe(true);
+      h.controller.dispose();
+      expect(h.selected()).toEqual([]);
+      const afterDispose = new MouseUpEvent(80, 0);
+      h.emit(afterDispose);
+      expect(afterDispose.handled).toBe(false);
+      expect(h.selected()).toEqual([]);
+    },
+  );
 
   it("keeps another unit selection after aircraft deselection", () => {
     const h = makeHarness([
