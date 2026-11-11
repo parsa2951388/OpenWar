@@ -86,14 +86,6 @@ export class FighterSelectionController implements Controller {
     if (changed) this.syncSelection();
   }
 
-  private localFighters(): UnitView[] {
-    const owner = this.game.myPlayer();
-    if (owner === null || owner === undefined) return [];
-    return FIGHTER_TYPES.flatMap((type) => this.game.units(type)).filter(
-      (unit) => unit.isActive() && unit.owner() === owner,
-    );
-  }
-
   private tileFromScreen(x: number, y: number): TileRef | undefined {
     const cell = this.transformHandler.screenToWorldCoordinates(x, y);
     if (!this.game.isValidCoord(cell.x, cell.y)) return undefined;
@@ -101,16 +93,35 @@ export class FighterSelectionController implements Controller {
   }
 
   private closestFighter(tile: TileRef): UnitView | undefined {
-    return this.localFighters()
-      .filter(
-        (unit) =>
-          this.game.manhattanDist(unit.tile(), tile) <= FIGHTER_SELECT_RADIUS,
-      )
-      .sort(
-        (a, b) =>
-          this.game.manhattanDist(a.tile(), tile) -
-          this.game.manhattanDist(b.tile(), tile),
-      )[0];
+    const owner = this.game.myPlayer();
+    if (owner === null || owner === undefined) return undefined;
+
+    // Query the unit spatial grid around the pointer instead of rebuilding and
+    // sorting a list of every aircraft in the match on every click/tap.
+    // UnitGrid predicates receive { unit, distSquared }, not UnitLike itself.
+    // The grid already excludes inactive and under-construction units.
+    const nearby = this.game.nearbyUnits(
+      tile,
+      FIGHTER_SELECT_RADIUS,
+      FIGHTER_TYPES,
+      ({ unit }) => unit.owner().id() === owner.id(),
+    );
+
+    let closest: UnitView | undefined;
+    let closestDistance = FIGHTER_SELECT_RADIUS + 1;
+    for (const { unit } of nearby) {
+      const distance = this.game.manhattanDist(unit.tile(), tile);
+      if (distance > FIGHTER_SELECT_RADIUS) continue;
+      if (
+        distance < closestDistance ||
+        (distance === closestDistance &&
+          (closest === undefined || unit.id() < closest.id()))
+      ) {
+        closest = unit;
+        closestDistance = distance;
+      }
+    }
+    return closest;
   }
 
   private onMouseUp(event: MouseUpEvent): void {

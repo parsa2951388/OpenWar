@@ -1875,5 +1875,19 @@
     { "name": "Crunchyb", "flag": "" },
     { "name": "FloPinguin", "flag": "" },
     { "name": "Nikola123", "flag": "" }
+  ],
+  "layers": [
+    {
+      "id": "w10kland",
+      "placement": "land",
+      "alpha": 0.75,
+      "nukeable": true
+    },
+    {
+      "id": "w10kwater",
+      "placement": "water",
+      "alpha": 0.3,
+      "nukeable": false
+    }
   ]
 }

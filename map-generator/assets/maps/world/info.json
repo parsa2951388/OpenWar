@@ -359,5 +359,19 @@
       "name": "Philippines",
       "flag": "ph"
     }
+  ],
+  "layers": [
+    {
+      "id": "w2kland",
+      "placement": "land",
+      "alpha": 0.75,
+      "nukeable": true
+    },
+    {
+      "id": "w2kwater",
+      "placement": "water",
+      "alpha": 0.3,
+      "nukeable": false
+    }
   ]
 }

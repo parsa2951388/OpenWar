@@ -2530,6 +2530,10 @@ export const maps: readonly MapInfo[] = [
     defaultNationCount: 70,
     featuredRank: 1,
     forcedModifiers: ["isCrowded:50"],
+    layers: [
+      { id: "w2kland", placement: "land", nukeable: true },
+      { id: "w2kwater", placement: "water" },
+    ],
     author: "evanpelle",
     descriptionKey: "map_description.world",
   },
@@ -2539,6 +2543,10 @@ export const maps: readonly MapInfo[] = [
     translationKey: "map.world10000",
     categories: ["new", "world"],
     defaultNationCount: 377,
+    layers: [
+      { id: "w10kland", placement: "land", nukeable: true },
+      { id: "w10kwater", placement: "water" },
+    ],
     author: "Patrick Plays Badly",
     descriptionKey: "map_description.world10000",
   },
@@ -2550,6 +2558,10 @@ export const maps: readonly MapInfo[] = [
     defaultNationCount: 111,
     featuredRank: 1,
     forcedModifiers: ["isCrowded:50"],
+    layers: [
+      { id: "w4kland", placement: "land", nukeable: true },
+      { id: "w4kwater", placement: "water" },
+    ],
     author: "evanpelle",
     descriptionKey: "map_description.world4000",
   },

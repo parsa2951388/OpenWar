@@ -564,5 +564,19 @@
       "name": "Eastern Ice Sheet",
       "flag": "aq"
     }
+  ],
+  "layers": [
+    {
+      "id": "w4kland",
+      "placement": "land",
+      "alpha": 0.75,
+      "nukeable": true
+    },
+    {
+      "id": "w4kwater",
+      "placement": "water",
+      "alpha": 0.3,
+      "nukeable": false
+    }
   ]
 }
