@@ -2,7 +2,9 @@ import { TileRef } from "@openfront/engine-api/game/GameMap";
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, it, vi } from "vitest";
-import { FighterSelectionController } from "../../../src/client/controllers/FighterSelectionController";
+import {
+  FighterSelectionController,
+} from "../../../src/client/controllers/FighterSelectionController";
 import {
   MouseUpEvent,
   TouchEvent,
@@ -176,13 +178,18 @@ describe("FighterSelectionController", () => {
     expect(h.selected()).toEqual([]);
   });
 
-  it("selects the nearest local aircraft from the spatial query, even in a large match", () => {
-    const fighters: FakeFighter[] = Array.from({ length: 20_000 }, (_, index) => ({
+  it(
+    "selects the nearest local aircraft from the spatial query, even in a large match",
+    () => {
+    const fighters: FakeFighter[] = Array.from(
+      { length: 20_000 },
+      (_, index) => ({
       id: index + 1,
       tile: 1000 + index * 10,
       type: UnitType.AirFighter,
-      active: true,
-    }));
+        active: true,
+      }),
+    );
     fighters.push(
       { id: 30_002, tile: 502, type: UnitType.StealthFighter, active: true },
       { id: 30_001, tile: 501, type: UnitType.GroundAttacker, active: true },
@@ -200,7 +207,9 @@ describe("FighterSelectionController", () => {
     expect(h.game.units).not.toHaveBeenCalled();
   });
 
-  it("claims aircraft clicks and unregisters input listeners on dispose", () => {
+  it(
+    "claims aircraft clicks and unregisters input listeners on dispose",
+    () => {
     const h = makeHarness([
       { id: 1, tile: 10, type: UnitType.AirFighter, active: true },
     ]);
