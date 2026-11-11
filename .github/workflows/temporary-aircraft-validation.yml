@@ -1,0 +1,54 @@
+name: Temporary aircraft validation
+on:
+  push:
+    branches:
+      - fix/deep-gameplay-and-aircraft-stability
+    paths:
+      - ".github/workflows/temporary-aircraft-validation.yml"
+      - "tests/client/controllers/FighterSelectionController.test.ts"
+permissions:
+  contents: write
+jobs:
+  format-and-test:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+        with:
+          ref: fix/deep-gameplay-and-aircraft-stability
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 24
+          cache: npm
+      - name: Install repository npm version
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install dependencies
+        run: npm ci
+      - name: Format aircraft regression test
+        run: npx oxfmt --write tests/client/controllers/FighterSelectionController.test.ts
+      - name: Verify repository formatting
+        run: npm run format:check
+      - name: Run aircraft, map and gameplay regression tests
+        run: >-
+          npx vitest run
+          --project client --project client-forks --project node
+          tests/client/controllers/FighterSelectionController.test.ts
+          tests/client/InputHandlerAircraftPriority.test.ts
+          tests/GraphicsOverrides.test.ts
+          tests/client/UserSettingModal.graphics.test.ts
+          tests/AircraftRules.test.ts
+          tests/AircraftWorkerParity.test.ts
+          tests/core/snapshot/AircraftExecutions.test.ts
+          tests/core/pathfinding/PathFinding.Air.test.ts
+      - name: Type check and production build
+        run: npm run typecheck && npm run build-prod
+      - name: Publish formatter output to the PR branch
+        run: |
+          git config user.name "github-actions[bot]"
+          git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
+          git add tests/client/controllers/FighterSelectionController.test.ts
+          if ! git diff --cached --quiet; then
+            git commit -m "Apply canonical formatter to aircraft regression test"
+            git push origin HEAD:fix/deep-gameplay-and-aircraft-stability
+          else
+            echo "Aircraft regression test is already formatted."
+          fi
