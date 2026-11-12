@@ -108,15 +108,14 @@ describe("a page carrying only environment values", () => {
         json: async () => jwks,
       });
       vi.stubGlobal("fetch", fetchMock);
-  
+
       await expect(ClientEnv.jwkPublicKey()).resolves.toEqual(jwks.keys[0]);
       expect(fetchMock).toHaveBeenCalledWith(
         gateway + "/.well-known/jwks.json",
       );
-        expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
-      },
+      expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
+    },
   );
-
   it("rejects an insecure or path-scoped API origin", () => {
     staticPage({ apiOrigin: "http://gateway.example" });
     expect(() => ClientEnv.apiOrigin()).toThrow(/Invalid API origin/);
