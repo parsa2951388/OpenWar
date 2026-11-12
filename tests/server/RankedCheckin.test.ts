@@ -144,6 +144,22 @@ describe("rankedCheckinPass", () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
     const [url, init] = vi.mocked(fetchFn).mock.calls[0];
     expect(url).toBe("https://api.openfront.io/matchmaking/checkin");
+  it("uses the configured gateway for ranked matchmaking transport", async () => {
+    vi.stubEnv(
+      "OPENWAR_API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    const fetchFn = okFetch({ assignment: null });
+    const deps = makeDeps(() => true, fetchFn);
+    const gate = new RankedCheckinGate(deps.isActive, deps.log);
+
+    await rankedCheckinPass("1v1", gate, deps);
+
+    expect(vi.mocked(fetchFn).mock.calls[0][0]).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev/matchmaking/checkin",
+    );
+  });
+
     const body = JSON.parse(String((init as RequestInit).body));
     // The body is otherwise unchanged by OPE-469; the API keys its queue
     // off it.
