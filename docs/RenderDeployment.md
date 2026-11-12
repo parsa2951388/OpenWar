@@ -57,6 +57,10 @@ only for an isolated, non-production service.
    `https://api.<DOMAIN>` when it is unset) from the Render region.
 5. Only then change the live service's start configuration and deploy.
 
+## Dependency security gate
+
+The pull-request CI now creates a compatible `npm audit fix --package-lock-only` candidate, reports remaining advisories, and verifies the candidate with typecheck, production build, and tests before uploading the lockfile/report artifact. This does not automatically commit dependency changes; review the exact advisory report and promote only a tested candidate.
+
 ## Ranked matchmaking diagnostics
 
 Ranked workers call `https://api.<DOMAIN>/matchmaking/checkin`. When that
