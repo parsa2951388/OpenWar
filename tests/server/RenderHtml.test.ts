@@ -313,6 +313,7 @@ describe("RenderHtml environment-only render", () => {
     ["gameEnv"],
     ["turnstileSiteKey"],
     ["jwtAudience"],
+    ["apiOrigin"],
     // Environment-scoped, so the static per-version page must carry it:
     // it is how a page served by the static Worker still gets a key.
     ["stripePublishableKey"],
@@ -360,6 +361,7 @@ describe("RenderHtml environment-only render", () => {
         '        instanceLetter: "a",',
         '        turnstileSiteKey: "test-key",',
         '        jwtAudience: "openfront.io",',
+        '        apiOrigin: "https://api.openfront.io",',
         '        stripePublishableKey: "pk_test_abc",',
         '        faroCollectorUrl: "https://faro.example/collect/k",',
         '        instanceId: "i-1",',
