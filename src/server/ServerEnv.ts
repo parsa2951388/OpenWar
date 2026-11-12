@@ -118,10 +118,13 @@ export class ServerEnv {
       const isExplicitOrigin = /^[a-z][a-z0-9+.-]*:\/\//i.test(
         configuredApiDomain,
       );
+      const loopbackHosts = ["localhost", "127.0.0.1", "[::1]"];
       const localHttp =
         !isExplicitOrigin &&
-        /^(localhost|127\\.0\\.0\\.1|\\[::1\\])(?::[0-9]+)?$/i.test(
-          configuredApiDomain,
+        loopbackHosts.some(
+          (host) =>
+            configuredApiDomain.toLowerCase() === host ||
+            configuredApiDomain.toLowerCase().startsWith(`${host}:`),
         );
       let apiUrl: URL;
       try {

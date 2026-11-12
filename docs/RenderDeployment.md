@@ -48,7 +48,8 @@ only for an isolated, non-production service.
 1. Confirm the API host represented by `DOMAIN` and the corresponding API key.
 2. Register/confirm `INSTANCE_LETTER` and `NUM_WORKERS` for the deployment.
 3. Set a live Turnstile site key for `GAME_ENV=prod`.
-4. Verify the service can reach `https://api.<DOMAIN>` from the Render region.
+4. Verify the service can reach the configured `API_DOMAIN` (or the derived
+   `https://api.<DOMAIN>` when it is unset) from the Render region.
 5. Only then change the live service's start configuration and deploy.
 
 ## Ranked matchmaking diagnostics
