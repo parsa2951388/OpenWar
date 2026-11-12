@@ -73,6 +73,14 @@ uploading the lockfile/report artifact. This does not automatically commit
 dependency changes; review the exact advisory report and promote only a tested
 candidate.
 
+## Privilege fallback policy
+
+Before the first valid cosmetics and reserved-clan-tag refresh, production now
+uses a fail-closed checker: built-in country flags remain available, but
+catalog cosmetics and clan tags that cannot be verified are withheld. Local
+development keeps the previous fail-open behavior. Once a valid catalog has
+loaded, the last known-good checker remains active through later API outages.
+
 ## Join verification and admission policy
 
 The server-side `/join_verify` request uses the configured API transport origin and refuses HTTP redirects so the API key cannot be forwarded to a different host. First joins fail closed when Turnstile/name verification is unavailable; an already-admitted reconnect may retain its existing local identity during a verifier outage. The Cloudflare gateway source must include `/join_verify` before `OPENWAR_API_ORIGIN` is switched to that Worker.
