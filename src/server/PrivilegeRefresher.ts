@@ -15,7 +15,7 @@ import {
 } from "./Privilege";
 
 // Refreshes the privilege checker every 3 minutes.
-// WARNING: This fails open if cosmetics.json is not available.
+// Production fails closed until a valid cosmetics and clan-tag catalog loads.
 export class PrivilegeRefresher {
   private privilegeChecker: PrivilegeChecker | null = null;
   private failOpenPrivilegeChecker: PrivilegeChecker =
