@@ -42,11 +42,17 @@ Related API dependencies include:
 - `src/client/ClientEnv.ts`: browser-side issuer derived from `jwtAudience`
 - `src/server/Worker.ts`: `PrivilegeRefresher` reads `/cosmetics.json` and `/reserved_clan_tags`
 
-A correct Open War-owned API origin is not present in the accessible deployment metadata. The Render service metadata intentionally does not expose environment-variable values. Do not guess an API hostname or overwrite production settings. The Cloudflare Open War auth Worker and D1 resources previously recorded for this project were deleted on 2026-11-09, so they cannot be assumed to provide these endpoints now.
+The audit branch now contains a narrowly scoped Cloudflare Worker gateway at `https://openwar-api-gateway.parsaoj.workers.dev`. It pins upstream traffic to `https://api.openfront.io`; it is a transport proxy, not an Open War-owned replacement identity or matchmaking backend. The Worker and its EU D1 failure log were created and deployed during this session. Read-only live checks returned HTTP 200 for `/__health` (storage `ok`) and `/.well-known/jwks.json`. A request for `/cluster.json?site=openfront.io` returned valid registry data (`latest` plus servers `c` and `d`), while `site=open-war-online.onrender.com` returned `Unknown site`. These checks confirm the gateway can reach the upstream API and that the upstream does not currently list the Render host.
 
-### P1 — Live solo match launch could not be validated in the remote browser
+The branch adds `OPENWAR_API_ORIGIN` as a validated transport-origin override while retaining `jwtIssuer()` for token issuer/audience validation. Ranked and cluster check-in, coordinator WebSocket, JWKS, user profile, privileges and map-weight requests are routed through this transport origin. `/map_weights` was specifically found still using the issuer after the first pass; it is now routed through the gateway and the gateway allowlist includes that route.
 
-A read-only browser smoke test loaded the Render cold-start page (about 30 seconds), opened the main menu and solo setup, and clicked START GAME. No playable canvas appeared in the test window. The remote browser environment could not obtain WebGL2 in the earlier hosted browser validation for this project, so this result is inconclusive: it does not establish whether the production browser runtime itself crashes. A real WebGL2-capable desktop/mobile browser run with console and network capture is still required.
+The live Render service was not updated with `OPENWAR_API_ORIGIN`, and no production environment values were changed. The branch adds validated fallbacks to Render's injected `RENDER_EXTERNAL_HOSTNAME` and `RENDER_GIT_COMMIT`: this targets the confirmed registration gap where the current `start:render` script stamps `GIT_COMMIT=OPENWAR` and the current public-host derivation returns undefined when no `SUBDOMAIN` exists. The resulting registration behavior still requires branch CI and a controlled deployed test. The live unknown-site response remains evidence that registration has not happened yet.
+
+The Render service metadata does not expose environment-variable values. The gateway therefore preserves the existing upstream dependency and does not establish an Open War-owned identity or matchmaking service. A genuine independent backend would require porting the upstream API's identity, registry, matchmaking, and related contracts; that work is outside this transport fix.
+
+### P1 — Solo gameplay and spawn selection only partially tested
+
+A live read-only browser test opened the main menu, SOLO, WORLD map selection and START GAME. A playable world canvas appeared with land, sea, mountains/deserts, political borders and circular markers; mouse drag panning worked and no browser console/network errors were reported. A second automation reached tutorial step 1/22, which requires the player to click the canvas to choose a spawn. The remote browser could not complete that canvas click, so the HUD remained hidden. This is a test-harness limitation, not proof of a game defect. A physical browser session or browser E2E harness with coordinate-level canvas interaction is required to test the full match.
 
 ### P1 — Aircraft click crash fix is already merged to main
 
@@ -95,6 +101,12 @@ Key source files inspected:
 - `tests/core/snapshot/AircraftExecutions.test.ts`
 - `.github/workflows/ci.yml`
 
+## Additional confirmed server configuration issue
+
+The checked-in `package.json` starts the Render web service through `start:render`, which stamps `GIT_COMMIT=OPENWAR`. `packages/shared/src/ServerList.ts` validates published server versions as 7–40 hexadecimal characters, so that label is not a valid registry version. The pre-audit `ServerEnv.publicHost()` also returned no host on a standalone Render instance when `SUBDOMAIN`/ `GAME_HOST` were absent. The audit branch addresses both using Render's injected external hostname and actual Git SHA, with unit tests. Render documents these injected values at https://render.com/docs/environment-variables.
+
+The browser gameplay test did not reach the unit/build HUD because spawn selection was blocked at the canvas tutorial step. Consequently the audit has not yet verified aircraft availability, prices, aircraft selection on the live deployment, fuel/refuel lifecycle, carrier behavior, store, inventory, leaderboard, clans, two-player networking or mobile touch on a physical device. No claim is made that these systems are currently complete.
+
 ## Render topology observed
 
 The Render workspace has four services attached to the same repository and branch `main`:
@@ -107,6 +119,8 @@ The Render workspace has four services attached to the same repository and branc
 All four were configured for auto-deploy from `main`. No service was changed. The duplicate service topology and whether all four are still required should be reconciled before future production configuration changes.
 
 ## Remaining validation
+
+The source-level gateway and Render discovery changes are committed on the audit branch but have not yet passed a new CI run or been deployed to Render. The Cloudflare gateway itself is deployed and health/JWKS/GET cluster-registry smoke tested; its current upstream is still OpenFront's API. The gateway's newly added `/map_weights` route has not yet been deployed to the Worker.
 
 Not yet verified in this session:
 
@@ -128,6 +142,21 @@ Not yet verified in this session:
 5. Test map loading and rendering for World, World 4000 and World 10000, including overlay assets and context-loss recovery.
 6. Review all four Render services and their environment configuration before consolidating or changing any production resources.
 
+## Corrective changes on the audit branch
+
+The branch now contains source changes and tests, in addition to this report:
+
+- Adds a validated `OPENWAR_API_ORIGIN` transport override to `ServerEnv`, while leaving JWT issuer/audience verification bound to the configured issuer.
+- Routes cluster check-in, ranked matchmaking, lobby coordinator WebSocket, JWKS, user profile, privilege data and map weights through that origin.
+- Adds the `/map_weights` route to the Cloudflare gateway allowlist.
+- Uses Render's injected hostname and full Git SHA as fallbacks so the standalone Render service can identify itself in the upstream registry.
+- Adds gateway-origin tests for API transport, WebSocket URL formation, map weights and Render host/SHA discovery.
+- Fixes an incorrectly nested test case in `LobbyCoordinatorClient.test.ts`.
+
+The branch has not yet been validated by a new GitHub Actions run. The local environment in this session does not have a network-accessible repository checkout, so no local npm build/test result is claimed. A draft pull request is required to trigger the repository's pull-request CI; the PR is intended to remain unmerged and no Production deploy should happen from it until checks pass.
+
+The already-merged aircraft selection and map visual regression fix remains the only aircraft/map source change with a completed CI run in this report. The audit branch does not yet contain a verified end-to-end fix for the reported in-game plane selection crash, because the current live deployment is on the merged main commit and the latest browser run could not progress beyond spawn selection.
+
 ## Honest completion status
 
-This branch currently contains this audit report only. No source-code fix is claimed in this audit commit. The already-merged aircraft and map changes are identified above with their CI evidence. The live ranked API TLS failure is confirmed, but a safe endpoint correction requires the intended Open War API origin and a deployed API that implements the required routes.
+The gateway health and upstream GET smoke tests passed. The production TLS failure is confirmed from Render logs. The branch implements a testable transport override and fixes the Render host/version discovery conditions, but those changes remain unverified by CI and have not been applied to Production. Solo world rendering and camera pan were browser tested; full-match, HUD, aircraft, multiplayer, store and physical mobile behavior remain unverified. No production environment or service setting was changed.
