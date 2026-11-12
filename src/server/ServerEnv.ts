@@ -110,6 +110,56 @@ export class ServerEnv {
     return process.env.CDN_BASE ?? "";
   }
   static jwtIssuer(): string {
+    const configuredApiDomain = process.env.API_DOMAIN?.trim();
+    if (configuredApiDomain) {
+      // API_DOMAIN is the API host/origin; DOMAIN remains the JWT audience
+      // and the public page domain. This matters for deployments whose page
+      // is hosted on Render while their API lives on a separate origin.
+      const isExplicitOrigin = /^[a-z][a-z0-9+.-]*:\/\//i.test(
+        configuredApiDomain,
+      );
+      const localHttp =
+        !isExplicitOrigin &&
+        /^(localhost|127\\.0\\.0\\.1|\\[::1\\])(?::[0-9]+)?$/i.test(
+          configuredApiDomain,
+        );
+      let apiUrl: URL;
+      try {
+        apiUrl = new URL(
+          isExplicitOrigin
+            ? configuredApiDomain
+            : `${localHttp ? "http" : "https"}://${configuredApiDomain}`,
+        );
+      } catch {
+        throw new Error("Invalid API_DOMAIN: expected a valid API origin");
+      }
+
+      const isLoopback = ["localhost", "127.0.0.1", "[::1]"].includes(
+        apiUrl.hostname,
+      );
+      if (
+        apiUrl.protocol !== "https:" &&
+        !(apiUrl.protocol === "http:" && isLoopback)
+      ) {
+        throw new Error(
+          "Invalid API_DOMAIN: remote API origins must use HTTPS",
+        );
+      }
+      if (
+        !apiUrl.hostname ||
+        apiUrl.username ||
+        apiUrl.password ||
+        apiUrl.pathname !== "/" ||
+        apiUrl.search ||
+        apiUrl.hash
+      ) {
+        throw new Error(
+          "Invalid API_DOMAIN: expected an origin without credentials, path, query, or fragment",
+        );
+      }
+      return apiUrl.origin;
+    }
+
     const audience = ServerEnv.jwtAudience();
     return audience === "localhost"
       ? "http://localhost:8787"

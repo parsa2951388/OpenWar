@@ -12,8 +12,14 @@ commit secret values to Git.
 
 - **`GAME_ENV`**: Explicitly set to `staging` or `prod`. Render refuses
   implicit or accidental `dev` mode.
-- **`DOMAIN`**: API audience domain. The server constructs the issuer as
-  `https://api.<DOMAIN>`.
+- **`DOMAIN`**: Public page and JWT audience domain. Do not set this
+  to a Render `onrender.com` hostname just to make the API URL work.
+- **`API_DOMAIN`**: Optional API hostname or HTTPS origin. When set, the
+  server uses it directly for JWKS, matchmaking, cluster check-ins, cosmetics,
+  and reserved-clan-tag requests. This is required when the API does not live
+  at `https://api.<DOMAIN>`. Remote APIs must use HTTPS; HTTP is permitted
+  only for loopback development. Without it, the server keeps the default
+  `https://api.<DOMAIN>` derivation.
 - **`API_KEY`**: Valid server-to-API key. Development placeholders are
   rejected.
 - **`TURNSTILE_SITE_KEY`**: Site key matching the environment. Production
