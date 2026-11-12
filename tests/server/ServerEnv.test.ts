@@ -155,6 +155,36 @@ describe("ServerEnv.jwtIssuer", () => {
   });
 });
 
+describe("ServerEnv.apiOrigin", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  test("defaults to the JWT issuer when no gateway is configured", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("OPENWAR_API_ORIGIN", "");
+    expect(ServerEnv.apiOrigin()).toBe("https://api.openfront.io");
+  });
+
+  test("routes transport through the gateway without changing JWT identity", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv(
+      "OPENWAR_API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev/",
+    );
+    expect(ServerEnv.apiOrigin()).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    expect(ServerEnv.jwtIssuer()).toBe("https://api.openfront.io");
+  });
+
+  test("rejects insecure remote origins and non-origin paths", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("OPENWAR_API_ORIGIN", "http://gateway.example");
+    expect(() => ServerEnv.apiOrigin()).toThrow(/HTTPS origin/);
+    vi.stubEnv("OPENWAR_API_ORIGIN", "https://gateway.example/proxy");
+    expect(() => ServerEnv.apiOrigin()).toThrow(/without a path/);
+  });
+});
+
 describe("ServerEnv.allowedFlares", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
