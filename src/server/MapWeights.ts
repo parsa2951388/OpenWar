@@ -29,6 +29,7 @@ export async function fetchMapWeights(): Promise<MapWeights> {
   const response = await fetch(`${ServerEnv.apiOrigin()}/map_weights`, {
     signal: AbortSignal.timeout(5000),
     headers: { "x-api-key": ServerEnv.apiKey() },
+    redirect: "error",
   });
   if (!response.ok) {
     throw new Error(`map_weights returned ${response.status}`);
