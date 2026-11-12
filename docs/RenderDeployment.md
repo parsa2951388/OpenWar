@@ -26,12 +26,13 @@ commit secret values to Git.
   implicit or accidental `dev` mode.
 - **`DOMAIN`**: Public page and JWT audience domain. Do not set this
   to a Render `onrender.com` hostname just to make the API URL work.
-- **`API_DOMAIN`**: Optional API hostname or HTTPS origin. When set, the
-  server uses it directly for JWKS, matchmaking, cluster check-ins, cosmetics,
-  and reserved-clan-tag requests. This is required when the API does not live
-  at `https://api.<DOMAIN>`. Remote APIs must use HTTPS; HTTP is permitted
-  only for loopback development. Without it, the server keeps the default
-  `https://api.<DOMAIN>` derivation.
+- **`OPENWAR_API_ORIGIN`**: Optional HTTPS origin for API transport. When set,
+  the server and browser use it for JWKS, matchmaking, cluster check-ins,
+  cosmetics, reserved-clan-tag requests, and join verification. It must be an
+  absolute HTTPS origin without a path, query string, or credentials. HTTP is
+  allowed only for loopback development. This transport setting does not
+  change `DOMAIN`, JWT audience, or JWT issuer identity. Without it, the
+  default `https://api.<DOMAIN>` origin is used.
 - **`API_KEY`**: Valid server-to-API key. Development placeholders are
   rejected.
 - **`TURNSTILE_SITE_KEY`**: Site key matching the environment. Production
@@ -83,7 +84,7 @@ loaded, the last known-good checker remains active through later API outages.
 
 ## Join verification and admission policy
 
-The server-side `/join_verify` request uses the configured API transport origin and refuses HTTP redirects so the API key cannot be forwarded to a different host. First joins fail closed when Turnstile/name verification is unavailable; an already-admitted reconnect may retain its existing local identity during a verifier outage. The Cloudflare gateway source must include `/join_verify` before `OPENWAR_API_ORIGIN` is switched to that Worker.
+Both browser and server JWKS retrieval now use the configured API transport origin while JWT issuer/audience validation remains bound to `DOMAIN`. The server-side `/join_verify` request uses that same transport origin and refuses HTTP redirects so the API key cannot be forwarded to a different host. First joins fail closed when Turnstile/name verification is unavailable; an already-admitted reconnect may retain its existing local identity during a verifier outage. The Cloudflare gateway source must include `/join_verify` before `OPENWAR_API_ORIGIN` is switched to that Worker.
 
 ## Ranked matchmaking diagnostics
 
