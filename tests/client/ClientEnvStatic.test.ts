@@ -31,13 +31,14 @@ const LIST: ServerList = {
   },
 };
 
-function staticPage() {
+function staticPage(overrides: Record<string, unknown> = {}) {
   ClientEnv.reset();
   (window as any).BOOTSTRAP_CONFIG = {
     gameEnv: "prod",
     turnstileSiteKey: "site-key",
     jwtAudience: "openfront.io",
     gitCommit: OWN,
+    ...overrides,
   };
 }
 
@@ -77,7 +78,7 @@ describe("a page carrying only environment values", () => {
   });
 
   it("uses a configured gateway only for API transport", () => {
-    bootstrap({ apiOrigin: "https://openwar-api-gateway.parsaoj.workers.dev/" });
+    staticPage({ apiOrigin: "https://openwar-api-gateway.parsaoj.workers.dev/" });
     expect(ClientEnv.apiOrigin()).toBe(
       "https://openwar-api-gateway.parsaoj.workers.dev",
     );
@@ -85,9 +86,9 @@ describe("a page carrying only environment values", () => {
   });
 
   it("rejects an insecure or path-scoped API origin", () => {
-    bootstrap({ apiOrigin: "http://gateway.example" });
+    staticPage({ apiOrigin: "http://gateway.example" });
     expect(() => ClientEnv.apiOrigin()).toThrow(/Invalid API origin/);
-    bootstrap({ apiOrigin: "https://gateway.example/proxy" });
+    staticPage({ apiOrigin: "https://gateway.example/proxy" });
     expect(() => ClientEnv.apiOrigin()).toThrow(/Invalid API origin/);
   });
 
