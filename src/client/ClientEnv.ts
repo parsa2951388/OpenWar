@@ -134,7 +134,9 @@ export class ClientEnv {
     if (typeof window === "undefined") {
       throw new Error("ClientEnv is only available on the browser main thread");
     }
-    const bc = window.BOOTSTRAP_CONFIG;
+    const bc = window.BOOTSTRAP_CONFIG as typeof window.BOOTSTRAP_CONFIG & {
+      apiOrigin?: string;
+    };
     // Only the values that are the same for every player are required.
     //
     // Multi-server v2 (docs/MultiServer.md, roadmap item 2): the page becomes
