@@ -59,7 +59,11 @@ describe("verifyJoin", () => {
       "https://openwar-api-gateway.parsaoj.workers.dev",
     );
     const fetchMock = vi.fn().mockResolvedValue(
-      jsonResponse({ status: "approved", username: "Alice", clanTag: null }),
+      jsonResponse({
+        status: "approved",
+        username: "Alice",
+        clanTag: null,
+      }),
     );
     vi.stubGlobal("fetch", fetchMock);
 
