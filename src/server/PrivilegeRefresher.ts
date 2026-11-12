@@ -1,6 +1,8 @@
-import { ReservedClanTagsResponseSchema } from "@openfront/shared/ClanApiSchemas";
-import { CosmeticsSchema } from "@openfront/shared/CosmeticSchemas";
+import {
+  ReservedClanTagsResponseSchema,
+} from "@openfront/shared/ClanApiSchemas";
 import { GameEnv } from "@openfront/shared/configuration/Env";
+import { CosmeticsSchema } from "@openfront/shared/CosmeticSchemas";
 import { base64url } from "jose";
 import { Logger } from "winston";
 import { startPolling } from "./PollingLoop";
@@ -70,7 +72,8 @@ export class PrivilegeRefresher {
 
       if (!cosmeticsResponse || !cosmeticsResponse.ok) {
         throw new Error(
-          `Cosmetics HTTP error! status: ${cosmeticsResponse?.status ?? "network error"}`,
+          `Cosmetics HTTP error! status: ` +
+            (cosmeticsResponse?.status ?? "network error"),
         );
       }
 
@@ -86,7 +89,8 @@ export class PrivilegeRefresher {
       // through. Throw so the previous (good) checker is retained instead.
       if (!reservedClanTagsResponse || !reservedClanTagsResponse.ok) {
         throw new Error(
-          `Reserved clan tags HTTP error! status: ${reservedClanTagsResponse?.status ?? "network error"}`,
+          `Reserved clan tags HTTP error! status: ` +
+            (reservedClanTagsResponse?.status ?? "network error"),
         );
       }
       const reservedClanTagsData = await reservedClanTagsResponse.json();
@@ -94,7 +98,7 @@ export class PrivilegeRefresher {
         ReservedClanTagsResponseSchema.safeParse(reservedClanTagsData);
       if (!reservedClanTagsResult.success) {
         throw new Error(
-          `Invalid reserved clan tags data: ${reservedClanTagsResult.error.message}`,
+          "Invalid reserved clan tags data: " + reservedClanTagsResult.error.message,
         );
       }
       const reservedClanTags = new Set(
@@ -107,7 +111,8 @@ export class PrivilegeRefresher {
         reservedClanTags,
       );
       this.log.info(
-        `Privilege checker loaded successfully (${reservedClanTags.size} reserved clan tags)`,
+        `Privilege checker loaded successfully (${reservedClanTags.size} ` +
+          "reserved clan tags)",
       );
     } catch (error) {
       this.log.error(`Failed to load privilege checker:`, error);
