@@ -125,6 +125,8 @@ export async function sendCheckin(
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(CHECKIN_TIMEOUT_MS),
+      // API credentials must never follow a redirect to another origin.
+      redirect: "error",
     });
     if (res.status === 409) {
       const detail = RefusalBodySchema.safeParse(
