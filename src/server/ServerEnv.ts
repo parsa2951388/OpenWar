@@ -388,7 +388,14 @@ export class ServerEnv {
   // Undefined when unset, which disables the admin bot API entirely.
   static adminBotKey(): string | undefined {
     const v = process.env.ADMIN_BOT_API_KEY;
-    return v && v.length > 0 ? v : undefined;
+    // Never treat a committed development placeholder as a credential. The
+    // Render start script and local examples historically supplied this
+    // public sentinel; accepting it would expose admin-bot routes to anyone
+    // who can read the repository.
+    if (!v || v.length === 0 || v.startsWith("WARNING_DEV_")) {
+      return undefined;
+    }
+    return v;
   }
   static adminBotHeader(): string {
     return "x-admin-bot-key";
