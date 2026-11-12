@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import gateway from "../../cloudflare/openwar-api-gateway/src/index.js";
+const gatewayModulePath: string =
+  "../../cloudflare/openwar-api-gateway/src/index.js";
+const gateway = (await import(gatewayModulePath)).default;
 
 const LIVE_STATIC_ORIGIN = "https://open-war-live.onrender.com";
 const GATEWAY_URL = "https://openwar-api-gateway.parsaoj.workers.dev";
