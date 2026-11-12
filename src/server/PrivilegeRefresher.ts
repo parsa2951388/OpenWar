@@ -1,9 +1,12 @@
 import { ReservedClanTagsResponseSchema } from "@openfront/shared/ClanApiSchemas";
+import { GameEnv } from "@openfront/shared/configuration/Env";
 import { CosmeticsSchema } from "@openfront/shared/CosmeticSchemas";
 import { base64url } from "jose";
 import { Logger } from "winston";
 import { startPolling } from "./PollingLoop";
+import { ServerEnv } from "./ServerEnv";
 import {
+  FailClosedPrivilegeChecker,
   FailOpenPrivilegeChecker,
   PrivilegeChecker,
   PrivilegeCheckerImpl,
@@ -15,6 +18,8 @@ export class PrivilegeRefresher {
   private privilegeChecker: PrivilegeChecker | null = null;
   private failOpenPrivilegeChecker: PrivilegeChecker =
     new FailOpenPrivilegeChecker();
+  private failClosedPrivilegeChecker: PrivilegeChecker =
+    new FailClosedPrivilegeChecker();
 
   private log: Logger;
 
@@ -36,7 +41,10 @@ export class PrivilegeRefresher {
   }
 
   public get(): PrivilegeChecker {
-    return this.privilegeChecker ?? this.failOpenPrivilegeChecker;
+    if (this.privilegeChecker !== null) return this.privilegeChecker;
+    return ServerEnv.env() === GameEnv.Dev
+      ? this.failOpenPrivilegeChecker
+      : this.failClosedPrivilegeChecker;
   }
 
   private async loadPrivilegeChecker(): Promise<void> {
