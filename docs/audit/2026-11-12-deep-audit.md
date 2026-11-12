@@ -120,7 +120,7 @@ All four were configured for auto-deploy from `main`. No service was changed. Th
 
 ## Remaining validation
 
-The source-level gateway and Render discovery changes are committed on the audit branch but have not yet passed a new CI run or been deployed to Render. The Cloudflare gateway itself is deployed and health/JWKS/GET cluster-registry smoke tested; its current upstream is still OpenFront's API. The gateway's newly added `/map_weights` route has not yet been deployed to the Worker.
+The source-level gateway and Render discovery changes are committed on the audit branch but have not yet passed a new CI run or been deployed to Render. The Cloudflare gateway itself is deployed and its `__health`, JWKS and GET cluster-registry routes have been smoke tested; its current upstream is still OpenFront's API. The gateway's newly added `/map_weights` route is present in the audit branch but has not yet been deployed to the Worker.
 
 Not yet verified in this session:
 
@@ -130,13 +130,13 @@ Not yet verified in this session:
 - Real two-client multiplayer synchronization, reconnect and match persistence.
 - Store, inventory, leaderboard, clans and authenticated flows.
 - Mobile touch behavior on a physical device.
-- Cloudflare API endpoints, Worker routes, D1, JWT issuer/audience and CORS. The relevant old Open War Worker/D1 resources were deleted and no replacement API endpoint was identified.
+- POST `/cluster/checkin` and `/matchmaking/*` through the gateway, actual CORS/preflight behavior from the live browser, API-key rejection behavior, WebSocket 101 upgrade through Cloudflare, rate-limit/abuse resistance, and the `/map_weights` route after Worker deployment. The gateway's read-only health/JWKS/cluster GET checks passed and D1's `gateway_failures` table/index were verified by SQL. The gateway still proxies to OpenFront's upstream API and is not an independent Open War backend.
 - Local npm build and test execution from this audit branch. CI evidence cited above is from the already-merged PR #5, not from this audit branch.
 
 ## Recommended next corrective work
 
 1. Restore or deploy an Open War-owned API implementing the contracts this client/server consumes; configure a single explicit API origin shared by server and browser. Preserve the current upstream issuer as a deliberate compatibility default until the replacement is verified.
-2. Add integration tests for the API routes used by check-in, ranked matchmaking, JWKS, identity, privileges and the client server registry.
+2. Add integration tests and live contract checks for check-in, ranked matchmaking, JWKS, identity, privileges, lobby WebSocket upgrades, CORS, API-key rejection and client registry.
 3. Run a full browser E2E suite in a WebGL2-capable Chromium environment; record console, failed requests, context loss and screenshots.
 4. Test each aircraft type and carrier lifecycle through deterministic engine tests plus a real two-player browser match.
 5. Test map loading and rendering for World, World 4000 and World 10000, including overlay assets and context-loss recovery.
@@ -147,7 +147,7 @@ Not yet verified in this session:
 The branch now contains source changes and tests, in addition to this report:
 
 - Adds a validated `OPENWAR_API_ORIGIN` transport override to `ServerEnv`, while leaving JWT issuer/audience verification bound to the configured issuer.
-- Routes cluster check-in, ranked matchmaking, lobby coordinator WebSocket, JWKS, user profile, privilege data and map weights through that origin.
+- Routes server-side cluster check-in, ranked matchmaking, lobby coordinator WebSocket, JWKS, user profile, privilege data and map weights through that origin; routes browser cluster-registry and matchmaking requests through the bootstrapped origin.
 - Adds the `/map_weights` route to the Cloudflare gateway allowlist.
 - Uses Render's injected hostname and full Git SHA as fallbacks so the standalone Render service can identify itself in the upstream registry.
 - Adds gateway-origin tests for API transport, WebSocket URL formation, map weights and Render host/SHA discovery.
