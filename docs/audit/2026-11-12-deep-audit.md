@@ -101,6 +101,10 @@ Key source files inspected:
 - `tests/core/snapshot/AircraftExecutions.test.ts`
 - `.github/workflows/ci.yml`
 
+## Dependency security snapshot
+
+The CI `npm ci` audit of the repository lockfile reported **17 known dependency advisories** at the time of this audit: 6 moderate, 7 high and 4 critical. The separate candidate lockfile audit on PR #6 reduced the candidate tree to four moderate findings, but its advisory job intentionally exited non-zero while any finding remained; the candidate was uploaded as an artifact and was not committed to this branch or deployed. Do not treat the dependency state as clean. Review the affected package paths and update compatible packages in a dedicated lockfile change with CI rerun.
+
 ## Additional confirmed server configuration issue
 
 The checked-in `package.json` starts the Render web service through `start:render`, which stamps `GIT_COMMIT=OPENWAR`. `packages/shared/src/ServerList.ts` validates published server versions as 7–40 hexadecimal characters, so that label is not a valid registry version. The pre-audit `ServerEnv.publicHost()` also returned no host on a standalone Render instance when `SUBDOMAIN`/ `GAME_HOST` were absent. The audit branch addresses both using Render's injected external hostname and actual Git SHA, with unit tests. Render documents these injected values at https://render.com/docs/environment-variables.
@@ -120,18 +124,18 @@ All four were configured for auto-deploy from `main`. No service was changed. Th
 
 ## Remaining validation
 
-The source-level gateway and Render discovery changes are committed on the audit branch but have not yet passed a new CI run or been deployed to Render. The Cloudflare gateway itself is deployed and its `__health`, JWKS and GET cluster-registry routes have been smoke tested; its current upstream is still OpenFront's API. The gateway's newly added `/map_weights` route is present in the audit branch but has not yet been deployed to the Worker.
+The source-level gateway and Render discovery changes passed the current-head GitHub Actions CI on 2026-11-12. Run `43170054796` passed Build/typecheck, Lint, Prettier, Generated Maps, Test shards 1/3, 2/3 and 3/3; the additional unsharded Test job also passed. The required Milestone check passed after PR #7 was assigned the existing milestone. A second duplicate run `43170087535` also passed Build, Lint, Prettier and all three shards; its map-generation step completed successfully. These results validate the branch against CI but do not validate an end-to-end live Render matchmaking session. The gateway's newly added `/map_weights` route is present in the audit branch but has not yet been deployed to the Worker.
 
 Not yet verified in this session:
 
 - Real WebGL2 game launch on a supported browser.
 - Aircraft selection, group movement, mission execution, fuel/refuel, combat, carrier launch/recovery in a live match.
-- Map appearance at runtime, camera interaction, large-map memory and frame-time behavior.
+- Full visual comparison against OpenFront after a player spawn, including territory palette, country/player labels, troop counts, building/port icons and HUD composition. The live test only confirmed base world canvas, terrain/water, political outlines and camera pan; the screenshot automation could not complete spawn selection. Large-map memory and frame-time profiling also remain unverified.
 - Real two-client multiplayer synchronization, reconnect and match persistence.
 - Store, inventory, leaderboard, clans and authenticated flows.
 - Mobile touch behavior on a physical device.
 - POST `/cluster/checkin` and `/matchmaking/*` through the gateway, actual CORS/preflight behavior from the live browser, API-key rejection behavior, WebSocket 101 upgrade through Cloudflare, rate-limit/abuse resistance, and the `/map_weights` route after Worker deployment. The gateway's read-only health/JWKS/cluster GET checks passed and D1's `gateway_failures` table/index were verified by SQL. The gateway still proxies to OpenFront's upstream API and is not an independent Open War backend.
-- Local npm build and test execution from this audit branch. CI evidence cited above is from the already-merged PR #5, not from this audit branch.
+- Physical-device WebGL2/browser compatibility and performance profiling. The GitHub Actions CI results above are from this audit branch, not inferred from PR #5.
 
 ## Recommended next corrective work
 
@@ -152,11 +156,12 @@ The branch now contains source changes and tests, in addition to this report:
 - Uses Render's injected hostname and full Git SHA as fallbacks so the standalone Render service can identify itself in the upstream registry.
 - Adds gateway-origin tests for API transport, WebSocket URL formation, map weights and Render host/SHA discovery.
 - Fixes an incorrectly nested test case in `LobbyCoordinatorClient.test.ts`.
+- Extends the browser bootstrap config type with optional `apiOrigin` and updates the `Matchmaking` test mock so it provides the new method.
 
-The branch has not yet been validated by a new GitHub Actions run. The local environment in this session does not have a network-accessible repository checkout, so no local npm build/test result is claimed. A draft pull request is required to trigger the repository's pull-request CI; the PR is intended to remain unmerged and no Production deploy should happen from it until checks pass.
+Current-head CI has now passed on the branch (run `43170054796`), including the full typecheck/build, all three test shards, lint, format and generated-map consistency. No local npm result is claimed because this session does not have a network-accessible working checkout; GitHub Actions ran the repository's real CI on the PR merge ref.
 
 The already-merged aircraft selection and map visual regression fix remains the only aircraft/map source change with a completed CI run in this report. The audit branch does not yet contain a verified end-to-end fix for the reported in-game plane selection crash, because the current live deployment is on the merged main commit and the latest browser run could not progress beyond spawn selection.
 
 ## Honest completion status
 
-The gateway health and upstream GET smoke tests passed. The production TLS failure is confirmed from Render logs. The branch implements a testable transport override and fixes the Render host/version discovery conditions, but those changes remain unverified by CI and have not been applied to Production. Solo world rendering and camera pan were browser tested; full-match, HUD, aircraft, multiplayer, store and physical mobile behavior remain unverified. No production environment or service setting was changed.
+The production TLS failure is confirmed from Render logs. The audit branch's source and tests now pass GitHub Actions CI, and the read-only gateway health/JWKS/registry checks passed. The live solo game starts and renders the world canvas; camera pan works and no visible browser console/network errors were reported. The test stops at the tutorial's spawn-selection step because the remote browser cannot click the canvas, so HUD, buildings, aircraft, store and multiplayer are not validated. The Render site still returns `Unknown site` from the upstream registry. No Production Render environment, service, domain or database setting was changed.
