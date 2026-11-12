@@ -147,7 +147,13 @@ export default {
         headers,
         redirect: "manual",
       };
-      if (request.method !== "GET") init.body = request.body;
+      if (request.method !== "GET") {
+        init.body = request.body;
+        // Node's Fetch implementation requires duplex when forwarding a
+        // streamed request body. Cloudflare Workers accept this standard
+        // compatibility hint as well.
+        init.duplex = "half";
+      }
 
       const upstream = await fetch(new Request(upstreamUrl.toString(), init));
 
