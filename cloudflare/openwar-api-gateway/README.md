@@ -12,6 +12,7 @@ or matchmaking implementation.
 - `/cluster/checkin`
 - `/cluster/lobbies` (WebSocket upgrade pass-through)
 - `/cluster.json`
+- `/map_weights`
 - `/.well-known/jwks.json`
 - `/cosmetics.json`
 - `/reserved_clan_tags`
