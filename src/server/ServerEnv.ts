@@ -4,6 +4,7 @@ import {
   ClusterConfig,
   InstanceLetterSchema,
 } from "@openfront/shared/ClusterConfig";
+import { isCommitLike, isSiteLike } from "@openfront/shared/ServerList";
 import { GameEnv, parseGameEnv } from "@openfront/shared/configuration/Env";
 import { generateGameID } from "@openfront/shared/SharedUtil";
 import { JWK } from "jose";
@@ -256,8 +257,15 @@ export class ServerEnv {
     if (explicit && explicit.length > 0) return explicit;
     const subdomain = ServerEnv.subdomain();
     const domain = ServerEnv.gameDomain() ?? ServerEnv.domain();
-    if (!subdomain || !domain) return undefined;
-    return `${subdomain}.${domain}`;
+    if (subdomain && domain) return `${subdomain}.${domain}`;
+
+    // Render injects its public hostname for every web service. The standalone
+    // Render deployment has no OpenFront-style SUBDOMAIN/GAME_DOMAIN pair, so
+    // without this fallback it never registers in the server directory.
+    const renderHostname = process.env.RENDER_EXTERNAL_HOSTNAME?.trim();
+    return renderHostname && isSiteLike(renderHostname)
+      ? renderHostname
+      : undefined;
   }
   // This server's instance letter, from INSTANCE_LETTER (update.sh, from the
   // API registry): the first character of every game id it mints, which is
@@ -361,11 +369,17 @@ export class ServerEnv {
     return process.env.OTEL_AUTH_HEADER ?? "";
   }
   static gitCommit(): string {
-    const v = process.env.GIT_COMMIT;
-    if (!v) {
-      throw new Error("GIT_COMMIT not set");
-    }
-    return v;
+    const configured = process.env.GIT_COMMIT;
+    if (configured && isCommitLike(configured)) return configured;
+
+    // start:render historically stamped the non-SHA label "OPENWAR". The
+    // registry and version routing require a real commit, which Render
+    // already injects as RENDER_GIT_COMMIT.
+    const renderCommit = process.env.RENDER_GIT_COMMIT;
+    if (renderCommit && isCommitLike(renderCommit)) return renderCommit;
+
+    if (configured) return configured;
+    throw new Error("GIT_COMMIT not set");
   }
   static apiKey(): string {
     return process.env.API_KEY ?? "";
