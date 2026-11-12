@@ -8,6 +8,7 @@ const DEFAULT_ALLOWED_ORIGINS = [
 const ROUTES = [
   [/^\/matchmaking\/(?:join|checkin)$/, "matchmaking"],
   [/^\/cluster\/(?:checkin|lobbies)$/, "cluster"],
+  [/^\/map_weights$/, "map-weights"],
   [/^\/cluster\.json$/, "cluster-list"],
   [/^\/\.well-known\/jwks\.json$/, "jwks"],
   [/^\/(?:cosmetics\.json|reserved_clan_tags)$/, "privileges"],
