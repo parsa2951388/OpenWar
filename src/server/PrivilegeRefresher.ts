@@ -47,6 +47,7 @@ export class PrivilegeRefresher {
           return await fetch(url, {
             signal: AbortSignal.timeout(5000),
             headers: { "x-api-key": this.apiKey },
+            redirect: "error",
           });
         } catch (error) {
           this.log.warn(`Failed to fetch ${url}: ${error}`);
