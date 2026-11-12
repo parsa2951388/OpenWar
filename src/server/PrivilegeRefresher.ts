@@ -1,6 +1,6 @@
 import { ReservedClanTagsResponseSchema } from "@openfront/shared/ClanApiSchemas";
-import { GameEnv } from "@openfront/shared/configuration/Env";
 import { CosmeticsSchema } from "@openfront/shared/CosmeticSchemas";
+import { GameEnv } from "@openfront/shared/configuration/Env";
 import { base64url } from "jose";
 import { Logger } from "winston";
 import { startPolling } from "./PollingLoop";
