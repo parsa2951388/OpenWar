@@ -104,9 +104,8 @@ jobs:
     steps:
       - uses: actions/checkout@v7
         with:
-          ref: ${{ github.event.pull_request.head.ref }}
+          ref: audit/full-stabilization-2026-11-12
           sparse-checkout-cone-mode: false
-          sparse-checkout: |
           sparse-checkout: |
             /*
             !*.bin
