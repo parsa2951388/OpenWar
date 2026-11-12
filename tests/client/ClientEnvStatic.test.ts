@@ -73,6 +73,22 @@ describe("a page carrying only environment values", () => {
     expect(ClientEnv.jwtAudience()).toBe("openfront.io");
     expect(ClientEnv.turnstileSiteKey()).toBe("site-key");
     expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
+    expect(ClientEnv.apiOrigin()).toBe("https://api.openfront.io");
+  });
+
+  it("uses a configured gateway only for API transport", () => {
+    bootstrap({ apiOrigin: "https://openwar-api-gateway.parsaoj.workers.dev/" });
+    expect(ClientEnv.apiOrigin()).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
+  });
+
+  it("rejects an insecure or path-scoped API origin", () => {
+    bootstrap({ apiOrigin: "http://gateway.example" });
+    expect(() => ClientEnv.apiOrigin()).toThrow(/Invalid API origin/);
+    bootstrap({ apiOrigin: "https://gateway.example/proxy" });
+    expect(() => ClientEnv.apiOrigin()).toThrow(/Invalid API origin/);
   });
 
   it("reports no instance id rather than throwing", () => {
