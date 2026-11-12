@@ -117,6 +117,17 @@ jobs:
       - name: Setup npm
         run: npm install --global --ignore-scripts npm@12.1.0
       - run: npm ci
+      - name: Produce exact formatter output for the PR candidate
+        run: |
+          npx oxfmt --write map-generator/info.schema.json src/server/PrivilegeRefresher.ts tests/client/ClientEnvStatic.test.ts
+      - uses: actions/upload-artifact@v7
+        with:
+          name: openwar-format-candidate
+          path: |
+            map-generator/info.schema.json
+            src/server/PrivilegeRefresher.ts
+            tests/client/ClientEnvStatic.test.ts
+          retention-days: 1
       - run: npm run format:check
 
   gen-maps:
