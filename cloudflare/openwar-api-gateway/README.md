@@ -21,7 +21,7 @@ or matchmaking implementation.
 
 All upstream traffic is pinned to `api.openfront.io`; the caller cannot
 select an upstream host. Browser origins are restricted to the configured
-Open War site and local development origins. Requests without an Origin
+Open War server and static frontend origins, plus local development origins. Requests without an Origin
 header are accepted for server-to-server use.
 
 D1 records only failed upstream requests (route group, HTTP method, status,
