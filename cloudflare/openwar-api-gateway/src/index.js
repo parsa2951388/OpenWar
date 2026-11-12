@@ -1,6 +1,7 @@
 const UPSTREAM_ORIGIN = "https://api.openfront.io";
 const DEFAULT_ALLOWED_ORIGINS = [
   "https://open-war-online.onrender.com",
+  "https://open-war-live.onrender.com",
   "http://localhost:9000",
   "http://localhost:5173",
 ];
