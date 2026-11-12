@@ -23,6 +23,7 @@ Render application logs repeatedly show failed lobby check-ins for 1v1, 2v2 and 
 The same logs identify the running environment as `dev`. The current `start:render` script in `package.json` forces `GAME_ENV=dev` and injects development placeholder values for the API key and Turnstile key. The exact outbound API hostname is not present in the captured production logs, so the TLS failure's exact host/certificate/policy cause is not yet established.
 
 The audit branch:
+
 - Replaces the forced-development Render start command with a dedicated validated launcher.
 - Adds explicit `API_DOMAIN` support for installations whose API is not hosted at `https://api.<DOMAIN>`.
 - Rejects accidental Render development mode and invalid public API/runtime configuration without printing secret values.
@@ -61,6 +62,7 @@ The audit branch fixes inclusive UnitGrid bounds. The previous cell interval cou
 MapRenderer retains decoded `ImageBitmap` objects so it can rebuild textures after WebGL context restoration. Before this audit fix, the bitmaps were not explicitly closed when layers were replaced or a game was disposed. A pending image could also resolve after the game was aborted and remain unclosed.
 
 The audit branch now:
+
 - Keeps the active image set through WebGL context loss/restoration.
 - Closes replaced images after a successful layer-set upload, while retaining reused images.
 - Closes active images on final renderer disposal.
@@ -77,6 +79,7 @@ The live Clans navigation reports `Clans coming soon`; this screen is not an imp
 GitHub Actions run: https://github.com/parsa2951388/OpenWar/actions/runs/43162374366
 
 On commit `2a745d755393105b401a20d3e64686cb47e6156f` the run completed successfully:
+
 - Build and TypeScript checks: success.
 - Lint: success.
 - Format check: success.
@@ -97,6 +100,7 @@ The npm audit report from the same workflow found 17 fix-available advisories: 4
 The browser smoke test confirmed that the site wakes, renders the lobby UI, opens Settings and Solo configuration, and displays the map picker. After `START GAME`, the test browser did not reach a game canvas. The test environment could not obtain WebGL2, so this result cannot distinguish a client hardware/WebGL limitation from a production startup problem.
 
 The following could not be verified live:
+
 - Aircraft selection, movement and attack in a hardware-accelerated match.
 - In-game map layers, camera movement and territory rendering.
 - Gameplay economy, building prices, attack and AI behaviour over a full match.
@@ -110,6 +114,7 @@ No credentials or purchases were used in the smoke test.
 ## Release decision
 
 PR #6 is a Draft and must remain unmerged until:
+
 1. CI has passed on the current PR head.
 2. Render's actual API host and required runtime configuration are reviewed without exposing secrets.
 3. A controlled staging test confirms lobby check-ins and real multiplayer.
