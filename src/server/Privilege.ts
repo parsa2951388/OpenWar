@@ -256,6 +256,52 @@ export class PrivilegeCheckerImpl implements PrivilegeChecker {
   }
 }
 
+// Used in production until the first valid entitlement/catalog refresh.
+// Safe built-in country flags and verified intent remain available; catalog
+// cosmetics and unverifiable clan tags are withheld rather than trusted.
+export class FailClosedPrivilegeChecker implements PrivilegeChecker {
+  isAllowed(_flares: string[], refs: PlayerCosmeticRefs): CosmeticResult {
+    const cosmetics: PlayerCosmetics = {};
+    if (refs.verified === true) cosmetics.verified = true;
+
+    if (refs.flag?.startsWith("country:")) {
+      const code = refs.flag.slice("country:".length);
+      if (!countryCodes.includes(code)) {
+        return { type: "forbidden", reason: "invalid country code" };
+      }
+      cosmetics.flag = `/flags/${code}.svg`;
+    }
+
+    const hasCatalogCosmetic =
+      refs.patternName !== undefined ||
+      refs.color !== undefined ||
+      (refs.flag !== undefined && !refs.flag.startsWith("country:")) ||
+      refs.skinName !== undefined ||
+      refs.crownName !== undefined ||
+      (refs.effects !== undefined && Object.keys(refs.effects).length > 0);
+    if (hasCatalogCosmetic) {
+      return {
+        type: "forbidden",
+        reason: "privilege catalog unavailable",
+      };
+    }
+    return { type: "allowed", cosmetics };
+  }
+
+  resolveClanTag(
+    clanTag: string | null,
+    ownedClanTags: string[],
+  ): ClanTagResolution {
+    if (clanTag === null) return { tag: null, dropped: false };
+    const owned = ownedClanTags.some(
+      (tag) => tag.toUpperCase() === clanTag.toUpperCase(),
+    );
+    return owned
+      ? { tag: clanTag, dropped: false }
+      : { tag: null, dropped: true };
+  }
+}
+
 export class FailOpenPrivilegeChecker implements PrivilegeChecker {
   isAllowed(flares: string[], refs: PlayerCosmeticRefs): CosmeticResult {
     // Catalog cosmetics can't be resolved without the cosmetics data, but the
