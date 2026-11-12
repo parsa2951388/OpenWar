@@ -83,7 +83,7 @@ Key source files inspected:
 - `src/server/MasterLobbyService.ts`
 - `src/server/WorkerLobbyService.ts`
 - `src/server/ServerEnv.ts`
-- `src/server/ClientEnv.ts` (browser environment)
+- `src/client/ClientEnv.ts` (browser environment)
 - `tests/server/RankedCheckin.test.ts`
 - `tests/client/MapRendererContextLoss.test.ts`
 - `tests/client/controllers/FighterSelectionController.test.ts`
