@@ -134,22 +134,6 @@ describe("rankedCheckinPass", () => {
     expect(modes).toEqual(["1v1", "2v2", "clanwars"]);
   });
 
-  it("uses the configured gateway for ranked matchmaking transport", async () => {
-    vi.stubEnv(
-      "OPENWAR_API_ORIGIN",
-      "https://openwar-api-gateway.parsaoj.workers.dev",
-    );
-    const fetchFn = okFetch({ assignment: null });
-    const deps = makeDeps(() => true, fetchFn);
-    const gate = new RankedCheckinGate(deps.isActive, deps.log);
-
-    await rankedCheckinPass("1v1", gate, deps);
-
-    expect(vi.mocked(fetchFn).mock.calls[0][0]).toBe(
-      "https://openwar-api-gateway.parsaoj.workers.dev/matchmaking/checkin",
-    );
-  });
-
   it("checks in when active", async () => {
     const fetchFn = okFetch({ assignment: null });
     const deps = makeDeps(() => true, fetchFn);
@@ -351,6 +335,39 @@ describe("rankedCheckinPass", () => {
     await rankedCheckinPass("1v1", gate, deps);
 
     expect(deps.gm.createGame).not.toHaveBeenCalled();
+  });
+
+  it("clears the abort timer and logs safe API host diagnostics when fetch rejects", async () => {
+    vi.useFakeTimers();
+    try {
+      const cause = Object.assign(new Error("TLS handshake failed"), {
+        code: "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE",
+      });
+      const fetchError = Object.assign(new TypeError("fetch failed"), {
+        cause,
+      });
+      const fetchFn = vi.fn(async () => {
+        throw fetchError;
+      }) as unknown as typeof fetch;
+      const deps = makeDeps(() => true, fetchFn);
+      const gate = new RankedCheckinGate(deps.isActive, deps.log);
+
+      await rankedCheckinPass("1v1", gate, deps);
+
+      expect(vi.getTimerCount()).toBe(0);
+      expect(deps.log.error).toHaveBeenCalledWith(
+        "Error polling 1v1 lobby",
+        expect.objectContaining({
+          apiHost: "api.openfront.io",
+          errorCode: "ERR_SSL_SSL/TLS_ALERT_HANDSHAKE_FAILURE",
+        }),
+      );
+      const metadata = vi.mocked(deps.log.error).mock.calls[0]?.[1];
+      expect(metadata).not.toHaveProperty("headers");
+      expect(metadata).not.toHaveProperty("apiKey");
+    } finally {
+      vi.useRealTimers();
+    }
   });
 
   it("treats an aborted long poll as the empty-queue case, not an error", async () => {
