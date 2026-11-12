@@ -73,6 +73,10 @@ uploading the lockfile/report artifact. This does not automatically commit
 dependency changes; review the exact advisory report and promote only a tested
 candidate.
 
+## Join verification and admission policy
+
+The server-side `/join_verify` request uses the configured API transport origin and refuses HTTP redirects so the API key cannot be forwarded to a different host. First joins fail closed when Turnstile/name verification is unavailable; an already-admitted reconnect may retain its existing local identity during a verifier outage. The Cloudflare gateway source must include `/join_verify` before `OPENWAR_API_ORIGIN` is switched to that Worker.
+
 ## Ranked matchmaking diagnostics
 
 Ranked workers call `https://api.<DOMAIN>/matchmaking/checkin`. When that
