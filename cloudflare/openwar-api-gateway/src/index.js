@@ -11,6 +11,7 @@ const ROUTES = [
   [/^\/map_weights$/, "map-weights"],
   [/^\/cluster\.json$/, "cluster-list"],
   [/^\/\.well-known\/jwks\.json$/, "jwks"],
+  [/^\/join_verify$/, "join-verify"],
   [/^\/(?:cosmetics\.json|reserved_clan_tags)$/, "privileges"],
   [/^\/users\/@me$/, "user-profile"],
 ];
