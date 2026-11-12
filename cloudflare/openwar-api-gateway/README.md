@@ -48,3 +48,6 @@ the network transport origin only.
 - `GET /cluster.json?site=...` must proxy the upstream server list.
 - Unknown paths and unapproved browser origins must be rejected.
 - Matchmaking and lobby WebSocket upgrades must pass through with status 101.
+
+
+The gateway also forwards `/join_verify` for the server-side Turnstile and name-verification flow.
