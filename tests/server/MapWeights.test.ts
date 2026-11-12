@@ -27,6 +27,7 @@ describe("fetchMapWeights", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/map_weights");
     expect(init.headers["x-api-key"]).toBeDefined();
+    expect(init.redirect).toBe("error");
   });
 
   it("routes map weights through the configured gateway", async () => {
