@@ -12,6 +12,7 @@ function jsonResponse(body: unknown, status = 200) {
 describe("fetchMapWeights", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   it("returns the weights, sending the API key", async () => {
@@ -26,6 +27,22 @@ describe("fetchMapWeights", () => {
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/map_weights");
     expect(init.headers["x-api-key"]).toBeDefined();
+  });
+
+  it("routes map weights through the configured gateway", async () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv(
+      "OPENWAR_API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    const maps = { World: { ffaWeight: 10 } };
+    const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ maps }));
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(fetchMapWeights()).resolves.toEqual(maps);
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev/map_weights",
+    );
   });
 
   it("ignores the legacy frequency fields", async () => {

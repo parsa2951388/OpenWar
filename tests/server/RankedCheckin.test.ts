@@ -134,6 +134,22 @@ describe("rankedCheckinPass", () => {
     expect(modes).toEqual(["1v1", "2v2", "clanwars"]);
   });
 
+  it("uses the configured gateway for ranked matchmaking transport", async () => {
+    vi.stubEnv(
+      "OPENWAR_API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    const fetchFn = okFetch({ assignment: null });
+    const deps = makeDeps(() => true, fetchFn);
+    const gate = new RankedCheckinGate(deps.isActive, deps.log);
+
+    await rankedCheckinPass("1v1", gate, deps);
+
+    expect(vi.mocked(fetchFn).mock.calls[0][0]).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev/matchmaking/checkin",
+    );
+  });
+
   it("checks in when active", async () => {
     const fetchFn = okFetch({ assignment: null });
     const deps = makeDeps(() => true, fetchFn);
