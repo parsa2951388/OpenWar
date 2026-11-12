@@ -144,6 +144,7 @@ describe("rankedCheckinPass", () => {
     expect(fetchFn).toHaveBeenCalledTimes(1);
     const [url, init] = vi.mocked(fetchFn).mock.calls[0];
     expect(url).toBe("https://api.openfront.io/matchmaking/checkin");
+    expect((init as RequestInit).redirect).toBe("error");
     const body = JSON.parse(String((init as RequestInit).body));
     // The body is otherwise unchanged by OPE-469; the API keys its queue
     // off it.
