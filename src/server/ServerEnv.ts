@@ -115,9 +115,39 @@ export class ServerEnv {
       ? "http://localhost:8787"
       : `https://api.${audience}`;
   }
+  // Network origin for server-to-server API calls. Keeping this separate from
+  // jwtIssuer is deliberate: tokens still identify the upstream issuer even
+  // when traffic is routed through an Open War gateway.
+  static apiOrigin(): string {
+    const configured = process.env.OPENWAR_API_ORIGIN?.trim();
+    if (!configured) return ServerEnv.jwtIssuer();
+
+    let parsed: URL;
+    try {
+      parsed = new URL(configured);
+    } catch {
+      throw new Error("OPENWAR_API_ORIGIN must be an absolute URL");
+    }
+    const localHttp =
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1");
+    if (
+      (parsed.protocol !== "https:" && !localHttp) ||
+      parsed.username !== "" ||
+      parsed.password !== "" ||
+      parsed.pathname !== "/" ||
+      parsed.search !== "" ||
+      parsed.hash !== ""
+    ) {
+      throw new Error(
+        "OPENWAR_API_ORIGIN must be an HTTPS origin (or localhost HTTP origin) without a path",
+      );
+    }
+    return parsed.origin;
+  }
   static async jwkPublicKey(): Promise<JWK> {
     if (ServerEnv.publicKey) return ServerEnv.publicKey;
-    const jwksUrl = ServerEnv.jwtIssuer() + "/.well-known/jwks.json";
+    const jwksUrl = ServerEnv.apiOrigin() + "/.well-known/jwks.json";
     console.log(`Fetching JWKS from ${jwksUrl}`);
     // A redirect would forward x-api-key to the new origin; the JWKS
     // endpoint never redirects, so refuse to follow one.
