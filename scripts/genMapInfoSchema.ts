@@ -44,73 +44,14 @@ function enforceCoordinateTupleBounds(value: unknown): void {
   }
 }
 
-// Keep generated JSON in the same canonical style as Oxfmt. In
-// particular, short scalar arrays stay on one line; otherwise \n// `npm run gen-maps` would immediately undo `npm run format`.\nfunction formatJson(
-  value: unknown,
-  indent = 0,
-  linePrefixLength = indent,
-): string {
-  const padding = " ".repeat(indent);
-
-  if (Array.isArray(value)) {
-    const inline = JSON.stringify(value);
-    const scalarArray = value.every(
-      (item) =>
-        item === null ||
-        typeof item === "string" ||
-        typeof item === "number" ||
-        typeof item === "boolean",
-    );
-    if (scalarArray && linePrefixLength + inline.length <= 80) {
-      return inline;
-    }
-    if (value.length === 0) return "[]";
-    return (
-      "[\\n" +
-      value
-        .map((item) => {
-          const childIndent = indent + 2;
-          return (
-            " ".repeat(childIndent) +
-            formatJson(item, childIndent, childIndent)
-          );
-        })
-        .join(",\\n") +
-      "\\n" +
-      padding +
-      "]"
-    );
-  }
-
-  if (value !== null && typeof value === "object") {
-    const entries = Object.entries(value as Record<string, unknown>);
-    if (entries.length === 0) return "{}";
-    return (
-      "{\\n" +
-      entries
-        .map(([key, child]) => {
-          const childIndent = indent + 2;
-          const prefix =
-            " ".repeat(childIndent) + JSON.stringify(key) + ": ";
-          return (
-            prefix +
-            formatJson(child, childIndent, prefix.length)
-          );
-        })
-        .join(",\\n") +
-      "\\n" +
-      padding +
-      "}"
-    );
-  }
-
-  return JSON.stringify(value);
-}
-
 export function mapInfoJsonSchema(): string {
   const schema = z.toJSONSchema(MapInfoSchema, { target: "draft-2020-12" });
   enforceCoordinateTupleBounds(schema);
-  return formatJson({ ...schema, title: "OpenFront map info.json" });
+  return JSON.stringify(
+    { ...schema, title: "OpenFront map info.json" },
+    null,
+    2,
+  );
 }
 
 if (process.argv[1] === import.meta.filename) {
