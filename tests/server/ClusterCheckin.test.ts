@@ -187,6 +187,7 @@ describe("sendCheckin", () => {
     );
     expect(JSON.parse(String(init.body))).toEqual(body);
     expect(init.signal).toBeInstanceOf(AbortSignal);
+    expect(init.redirect).toBe("error");
   });
 
   test("uses the configured gateway for cluster transport", async () => {
