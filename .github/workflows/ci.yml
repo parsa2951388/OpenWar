@@ -150,9 +150,9 @@ jobs:
   # The npm audit JSON is retained as a short-lived artifact so maintainers can
   # review exact package/range/fix information instead of only the install count.
   dependency-audit:
-    name: 🛡️ Dependency advisory report
+    name: 🛡️ Dependency advisory report and safe upgrade
     runs-on: ubuntu-latest
-    timeout-minutes: 15
+    timeout-minutes: 40
     steps:
       - name: Checkout repository
         uses: actions/checkout@v7
@@ -165,19 +165,16 @@ jobs:
       - name: Setup npm
         run: npm install --global --ignore-scripts npm@12.1.0
       - run: npm ci
-      - name: Collect npm advisory report
+      - name: Create compatible dependency upgrade candidate
+        run: npm audit fix --package-lock-only
+      - name: Install candidate lockfile
+        run: npm ci
+      - name: Collect npm advisory report after compatible updates
         run: |
-          npm audit --json > npm-audit.json || true
+          npm audit --json > npm-audit-upgraded.json || true
           node <<'NODE'
           const fs = require("node:fs");
-          let report;
-          try {
-            report = JSON.parse(fs.readFileSync("npm-audit.json", "utf8"));
-          } catch {
-            console.log("npm audit did not return a parseable JSON report.");
-            process.exit(0);
-          }
-
+          const report = JSON.parse(fs.readFileSync("npm-audit-upgraded.json", "utf8"));
           const vulnerabilities = report.vulnerabilities ?? {};
           for (const [name, advisory] of Object.entries(vulnerabilities).sort(
             ([a], [b]) => a.localeCompare(b),
@@ -193,16 +190,23 @@ jobs:
               }
             }
           }
-          console.log(
-            "npm audit summary:",
-            JSON.stringify(report.metadata?.vulnerabilities ?? {}),
-          );
+          const summary = report.metadata?.vulnerabilities ?? {};
+          console.log("Post-upgrade npm audit summary:", JSON.stringify(summary));
+          if ((summary.total ?? 0) > 0) process.exitCode = 1;
           NODE
-      - name: Upload complete npm audit JSON
+      - name: Verify candidate dependency typecheck
+        run: npm run typecheck
+      - name: Verify candidate dependency production build
+        run: npm run build-prod
+      - name: Verify candidate dependency test suite
+        run: npm test
+      - name: Upload tested lockfile upgrade candidate
         if: always()
         uses: actions/upload-artifact@v7
         with:
-          name: npm-audit-report
-          path: npm-audit.json
+          name: npm-audit-upgrade-candidate
+          path: |
+            package-lock.json
+            npm-audit-upgraded.json
           if-no-files-found: ignore
           retention-days: 3
