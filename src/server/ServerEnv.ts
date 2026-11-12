@@ -4,8 +4,8 @@ import {
   ClusterConfig,
   InstanceLetterSchema,
 } from "@openfront/shared/ClusterConfig";
-import { isCommitLike, isSiteLike } from "@openfront/shared/ServerList";
 import { GameEnv, parseGameEnv } from "@openfront/shared/configuration/Env";
+import { isCommitLike, isSiteLike } from "@openfront/shared/ServerList";
 import { generateGameID } from "@openfront/shared/SharedUtil";
 import { JWK } from "jose";
 import { z } from "zod";

@@ -35,6 +35,7 @@ ${ServerEnv.jwtIssuer()}/matchmaking/checkin
 `ServerEnv.jwtIssuer()` is currently hard-wired to `https://api.${DOMAIN}` (except localhost). The existing test `tests/server/RankedCheckin.test.ts` explicitly expects `https://api.openfront.io/matchmaking/checkin`. Thus this deployed fork is still coupled to the upstream OpenFront API for ranked matchmaking. The TLS handshake failures are real server-side evidence; they explain why ranked queues cannot reliably receive assignments. They do not, by themselves, explain a local solo game failing to start.
 
 Related API dependencies include:
+
 - `src/server/ClusterCheckin.ts`: `/cluster/checkin`
 - `src/server/RankedCheckin.ts`: `/matchmaking/checkin`
 - `src/server/ServerEnv.ts`: issuer derived from `DOMAIN`
@@ -52,6 +53,7 @@ A read-only browser smoke test loaded the Render cold-start page (about 30 secon
 PR #5, `Fix aircraft crash and restore original world map visuals`, was merged as commit `1ebc119c6c6ba3e7cab028f09d164b12436d4a6a`, and that exact commit is deployed on the live Render service.
 
 The aircraft selection crash root cause addressed by PR #5:
+
 - `UnitGrid.nearbyUnits` predicates receive objects shaped like `{ unit, distSquared }`.
 - The previous aircraft selection callback treated that object as a unit, which could throw when selecting an aircraft.
 - The fix correctly destructures `({ unit })`, uses the spatial index rather than scanning/sorting every aircraft, and adds a 20,000-aircraft regression case.
@@ -65,6 +67,7 @@ The PR's GitHub CI run #43070241387 completed successfully: Build, all three tes
 `docs/Architecture.md` describes a deterministic simulation in `packages/engine`, contracts in `packages/engine-api`, shared deterministic map/rules utilities in `packages/engine-lib`, shared wire and map loaders in `packages/shared`, a browser client, a coordinating Node server, and a closed-source Cloudflare Worker API.
 
 Key source files inspected:
+
 - `src/client/controllers/FighterSelectionController.ts`
 - `src/client/ClientGameRunner.ts`
 - `src/client/TerrainMapFileLoader.ts`
@@ -95,6 +98,7 @@ Key source files inspected:
 ## Render topology observed
 
 The Render workspace has four services attached to the same repository and branch `main`:
+
 - `open-war-online` — web service, `npm run start:render`, free plan, Frankfurt; this is the requested live URL.
 - `open-war-game` — web service, `npm run start:server-dev`.
 - `open-war-live` — static site, publishes `static`.
@@ -105,6 +109,7 @@ All four were configured for auto-deploy from `main`. No service was changed. Th
 ## Remaining validation
 
 Not yet verified in this session:
+
 - Real WebGL2 game launch on a supported browser.
 - Aircraft selection, group movement, mission execution, fuel/refuel, combat, carrier launch/recovery in a live match.
 - Map appearance at runtime, camera interaction, large-map memory and frame-time behavior.

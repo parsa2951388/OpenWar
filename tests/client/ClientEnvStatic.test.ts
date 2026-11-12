@@ -78,7 +78,9 @@ describe("a page carrying only environment values", () => {
   });
 
   it("uses a configured gateway only for API transport", () => {
-    staticPage({ apiOrigin: "https://openwar-api-gateway.parsaoj.workers.dev/" });
+    staticPage({
+      apiOrigin: "https://openwar-api-gateway.parsaoj.workers.dev/",
+    });
     expect(ClientEnv.apiOrigin()).toBe(
       "https://openwar-api-gateway.parsaoj.workers.dev",
     );

@@ -20,7 +20,10 @@ function routeGroup(pathname) {
 }
 
 function allowedOrigins(env) {
-  const configured = (env.ALLOWED_ORIGINS ?? "").split(",").map((v) => v.trim()).filter(Boolean);
+  const configured = (env.ALLOWED_ORIGINS ?? "")
+    .split(",")
+    .map((v) => v.trim())
+    .filter(Boolean);
   return new Set([...DEFAULT_ALLOWED_ORIGINS, ...configured]);
 }
 
@@ -47,7 +50,13 @@ function recordFailure(env, ctx, event) {
   const write = env.EVENTS_DB.prepare(
     "INSERT INTO gateway_failures (route_group, method, status, duration_ms, created_at) VALUES (?, ?, ?, ?, ?)",
   )
-    .bind(event.routeGroup, event.method, event.status, event.durationMs, Date.now())
+    .bind(
+      event.routeGroup,
+      event.method,
+      event.status,
+      event.durationMs,
+      Date.now(),
+    )
     .run()
     .catch(() => undefined);
   ctx.waitUntil(write);
@@ -74,7 +83,11 @@ async function health(env, origin) {
     );
   } catch {
     return json(
-      { service: "openwar-api-gateway", status: "degraded", storage: "unavailable" },
+      {
+        service: "openwar-api-gateway",
+        status: "degraded",
+        storage: "unavailable",
+      },
       503,
       origin,
       env,
@@ -117,7 +130,10 @@ export default {
     }
 
     const startedAt = Date.now();
-    const upstreamUrl = new URL(incoming.pathname + incoming.search, UPSTREAM_ORIGIN);
+    const upstreamUrl = new URL(
+      incoming.pathname + incoming.search,
+      UPSTREAM_ORIGIN,
+    );
     const headers = new Headers(request.headers);
     headers.delete("host");
     headers.delete("cf-connecting-ip");
