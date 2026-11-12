@@ -1,0 +1,21 @@
+{
+  "$schema": "node_modules/wrangler/config-schema.json",
+  "name": "openwar-api-gateway",
+  "main": "src/index.js",
+  "compatibility_date": "2026-11-12",
+  "workers_dev": true,
+  "observability": {
+    "enabled": true
+  },
+  "vars": {
+    "ALLOWED_ORIGINS": "https://open-war-online.onrender.com,http://localhost:9000,http://localhost:5173"
+  },
+  "d1_databases": [
+    {
+      "binding": "EVENTS_DB",
+      "database_name": "openwar-api-gateway-db",
+      "database_id": "b67bea36-6c11-4c38-8d19-ea94815fa575",
+      "migrations_dir": "migrations"
+    }
+  ]
+}
