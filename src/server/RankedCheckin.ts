@@ -203,6 +203,7 @@ export async function rankedCheckinPass(
         "Content-Type": "application/json",
         "x-api-key": ServerEnv.apiKey(),
       },
+      redirect: "error",
       body: JSON.stringify({
         id: workerId,
         gameId: gameId,
