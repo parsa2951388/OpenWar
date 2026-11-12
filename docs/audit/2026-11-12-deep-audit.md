@@ -172,16 +172,39 @@ The already-merged aircraft selection and map visual regression fix remains the 
 
 ## Additional stabilization changes after the first audit pass
 
-The integration candidate adds these security and reliability changes beyond the original audit branch:
+The integration candidate adds these security and reliability changes beyond
+the original audit branch:
 
-- All HTTP API requests that carry `x-api-key` or bearer credentials now set `redirect: "error"`. This prevents a credential-bearing request from silently following an unexpected cross-origin redirect.
-- `/join_verify` now uses the configured API transport origin, is included in the gateway's source allowlist, and has a regression test for gateway routing and redirect refusal. The live Worker deployment has not yet been updated with this route.
-- First-time joins now fail closed when Turnstile/name verification returns an error or the verification API is unavailable. Previously admitted reconnects may retain their existing local identity during a verifier outage. Admission bookkeeping no longer marks a failed first join as admitted.
-- Production starts with a fail-closed privilege checker until the first valid cosmetics/reserved-clan-tag catalog is loaded. Built-in country flags remain available, while catalog cosmetics and unverifiable clan tags are withheld. Local development retains the previous fail-open behavior; a previously loaded good catalog remains active during later API outages.
-- The live Render workspace also contains a second public web service, `open-war-game.onrender.com`, started with `npm run start:server-dev` and an unrestricted `0.0.0.0/0` allowlist. Its purpose is not yet confirmed. It has not been changed because it may carry live traffic; it must be isolated or migrated after its role is confirmed.
-- A browser-based live gameplay smoke test could not be started in this session because the browser automation wallet was below zero. No claim is made that the current live build was re-tested in-browser during this stabilization pass.
+- All HTTP API requests that carry `x-api-key` or bearer credentials now set
+  `redirect: "error"`. This prevents a credential-bearing request from
+  silently following an unexpected cross-origin redirect.
+- `/join_verify` now uses the configured API transport origin, is included in
+  the gateway's source allowlist, and has a regression test for gateway routing
+  and redirect refusal. The live Worker deployment has not yet been updated
+  with this route.
+- First-time joins now fail closed when Turnstile/name verification returns an
+  error or the verification API is unavailable. Previously admitted
+  reconnects may retain their existing local identity during a verifier
+  outage. Admission bookkeeping no longer marks a failed first join as
+  admitted.
+- Production starts with a fail-closed privilege checker until the first
+  valid cosmetics/reserved-clan-tag catalog is loaded. Built-in country flags
+  remain available, while catalog cosmetics and unverifiable clan tags are
+  withheld. Local development retains the previous fail-open behavior; a
+  previously loaded good catalog remains active during later API outages.
+- The live Render workspace also contains a second public web service,
+  `open-war-game.onrender.com`, started with `npm run start:server-dev` and
+  an unrestricted `0.0.0.0/0` allowlist. Its purpose is not yet confirmed.
+  It has not been changed because it may carry live traffic; it must be
+  isolated or migrated after its role is confirmed.
+- A browser-based live gameplay smoke test could not be started in this
+  session because the browser automation wallet was below zero. No claim is
+  made that the current live build was re-tested in-browser during this
+  stabilization pass.
 
-These changes are on Draft PR #8 and are not yet merged or deployed. The latest integrated CI run must complete before the candidate can be considered merge-ready.
+These changes are on Draft PR #8 and are not yet merged or deployed. The
+latest integrated CI run must complete before the candidate can be considered
+merge-ready.
 
 ## Honest completion status
 
