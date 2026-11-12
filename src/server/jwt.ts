@@ -76,6 +76,8 @@ export async function getUserMe(
         authorization: `Bearer ${token}`,
         "x-api-key": ServerEnv.apiKey(),
       },
+      // Never forward bearer/API credentials through an API redirect.
+      redirect: "error",
     });
     if (response.status !== 200) {
       return {
