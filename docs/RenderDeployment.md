@@ -5,10 +5,17 @@ security settings from an npm script. Start it with `npm run start:render`;
 the launcher loads the service environment, validates it, and then imports the
 server.
 
-
 ## Additional public development service found during audit
 
-The connected Render workspace also contains a public web service named `open-war-game` at `https://open-war-game.onrender.com`. Its start command is `npm run start:server-dev`, which explicitly sets `GAME_ENV=dev` and documented development credentials. The service IP allowlist is open to `0.0.0.0/0`. Treat this as a second P0 exposure until its purpose is confirmed. If it is not an intentionally public, isolated demo, restrict access or suspend it; if it is intended to host production game workers, migrate it to the validated Render launcher with independently verified environment values. Do not change or suspend it automatically because it may currently serve live game traffic.
+The connected Render workspace also contains a public web service named
+`open-war-game` at `https://open-war-game.onrender.com`. Its start command is
+`npm run start:server-dev`, which explicitly sets `GAME_ENV=dev` and documented
+development credentials. The service IP allowlist is open to `0.0.0.0/0`.
+Treat this as a second P0 exposure until its purpose is confirmed. If it is not
+an intentionally public, isolated demo, restrict access or suspend it; if it is
+intended to host production game workers, migrate it to the validated Render
+launcher with independently verified environment values. Do not change or
+suspend it automatically because it may currently serve live game traffic.
 
 ## Required settings
 
@@ -59,7 +66,12 @@ only for an isolated, non-production service.
 
 ## Dependency security gate
 
-The pull-request CI now creates a compatible `npm audit fix --package-lock-only` candidate, reports remaining advisories, and verifies the candidate with typecheck, production build, and tests before uploading the lockfile/report artifact. This does not automatically commit dependency changes; review the exact advisory report and promote only a tested candidate.
+The pull-request CI now creates a compatible
+`npm audit fix --package-lock-only` candidate, reports remaining advisories,
+and verifies the candidate with typecheck, production build, and tests before
+uploading the lockfile/report artifact. This does not automatically commit
+dependency changes; review the exact advisory report and promote only a tested
+candidate.
 
 ## Ranked matchmaking diagnostics
 
