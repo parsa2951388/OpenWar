@@ -282,7 +282,7 @@ export class ClientEnv {
   }
   static async jwkPublicKey(): Promise<JWK> {
     if (ClientEnv.publicKey) return ClientEnv.publicKey;
-    const jwksUrl = ClientEnv.jwtIssuer() + "/.well-known/jwks.json";
+    const jwksUrl = ClientEnv.apiOrigin() + "/.well-known/jwks.json";
     console.log(`Fetching JWKS from ${jwksUrl}`);
     const response = await fetch(jwksUrl);
     if (!response.ok) {
