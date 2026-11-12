@@ -91,30 +91,30 @@ describe("a page carrying only environment values", () => {
   it(
     "fetches JWKS through the configured API transport but keeps the JWT issuer",
     async () => {
-    const gateway = "https://openwar-api-gateway.parsaoj.workers.dev";
-    staticPage({ apiOrigin: gateway });
-    const jwks = {
-      keys: [
-        {
-          alg: "EdDSA",
-          crv: "Ed25519",
-          kty: "OKP",
-          x: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
-        },
-      ],
-    };
-    const fetchMock = vi.fn().mockResolvedValue({
-      ok: true,
-      json: async () => jwks,
-    });
-    vi.stubGlobal("fetch", fetchMock);
-
-    await expect(ClientEnv.jwkPublicKey()).resolves.toEqual(jwks.keys[0]);
-    expect(fetchMock).toHaveBeenCalledWith(
-      gateway + "/.well-known/jwks.json",
-    );
-      expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
-    },
+      const gateway = "https://openwar-api-gateway.parsaoj.workers.dev";
+      staticPage({ apiOrigin: gateway });
+      const jwks = {
+        keys: [
+          {
+            alg: "EdDSA",
+            crv: "Ed25519",
+            kty: "OKP",
+            x: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+          },
+        ],
+      };
+      const fetchMock = vi.fn().mockResolvedValue({
+        ok: true,
+        json: async () => jwks,
+      });
+      vi.stubGlobal("fetch", fetchMock);
+  
+      await expect(ClientEnv.jwkPublicKey()).resolves.toEqual(jwks.keys[0]);
+      expect(fetchMock).toHaveBeenCalledWith(
+        gateway + "/.well-known/jwks.json",
+      );
+        expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
+      },
   );
 
   it("rejects an insecure or path-scoped API origin", () => {
