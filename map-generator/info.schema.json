@@ -159,9 +159,7 @@
                 "items": false
               }
             },
-            "required": [
-              "name"
-            ],
+            "required": ["name"],
             "additionalProperties": false
           }
         ]
@@ -200,9 +198,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "additionalProperties": false
       }
     },
@@ -240,9 +236,7 @@
             "type": "string"
           }
         },
-        "required": [
-          "name"
-        ],
+        "required": ["name"],
         "additionalProperties": false
       }
     },
@@ -280,12 +274,7 @@
               "maximum": 9007199254740991
             }
           },
-          "required": [
-            "x",
-            "y",
-            "width",
-            "height"
-          ],
+          "required": ["x", "y", "width", "height"],
           "additionalProperties": false
         }
       }
@@ -302,10 +291,7 @@
           },
           "placement": {
             "type": "string",
-            "enum": [
-              "land",
-              "water"
-            ],
+            "enum": ["land", "water"],
             "description": "Whether the layer covers land or water tiles."
           },
           "nukeable": {
@@ -319,10 +305,7 @@
             "maximum": 1
           }
         },
-        "required": [
-          "id",
-          "placement"
-        ],
+        "required": ["id", "placement"],
         "additionalProperties": false
       }
     },
@@ -351,20 +334,11 @@
           "maximum": 180
         }
       },
-      "required": [
-        "lat",
-        "lon"
-      ],
+      "required": ["lat", "lon"],
       "additionalProperties": false
     }
   },
-  "required": [
-    "id",
-    "name",
-    "translation_key",
-    "categories",
-    "nations"
-  ],
+  "required": ["id", "name", "translation_key", "categories", "nations"],
   "additionalProperties": false,
   "title": "OpenFront map info.json"
 }

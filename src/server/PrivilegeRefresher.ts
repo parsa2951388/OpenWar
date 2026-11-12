@@ -1,18 +1,16 @@
-import {
-  ReservedClanTagsResponseSchema,
-} from "@openfront/shared/ClanApiSchemas";
+import { ReservedClanTagsResponseSchema } from "@openfront/shared/ClanApiSchemas";
 import { GameEnv } from "@openfront/shared/configuration/Env";
 import { CosmeticsSchema } from "@openfront/shared/CosmeticSchemas";
 import { base64url } from "jose";
 import { Logger } from "winston";
 import { startPolling } from "./PollingLoop";
-import { ServerEnv } from "./ServerEnv";
 import {
   FailClosedPrivilegeChecker,
   FailOpenPrivilegeChecker,
   PrivilegeChecker,
   PrivilegeCheckerImpl,
 } from "./Privilege";
+import { ServerEnv } from "./ServerEnv";
 
 // Refreshes the privilege checker every 3 minutes.
 // Production fails closed until a valid cosmetics and clan-tag catalog loads.
@@ -98,7 +96,8 @@ export class PrivilegeRefresher {
         ReservedClanTagsResponseSchema.safeParse(reservedClanTagsData);
       if (!reservedClanTagsResult.success) {
         throw new Error(
-          "Invalid reserved clan tags data: " + reservedClanTagsResult.error.message,
+          "Invalid reserved clan tags data: " +
+            reservedClanTagsResult.error.message,
         );
       }
       const reservedClanTags = new Set(
