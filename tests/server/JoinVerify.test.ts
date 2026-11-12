@@ -41,6 +41,10 @@ describe("verifyJoin", () => {
       clanTag: "COOL",
     });
     const [, init] = fetchMock.mock.calls[0];
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      "http://localhost:8787/join_verify",
+    );
+    expect(init.redirect).toBe("error");
     expect(JSON.parse(init.body)).toEqual({
       ip: "1.2.3.4",
       token: "tok",
