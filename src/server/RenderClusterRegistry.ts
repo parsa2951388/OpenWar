@@ -167,7 +167,7 @@ export async function registerRenderCluster(
   const { site, host } = renderHosts(env);
   const configured = configuredIdentity(env, site, host);
   if (configured) {
-    env.SITE_HOST ??= site;
+    env.SITE_HOST = site;
     return configured;
   }
 
