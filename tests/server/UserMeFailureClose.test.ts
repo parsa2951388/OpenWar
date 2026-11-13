@@ -41,6 +41,16 @@ describe("join close on a failed /users/@me", () => {
     },
   );
 
+  it("refuses redirects on authenticated API requests", async () => {
+    const fetchMock = vi.fn(async (_url: string, init?: RequestInit) => {
+      expect(init?.redirect).toBe("error");
+      return statusResponse(401, "Unauthorized");
+    });
+    vi.stubGlobal("fetch", fetchMock);
+    await getUserMe("tok");
+    expect(fetchMock).toHaveBeenCalledOnce();
+  });
+
   it("stays retryable on a 5xx", async () => {
     const close = await closeFor(async () =>
       statusResponse(503, "Service Unavailable"),

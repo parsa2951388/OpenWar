@@ -9,7 +9,7 @@ import { ServerEnv } from "./ServerEnv";
 
 // The ranked (matchmaking) side of the drain, the counterpart to
 // ClusterCheckin.ts on the master. A worker long-polls
-// `${jwtIssuer}/matchmaking/checkin` to offer itself as the host for the next
+// `${apiOrigin}/matchmaking/checkin` to offer itself as the host for the next
 // match; the API hands back an assignment and the worker creates the game.
 //
 // That offer must follow the deployment's active flag. Until OPE-469 it did
@@ -31,6 +31,23 @@ export type RankedMode = (typeof RANKED_MODES)[number];
 // The endpoint is a long poll, so a request pending for most of this is the
 // normal, empty-queue case — the abort is expected, not an error.
 const CHECKIN_ABORT_MS = 20_000;
+
+// Keep network diagnostics actionable without ever logging request headers.
+function fetchCauseCode(error: unknown): string | undefined {
+  if (typeof error !== "object" || error === null || !("cause" in error)) {
+    return undefined;
+  }
+  const cause = error.cause;
+  if (
+    typeof cause !== "object" ||
+    cause === null ||
+    !("code" in cause) ||
+    typeof cause.code !== "string"
+  ) {
+    return undefined;
+  }
+  return cause.code;
+}
 
 // The gap between check-ins. Jittered so a worker fleet restarted together
 // does not synchronise into one thundering herd against the API.
@@ -166,8 +183,12 @@ export async function rankedCheckinPass(
   // standby or fenced deployment must not be holding a slot in the queue.
   if (!gate.shouldCheckIn()) return;
 
+  let apiHost = "unknown";
+  let timeoutId: ReturnType<typeof setTimeout> | undefined;
   try {
-    const url = `${ServerEnv.jwtIssuer() + "/matchmaking/checkin"}`;
+    const apiIssuer = ServerEnv.apiOrigin();
+    apiHost = new URL(apiIssuer).host;
+    const url = `${apiIssuer}/matchmaking/checkin`;
     const gameId = ServerEnv.generateGameIdForWorker(workerId);
     if (gameId === null) {
       log.warn(`Failed to generate game ID for worker ${workerId}`);
@@ -175,13 +196,14 @@ export async function rankedCheckinPass(
     }
 
     const controller = new AbortController();
-    const timeoutId = setTimeout(() => controller.abort(), CHECKIN_ABORT_MS);
+    timeoutId = setTimeout(() => controller.abort(), CHECKIN_ABORT_MS);
     const response = await fetchFn(url, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
         "x-api-key": ServerEnv.apiKey(),
       },
+      redirect: "error",
       body: JSON.stringify({
         id: workerId,
         gameId: gameId,
@@ -193,8 +215,6 @@ export async function rankedCheckinPass(
       }),
       signal: controller.signal,
     });
-
-    clearTimeout(timeoutId);
 
     if (!response.ok) {
       log.warn(
@@ -246,7 +266,15 @@ export async function rankedCheckinPass(
       // Abort is expected if no game is scheduled on this worker.
       return;
     }
-    log.error(`Error polling ${mode} lobby:`, error);
+    log.error(`Error polling ${mode} lobby`, {
+      apiHost,
+      error,
+      errorCode: fetchCauseCode(error),
+    });
+  } finally {
+    // A rejected fetch (e.g. TLS handshake failure) must not leave its
+    // 20-second abort timer alive; long-poll failures can happen repeatedly.
+    if (timeoutId !== undefined) clearTimeout(timeoutId);
   }
 }
 

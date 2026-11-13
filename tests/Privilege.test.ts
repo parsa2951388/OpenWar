@@ -1,4 +1,5 @@
 import {
+  FailClosedPrivilegeChecker,
   FailOpenPrivilegeChecker,
   PrivilegeCheckerImpl,
   resolveVerifiedJoin,
@@ -747,6 +748,46 @@ describe("PrivilegeCheckerImpl#resolveClanTag", () => {
   it("treats anonymous users as members of no clans", () => {
     const result = makeChecker(["ABC"]).resolveClanTag("ABC", []);
     expect(result).toEqual({ tag: null, dropped: true });
+  });
+});
+
+describe("FailClosedPrivilegeChecker", () => {
+  const checker = new FailClosedPrivilegeChecker();
+
+  test("allows safe built-in country flags and verified intent", () => {
+    expect(
+      checker.isAllowed([], { flag: "country:us", verified: true }),
+    ).toEqual({
+      type: "allowed",
+      cosmetics: { flag: "/flags/us.svg", verified: true },
+    });
+  });
+
+  test("rejects catalog cosmetics until the entitlement catalog is loaded", () => {
+    for (const refs of [
+      { skinName: "premium" },
+      { crownName: "gold" },
+      { color: "red" },
+      { flag: "flag:premium" },
+      { patternName: "pattern" },
+      { effects: { transportShipTrail: "spectrum" } },
+    ]) {
+      expect(checker.isAllowed(["*"], refs).type).toBe("forbidden");
+    }
+  });
+
+  test("drops unverifiable non-member clan tags", () => {
+    expect(checker.resolveClanTag("ABC", [])).toEqual({
+      tag: null,
+      dropped: true,
+    });
+  });
+
+  test("keeps a clan tag when ownership is already known", () => {
+    expect(checker.resolveClanTag("abc", ["ABC"])).toEqual({
+      tag: "abc",
+      dropped: false,
+    });
   });
 });
 

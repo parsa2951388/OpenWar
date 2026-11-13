@@ -118,22 +118,18 @@ export class UnitGrid<U extends UnitLike = UnitLike> {
     const x = this.gm.x(tile);
     const y = this.gm.y(tile);
     const cellSize = this.cellSize;
-    const [gridX, gridY] = this.getGridCoords(x, y);
-    const startGridX = Math.max(
-      0,
-      gridX - Math.ceil((range - (x % cellSize)) / cellSize),
-    );
+    // Search intervals are inclusive: the distance check below accepts
+    // distSquared === rangeSquared, so an endpoint exactly on a cell boundary
+    // must include the cell on the far side of that boundary.
+    const startGridX = Math.max(0, Math.floor((x - range) / cellSize));
     const endGridX = Math.min(
       this.grid[0].length - 1,
-      gridX + Math.ceil((range - (cellSize - (x % cellSize))) / cellSize),
+      Math.floor((x + range) / cellSize),
     );
-    const startGridY = Math.max(
-      0,
-      gridY - Math.ceil((range - (y % cellSize)) / cellSize),
-    );
+    const startGridY = Math.max(0, Math.floor((y - range) / cellSize));
     const endGridY = Math.min(
       this.grid.length - 1,
-      gridY + Math.ceil((range - (cellSize - (y % cellSize))) / cellSize),
+      Math.floor((y + range) / cellSize),
     );
 
     return { startGridX, endGridX, startGridY, endGridY };

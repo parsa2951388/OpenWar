@@ -19,8 +19,12 @@ async function main() {
   }
 }
 
-// Start the application
-main().catch((error) => {
+// Export the startup promise so managed launchers can wait until the
+// master has forked workers and started its HTTP server before publishing
+// this commit to the public cluster registry.
+export const serverStartup = main();
+
+serverStartup.catch((error) => {
   console.error("Failed to start server:", error);
   process.exit(1);
 });

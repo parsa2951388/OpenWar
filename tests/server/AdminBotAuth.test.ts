@@ -42,6 +42,20 @@ describe("requireAdminBotKey", () => {
     expect(next).not.toHaveBeenCalled();
   });
 
+  it("disables admin bot access for a committed development placeholder", () => {
+    process.env.ADMIN_BOT_API_KEY =
+      "WARNING_DEV_ADMIN_BOT_KEY_DO_NOT_USE_IN_PRODUCTION";
+    const res = mockRes();
+    const next = vi.fn();
+    requireAdminBotKey(
+      { headers: { "x-admin-bot-key": process.env.ADMIN_BOT_API_KEY } } as any,
+      res,
+      next,
+    );
+    expect(res.statusCode).toBe(404);
+    expect(next).not.toHaveBeenCalled();
+  });
+
   it("returns 401 when the header is missing", () => {
     process.env.ADMIN_BOT_API_KEY = KEY;
     const res = mockRes();

@@ -1,20 +1,25 @@
 import { ReservedClanTagsResponseSchema } from "@openfront/shared/ClanApiSchemas";
+import { GameEnv } from "@openfront/shared/configuration/Env";
 import { CosmeticsSchema } from "@openfront/shared/CosmeticSchemas";
 import { base64url } from "jose";
 import { Logger } from "winston";
 import { startPolling } from "./PollingLoop";
 import {
+  FailClosedPrivilegeChecker,
   FailOpenPrivilegeChecker,
   PrivilegeChecker,
   PrivilegeCheckerImpl,
 } from "./Privilege";
+import { ServerEnv } from "./ServerEnv";
 
 // Refreshes the privilege checker every 3 minutes.
-// WARNING: This fails open if cosmetics.json is not available.
+// Production fails closed until a valid cosmetics and clan-tag catalog loads.
 export class PrivilegeRefresher {
   private privilegeChecker: PrivilegeChecker | null = null;
   private failOpenPrivilegeChecker: PrivilegeChecker =
     new FailOpenPrivilegeChecker();
+  private failClosedPrivilegeChecker: PrivilegeChecker =
+    new FailClosedPrivilegeChecker();
 
   private log: Logger;
 
@@ -36,7 +41,10 @@ export class PrivilegeRefresher {
   }
 
   public get(): PrivilegeChecker {
-    return this.privilegeChecker ?? this.failOpenPrivilegeChecker;
+    if (this.privilegeChecker !== null) return this.privilegeChecker;
+    return ServerEnv.env() === GameEnv.Dev
+      ? this.failOpenPrivilegeChecker
+      : this.failClosedPrivilegeChecker;
   }
 
   private async loadPrivilegeChecker(): Promise<void> {
@@ -47,6 +55,7 @@ export class PrivilegeRefresher {
           return await fetch(url, {
             signal: AbortSignal.timeout(5000),
             headers: { "x-api-key": this.apiKey },
+            redirect: "error",
           });
         } catch (error) {
           this.log.warn(`Failed to fetch ${url}: ${error}`);
@@ -61,7 +70,8 @@ export class PrivilegeRefresher {
 
       if (!cosmeticsResponse || !cosmeticsResponse.ok) {
         throw new Error(
-          `Cosmetics HTTP error! status: ${cosmeticsResponse?.status ?? "network error"}`,
+          `Cosmetics HTTP error! status: ` +
+            (cosmeticsResponse?.status ?? "network error"),
         );
       }
 
@@ -77,7 +87,8 @@ export class PrivilegeRefresher {
       // through. Throw so the previous (good) checker is retained instead.
       if (!reservedClanTagsResponse || !reservedClanTagsResponse.ok) {
         throw new Error(
-          `Reserved clan tags HTTP error! status: ${reservedClanTagsResponse?.status ?? "network error"}`,
+          `Reserved clan tags HTTP error! status: ` +
+            (reservedClanTagsResponse?.status ?? "network error"),
         );
       }
       const reservedClanTagsData = await reservedClanTagsResponse.json();
@@ -85,7 +96,8 @@ export class PrivilegeRefresher {
         ReservedClanTagsResponseSchema.safeParse(reservedClanTagsData);
       if (!reservedClanTagsResult.success) {
         throw new Error(
-          `Invalid reserved clan tags data: ${reservedClanTagsResult.error.message}`,
+          "Invalid reserved clan tags data: " +
+            reservedClanTagsResult.error.message,
         );
       }
       const reservedClanTags = new Set(
@@ -98,7 +110,8 @@ export class PrivilegeRefresher {
         reservedClanTags,
       );
       this.log.info(
-        `Privilege checker loaded successfully (${reservedClanTags.size} reserved clan tags)`,
+        `Privilege checker loaded successfully (${reservedClanTags.size} ` +
+          "reserved clan tags)",
       );
     } catch (error) {
       this.log.error(`Failed to load privilege checker:`, error);

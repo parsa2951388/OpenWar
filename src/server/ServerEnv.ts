@@ -5,6 +5,7 @@ import {
   InstanceLetterSchema,
 } from "@openfront/shared/ClusterConfig";
 import { GameEnv, parseGameEnv } from "@openfront/shared/configuration/Env";
+import { isCommitLike, isSiteLike } from "@openfront/shared/ServerList";
 import { generateGameID } from "@openfront/shared/SharedUtil";
 import { JWK } from "jose";
 import { z } from "zod";
@@ -115,9 +116,39 @@ export class ServerEnv {
       ? "http://localhost:8787"
       : `https://api.${audience}`;
   }
+  // Network origin for server-to-server API calls. Keeping this separate from
+  // jwtIssuer is deliberate: tokens still identify the upstream issuer even
+  // when traffic is routed through an Open War gateway.
+  static apiOrigin(): string {
+    const configured = process.env.OPENWAR_API_ORIGIN?.trim();
+    if (!configured) return ServerEnv.jwtIssuer();
+
+    let parsed: URL;
+    try {
+      parsed = new URL(configured);
+    } catch {
+      throw new Error("OPENWAR_API_ORIGIN must be an absolute URL");
+    }
+    const localHttp =
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1");
+    if (
+      (parsed.protocol !== "https:" && !localHttp) ||
+      parsed.username !== "" ||
+      parsed.password !== "" ||
+      parsed.pathname !== "/" ||
+      parsed.search !== "" ||
+      parsed.hash !== ""
+    ) {
+      throw new Error(
+        "OPENWAR_API_ORIGIN must be an HTTPS origin (or localhost HTTP origin) without a path",
+      );
+    }
+    return parsed.origin;
+  }
   static async jwkPublicKey(): Promise<JWK> {
     if (ServerEnv.publicKey) return ServerEnv.publicKey;
-    const jwksUrl = ServerEnv.jwtIssuer() + "/.well-known/jwks.json";
+    const jwksUrl = ServerEnv.apiOrigin() + "/.well-known/jwks.json";
     console.log(`Fetching JWKS from ${jwksUrl}`);
     // A redirect would forward x-api-key to the new origin; the JWKS
     // endpoint never redirects, so refuse to follow one.
@@ -226,8 +257,15 @@ export class ServerEnv {
     if (explicit && explicit.length > 0) return explicit;
     const subdomain = ServerEnv.subdomain();
     const domain = ServerEnv.gameDomain() ?? ServerEnv.domain();
-    if (!subdomain || !domain) return undefined;
-    return `${subdomain}.${domain}`;
+    if (subdomain && domain) return `${subdomain}.${domain}`;
+
+    // Render injects its public hostname for every web service. The standalone
+    // Render deployment has no OpenFront-style SUBDOMAIN/GAME_DOMAIN pair, so
+    // without this fallback it never registers in the server directory.
+    const renderHostname = process.env.RENDER_EXTERNAL_HOSTNAME?.trim();
+    return renderHostname && isSiteLike(renderHostname)
+      ? renderHostname
+      : undefined;
   }
   // This server's instance letter, from INSTANCE_LETTER (update.sh, from the
   // API registry): the first character of every game id it mints, which is
@@ -331,11 +369,17 @@ export class ServerEnv {
     return process.env.OTEL_AUTH_HEADER ?? "";
   }
   static gitCommit(): string {
-    const v = process.env.GIT_COMMIT;
-    if (!v) {
-      throw new Error("GIT_COMMIT not set");
-    }
-    return v;
+    const configured = process.env.GIT_COMMIT;
+    if (configured && isCommitLike(configured)) return configured;
+
+    // start:render historically stamped the non-SHA label "OPENWAR". The
+    // registry and version routing require a real commit, which Render
+    // already injects as RENDER_GIT_COMMIT.
+    const renderCommit = process.env.RENDER_GIT_COMMIT;
+    if (renderCommit && isCommitLike(renderCommit)) return renderCommit;
+
+    if (configured) return configured;
+    throw new Error("GIT_COMMIT not set");
   }
   static apiKey(): string {
     return process.env.API_KEY ?? "";
@@ -344,7 +388,14 @@ export class ServerEnv {
   // Undefined when unset, which disables the admin bot API entirely.
   static adminBotKey(): string | undefined {
     const v = process.env.ADMIN_BOT_API_KEY;
-    return v && v.length > 0 ? v : undefined;
+    // Never treat a committed development placeholder as a credential. The
+    // Render start script and local examples historically supplied this
+    // public sentinel; accepting it would expose admin-bot routes to anyone
+    // who can read the repository.
+    if (!v || v.length === 0 || v.startsWith("WARNING_DEV_")) {
+      return undefined;
+    }
+    return v;
   }
   static adminBotHeader(): string {
     return "x-admin-bot-key";

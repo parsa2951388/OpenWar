@@ -71,11 +71,13 @@ export async function getUserMe(
 ): Promise<{ type: "success"; response: UserMeResponse } | UserMeError> {
   try {
     // Get the user object
-    const response = await fetch(ServerEnv.jwtIssuer() + "/users/@me", {
+    const response = await fetch(ServerEnv.apiOrigin() + "/users/@me", {
       headers: {
         authorization: `Bearer ${token}`,
         "x-api-key": ServerEnv.apiKey(),
       },
+      // Never forward bearer/API credentials through an API redirect.
+      redirect: "error",
     });
     if (response.status !== 200) {
       return {

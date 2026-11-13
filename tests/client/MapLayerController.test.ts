@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it } from "vitest";
+import { beforeEach, describe, expect, it, vi } from "vitest";
 
 import { GameMapSize, GameMapType } from "@openfront/engine-api/game/GameTypes";
 import type { MapLayer } from "@openfront/engine-api/game/MapFiles";
@@ -63,6 +63,43 @@ describe("MapLayerController", () => {
       ["forest", 0.8],
       ["reef", 0.3],
     ]);
+  });
+
+  it("closes decoded layer images when the game is aborted before they arrive", async () => {
+    let resolveImage: (image: ImageBitmap) => void = () => {
+      throw new Error("image request was not started");
+    };
+    const pendingImage = new Promise<ImageBitmap>((resolve) => {
+      resolveImage = resolve;
+    });
+    const image = { close: vi.fn() } as unknown as ImageBitmap;
+    const view = {
+      setMapLayers: vi.fn(),
+      setLayerVisible: vi.fn(),
+      setLayerAlpha: vi.fn(),
+    } as unknown as MapRenderer;
+    const abortController = new AbortController();
+    const loader = {
+      getMapData: () => ({ layerImage: () => pendingImage }),
+    } as unknown as GameMapLoader;
+
+    new MapLayerController(
+      view,
+      { layers: LAYERS } as TerrainMapData,
+      new UserSettings(),
+      GameMapType.Ommatrypta,
+      GameMapSize.Normal,
+      loader,
+      abortController.signal,
+    ).init();
+
+    abortController.abort();
+    resolveImage(image);
+    await new Promise((resolve) => setTimeout(resolve, 0));
+
+    expect(view.setMapLayers).not.toHaveBeenCalled();
+    // Both layer IDs may resolve to one cached ImageBitmap; close it only once.
+    expect(image.close).toHaveBeenCalledOnce();
   });
 
   it("starts with every layer hidden when the Map Layers switch is off", async () => {

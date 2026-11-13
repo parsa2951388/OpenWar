@@ -1,6 +1,6 @@
 import { GameEnv } from "@openfront/shared/configuration/Env";
 import { ServerList } from "@openfront/shared/ServerList";
-import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { ClientEnv, NoServerError } from "../../src/client/ClientEnv";
 
 // Multi-server v2, roadmap item 2 (docs/MultiServer.md): the page becomes a
@@ -31,13 +31,14 @@ const LIST: ServerList = {
   },
 };
 
-function staticPage() {
+function staticPage(overrides: Record<string, unknown> = {}) {
   ClientEnv.reset();
   (window as any).BOOTSTRAP_CONFIG = {
     gameEnv: "prod",
     turnstileSiteKey: "site-key",
     jwtAudience: "openfront.io",
     gitCommit: OWN,
+    ...overrides,
   };
 }
 
@@ -65,6 +66,7 @@ describe("a page carrying only environment values", () => {
   afterEach(() => {
     ClientEnv.reset();
     delete (window as any).BOOTSTRAP_CONFIG;
+    vi.unstubAllGlobals();
   });
 
   it("boots: the environment values all answer", () => {
@@ -73,6 +75,47 @@ describe("a page carrying only environment values", () => {
     expect(ClientEnv.jwtAudience()).toBe("openfront.io");
     expect(ClientEnv.turnstileSiteKey()).toBe("site-key");
     expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
+    expect(ClientEnv.apiOrigin()).toBe("https://api.openfront.io");
+  });
+
+  it("uses a configured gateway only for API transport", () => {
+    staticPage({
+      apiOrigin: "https://openwar-api-gateway.parsaoj.workers.dev/",
+    });
+    expect(ClientEnv.apiOrigin()).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
+  });
+
+  it("fetches JWKS through the configured API transport but keeps the JWT issuer", async () => {
+    const gateway = "https://openwar-api-gateway.parsaoj.workers.dev";
+    staticPage({ apiOrigin: gateway });
+    const jwks = {
+      keys: [
+        {
+          alg: "EdDSA",
+          crv: "Ed25519",
+          kty: "OKP",
+          x: "AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA",
+        },
+      ],
+    };
+    const fetchMock = vi.fn().mockResolvedValue({
+      ok: true,
+      json: async () => jwks,
+    });
+    vi.stubGlobal("fetch", fetchMock);
+
+    await expect(ClientEnv.jwkPublicKey()).resolves.toEqual(jwks.keys[0]);
+    expect(fetchMock).toHaveBeenCalledWith(gateway + "/.well-known/jwks.json");
+    expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
+  });
+  it("rejects an insecure or path-scoped API origin", () => {
+    staticPage({ apiOrigin: "http://gateway.example" });
+    expect(() => ClientEnv.apiOrigin()).toThrow(/Invalid API origin/);
+    staticPage({ apiOrigin: "https://gateway.example/proxy" });
+    expect(() => ClientEnv.apiOrigin()).toThrow(/Invalid API origin/);
   });
 
   it("reports no instance id rather than throwing", () => {

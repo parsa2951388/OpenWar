@@ -51,10 +51,11 @@ describe("Worker join username clamping", () => {
         clanTag: "CLAN",
       },
     };
-    const outcome = resolveJoinVerdict(verdict, {
-      username: "fallback_user",
-      clanTag: null,
-    });
+    const outcome = resolveJoinVerdict(
+      verdict,
+      { username: "fallback_user", clanTag: null },
+      true,
+    );
     expect(outcome.action).toBe("admit");
     if (outcome.action === "admit") {
       expect(outcome.username).toHaveLength(MAX_USERNAME_LENGTH);
@@ -85,6 +86,42 @@ describe("Worker join username clamping", () => {
     const clamped = clampApprovedUsername(withSpace);
     expect(clamped).toBe("a".repeat(MAX_USERNAME_LENGTH - 1));
     expect(clamped.length).toBeLessThanOrEqual(MAX_USERNAME_LENGTH);
+  });
+
+  it("rejects first joins when Turnstile/name verification is unavailable", () => {
+    const verdict: JoinVerifyResponse = {
+      status: "error",
+      reason: "api-worker unavailable",
+      degraded: false,
+    };
+    expect(
+      resolveJoinVerdict(verdict, {
+        username: "unverified",
+        clanTag: null,
+      }),
+    ).toEqual({
+      action: "reject",
+      reason: "verification_unavailable",
+    });
+  });
+
+  it("allows an already-admitted reconnect to retain its local identity during verifier outage", () => {
+    const verdict: JoinVerifyResponse = {
+      status: "error",
+      reason: "api-worker unavailable",
+      degraded: false,
+    };
+    expect(
+      resolveJoinVerdict(
+        verdict,
+        { username: "existing-user", clanTag: "TAG" },
+        true,
+      ),
+    ).toEqual({
+      action: "admit",
+      username: "existing-user",
+      clanTag: "TAG",
+    });
   });
 
   it("clamps an overlong identity username from error/fallback verdict directly", () => {
