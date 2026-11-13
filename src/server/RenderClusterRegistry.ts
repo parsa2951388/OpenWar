@@ -88,14 +88,12 @@ function renderHosts(env: NodeJS.ProcessEnv): { site: string; host: string } {
     env.GAME_HOST?.trim() ||
     env.RENDER_EXTERNAL_HOSTNAME?.trim() ||
     (env.SUBDOMAIN?.trim()
-      ? `${env.SUBDOMAIN.trim()}.${(
+      ? `${env.SUBDOMAIN.trim()}.${
           env.GAME_DOMAIN?.trim() || env.DOMAIN?.trim() || ""
-        )}`
+        }`
       : "");
   const site =
-    env.SITE_HOST?.trim() ||
-    env.RENDER_EXTERNAL_HOSTNAME?.trim() ||
-    host;
+    env.SITE_HOST?.trim() || env.RENDER_EXTERNAL_HOSTNAME?.trim() || host;
 
   if (!isDnsHost(host) || !isDnsHost(site)) {
     throw new Error(
@@ -123,9 +121,10 @@ function configuredIdentity(
   return { site, host, letter, numWorkers };
 }
 
-function parseRegistration(
-  value: unknown,
-): { letter: string; numWorkers: number } {
+function parseRegistration(value: unknown): {
+  letter: string;
+  numWorkers: number;
+} {
   if (typeof value !== "object" || value === null) {
     throw new PermanentRegistryError(
       "Cluster registry returned an invalid identity response",
@@ -254,7 +253,9 @@ export async function publishAndVerifyRenderCluster(
   const apiKey = env.API_KEY?.trim();
   const version = env.RENDER_GIT_COMMIT?.trim() || env.GIT_COMMIT?.trim();
   if (!apiKey || apiKey.startsWith("WARNING_DEV_")) {
-    throw new Error("A valid API_KEY is required to publish the Render deployment");
+    throw new Error(
+      "A valid API_KEY is required to publish the Render deployment",
+    );
   }
   if (!version || !/^[0-9a-f]{40}$/i.test(version)) {
     throw new Error("Render must provide a full 40-character Git commit SHA");
@@ -291,7 +292,9 @@ export async function publishAndVerifyRenderCluster(
         response.status >= 500
       ) {
         if (attempt === attempts) {
-          throw new Error("The API has not accepted the deployment version yet");
+          throw new Error(
+            "The API has not accepted the deployment version yet",
+          );
         }
         await sleepFn(retryDelayMs);
         continue;
@@ -383,7 +386,11 @@ export async function publishAndVerifyRenderCluster(
         await sleepFn(retryDelayMs);
         continue;
       }
-      if (entry.state === "open" && isRecord(payload) && payload.latest === version) {
+      if (
+        entry.state === "open" &&
+        isRecord(payload) &&
+        payload.latest === version
+      ) {
         return;
       }
     }

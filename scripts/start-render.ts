@@ -10,9 +10,7 @@ const onRender =
 let clusterIdentity:
   | import("../src/server/RenderClusterRegistry").RenderClusterIdentity
   | undefined;
-let registry:
-  | typeof import("../src/server/RenderClusterRegistry")
-  | undefined;
+let registry: typeof import("../src/server/RenderClusterRegistry") | undefined;
 
 if (onRender) {
   registry = await import("../src/server/RenderClusterRegistry");

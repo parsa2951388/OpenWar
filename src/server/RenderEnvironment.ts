@@ -115,7 +115,9 @@ export function configureRenderEnvironment(env: NodeJS.ProcessEnv): void {
     !env.GAME_HOST?.trim() &&
     !env.RENDER_EXTERNAL_HOSTNAME?.trim()
   ) {
-    missing.push("RENDER_EXTERNAL_HOSTNAME or GAME_HOST (required for registry registration)");
+    missing.push(
+      "RENDER_EXTERNAL_HOSTNAME or GAME_HOST (required for registry registration)",
+    );
   }
 
   if (

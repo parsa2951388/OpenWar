@@ -146,7 +146,9 @@ describe("registerRenderCluster", () => {
 
   test("fails closed when the API registry does not recognise the site", async () => {
     const env = renderEnvironment();
-    const fetchFn = vi.fn(async () => jsonResponse({ error: "unknown_site" }, 404));
+    const fetchFn = vi.fn(async () =>
+      jsonResponse({ error: "unknown_site" }, 404),
+    );
 
     await expect(
       registerRenderCluster({
@@ -167,7 +169,9 @@ describe("registerRenderCluster", () => {
 
   test("does not expose the API key in registration errors", async () => {
     const env = renderEnvironment();
-    const fetchFn = vi.fn(async () => jsonResponse({ error: "forbidden" }, 403));
+    const fetchFn = vi.fn(async () =>
+      jsonResponse({ error: "forbidden" }, 403),
+    );
 
     const error = await registerRenderCluster({
       env,
@@ -211,7 +215,8 @@ describe("publishAndVerifyRenderCluster", () => {
     const env = renderEnvironment();
     const fetchFn = vi.fn(async (input: RequestInfo | URL) => {
       const url = new URL(String(input));
-      if (url.pathname === "/cluster/latest") return new Response(null, { status: 204 });
+      if (url.pathname === "/cluster/latest")
+        return new Response(null, { status: 204 });
       if (url.pathname === "/cluster.json") {
         return jsonResponse({
           latest: VERSION,
@@ -263,7 +268,9 @@ describe("publishAndVerifyRenderCluster", () => {
 
   test("does not claim readiness when the API reports an unknown site", async () => {
     const env = renderEnvironment();
-    const fetchFn = vi.fn(async () => jsonResponse({ error: "unknown_site" }, 404));
+    const fetchFn = vi.fn(async () =>
+      jsonResponse({ error: "unknown_site" }, 404),
+    );
 
     await expect(
       publishAndVerifyRenderCluster(identity, {
@@ -278,7 +285,8 @@ describe("publishAndVerifyRenderCluster", () => {
     const env = renderEnvironment();
     const fetchFn = vi.fn(async (input: RequestInfo | URL) => {
       const url = new URL(String(input));
-      if (url.pathname === "/cluster/latest") return new Response(null, { status: 204 });
+      if (url.pathname === "/cluster/latest")
+        return new Response(null, { status: 204 });
       return jsonResponse({
         latest: VERSION,
         servers: {
