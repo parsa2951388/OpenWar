@@ -222,7 +222,7 @@ describe("registerRenderCluster", () => {
         sleepFn: async () => undefined,
       }),
     ).resolves.toMatchObject({ letter: "a", numWorkers: 2 });
-    expect(fetchFn).toHaveBeenCalledTimes(2);
+    expect(fetchFn).toHaveBeenCalledTimes(3);
   });
 });
 
@@ -252,6 +252,9 @@ describe("publishAndVerifyRenderCluster", () => {
             },
           },
         });
+      }
+      if (url.pathname === "/api/health") {
+        return jsonResponse({ status: "ok", instanceId: "abcd1234" });
       }
       return jsonResponse({ error: "not_found" }, 404);
     });
@@ -287,6 +290,91 @@ describe("publishAndVerifyRenderCluster", () => {
     expect(listUrl.searchParams.get("site")).toBe(identity.site);
     expect(listInit.method).toBe("GET");
     expect(listInit.headers).toEqual({ "Cache-Control": "no-cache" });
+
+    const [healthUrl, healthInit] = fetchFn.mock.calls[2] as unknown as [
+      URL,
+      RequestInit,
+    ];
+    expect(healthUrl.toString()).toBe(`https://${identity.host}/api/health`);
+    expect(healthInit.method).toBe("GET");
+    expect(healthInit.redirect).toBe("error");
+  });
+
+  test("retries application health until all game workers are ready", async () => {
+    const env = renderEnvironment();
+    const healthStatuses = [503, 200];
+    const fetchFn = vi.fn(async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      if (url.pathname === "/cluster/latest") {
+        return new Response(null, { status: 204 });
+      }
+      if (url.pathname === "/cluster.json") {
+        return jsonResponse({
+          latest: VERSION,
+          servers: {
+            c: {
+              host: identity.host,
+              numWorkers: identity.numWorkers,
+              version: VERSION,
+              state: "open",
+            },
+          },
+        });
+      }
+      if (url.pathname === "/api/health") {
+        const status = healthStatuses.shift() ?? 200;
+        return status === 200
+          ? jsonResponse({ status: "ok", instanceId: "abcd1234" })
+          : jsonResponse(
+              { status: "unavailable", instanceId: "abcd1234" },
+              status,
+            );
+      }
+      return jsonResponse({ error: "not_found" }, 404);
+    });
+
+    await expect(
+      publishAndVerifyRenderCluster(identity, {
+        env,
+        fetchFn: fetchFn as unknown as typeof fetch,
+        retryDelayMs: 0,
+        sleepFn: async () => undefined,
+        verificationAttempts: 2,
+      }),
+    ).resolves.toBeUndefined();
+
+    expect(healthStatuses).toHaveLength(0);
+  });
+
+  test("refuses to mark a Render service ready while it still reports DEV_ID", async () => {
+    const env = renderEnvironment();
+    const fetchFn = vi.fn(async (input: RequestInfo | URL) => {
+      const url = new URL(String(input));
+      if (url.pathname === "/cluster/latest") {
+        return new Response(null, { status: 204 });
+      }
+      if (url.pathname === "/cluster.json") {
+        return jsonResponse({
+          latest: VERSION,
+          servers: {
+            c: {
+              host: identity.host,
+              numWorkers: identity.numWorkers,
+              version: VERSION,
+              state: "open",
+            },
+          },
+        });
+      }
+      return jsonResponse({ status: "ok", instanceId: "DEV_ID" });
+    });
+
+    await expect(
+      publishAndVerifyRenderCluster(identity, {
+        env,
+        fetchFn: fetchFn as unknown as typeof fetch,
+      }),
+    ).rejects.toThrow(/development instance identity/);
   });
 
   test("does not claim readiness when the API reports an unknown site", async () => {
