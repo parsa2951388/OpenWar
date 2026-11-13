@@ -168,7 +168,7 @@ describe("configureRenderEnvironment", () => {
         NUM_WORKERS: "0",
         INSTANCE_LETTER: "AB",
       }),
-    ).toThrow(/NUM_WORKERS.*INSTANCE_LETTER/);
+    ).toThrow(/INSTANCE_LETTER.*NUM_WORKERS/);
   });
 
   test("rejects the public Turnstile test key in production", () => {
