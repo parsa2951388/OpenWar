@@ -20,7 +20,8 @@ if (onRender) {
   );
 }
 
-await import("../src/server/Server");
+const server = await import("../src/server/Server");
+await server.serverStartup;
 
 if (registry && clusterIdentity) {
   // The server starts its normal cluster check-in loop during module
