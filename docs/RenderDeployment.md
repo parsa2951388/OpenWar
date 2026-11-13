@@ -17,6 +17,29 @@ intended to host production game workers, migrate it to the validated Render
 launcher with independently verified environment values. Do not change or
 suspend it automatically because it may currently serve live game traffic.
 
+## Cluster identity and release readiness
+
+The Render launcher can obtain its instance identity from the upstream cluster
+registry when `INSTANCE_LETTER` and `NUM_WORKERS` are both unset. It sends
+`POST /cluster/register` with the public page site, game host, and CPU count,
+then sets the returned letter and worker count before importing the game
+server. If an identity pair is supplied manually, both values must be present
+and valid.
+
+After the game server starts its periodic check-in loop, the launcher sends
+`POST /cluster/latest` for the deployed 40-character Render commit. Startup
+is not considered complete until `GET /cluster.json?site=...` confirms that
+the same host, letter, worker count, and version are listed with state
+`open`. An unknown site or rejected API key fails startup rather than leaving
+a server that serves a page but cannot receive games.
+
+The API registry must recognise the chosen `SITE_HOST`. The default page
+identity for a standalone Render web service is
+`RENDER_EXTERNAL_HOSTNAME`; set `SITE_HOST` explicitly when the page host is
+different from the game socket host. Do not register a fork under
+`openfront.io` merely to bypass an `Unknown site` response: that would mix
+its game IDs and ranked queues with the upstream OpenFront site.
+
 ## Required settings
 
 Configure these values in the Render service's **Environment** page. Do not
