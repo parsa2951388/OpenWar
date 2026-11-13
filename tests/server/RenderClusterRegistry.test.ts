@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, test, vi } from "vitest";
 import {
+  configureRenderClusterWorkerEntry,
   publishAndVerifyRenderCluster,
   registerRenderCluster,
   renderApiOrigin,
@@ -31,6 +32,28 @@ function jsonResponse(value: unknown, status = 200): Response {
 
 afterEach(() => {
   vi.unstubAllGlobals();
+});
+
+describe("Render cluster worker entry", () => {
+  test("runs cluster workers from the server entrypoint, not the launcher", () => {
+    const setupPrimary = vi.fn();
+    configureRenderClusterWorkerEntry(
+      { isPrimary: true, setupPrimary },
+      "/app/src/server/Server.ts",
+    );
+    expect(setupPrimary).toHaveBeenCalledWith({
+      exec: "/app/src/server/Server.ts",
+    });
+  });
+
+  test("does not reconfigure a process that is already a cluster worker", () => {
+    const setupPrimary = vi.fn();
+    configureRenderClusterWorkerEntry(
+      { isPrimary: false, setupPrimary },
+      "/app/src/server/Server.ts",
+    );
+    expect(setupPrimary).not.toHaveBeenCalled();
+  });
 });
 
 describe("renderApiOrigin", () => {
