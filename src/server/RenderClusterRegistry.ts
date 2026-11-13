@@ -83,17 +83,25 @@ export function renderApiOrigin(env: NodeJS.ProcessEnv): string {
   return parsed.origin;
 }
 
+function trimmed(value: string | undefined): string | undefined {
+  const result = value?.trim();
+  return result ? result : undefined;
+}
+
 function renderHosts(env: NodeJS.ProcessEnv): { site: string; host: string } {
+  const subdomain = trimmed(env.SUBDOMAIN);
+  const gameDomain = trimmed(env.GAME_DOMAIN) ?? trimmed(env.DOMAIN);
+  const derivedHost =
+    subdomain && gameDomain ? `${subdomain}.${gameDomain}` : undefined;
   const host =
-    env.GAME_HOST?.trim() ||
-    env.RENDER_EXTERNAL_HOSTNAME?.trim() ||
-    (env.SUBDOMAIN?.trim()
-      ? `${env.SUBDOMAIN.trim()}.${
-          env.GAME_DOMAIN?.trim() || env.DOMAIN?.trim() || ""
-        }`
-      : "");
+    trimmed(env.GAME_HOST) ??
+    trimmed(env.RENDER_EXTERNAL_HOSTNAME) ??
+    derivedHost ??
+    "";
   const site =
-    env.SITE_HOST?.trim() || env.RENDER_EXTERNAL_HOSTNAME?.trim() || host;
+    trimmed(env.SITE_HOST) ??
+    trimmed(env.RENDER_EXTERNAL_HOSTNAME) ??
+    host;
 
   if (!isDnsHost(host) || !isDnsHost(site)) {
     throw new Error(
@@ -251,7 +259,8 @@ export async function publishAndVerifyRenderCluster(
   const env = options.env ?? process.env;
   const fetchFn = options.fetchFn ?? fetch;
   const apiKey = env.API_KEY?.trim();
-  const version = env.RENDER_GIT_COMMIT?.trim() || env.GIT_COMMIT?.trim();
+  const version =
+    trimmed(env.RENDER_GIT_COMMIT) ?? trimmed(env.GIT_COMMIT);
   if (!apiKey || apiKey.startsWith("WARNING_DEV_")) {
     throw new Error(
       "A valid API_KEY is required to publish the Render deployment",
