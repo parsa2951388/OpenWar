@@ -79,6 +79,30 @@ describe("Open War API gateway cluster registry routes", () => {
     expect(upstreamFetch).not.toHaveBeenCalled();
   });
 
+  test("blocks browser-originated join verification requests", async () => {
+    const upstreamFetch = vi.fn();
+    vi.stubGlobal("fetch", upstreamFetch);
+
+    const response = await gateway.fetch(
+      new Request("https://gateway.example.com/join_verify", {
+        method: "POST",
+        headers: {
+          Origin: "https://open-war-online.onrender.com",
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ token: "not-a-real-token" }),
+      }),
+      {} as GatewayEnvironment,
+      context,
+    );
+
+    expect(response.status).toBe(403);
+    await expect(response.json()).resolves.toEqual({
+      error: "server_to_server_only",
+    });
+    expect(upstreamFetch).not.toHaveBeenCalled();
+  });
+
   test.each(["GET", "PUT", "DELETE"])(
     "rejects %s on a registry mutation endpoint",
     async (method) => {
