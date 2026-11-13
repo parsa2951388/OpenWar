@@ -9,7 +9,7 @@ import { ServerEnv } from "./ServerEnv";
 
 // The ranked (matchmaking) side of the drain, the counterpart to
 // ClusterCheckin.ts on the master. A worker long-polls
-// `${jwtIssuer}/matchmaking/checkin` to offer itself as the host for the next
+// `${apiOrigin}/matchmaking/checkin` to offer itself as the host for the next
 // match; the API hands back an assignment and the worker creates the game.
 //
 // That offer must follow the deployment's active flag. Until OPE-469 it did
