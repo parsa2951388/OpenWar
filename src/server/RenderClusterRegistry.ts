@@ -5,14 +5,12 @@ const RETRY_DELAY_MS = 5_000;
 const REQUEST_TIMEOUT_MS = 30_000;
 
 export function configureRenderClusterWorkerEntry(
-  clusterModule: Pick<
-    typeof import("node:cluster"),
-    "isPrimary" | "setupPrimary"
-  >,
+  isPrimary: boolean,
+  setupPrimary: (settings: { exec: string }) => void,
   serverEntryPath: string,
 ): void {
-  if (clusterModule.isPrimary) {
-    clusterModule.setupPrimary({ exec: serverEntryPath });
+  if (isPrimary) {
+    setupPrimary({ exec: serverEntryPath });
   }
 }
 
