@@ -9,6 +9,8 @@ or matchmaking implementation.
 
 - `/matchmaking/checkin`
 - `/matchmaking/join` (WebSocket upgrade pass-through)
+- `/cluster/register` (server-to-server registration)
+- `/cluster/latest` (server-to-server release promotion)
 - `/cluster/checkin`
 - `/cluster/lobbies` (WebSocket upgrade pass-through)
 - `/cluster.json`
@@ -50,4 +52,6 @@ the network transport origin only.
 - Matchmaking and lobby WebSocket upgrades must pass through with status 101.
 
 The gateway also forwards `/join_verify` for the server-side Turnstile and
-name-verification flow.
+name-verification flow. `/cluster/register` and `/cluster/latest` are restricted
+to server-to-server requests (requests carrying an `Origin` header are rejected)
+and are forwarded only when called with the upstream API key.
