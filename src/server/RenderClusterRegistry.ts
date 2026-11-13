@@ -99,9 +99,7 @@ function renderHosts(env: NodeJS.ProcessEnv): { site: string; host: string } {
     derivedHost ??
     "";
   const site =
-    trimmed(env.SITE_HOST) ??
-    trimmed(env.RENDER_EXTERNAL_HOSTNAME) ??
-    host;
+    trimmed(env.SITE_HOST) ?? trimmed(env.RENDER_EXTERNAL_HOSTNAME) ?? host;
 
   if (!isDnsHost(host) || !isDnsHost(site)) {
     throw new Error(
@@ -259,8 +257,7 @@ export async function publishAndVerifyRenderCluster(
   const env = options.env ?? process.env;
   const fetchFn = options.fetchFn ?? fetch;
   const apiKey = env.API_KEY?.trim();
-  const version =
-    trimmed(env.RENDER_GIT_COMMIT) ?? trimmed(env.GIT_COMMIT);
+  const version = trimmed(env.RENDER_GIT_COMMIT) ?? trimmed(env.GIT_COMMIT);
   if (!apiKey || apiKey.startsWith("WARNING_DEV_")) {
     throw new Error(
       "A valid API_KEY is required to publish the Render deployment",
