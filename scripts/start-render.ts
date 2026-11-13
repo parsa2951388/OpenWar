@@ -8,11 +8,7 @@ configureRenderEnvironment(process.env);
 const onRender =
   process.env.RENDER === "true" && process.env.GAME_ENV !== "dev";
 let clusterIdentity:
-  | Awaited<
-      ReturnType<
-        typeof import("../src/server/RenderClusterRegistry")["registerRenderCluster"]
-      >
-    >
+  | import("../src/server/RenderClusterRegistry").RenderClusterIdentity
   | undefined;
 let registry:
   | typeof import("../src/server/RenderClusterRegistry")
