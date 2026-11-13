@@ -60,9 +60,9 @@ commit secret values to Git.
   rejected.
 - **`TURNSTILE_SITE_KEY`**: Site key matching the environment. Production
   rejects the public test key.
-- **`NUM_WORKERS`**: Positive integer matching this instance's worker routing.
-- **`INSTANCE_LETTER`**: One registered lowercase letter. Never reuse a
-  retired letter.
+- **`NUM_WORKERS` and `INSTANCE_LETTER`**: Provide both as a matching,
+  pre-registered pair, or leave both unset so the launcher obtains them from
+  the API registry. Never set only one or reuse a retired letter.
 
 Render supplies `RENDER_GIT_COMMIT`; the launcher always copies this deployed
 SHA into `GIT_COMMIT`, even when a stale manual `GIT_COMMIT` is present. This
@@ -82,9 +82,10 @@ only for an isolated, non-production service.
 ## Before switching the live service
 
 1. Confirm the API host represented by `DOMAIN` and the corresponding API key.
-2. Register/confirm `INSTANCE_LETTER` and `NUM_WORKERS` for the deployment.
+2. Confirm that the API registry recognises `SITE_HOST`; the launcher obtains
+   `INSTANCE_LETTER` and `NUM_WORKERS` automatically when both are unset.
 3. Set a live Turnstile site key for `GAME_ENV=prod`.
-4. Verify the service can reach the configured `API_DOMAIN` (or the derived
+4. Verify the service can reach `OPENWAR_API_ORIGIN` (or the derived
    `https://api.<DOMAIN>` when it is unset) from the Render region.
 5. Only then change the live service's start configuration and deploy.
 
@@ -107,7 +108,13 @@ loaded, the last known-good checker remains active through later API outages.
 
 ## Join verification and admission policy
 
-Both browser and server JWKS retrieval now use the configured API transport origin while JWT issuer/audience validation remains bound to `DOMAIN`. The server-side `/join_verify` request uses that same transport origin and refuses HTTP redirects so the API key cannot be forwarded to a different host. First joins fail closed when Turnstile/name verification is unavailable; an already-admitted reconnect may retain its existing local identity during a verifier outage. The Cloudflare gateway source must include `/join_verify` before `OPENWAR_API_ORIGIN` is switched to that Worker.
+Both browser and server JWKS retrieval use the configured API transport origin,
+while JWT issuer/audience validation remains bound to `DOMAIN`. The server-side
+`/join_verify` request uses the same transport origin and refuses HTTP redirects
+so the API key cannot be forwarded to a different host. First joins fail closed
+when Turnstile/name verification is unavailable; an already-admitted reconnect
+may retain its existing local identity during a verifier outage. The Cloudflare
+gateway must include `/join_verify` before `OPENWAR_API_ORIGIN` points to it.
 
 ## Ranked matchmaking diagnostics
 
