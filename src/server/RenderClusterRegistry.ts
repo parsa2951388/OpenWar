@@ -341,6 +341,7 @@ export async function publishAndVerifyRenderCluster(
   }
 
   const verificationAttempts = options.verificationAttempts ?? 12;
+  let clusterOpen = false;
   for (let attempt = 1; attempt <= verificationAttempts; attempt++) {
     const listUrl = new URL("/cluster.json", apiOrigin);
     listUrl.searchParams.set("site", identity.site);
@@ -410,14 +411,83 @@ export async function publishAndVerifyRenderCluster(
         isRecord(payload) &&
         payload.latest === version
       ) {
-        return;
+        clusterOpen = true;
+        break;
       }
     }
 
     if (attempt < verificationAttempts) await sleepFn(retryDelayMs);
   }
 
-  throw new Error(
-    "The API did not expose this Render instance as an open server for the deployed commit",
-  );
+  if (!clusterOpen) {
+    throw new Error(
+      "The API did not expose this Render instance as an open server for the deployed commit",
+    );
+  }
+
+  // Registry membership is necessary but not sufficient: the master may be
+  // visible before every worker has finished booting. The application's own
+  // readiness route only returns 200 once its lobby service is healthy.
+  const healthUrl = new URL("/api/health", `https://${identity.host}`);
+  let applicationReady = false;
+  for (let attempt = 1; attempt <= verificationAttempts; attempt++) {
+    let response: Response;
+    try {
+      response = await fetchFn(healthUrl, {
+        method: "GET",
+        redirect: "error",
+        signal: AbortSignal.timeout(options.timeoutMs ?? REQUEST_TIMEOUT_MS),
+      });
+    } catch {
+      if (attempt === verificationAttempts) break;
+      await sleepFn(retryDelayMs);
+      continue;
+    }
+
+    if (response.status >= 500) {
+      if (attempt === verificationAttempts) break;
+      await sleepFn(retryDelayMs);
+      continue;
+    }
+    if (!response.ok) {
+      throw new PermanentRegistryError(
+        `The Render application health endpoint returned HTTP ${response.status}`,
+      );
+    }
+
+    let payload: unknown;
+    try {
+      payload = await response.json();
+    } catch {
+      throw new PermanentRegistryError(
+        "The Render application health endpoint returned invalid JSON",
+      );
+    }
+    if (!isRecord(payload)) {
+      throw new PermanentRegistryError(
+        "The Render application health endpoint returned an invalid response",
+      );
+    }
+    if (payload.instanceId === "DEV_ID") {
+      throw new PermanentRegistryError(
+        "The Render application is still running with a development instance identity",
+      );
+    }
+    if (
+      payload.status === "ok" &&
+      typeof payload.instanceId === "string" &&
+      payload.instanceId.length > 0
+    ) {
+      applicationReady = true;
+      break;
+    }
+
+    if (attempt < verificationAttempts) await sleepFn(retryDelayMs);
+  }
+
+  if (!applicationReady) {
+    throw new Error(
+      "The Render application did not become healthy after the cluster registry opened the deployment",
+    );
+  }
 }
