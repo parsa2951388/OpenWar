@@ -125,6 +125,37 @@ describe("configureRenderEnvironment", () => {
     ).toThrow(/public DOMAIN/);
   });
 
+  test("allows the launcher to register the Render identity before importing the server", () => {
+    const env: NodeJS.ProcessEnv = {
+      RENDER: "true",
+      GAME_ENV: "prod",
+      RENDER_GIT_COMMIT: "0123456789abcdef0123456789abcdef01234567",
+      RENDER_EXTERNAL_HOSTNAME: "open-war-online.onrender.com",
+      DOMAIN: "openfront.io",
+      API_KEY: "configured-api-key",
+      TURNSTILE_SITE_KEY: "live-turnstile-site-key",
+    };
+
+    expect(() => configureRenderEnvironment(env)).not.toThrow();
+    expect(env.INSTANCE_LETTER).toBeUndefined();
+    expect(env.NUM_WORKERS).toBeUndefined();
+  });
+
+  test("requires the API registry identity to be configured as a pair", () => {
+    expect(() =>
+      configureRenderEnvironment({
+        RENDER: "true",
+        GAME_ENV: "staging",
+        RENDER_GIT_COMMIT: "0123456789abcdef0123456789abcdef01234567",
+        RENDER_EXTERNAL_HOSTNAME: "open-war-online.onrender.com",
+        DOMAIN: "openfront.io",
+        API_KEY: "configured-api-key",
+        TURNSTILE_SITE_KEY: "staging-site-key",
+        INSTANCE_LETTER: "a",
+      }),
+    ).toThrow(/INSTANCE_LETTER and NUM_WORKERS must be configured together/);
+  });
+
   test("rejects malformed worker counts and unregistered instance letters", () => {
     expect(() =>
       configureRenderEnvironment({
@@ -178,7 +209,7 @@ describe("configureRenderEnvironment", () => {
         RENDER_GIT_COMMIT: "0123456789abcdef",
       }),
     ).toThrow(
-      /public DOMAIN.*API_KEY.*TURNSTILE_SITE_KEY.*NUM_WORKERS.*INSTANCE_LETTER/,
+      /public DOMAIN.*API_KEY.*TURNSTILE_SITE_KEY.*RENDER_EXTERNAL_HOSTNAME/,
     );
   });
 
