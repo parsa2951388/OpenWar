@@ -121,13 +121,16 @@ export default {
     // Registration and release promotion mutate the shared server registry.
     // They are strictly server-to-server operations and must never be exposed
     // to browser-origin requests, even from an allowed frontend origin.
-    const registryMutation =
-      pathname === "/cluster/register" || pathname === "/cluster/latest";
-    if (registryMutation && origin) {
+    const serverOnlyMutation = [
+      "/cluster/register",
+      "/cluster/latest",
+      "/join_verify",
+    ].includes(pathname);
+    if (serverOnlyMutation && origin) {
       return json({ error: "server_to_server_only" }, 403, null, env);
     }
     if (
-      registryMutation &&
+      serverOnlyMutation &&
       request.method !== "POST" &&
       request.method !== "OPTIONS"
     ) {
