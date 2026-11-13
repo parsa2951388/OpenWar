@@ -16,7 +16,8 @@ describe("Open War API gateway cluster registry routes", () => {
     "forwards %s only as a server-to-server POST with the API key",
     async (path) => {
       const upstreamFetch = vi.fn(
-        async () => new Response(JSON.stringify({ ok: true }), { status: 200 }),
+        async (_request: Request) =>
+          new Response(JSON.stringify({ ok: true }), { status: 200 }),
       );
       vi.stubGlobal("fetch", upstreamFetch);
 
@@ -97,7 +98,7 @@ describe("Open War API gateway cluster registry routes", () => {
 
   test("keeps the cluster list public and read-only", async () => {
     const upstreamFetch = vi.fn(
-      async () =>
+      async (_request: Request) =>
         new Response(
           JSON.stringify({
             latest: "0123456789abcdef0123456789abcdef01234567",
