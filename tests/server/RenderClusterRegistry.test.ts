@@ -116,7 +116,8 @@ describe("registerRenderCluster", () => {
       site: "open-war-online.onrender.com",
       host: "open-war-game.onrender.com",
     });
-    expect(JSON.parse(String(fetchFn.mock.calls[0][1]?.body))).toEqual({
+    const call = fetchFn.mock.calls[0] as unknown as [string, RequestInit];
+    expect(JSON.parse(String(call[1].body))).toEqual({
       site: "open-war-online.onrender.com",
       host: "open-war-game.onrender.com",
       cpus: 1,
@@ -155,22 +156,26 @@ describe("registerRenderCluster", () => {
       }),
     ).rejects.toThrow(/HTTP 404/);
     expect(fetchFn).toHaveBeenCalledTimes(1);
-    expect(String(fetchFn.mock.calls[0]?.[1]?.headers)).not.toContain(
-      "test-api-key",
-    );
+    const requestInit = fetchFn.mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(
+      (requestInit[1].headers as Record<string, string>)["x-api-key"],
+    ).toBe("test-api-key");
   });
 
   test("does not expose the API key in registration errors", async () => {
     const env = renderEnvironment();
     const fetchFn = vi.fn(async () => jsonResponse({ error: "forbidden" }, 403));
 
-    await expect(
-      registerRenderCluster({
-        env,
-        fetchFn: fetchFn as unknown as typeof fetch,
-        cpuCount: 1,
-      }),
-    ).rejects.toThrow(/HTTP 403/);
+    const error = await registerRenderCluster({
+      env,
+      fetchFn: fetchFn as unknown as typeof fetch,
+      cpuCount: 1,
+    }).catch((value: unknown) => value);
+    expect(String(error)).toContain("HTTP 403");
+    expect(String(error)).not.toContain("test-api-key");
   });
 
   test("retries transient registry failures", async () => {
