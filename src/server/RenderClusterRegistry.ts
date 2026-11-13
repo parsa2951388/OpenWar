@@ -85,7 +85,8 @@ export function renderApiOrigin(env: NodeJS.ProcessEnv): string {
 
 function trimmed(value: string | undefined): string | undefined {
   const result = value?.trim();
-  return result ? result : undefined;
+  if (!result) return undefined;
+  return result;
 }
 
 function renderHosts(env: NodeJS.ProcessEnv): { site: string; host: string } {
