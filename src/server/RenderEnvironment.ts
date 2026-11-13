@@ -95,16 +95,27 @@ export function configureRenderEnvironment(env: NodeJS.ProcessEnv): void {
   }
   if (!env.TURNSTILE_SITE_KEY) missing.push("TURNSTILE_SITE_KEY");
 
-  const workerCount = Number(env.NUM_WORKERS);
-  if (
-    !env.NUM_WORKERS ||
-    !Number.isSafeInteger(workerCount) ||
-    workerCount < 1
-  ) {
-    missing.push("NUM_WORKERS (positive integer)");
+  const hasInstanceLetter = Boolean(env.INSTANCE_LETTER?.trim());
+  const hasWorkerCount = Boolean(env.NUM_WORKERS?.trim());
+  if (hasInstanceLetter !== hasWorkerCount) {
+    missing.push("INSTANCE_LETTER and NUM_WORKERS must be configured together");
   }
-  if (!/^[a-z]$/.test(env.INSTANCE_LETTER ?? "")) {
+  if (hasInstanceLetter && !/^[a-z]$/.test(env.INSTANCE_LETTER ?? "")) {
     missing.push("INSTANCE_LETTER (one registered lowercase letter)");
+  }
+  if (hasWorkerCount) {
+    const workerCount = Number(env.NUM_WORKERS);
+    if (!Number.isSafeInteger(workerCount) || workerCount < 1) {
+      missing.push("NUM_WORKERS (positive integer)");
+    }
+  }
+  if (
+    !hasInstanceLetter &&
+    !hasWorkerCount &&
+    !env.GAME_HOST?.trim() &&
+    !env.RENDER_EXTERNAL_HOSTNAME?.trim()
+  ) {
+    missing.push("RENDER_EXTERNAL_HOSTNAME or GAME_HOST (required for registry registration)");
   }
 
   if (
