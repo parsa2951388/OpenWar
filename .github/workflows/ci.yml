@@ -128,7 +128,7 @@ jobs:
         run: |
           git fetch origin audit/full-stabilization-2026-11-12
           git reset --hard origin/audit/full-stabilization-2026-11-12
-          npx oxfmt --write map-generator/info.schema.json src/server/PrivilegeRefresher.ts src/server/RenderEnvironment.ts src/server/RenderClusterRegistry.ts scripts/start-render.ts tests/client/ClientEnvStatic.test.ts tests/server/RenderEnvironment.test.ts tests/server/RenderClusterRegistry.test.ts tests/cloudflare/OpenWarApiGateway.test.ts cloudflare/openwar-api-gateway/src/index.js
+          npx oxfmt --write map-generator/info.schema.json src/server/PrivilegeRefresher.ts src/server/RenderEnvironment.ts src/server/RenderClusterRegistry.ts scripts/start-render.ts tests/client/ClientEnvStatic.test.ts tests/server/RenderEnvironment.test.ts tests/server/RenderClusterRegistry.test.ts tests/cloudflare/OpenWarApiGateway.test.ts cloudflare/openwar-api-gateway/src/index.js cloudflare/openwar-api-gateway/src/index.d.ts cloudflare/openwar-api-gateway/src/index.d.ts
           git config user.name "github-actions[bot]"
           git config user.email "41898282+github-actions[bot]@users.noreply.github.com"
           git add map-generator/info.schema.json src/server/PrivilegeRefresher.ts src/server/RenderEnvironment.ts src/server/RenderClusterRegistry.ts scripts/start-render.ts tests/client/ClientEnvStatic.test.ts tests/server/RenderEnvironment.test.ts tests/server/RenderClusterRegistry.test.ts tests/cloudflare/OpenWarApiGateway.test.ts cloudflare/openwar-api-gateway/src/index.js
