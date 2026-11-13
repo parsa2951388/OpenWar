@@ -1,9 +1,22 @@
 import "dotenv/config";
+import cluster from "node:cluster";
+import { fileURLToPath } from "node:url";
+import {
+  configureRenderClusterWorkerEntry,
+} from "../src/server/RenderClusterRegistry";
 import { configureRenderEnvironment } from "../src/server/RenderEnvironment";
 
 // Configure before importing Server.ts: ServerEnv parses GAME_ENV at module
 // initialization, and dotenv values must be available before that happens.
 configureRenderEnvironment(process.env);
+
+// Node cluster children default to re-executing process.argv[1], which is
+// this launcher. Pin child execution to the actual server entry so workers
+// never repeat registration, version publication, or launcher setup.
+configureRenderClusterWorkerEntry(
+  cluster,
+  fileURLToPath(new URL("../src/server/Server.ts", import.meta.url)),
+);
 
 const onRender =
   process.env.RENDER === "true" && process.env.GAME_ENV !== "dev";
