@@ -8,6 +8,8 @@ const DEFAULT_ALLOWED_ORIGINS = [
 
 const ROUTES = [
   [/^\/matchmaking\/(?:join|checkin)$/, "matchmaking"],
+  [/^\/cluster\/register$/, "cluster-register"],
+  [/^\/cluster\/latest$/, "cluster-latest"],
   [/^\/cluster\/(?:checkin|lobbies)$/, "cluster"],
   [/^\/map_weights$/, "map-weights"],
   [/^\/cluster\.json$/, "cluster-list"],
@@ -114,6 +116,22 @@ export default {
     const group = routeGroup(pathname);
     if (!group) {
       return json({ error: "route_not_found" }, 404, origin, env);
+    }
+
+    // Registration and release promotion mutate the shared server registry.
+    // They are strictly server-to-server operations and must never be exposed
+    // to browser-origin requests, even from an allowed frontend origin.
+    const registryMutation =
+      pathname === "/cluster/register" || pathname === "/cluster/latest";
+    if (registryMutation && origin) {
+      return json({ error: "server_to_server_only" }, 403, null, env);
+    }
+    if (
+      registryMutation &&
+      request.method !== "POST" &&
+      request.method !== "OPTIONS"
+    ) {
+      return json({ error: "method_not_allowed" }, 405, origin, env);
     }
 
     if (request.method === "OPTIONS") {
