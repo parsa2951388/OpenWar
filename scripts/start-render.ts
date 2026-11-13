@@ -1,9 +1,7 @@
 import "dotenv/config";
 import cluster from "node:cluster";
 import { fileURLToPath } from "node:url";
-import {
-  configureRenderClusterWorkerEntry,
-} from "../src/server/RenderClusterRegistry";
+import { configureRenderClusterWorkerEntry } from "../src/server/RenderClusterRegistry";
 import { configureRenderEnvironment } from "../src/server/RenderEnvironment";
 
 // Configure before importing Server.ts: ServerEnv parses GAME_ENV at module
