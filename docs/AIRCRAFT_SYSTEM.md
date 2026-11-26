@@ -129,6 +129,7 @@ versioned execution snapshot schemas. Snapshot compatibility matters for
 deterministic simulation, replay and worker parity.
 
 When changing an execution, review:
+
 - initialization and per-tick state transitions;
 - invalid/deleted targets and missing recovery bases;
 - fuel, service and return paths;
