@@ -41,7 +41,6 @@ const hydrogenBombIcon = assetUrl("images/MushroomCloudIconWhite.svg");
 const atomBombIcon = assetUrl("images/NukeIconWhite.svg");
 const portIcon = assetUrl("images/PortIcon.svg");
 const samlauncherIcon = assetUrl("images/SamLauncherIconWhite.svg");
-const radarStationIcon = assetUrl("images/RadarStationIcon.svg");
 const shieldIcon = assetUrl("images/ShieldIconWhite.svg");
 
 export interface BuildItemDisplay {
@@ -136,13 +135,6 @@ const buildTable: BuildItemDisplay[][] = [
       icon: samlauncherIcon,
       description: "build_menu.desc.sam_launcher",
       key: "unit_type.sam_launcher",
-      countable: true,
-    },
-    {
-      unitType: UnitType.RadarStation,
-      icon: radarStationIcon,
-      description: "build_menu.desc.radar_station",
-      key: "unit_type.radar_station",
       countable: true,
     },
     {
