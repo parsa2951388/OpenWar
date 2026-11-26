@@ -1348,6 +1348,7 @@
     "video_tutorial_title": "Open War Tutorial"
   },
   "host_modal": {
+    "advanced_warfare": "Advanced Warfare (high ground)",
     "anonymous_players": "Anonymous players",
     "assigned_teams": "Assigned Teams",
     "auto_start_timer": "Time until the game starts automatically",

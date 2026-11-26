@@ -16,6 +16,7 @@ export const LobbyPresetConfigSchema = z.object({
   gameMap: z.enum(GameMapType),
   useRandomMap: z.boolean().optional(),
   compactMap: z.boolean().optional(),
+  advancedWarfare: z.boolean().optional(),
   difficulty: z.enum(Difficulty),
   gameMode: z.enum(GameMode),
   teamCount: TeamCountConfigSchema,

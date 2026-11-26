@@ -379,6 +379,7 @@ export class AttackExecution implements Execution {
       );
     return {
       terrain: this.map.terrainType(tile),
+      terrainMagnitude: this.map.magnitude(tile),
       attackTroops,
       attacker: {
         type: this._owner.type(),
