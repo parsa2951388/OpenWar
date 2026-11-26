@@ -3,8 +3,8 @@
  * renderer's PlayerState / PlayerStatic / UnitState records.
  *
  * No DOM, settings or GameView imports here, so the replay encoder
- * (src/client/replay/codec) can use them in a worker and get the same records as
- * the live client.
+ * (src/client/replay/codec) can use them in a worker and get the same records
+ * as the live client.
  */
 import {
   PlayerID,
@@ -65,11 +65,12 @@ export function unitStateFromUpdate(u: UnitUpdate): UnitState {
     troops: u.troops,
     missileTimerQueue: u.missileTimerQueue,
     level: u.level,
-    veterancy: u.warshipState?.veterancy ?? 0,
+    veterancy: u.warshipState?.veterancy ?? u.fighterState?.veterancy ?? 0,
     hasTrainStation: u.hasTrainStation,
     trainType: trainTypeToNum(u.trainType),
     loaded: u.loaded ?? null,
-    constructionStartTick: null, // GameView fills in createdAt when underConstruction
+    // GameView fills in createdAt when underConstruction.
+    constructionStartTick: null,
     samUpgradeStartTick: u.samUpgrade?.upgradeStartTick ?? null,
     samUpgradeStartRange: u.samUpgrade?.startRange ?? null,
     samUpgradeTargetLevel: u.samUpgrade?.targetLevel ?? null,
@@ -99,7 +100,8 @@ export function applyUnitUpdateInPlace(target: UnitState, u: UnitUpdate): void {
   target.troops = u.troops;
   target.missileTimerQueue = u.missileTimerQueue;
   target.level = u.level;
-  target.veterancy = u.warshipState?.veterancy ?? 0;
+  target.veterancy =
+    u.warshipState?.veterancy ?? u.fighterState?.veterancy ?? 0;
   target.hasTrainStation = u.hasTrainStation;
   target.trainType = trainTypeToNum(u.trainType);
   target.loaded = u.loaded ?? null;

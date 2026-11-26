@@ -105,6 +105,11 @@ export class FighterAamExecution implements Execution {
           return;
         }
         this.target.modifyHealth(-this.damage, this.owner);
+        if (this.launchingFighter.isActive()) {
+          this.launchingFighter.recordFighterCombatExperience(
+            mg.config().fighterVeterancyAamExperience(),
+          );
+        }
         this.shell.setReachedTarget();
         this.shell.delete(false);
         this.finish();

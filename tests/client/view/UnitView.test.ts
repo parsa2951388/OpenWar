@@ -178,6 +178,8 @@ describe("UnitView accessors", () => {
       bomb: 0,
       ammo: 0,
       flares: 4,
+      veterancy: 0,
+      veterancyProgress: 0,
     };
     const nextState: FighterState = {
       ...firstState,

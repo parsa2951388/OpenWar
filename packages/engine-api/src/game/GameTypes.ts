@@ -35,6 +35,9 @@ export type FighterState = {
   bomb: number;
   ammo: number;
   flares: number;
+  /** Earned through successful combat actions; capped by EngineConfig. */
+  veterancy: number;
+  veterancyProgress: number;
   isInCombat?: boolean;
   lastCombatTick?: number;
 };

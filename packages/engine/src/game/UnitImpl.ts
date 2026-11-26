@@ -1,8 +1,8 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
 import {
-  MessageType,
   FighterState,
   FighterType,
+  MessageType,
   NukeState,
   SamLauncherState,
   TerraNullius,
@@ -143,6 +143,8 @@ export class UnitImpl implements Unit {
         bomb: config.fighterMaxBomb(fighterType),
         ammo: config.fighterMaxGunAmmo(fighterType),
         flares: config.fighterMaxFlares(fighterType),
+        veterancy: 0,
+        veterancyProgress: 0,
         lastCombatTick: -100,
       };
     }
@@ -324,12 +326,14 @@ export class UnitImpl implements Unit {
 
   maxHealth(): number {
     const base = this.info().maxHealth ?? 1;
-    // veterancy() is 0 for non-warships, so this returns base for them.
-    return maxHealthWithVeterancy(
-      base,
-      this.veterancy(),
-      this.mg.config().warshipVeterancyHealthBonus(),
-    );
+    const config = this.mg.config();
+    const healthBonus =
+      this._warshipState !== undefined
+        ? config.warshipVeterancyHealthBonus()
+        : this._fighterState !== undefined
+          ? config.fighterVeterancyHealthBonus()
+          : 0;
+    return maxHealthWithVeterancy(base, this.veterancy(), healthBonus);
   }
 
   modifyHealth(delta: number, attacker?: Player): void {
@@ -387,7 +391,8 @@ export class UnitImpl implements Unit {
       throw new Error(`cannot delete ${this} not active`);
     }
 
-    // Record whether this unit was destroyed by an enemy (vs. arrived / retreated)
+    // Record whether this unit was destroyed by an enemy (vs. arrived /
+    // retreated).
     this._wasDestroyedByEnemy = destroyer !== undefined;
     this._destroyer = destroyer ?? undefined;
 
@@ -611,7 +616,8 @@ export class UnitImpl implements Unit {
       // nearbyUnits skips structures under construction, so this flip changes
       // what a rail plan sees.
       this.mg.noteStructureChange(this);
-      this._owner._myUnitsVersion++; // unitsOwned() weighs under-construction units differently
+      // unitsOwned() weighs under-construction units differently.
+      this._owner._myUnitsVersion++;
       this.mg.addUpdate(this.toUpdate());
     }
   }
@@ -718,7 +724,40 @@ export class UnitImpl implements Unit {
   }
 
   veterancy(): number {
-    return this._warshipState?.veterancy ?? 0;
+    return this._warshipState?.veterancy ?? this._fighterState?.veterancy ?? 0;
+  }
+
+  /**
+   * Award experience to a fighter for a confirmed combat action. Progress is
+   * integer-only, carries across rank-ups, and stops at the configured cap.
+   */
+  recordFighterCombatExperience(points: number): void {
+    const state = this._fighterState;
+    if (state === undefined || !Number.isSafeInteger(points) || points <= 0) {
+      return;
+    }
+    const config = this.mg.config();
+    const maxRank = config.fighterMaxVeterancy();
+    if (state.veterancy >= maxRank) return;
+
+    const pointsPerRank = config.fighterVeterancyExperiencePerLevel();
+    let rank = state.veterancy;
+    let progress = state.veterancyProgress + points;
+    while (progress >= pointsPerRank && rank < maxRank) {
+      progress -= pointsPerRank;
+      rank++;
+    }
+    if (rank >= maxRank) progress = 0;
+
+    if (rank === state.veterancy && progress === state.veterancyProgress) {
+      return;
+    }
+    this._fighterState = {
+      ...state,
+      veterancy: rank,
+      veterancyProgress: progress,
+    };
+    this.mg.addUpdate(this.toUpdate());
   }
 
   /** Raise veterancy by one level (capped), which raises max health. The ship
@@ -759,7 +798,8 @@ export class UnitImpl implements Unit {
   }
 
   /**
-   * Add partial progress toward the next veterancy level from a non-kill source.
+   * Add partial progress toward the next veterancy level from a non-kill
+   * source.
    *
    * Transports and captures share one integer progress meter. One level =
    * transportThreshold * captureThreshold points; a transport is worth
@@ -816,7 +856,8 @@ export class UnitImpl implements Unit {
       };
     }
     this._level++;
-    // unitCount()/unitsOwned() are level-weighted and memoised on these versions
+    // unitCount()/unitsOwned() are level-weighted and memoised on these
+    // versions.
     this.mg.bumpUnitsVersion();
     this._owner._myUnitsVersion++;
     if ([UnitType.MissileSilo, UnitType.SAMLauncher].includes(this.type())) {
@@ -837,7 +878,8 @@ export class UnitImpl implements Unit {
       this.delete(true, destroyer);
       return;
     }
-    // unitCount()/unitsOwned() are level-weighted and memoised on these versions
+    // unitCount()/unitsOwned() are level-weighted and memoised on these
+    // versions.
     this.mg.bumpUnitsVersion();
     this._owner._myUnitsVersion++;
     this.mg.addUpdate(this.toUpdate());
@@ -905,6 +947,8 @@ export class UnitImpl implements Unit {
             bomb: this._fighterState.bomb,
             ammo: this._fighterState.ammo,
             flares: this._fighterState.flares,
+            veterancy: this._fighterState.veterancy,
+            veterancyProgress: this._fighterState.veterancyProgress,
             isInCombat: this._fighterState.isInCombat,
             lastCombatTick: this._fighterState.lastCombatTick,
           }
@@ -992,7 +1036,20 @@ export class UnitImpl implements Unit {
 
 export const UnitSnapshot = snapshotType({
   name: "Unit",
-  version: 1,
+  version: 2,
+  migrations: {
+    1: (data) => ({
+      ...data,
+      fighterState:
+        data.fighterState === null || data.fighterState === undefined
+          ? data.fighterState
+          : {
+              veterancy: 0,
+              veterancyProgress: 0,
+              ...data.fighterState,
+            },
+    }),
+  },
   schema: z.object({
     id: zInt(),
     type: UnitTypeSchema,
@@ -1031,6 +1088,8 @@ export const UnitSnapshot = snapshotType({
         bomb: zInt(),
         ammo: zInt(),
         flares: zInt(),
+        veterancy: zInt().default(0),
+        veterancyProgress: zInt().default(0),
         isInCombat: z.boolean().optional(),
         lastCombatTick: zInt().optional(),
       })
