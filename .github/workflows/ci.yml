@@ -117,6 +117,10 @@ jobs:
       - name: Setup npm
         run: npm install --global --ignore-scripts npm@12.1.0
       - run: npm ci
+      - name: Preview exact Oxfmt output for radar changes
+        run: |
+          npx oxfmt packages/engine/src/aircombat/AircraftRules.ts packages/engine/src/execution/FighterExecution.ts
+          git --no-pager diff -- packages/engine/src/aircombat/AircraftRules.ts packages/engine/src/execution/FighterExecution.ts
       - run: npm run format:check
 
   gen-maps:
