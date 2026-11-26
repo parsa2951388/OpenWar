@@ -108,6 +108,7 @@ export class HostLobbyModal extends BaseModal {
   @state() private instantBuild: boolean = false;
   @state() private randomSpawn: boolean = false;
   @state() private compactMap: boolean = false;
+  @state() private advancedWarfare: boolean = false;
   @state() private goldMultiplier: boolean = false;
   @state() private goldMultiplierValue: number | undefined = undefined;
   @state() private startingGold: boolean = false;
@@ -760,6 +761,10 @@ export class HostLobbyModal extends BaseModal {
                     checked: this.compactMap,
                   },
                   {
+                    labelKey: "host_modal.advanced_warfare",
+                    checked: this.advancedWarfare,
+                  },
+                  {
                     labelKey: "host_modal.anonymous_players",
                     checked: this.anonymizeNames,
                   },
@@ -1109,6 +1114,7 @@ export class HostLobbyModal extends BaseModal {
     this.instantBuild = false;
     this.randomSpawn = false;
     this.compactMap = false;
+    this.advancedWarfare = false;
     this.useRandomMap = false;
     this.disabledUnits = [];
     this.lobbyId = "";
@@ -1223,6 +1229,10 @@ export class HostLobbyModal extends BaseModal {
         break;
       case "game_settings.compact_map":
         this.handleCompactMapChange(checked);
+        break;
+      case "host_modal.advanced_warfare":
+        this.advancedWarfare = checked;
+        void this.putGameConfig();
         break;
       case "host_modal.anonymous_players":
         this.anonymizeNames = checked;
@@ -1743,6 +1753,7 @@ export class HostLobbyModal extends BaseModal {
       gameMap: this.selectedMap,
       useRandomMap: this.useRandomMap,
       compactMap: this.compactMap,
+      advancedWarfare: this.advancedWarfare,
       difficulty: this.selectedDifficulty,
       gameMode: this.gameMode,
       teamCount: this.teamCount,
@@ -1790,6 +1801,7 @@ export class HostLobbyModal extends BaseModal {
     this.useRandomMap = config.useRandomMap ?? false;
     this.selectedMap = this.useRandomMap ? getRandomMapType() : config.gameMap;
     this.compactMap = config.compactMap ?? false;
+    this.advancedWarfare = config.advancedWarfare ?? false;
     this.selectedDifficulty = config.difficulty;
     this.gameMode = config.gameMode;
     this.teamCount = config.teamCount;
@@ -1941,6 +1953,7 @@ export class HostLobbyModal extends BaseModal {
             donateTroops: this.donateTroops,
             instantBuild: this.instantBuild,
             randomSpawn: this.randomSpawn,
+            advancedWarfare: this.advancedWarfare,
             gameMode: this.gameMode,
             disabledUnits: this.disabledUnits,
             spawnImmunityDuration: this.spawnImmunity
