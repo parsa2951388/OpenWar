@@ -1,185 +1,120 @@
-# Contributing to OpenFront.io
+# Contributing to Open War
 
-First off, thank you for considering contributing to OpenFront.io! It's people like you that make OpenFront such a great game.
+Thank you for considering a contribution to Open War.
 
-We welcome contributions from everyone. By participating in this project, you agree to abide by our code of conduct and treat all community members with respect.
+Open War is an independent community fork of OpenFrontIO. Contributions to this repository should improve Open War while preserving the upstream project's notices, license obligations and provenance. Open War is not the upstream OpenFront project; upstream-only contribution rules and approval labels do not apply here.
 
-## Quick Links
+## Before you start
 
-- **Game**: [https://openfront.io/](https://openfront.io/)
-- **Discord**: [Join the Development Discord](https://discord.gg/K9zernJB5z)
-- **Translations**: [Crowdin Project](https://crowdin.com/project/openfront-mls)
-- **Issues**: [GitHub Issues](https://github.com/openfrontio/OpenFrontIO/issues)
+- Read the root [README](README.md) for the current implementation and release status.
+- Keep each change focused and explain the user or maintenance problem it solves.
+- Check the existing code and tests before introducing a new abstraction or dependency.
+- Do not assume that a feature present in source is already deployed or verified in multiplayer.
 
-## Project Governance
+This repository currently has GitHub Issues and Discussions disabled. You can submit a focused pull request directly; do not follow instructions that ask you to create or wait for an upstream `approved` issue.
 
-- The project maintainer ([evan](https://github.com/evanpelle)) has final authority on all code changes and design decisions.
-- All pull requests require maintainer approval before merging.
-- The maintainer reserves the right to reject contributions that don't align with the project's vision or quality standards.
+## Project boundaries
 
-## Contribution Path for New Contributors
+- Open War-owned client, server, engine integration, tests and documentation may be changed when the change is appropriate for this fork.
+- Preserve upstream OpenFront copyright and attribution notices.
+- Do not copy assets from `/proprietary` or external hosting unless their license explicitly grants that use.
+- Do not commit credentials, access tokens, private keys, database dumps, production logs containing personal data, game packages or other proprietary content.
+- Do not add DRM circumvention, key extraction, decryption or protection-bypass functionality.
+- Do not change production secrets, live service settings or deployment targets as an incidental part of a code pull request.
 
-To ensure code quality and project stability, we use a progressive contribution system:
+## Development environment
 
-1. **New Contributors**: Limited to UI improvements and small bug fixes only.
-   - This helps you become familiar with the codebase.
-   - UI changes are easier to review and less likely to break core functionality.
-   - Small, focused PRs have a higher chance of being accepted.
-2. **Established Contributors**: After several successful PRs and demonstrating understanding of the codebase, you may work on more complex features.
-3. **Core Contributors**: Only those with extensive experience with the project may modify critical game systems.
+The repository uses the Node 24 and npm 12 release lines. The current package manifest specifies Node `24.15.x` and npm `12.1.x`.
 
-## Finding Something to Work On
-
-Before writing any code:
-
-1. Request to join the development [Discord](https://discord.gg/K9zernJB5z).
-2. Find an issue labelled [`approved`](https://github.com/openfrontio/OpenFrontIO/issues?q=is%3Aissue%20state%3Aopen%20label%3Aapproved), or open a new issue and wait for it to be labelled `approved`.
-3. Comment on the issue asking to be assigned.
-4. Wait to be assigned before investing significant time.
-
-### PRs Without an Approved Issue
-
-Pull requests that do not link to an issue labelled `approved` will be **automatically closed**. The only exception is small bug fixes, which may be submitted directly without a pre-approved issue.
-
-If your PR is closed for this reason, open an issue describing the change, wait for it to be labelled `approved`, comment asking to be assigned, and then resubmit once you've been assigned.
-
-### AI-Generated PRs
-
-Pull requests that appear to be AI-generated without genuine author understanding will be **closed**.
-
-Using AI tools is fine — but you **MUST** understand the code you are submitting and be able to explain why each decision was made. If you cannot defend the design choices, justify the approach, or answer questions about how the code works in review, the PR will be closed.
-
-## Getting Started
-
-### Prerequisites
-
-- **Node.js**: Version 24.15.0 or newer in the Node 24 release line.
-- **npm**: Version 12.1.0 or newer in the npm 12 release line. If Node.js bundled an older version, run `npm install --global --ignore-scripts npm@12.1.0` before installing project dependencies.
-- **Git**: For version control.
-- **Editor**: The project type-checks with TypeScript 7, which has no JavaScript API for editor extensions to drive. In VS Code, install the [TypeScript 7 native preview extension](https://marketplace.visualstudio.com/items?itemName=TypeScriptTeam.native-preview) to get language support for the workspace.
-
-### Installation
-
-1. **Fork the repository** on GitHub.
-2. **Clone your fork** locally:
-   ```bash
-   git clone https://github.com/YOUR_USERNAME/OpenFrontIO.git
-   cd OpenFrontIO
-   ```
-3. **Install dependencies**:
-
-   > **Important**: Use `npm run inst` instead of `npm install`. This runs `npm ci --ignore-scripts` to ensure a consistent and secure environment.
-
-   ```bash
-   npm run inst
-   ```
-
-   Dependency releases must be at least seven days old. Git, remote URL, local tarball, and directory dependencies are rejected; any security exception requires explicit maintainer review.
-
-### Running the Game
-
-- **Full Development Mode** (Client + Server):
-  ```bash
-  npm run dev
-  ```
-  This starts the dev server and the game server, and opens your browser.
-- **Client Only**:
-  ```bash
-  npm run start:client
-  ```
-- **Server Only**:
-  ```bash
-  npm run start:server-dev
-  ```
-
-## Development Workflow
-
-### Branching
-
-Create a new branch for each feature or bug fix:
+Check the versions:
 
 ```bash
-git checkout -b feature/your-feature-name
-# or
-git checkout -b fix/issue-number-bug-name
+node --version
+npm --version
 ```
 
-### Coding Standards
+Clone and install:
 
-We enforce code quality using Oxlint and Oxfmt. All code must follow existing style patterns, and new features should not break existing functionality.
+```bash
+git clone https://github.com/parsa2951388/OpenWar.git
+cd OpenWar
+npm run inst
+```
 
-- **Format Code**: `npm run format`
-- **Lint Code**: `npm run lint`
-- **Lint & Fix**: `npm run lint:fix`
+Use `npm run inst` for the repository's pinned `npm ci --ignore-scripts` installation process. Do not replace it with an unreviewed install command.
 
-### Testing
+Start the local development environment:
 
-All new features and bug fixes should include relevant tests. We use **Vitest**.
+```bash
+npm run dev
+```
 
-- **Run Tests**: `npm test`
-- **Run Coverage**: `npm run test:coverage`
+The development server uses development configuration. It is for local development only and must not be exposed as a production service.
 
-**Note**: All code changes in `packages/engine`, `packages/engine-api` and `packages/engine-lib` **MUST** be tested to ensure game logic stability.
+## Branch and change workflow
 
-## Submitting a Pull Request
+Create a descriptive branch for one focused change:
 
-1. **Commit your changes** with a clear, present-tense message ("Add feature", not "Added feature"):
-   ```bash
-   git commit -m "Add new map rendering logic"
-   ```
-2. **Push to your fork**:
-   ```bash
-   git push origin feature/your-feature-name
-   ```
-3. **Open a Pull Request** against the original repository:
-   - Fill out the **PR Template** completely.
-   - Link the approved issue (e.g., `Resolves #123`).
-   - Keep PRs focused on a single feature or bug fix.
-   - Include screenshots for UI changes.
-   - Describe what testing you've performed.
-   - Be responsive to feedback and requested changes.
+```bash
+git switch -c feature/short-description
+# or
+git switch -c fix/short-description
+# or
+git switch -c docs/short-description
+```
 
-### PR Checklist
+Follow the existing patterns in the touched package. Avoid unrelated formatting or generated-file churn.
 
-Before submitting, ensure you have:
+For map-source changes, regenerate derived map files with:
 
-- [ ] Linked the relevant approved issue (e.g., `Resolves #123`).
-- [ ] Added screenshots for any UI changes.
-- [ ] Processed text through `translateText()` and added strings to `en.json`.
-- [ ] Added/Updated tests in the `tests/` directory.
-- [ ] Verified that `npm test` passes.
-- [ ] Provided your Discord username in the PR description for communication.
+```bash
+npm run gen-maps
+```
 
-## Communication
+Do not hand-edit generated map output.
 
-- Be respectful and constructive in all project interactions.
-- Questions are welcome, but please search existing issues first.
-- For major changes, discuss in an issue before starting work.
+## Validation
 
-## Translations
+Run the checks relevant to your change. Before requesting review, run at least:
 
-Translators are welcome! We use Crowdin for translations. To help translate OpenFront.io:
+```bash
+npm run typecheck
+npm run lint
+npm run format:check
+npm test
+npm run build-prod
+```
 
-1. Join the [Translation Discord](https://discord.gg/3zZzacjWFr).
-2. Visit our [Crowdin Project](https://crowdin.com/project/openfront-mls).
-3. Sign up or log in, then join the project.
-4. Select the language you want to translate. If your language isn't listed, click "Request New Language".
-5. Translate the strings.
+For a small documentation-only change, state that it is documentation-only and check links, commands and referenced paths manually. For code changes, include regression tests for changed behavior. The CI workflow also runs build/typecheck, three test shards, lint, formatting and generated-map consistency checks.
 
-Each language carries a flag, set by the `svg` string in the `lang` section and
-matched to a file in `resources/flags/`. Where a language isn't tied to a single
-country, use a script or community icon rather than a national flag — for example
-`zh-hant` (the glyph 繁) for Traditional Chinese, alongside `catalonia`, `eo` and
-`toki_pona`.
+For UI changes:
+- Include before/after screenshots where practical.
+- Check both desktop and a narrow mobile viewport.
+- Route all user-facing strings through the existing translation system and add the required English string entries.
+- Describe any controls that still need real-device or multiplayer testing.
 
-Feel free to ask questions in the translation Discord server!
+For networking, authentication, matchmaking, payments, deployment or security changes:
+- State the trust boundary and the configuration assumptions.
+- Never include secret values in code, logs, screenshots or the pull request description.
+- Distinguish unit/CI results from live acceptance tests.
+- Do not claim a production fix until it has been verified against the deployed commit and the intended service.
 
-## License
+## Opening a pull request
 
-By contributing, you agree that your contributions will be licensed under the [GNU Affero General Public License v3.0 (AGPL v3.0)](LICENSE).
+Open a pull request against `main` and include:
 
-## Final Notes
+1. **Problem:** the behavior or maintenance issue being addressed.
+2. **Change:** what changed and why this approach was chosen.
+3. **Validation:** the exact commands run and whether each passed.
+4. **Impact:** affected game modes, platforms, APIs, configuration and deployment behavior.
+5. **Follow-up:** any acceptance test or configuration step that remains outstanding.
 
-Remember that maintaining this project requires significant effort. The maintainer appreciates your contributions but must prioritize long-term project health and stability. Not all contributions will be accepted, and that's okay.
+Keep the pull request limited to one coherent change. Link related work when relevant. A reviewer may assign a project milestone before merging; the repository's milestone check must pass.
 
-Thank you for helping make OpenFront better!
+AI-assisted work is acceptable only when the author has reviewed the result, understands the implementation and can explain its behavior and limitations.
+
+## Licensing
+
+By contributing, you agree that your contribution will be distributed under the repository's applicable license. The source code is licensed under the GNU Affero General Public License v3.0. Assets may have separate terms; check the relevant notices before adding or modifying them.
+
+See [LICENSE](LICENSE), [LICENSE-ASSETS](LICENSE-ASSETS) and [LICENSING.md](LICENSING.md). Preserve upstream copyright, license and attribution notices.
