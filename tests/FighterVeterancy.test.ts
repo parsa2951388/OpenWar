@@ -56,30 +56,27 @@ describe("aircraft veterancy", () => {
     });
   });
 
-  test(
-    "experience carries over rank-ups and stops at the configured cap",
-    () => {
-      const fighter = buildFighter(attacker);
-      const perRank = game.config().fighterVeterancyExperiencePerLevel();
-      const maxRank = game.config().fighterMaxVeterancy();
+  test("experience carries over rank-ups and stops at the configured cap", () => {
+    const fighter = buildFighter(attacker);
+    const perRank = game.config().fighterVeterancyExperiencePerLevel();
+    const maxRank = game.config().fighterMaxVeterancy();
 
-      fighter.recordFighterCombatExperience(perRank - 1);
-      expect(fighter.veterancy()).toBe(0);
-      expect(fighter.fighterState().veterancyProgress).toBe(perRank - 1);
+    fighter.recordFighterCombatExperience(perRank - 1);
+    expect(fighter.veterancy()).toBe(0);
+    expect(fighter.fighterState().veterancyProgress).toBe(perRank - 1);
 
-      fighter.recordFighterCombatExperience(2);
-      expect(fighter.veterancy()).toBe(1);
-      expect(fighter.fighterState().veterancyProgress).toBe(1);
+    fighter.recordFighterCombatExperience(2);
+    expect(fighter.veterancy()).toBe(1);
+    expect(fighter.fighterState().veterancyProgress).toBe(1);
 
-      fighter.recordFighterCombatExperience(perRank * maxRank * 2);
-      expect(fighter.veterancy()).toBe(maxRank);
-      expect(fighter.fighterState().veterancyProgress).toBe(0);
+    fighter.recordFighterCombatExperience(perRank * maxRank * 2);
+    expect(fighter.veterancy()).toBe(maxRank);
+    expect(fighter.fighterState().veterancyProgress).toBe(0);
 
-      fighter.recordFighterCombatExperience(perRank);
-      expect(fighter.veterancy()).toBe(maxRank);
-      expect(fighter.fighterState().veterancyProgress).toBe(0);
-    },
-  );
+    fighter.recordFighterCombatExperience(perRank);
+    expect(fighter.veterancy()).toBe(maxRank);
+    expect(fighter.fighterState().veterancyProgress).toBe(0);
+  });
 
   test("rejects zero, negative, fractional and non-finite experience", () => {
     const fighter = buildFighter(attacker);
@@ -90,28 +87,25 @@ describe("aircraft veterancy", () => {
     expect(fighter.fighterState().veterancyProgress).toBe(0);
   });
 
-  test(
-    "rank increases health capacity without instantly healing the aircraft",
-    () => {
-      const fighter = buildFighter(attacker);
-      const baseMaxHealth = game
-        .config()
-        .unitInfo(UnitType.AirFighter).maxHealth!;
-      const bonusPercent = game.config().fighterVeterancyHealthBonus();
+  test("rank increases health capacity without instantly healing the aircraft", () => {
+    const fighter = buildFighter(attacker);
+    const baseMaxHealth = game
+      .config()
+      .unitInfo(UnitType.AirFighter).maxHealth!;
+    const bonusPercent = game.config().fighterVeterancyHealthBonus();
 
-      fighter.modifyHealth(-10);
-      const currentHealth = fighter.health();
-      fighter.recordFighterCombatExperience(
-        game.config().fighterVeterancyExperiencePerLevel(),
-      );
+    fighter.modifyHealth(-10);
+    const currentHealth = fighter.health();
+    fighter.recordFighterCombatExperience(
+      game.config().fighterVeterancyExperiencePerLevel(),
+    );
 
-      expect(fighter.veterancy()).toBe(1);
-      expect(fighter.maxHealth()).toBe(
-        baseMaxHealth + Math.floor((baseMaxHealth * bonusPercent) / 100),
-      );
-      expect(fighter.health()).toBe(currentHealth);
-    },
-  );
+    expect(fighter.veterancy()).toBe(1);
+    expect(fighter.maxHealth()).toBe(
+      baseMaxHealth + Math.floor((baseMaxHealth * bonusPercent) / 100),
+    );
+    expect(fighter.health()).toBe(currentHealth);
+  });
 
   test("rank damage scaling is deterministic and capped", () => {
     const config = game.config();
