@@ -66,6 +66,10 @@ describe("aircraft execution snapshots", () => {
       patrolTile: game.ref(76, 78),
     });
 
+    // Career state is part of the unit snapshot, including partial progress.
+    aliceFighter.recordFighterCombatExperience(125);
+    bobFighter.recordFighterCombatExperience(44);
+
     game.reserveFighterAamTarget(aliceFighter.id(), bobFighter.id());
     game.addExecution(
       new AirportExecution(sourceAirport),
