@@ -47,12 +47,14 @@ commit do not validate a later head.
 
 The aircraft work has focused tests in these files:
 
-| Test file | Main responsibility |
-| --- | --- |
-| `tests/AircraftRules.test.ts` | Flight distance, fuel planning, return reserve, carrier eligibility, refuelling, repair, damage and stealth detection rules |
-| `tests/AircraftWorkerParity.test.ts` | Worker configuration parity, aircraft role statistics, target filtering and target reservation |
-| `tests/client/InputHandlerAircraftPriority.test.ts` | Pointer-click priority between aircraft/warship controllers and the radial menu |
-| `tests/core/snapshot/AircraftExecutions.test.ts` | Snapshot round trips for airports, commercial flights, fighters, air attacks and movement |
+- `tests/AircraftRules.test.ts`: Flight range, fuel, carrier, refuelling,
+  repair, damage and stealth-detection rules.
+- `tests/AircraftWorkerParity.test.ts`: Worker configuration parity, aircraft
+  role statistics and target reservation.
+- `tests/client/InputHandlerAircraftPriority.test.ts`: Pointer priority
+  between aircraft/warship controls and the radial menu.
+- `tests/core/snapshot/AircraftExecutions.test.ts`: Aircraft execution
+  snapshot round trips.
 
 Run these tests directly while iterating on the aircraft layer:
 
