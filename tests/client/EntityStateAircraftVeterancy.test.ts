@@ -45,13 +45,15 @@ describe("renderer aircraft veterancy", () => {
   });
 
   test("incremental unit updates refresh aircraft rank", () => {
-    const state = unitStateFromUpdate(makeUpdate({
-      fighterState: {
-        ...makeUpdate().fighterState!,
-        veterancy: 1,
-        veterancyProgress: 119,
-      },
-    }));
+    const state = unitStateFromUpdate(
+      makeUpdate({
+        fighterState: {
+          ...makeUpdate().fighterState!,
+          veterancy: 1,
+          veterancyProgress: 119,
+        },
+      }),
+    );
     applyUnitUpdateInPlace(
       state,
       makeUpdate({
@@ -66,23 +68,27 @@ describe("renderer aircraft veterancy", () => {
   });
 
   test("warship rank remains preferred when no fighter state exists", () => {
-    const state = unitStateFromUpdate(makeUpdate({
-      fighterState: undefined,
-      warshipState: {
-        state: "patrolling",
-        lastCombatTick: 0,
-        veterancy: 2,
-        veterancyProgress: 0,
-      },
-    }));
+    const state = unitStateFromUpdate(
+      makeUpdate({
+        fighterState: undefined,
+        warshipState: {
+          state: "patrolling",
+          lastCombatTick: 0,
+          veterancy: 2,
+          veterancyProgress: 0,
+        },
+      }),
+    );
     expect(state.veterancy).toBe(2);
   });
 
   test("ordinary units retain the zero-rank default", () => {
-    const state = unitStateFromUpdate(makeUpdate({
-      fighterState: undefined,
-      warshipState: undefined,
-    }));
+    const state = unitStateFromUpdate(
+      makeUpdate({
+        fighterState: undefined,
+        warshipState: undefined,
+      }),
+    );
     expect(state.veterancy).toBe(0);
   });
 });
