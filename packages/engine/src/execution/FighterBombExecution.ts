@@ -3,10 +3,11 @@ import { MessageType, UnitType } from "@openfront/engine-api/game/GameTypes";
 import {
   zNum,
   zPlayerRef,
+  zRef,
   zTile,
 } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { z } from "zod";
-import { Execution, Game, Player } from "../game/Game";
+import { Execution, Game, Player, Unit } from "../game/Game";
 import { execSnapshotType } from "../snapshot/ExecutionSnapshot";
 import type {
   ExecRecord,
