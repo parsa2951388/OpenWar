@@ -297,6 +297,8 @@ export interface Unit extends UnitLike {
   veterancy(): number;
   /** Record this warship destroying an enemy unit (drives veterancy gain). */
   recordKill(targetType: UnitType): void;
+  /** Record a confirmed combat action for an aircraft's in-match career. */
+  recordFighterCombatExperience(points: number): void;
   /** Record this warship capturing a trade ship (drives veterancy gain). */
   recordTradeCapture(): void;
 
