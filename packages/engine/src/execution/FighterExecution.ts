@@ -1177,10 +1177,21 @@ export class FighterExecution implements Execution {
     if (distanceSquared <= attackRange * attackRange) {
       fighter.updateFighterState({ isInCombat: true });
       if (mode === "aam") {
-        this.fireAamShell(target, config.fighterAamAttackDamage(type));
+        const damage = config.fighterDamageWithVeterancy(
+          config.fighterAamAttackDamage(type),
+          state.veterancy,
+        );
+        this.fireAamShell(target, damage);
       } else if (mode === "gun") {
         fighter.updateFighterState({ ammo: state.ammo - 1 });
-        target.modifyHealth(-config.fighterGunAirDamage(), fighter.owner());
+        const damage = config.fighterDamageWithVeterancy(
+          config.fighterGunAirDamage(),
+          state.veterancy,
+        );
+        target.modifyHealth(-damage, fighter.owner());
+        fighter.recordFighterCombatExperience(
+          config.fighterVeterancyGunExperience(),
+        );
       } else if (mode === "bomb" && this.canEngagePlayer(target.owner())) {
         fighter.updateFighterState({ bomb: state.bomb - 1 });
         const targetTile = target.tile();
@@ -1194,6 +1205,7 @@ export class FighterExecution implements Execution {
             targetTile,
             config.fighterBombRadius(type),
             notifyDefender,
+            fighter,
           ),
         );
       }
