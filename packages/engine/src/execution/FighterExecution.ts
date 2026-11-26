@@ -58,7 +58,6 @@ const STRUCTURE_TYPES: readonly UnitType[] = [
   UnitType.City,
   UnitType.DefensePost,
   UnitType.SAMLauncher,
-  UnitType.RadarStation,
   UnitType.MissileSilo,
   UnitType.Port,
   UnitType.Factory,
