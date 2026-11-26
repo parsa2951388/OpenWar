@@ -1,4 +1,5 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
+import { canDetectStealthAircraft } from "../aircombat/AircraftRules";
 import {
   FighterState,
   FighterType,
@@ -910,6 +911,25 @@ export class FighterExecution implements Execution {
     );
   }
 
+
+  /**
+   * Advanced Warfare adds an early-warning radar network: an air patrol can
+   * acquire a stealth fighter only when a friendly SAM installation covers
+   * the target's current tile. Team-mate installations share coverage.
+   */
+  private hasFriendlyRadarCoverage(target: Unit): boolean {
+    const fighter = this.fighter!;
+    const range = this.mg!.config().fighterRadarDetectionRange();
+    return this.mg!
+      .nearbyUnits(target.tile(), range, [UnitType.SAMLauncher])
+      .some(
+        ({ unit }) =>
+          unit.isActive() &&
+          (unit.owner() === fighter.owner() ||
+            fighter.owner().isOnSameTeam(unit.owner())),
+      );
+  }
+
   private findNearestCombatUnit(
     requireInWeaponRange: boolean,
   ): Unit | undefined {
@@ -936,6 +956,12 @@ export class FighterExecution implements Execution {
         (state.fighterType === FighterType.Air &&
           !this.isInAFighterPatrolArea(unit.tile())) ||
         unit.type() === UnitType.TradeShip ||
+        (state.fighterType === FighterType.Air &&
+          unit.type() === UnitType.StealthFighter &&
+          !canDetectStealthAircraft(
+            this.mg!.config().advancedWarfare(),
+            this.hasFriendlyRadarCoverage(unit),
+          )) ||
         (state.fighterType === FighterType.Stealth &&
           unit.type() === UnitType.SAMLauncher &&
           distSquared > this.mg!.config().fighterStealthRange() ** 2) ||
