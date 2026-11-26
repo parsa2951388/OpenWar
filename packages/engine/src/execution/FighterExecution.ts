@@ -13,7 +13,10 @@ import {
   zTile,
 } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { z } from "zod";
-import { canDetectStealthAircraft } from "../aircombat/AircraftRules";
+import {
+  canDetectStealthAircraft,
+  isWithinRadarRange,
+} from "../aircombat/AircraftRules";
 import {
   Attack,
   Execution,
@@ -55,6 +58,7 @@ const STRUCTURE_TYPES: readonly UnitType[] = [
   UnitType.City,
   UnitType.DefensePost,
   UnitType.SAMLauncher,
+  UnitType.RadarStation,
   UnitType.MissileSilo,
   UnitType.Port,
   UnitType.Factory,
@@ -918,15 +922,25 @@ export class FighterExecution implements Execution {
    */
   private hasFriendlyRadarCoverage(target: Unit): boolean {
     const fighter = this.fighter!;
-    const range = this.mg!.config().fighterRadarDetectionRange();
-    return this.mg!.nearbyUnits(target.tile(), range, [
-      UnitType.SAMLauncher,
-    ]).some(
-      ({ unit }) =>
-        unit.isActive() &&
-        (unit.owner() === fighter.owner() ||
-          fighter.owner().isOnSameTeam(unit.owner())),
-    );
+    const config = this.mg!.config();
+    const maxRange = config.radarStationDetectionRange();
+    return this.mg!
+      .nearbyUnits(target.tile(), maxRange, [
+        UnitType.RadarStation,
+        UnitType.SAMLauncher,
+      ])
+      .some(({ unit, distSquared }) => {
+        const range =
+          unit.type() === UnitType.RadarStation
+            ? config.radarStationDetectionRange()
+            : config.fighterRadarDetectionRange();
+        return (
+          unit.isActive() &&
+          isWithinRadarRange(distSquared, range) &&
+          (unit.owner() === fighter.owner() ||
+            fighter.owner().isOnSameTeam(unit.owner()))
+        );
+      });
   }
 
   private findNearestCombatUnit(
