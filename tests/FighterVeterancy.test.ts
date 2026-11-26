@@ -1,11 +1,11 @@
-import { describe, expect, test, beforeEach } from "vitest";
 import {
   PlayerInfo,
   PlayerType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
-import { UnitSnapshot } from "@openfront/engine/game/UnitImpl";
 import { Game, Player, Unit } from "@openfront/engine/game/Game";
+import { UnitSnapshot } from "@openfront/engine/game/UnitImpl";
+import { beforeEach, describe, expect, test } from "vitest";
 import { setup } from "./util/Setup";
 
 let game: Game;
@@ -56,7 +56,9 @@ describe("aircraft veterancy", () => {
     });
   });
 
-  test("experience carries over rank-ups and stops at the configured cap", () => {
+  test(
+    "experience carries over rank-ups and stops at the configured cap",
+    () => {
     const fighter = buildFighter(attacker);
     const perRank = game.config().fighterVeterancyExperiencePerLevel();
     const maxRank = game.config().fighterMaxVeterancy();
@@ -87,9 +89,13 @@ describe("aircraft veterancy", () => {
     expect(fighter.fighterState().veterancyProgress).toBe(0);
   });
 
-  test("rank increases health capacity without instantly healing the aircraft", () => {
+  test(
+    "rank increases health capacity without instantly healing the aircraft",
+    () => {
     const fighter = buildFighter(attacker);
-    const baseMaxHealth = game.config().unitInfo(UnitType.AirFighter).maxHealth!;
+    const baseMaxHealth = game
+      .config()
+      .unitInfo(UnitType.AirFighter).maxHealth!;
     const bonusPercent = game.config().fighterVeterancyHealthBonus();
 
     fighter.modifyHealth(-10);
