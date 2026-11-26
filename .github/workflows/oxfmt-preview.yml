@@ -1,0 +1,28 @@
+name: Oxfmt preview
+
+on:
+  pull_request:
+    paths:
+      - ".github/workflows/oxfmt-preview.yml"
+      - "packages/engine/src/aircombat/AircraftRules.ts"
+      - "packages/engine/src/execution/FighterExecution.ts"
+
+permissions:
+  contents: read
+
+jobs:
+  preview:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v7
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Pin npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - name: Install repository dependencies
+        run: npm ci
+      - name: Format affected files and print exact diff
+        run: |
+          npx oxfmt packages/engine/src/aircombat/AircraftRules.ts packages/engine/src/execution/FighterExecution.ts
+          git --no-pager diff -- packages/engine/src/aircombat/AircraftRules.ts packages/engine/src/execution/FighterExecution.ts
