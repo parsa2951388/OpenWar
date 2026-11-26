@@ -48,6 +48,7 @@ export class FighterBombExecution implements Execution {
     private targetTile: TileRef,
     private bombRadius: number,
     private notifyDefender = true,
+    private launchingFighter?: Unit,
   ) {}
 
   init(mg: Game): void {
@@ -78,13 +79,25 @@ export class FighterBombExecution implements Execution {
     const damageableTypes = (Object.values(UnitType) as UnitType[]).filter(
       (type) => !BLAST_IMMUNE_TYPES.has(type),
     );
+    let hitEnemyUnit = false;
     for (const { unit } of mg.nearbyUnits(
       this.targetTile,
       this.bombRadius,
       damageableTypes,
     )) {
       if (!unit.isActive()) continue;
+      if (
+        unit.owner() !== this.player &&
+        this.player.canAttackPlayer(unit.owner(), true)
+      ) {
+        hitEnemyUnit = true;
+      }
       unit.delete(true, this.player);
+    }
+    if (hitEnemyUnit && this.launchingFighter?.isActive()) {
+      this.launchingFighter.recordFighterCombatExperience(
+        mg.config().fighterVeterancyBombExperience(),
+      );
     }
 
     for (const type of STRUCTURE_TYPES) {
@@ -115,6 +128,7 @@ export class FighterBombExecution implements Execution {
       targetTile: this.targetTile,
       bombRadius: this.bombRadius,
       notifyDefender: this.notifyDefender,
+      launchingFighter: w.unitOrNull(this.launchingFighter),
     });
   }
 
@@ -125,6 +139,8 @@ export class FighterBombExecution implements Execution {
     this.targetTile = s.targetTile;
     this.bombRadius = s.bombRadius;
     this.notifyDefender = s.notifyDefender;
+    this.launchingFighter =
+      s.launchingFighter === null ? undefined : r.unit(s.launchingFighter);
     this.mg = r.game;
   }
 }
@@ -136,12 +152,16 @@ const FighterBombStateSchema = z.object({
   targetTile: zTile(),
   bombRadius: zNum(),
   notifyDefender: z.boolean(),
+  launchingFighter: zRef().nullable(),
 });
 type FighterBombState = z.infer<typeof FighterBombStateSchema>;
 
 export const FighterBombExecutionSnapshot = execSnapshotType({
   name: "FighterBomb",
-  version: 1,
+  version: 2,
+  migrations: {
+    1: (data) => ({ ...data, launchingFighter: null }),
+  },
   schema: FighterBombStateSchema,
   cls: () => FighterBombExecution,
 });
