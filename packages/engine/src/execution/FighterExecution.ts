@@ -911,7 +911,6 @@ export class FighterExecution implements Execution {
     );
   }
 
-
   /**
    * Advanced Warfare adds an early-warning radar network: an air patrol can
    * acquire a stealth fighter only when a friendly SAM installation covers
