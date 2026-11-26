@@ -90,6 +90,21 @@ are configuration data. Check `EngineConfig` and the regression tests before
 changing balance; do not copy values from an old README or assume a balance
 value is universal across game modes.
 
+### Radar and stealth detection
+
+Advanced Warfare matches add an early-warning radar network:
+
+- Active SAM launchers provide a 36-tile detection radius for friendly air
+  patrols.
+- A radar installation owned by a team-mate shares its coverage.
+- Air fighters cannot automatically acquire an enemy stealth fighter outside
+  friendly radar coverage.
+- Other game modes retain the legacy target-visibility rules.
+
+Radar coverage is evaluated from the stealth aircraft's current tile during
+target selection. It does not change SAM interception rules or expose a
+stealth aircraft to unrelated ground units.
+
 ### Weapons and defenses
 
 - Air-to-air missile flights are represented by `FighterAamExecution` and a
