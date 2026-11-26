@@ -1,5 +1,4 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
-import { canDetectStealthAircraft } from "../aircombat/AircraftRules";
 import {
   FighterState,
   FighterType,
@@ -14,6 +13,7 @@ import {
   zTile,
 } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { z } from "zod";
+import { canDetectStealthAircraft } from "../aircombat/AircraftRules";
 import {
   Attack,
   Execution,
@@ -920,14 +920,14 @@ export class FighterExecution implements Execution {
   private hasFriendlyRadarCoverage(target: Unit): boolean {
     const fighter = this.fighter!;
     const range = this.mg!.config().fighterRadarDetectionRange();
-    return this.mg!
-      .nearbyUnits(target.tile(), range, [UnitType.SAMLauncher])
-      .some(
-        ({ unit }) =>
-          unit.isActive() &&
-          (unit.owner() === fighter.owner() ||
-            fighter.owner().isOnSameTeam(unit.owner())),
-      );
+    return this.mg!.nearbyUnits(target.tile(), range, [
+      UnitType.SAMLauncher,
+    ]).some(
+      ({ unit }) =>
+        unit.isActive() &&
+        (unit.owner() === fighter.owner() ||
+          fighter.owner().isOnSameTeam(unit.owner())),
+    );
   }
 
   private findNearestCombatUnit(
