@@ -97,6 +97,7 @@ export type JoinOutcome =
 export function resolveJoinVerdict(
   verdict: JoinVerifyResponse,
   fallback: { username: string; clanTag: string | null },
+  isReadmit = false,
 ): JoinOutcome {
   if (verdict.status === "approved") {
     return {
@@ -104,6 +105,12 @@ export function resolveJoinVerdict(
       username: clampApprovedUsername(verdict.username),
       clanTag: verdict.clanTag,
     };
+  }
+  // A first join must not pass the anti-abuse gate when the verifier is
+  // unavailable or degraded. Re-admits may keep their already-admitted local
+  // identity while the API is recovering.
+  if (verdict.status === "error" && !isReadmit) {
+    return { action: "reject", reason: "verification_unavailable" };
   }
   if (verdict.status === "rejected") {
     return {
@@ -324,9 +331,9 @@ export async function startWorker() {
   }
 
   const privilegeRefresher = new PrivilegeRefresher(
-    ServerEnv.jwtIssuer() + "/cosmetics.json",
+    ServerEnv.apiOrigin() + "/cosmetics.json",
     ServerEnv.apiKey(),
-    ServerEnv.jwtIssuer() + "/reserved_clan_tags",
+    ServerEnv.apiOrigin() + "/reserved_clan_tags",
     log,
   );
   void privilegeRefresher.start();
@@ -771,16 +778,20 @@ export async function startWorker() {
               clientMsg.clanTag ?? null,
               persistentId,
             );
-            if (verdict.status === "approved" || verdict.status === "error") {
+            if (
+              verdict.status === "approved" ||
+              (verdict.status === "error" && isReadmit)
+            ) {
               admissionGuard.markAdmittedIfNeeded();
             }
             if (isSocketClosed(ws)) {
               return;
             }
-            const resolved = resolveJoinVerdict(verdict, {
-              username,
-              clanTag,
-            });
+            const resolved = resolveJoinVerdict(
+              verdict,
+              { username, clanTag },
+              isReadmit,
+            );
             if (resolved.action === "reject") {
               log.warn("Unauthorized: Turnstile token rejected", {
                 persistentID: persistentId,

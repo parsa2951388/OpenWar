@@ -373,7 +373,24 @@ describe("coordinatorUrl", () => {
     expect(coordinatorUrl("openfront.io")).toBe(
       "wss://api.openfront.io/cluster/lobbies?site=openfront.io",
     );
+  });
+
+  it("uses the configured gateway websocket origin", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("LOBBY_COORDINATOR", "api");
+    vi.stubEnv(
+      "OPENWAR_API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    expect(coordinatorUrl("openfront.io")).toBe(
+      "wss://openwar-api-gateway.parsaoj.workers.dev/cluster/lobbies?site=openfront.io",
+    );
+  });
+
+  it("uses the local API origin during development", () => {
     vi.stubEnv("DOMAIN", "localhost");
+    vi.stubEnv("LOBBY_COORDINATOR", "api");
+    vi.stubEnv("OPENWAR_API_ORIGIN", "");
     expect(coordinatorUrl("localhost")).toBe(
       "ws://localhost:8787/cluster/lobbies?site=localhost",
     );

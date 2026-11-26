@@ -92,6 +92,43 @@ describe("MapRenderer context loss", () => {
     view.dispose();
   });
 
+  it("retains layer images across context loss and closes them on final teardown", () => {
+    const { view, canvas } = makeRenderer();
+    const image = { close: vi.fn() } as unknown as ImageBitmap;
+    view.setMapLayers(
+      [{ id: "world-land", placement: "land" }],
+      new Map([["world-land", image]]),
+    );
+
+    canvas.dispatchEvent(new Event("webglcontextlost", { cancelable: true }));
+    expect(image.close).not.toHaveBeenCalled();
+    canvas.dispatchEvent(new Event("webglcontextrestored"));
+    expect(image.close).not.toHaveBeenCalled();
+
+    view.dispose();
+    expect(image.close).toHaveBeenCalledOnce();
+  });
+
+  it("closes replaced layer images but retains the new image set", () => {
+    const { view } = makeRenderer();
+    const previous = { close: vi.fn() } as unknown as ImageBitmap;
+    const current = { close: vi.fn() } as unknown as ImageBitmap;
+
+    view.setMapLayers(
+      [{ id: "old", placement: "land" }],
+      new Map([["old", previous]]),
+    );
+    view.setMapLayers(
+      [{ id: "new", placement: "water" }],
+      new Map([["new", current]]),
+    );
+
+    expect(previous.close).toHaveBeenCalledOnce();
+    expect(current.close).not.toHaveBeenCalled();
+    view.dispose();
+    expect(current.close).toHaveBeenCalledOnce();
+  });
+
   it("survives a restore that cannot get an accelerated context back", () => {
     const { view, canvas } = makeRenderer();
     const reupload = vi.fn();

@@ -150,7 +150,7 @@ async function fetchJoinVerify(
   username: string,
   clanTag: string | null,
 ): Promise<Response> {
-  return fetch(`${ServerEnv.jwtIssuer()}/join_verify`, {
+  return fetch(`${ServerEnv.apiOrigin()}/join_verify`, {
     method: "POST",
     // First sighting of a novel flagged name adds an LLM round-trip of
     // up to ~3s server-side, so the timeout must stay at 5s or above.
@@ -159,6 +159,8 @@ async function fetchJoinVerify(
       "Content-Type": "application/json",
       "x-api-key": ServerEnv.apiKey(),
     },
+    // Do not forward the server API key if the endpoint redirects elsewhere.
+    redirect: "error",
     body: JSON.stringify({ ip, token, username, clanTag }),
   });
 }
@@ -208,12 +210,12 @@ async function verifyJoinRequest(
  * planJoinVerify).
  *
  * Failures are never retried: a Turnstile token is single-use, so
- * re-submitting after a timeout or 5xx can redeem an already-spent token and
- * turn an API hiccup into a hard rejection of a legitimate player. Any
- * failure returns "error" and the caller fails open, matching the old
- * standalone-Turnstile stance: with the API's screened identity when it
- * sent one (a degraded verdict whose name check finished), otherwise with
- * the locally screened name (see Censor.ts).
+ * re-submitting after a timeout or 5xx can redeem an already-spent token.
+ * This function reports an error to its caller. The caller rejects a first
+ * join when verification is unavailable, but allows an already-admitted
+ * reconnect to keep its existing screened identity during a transient
+ * outage. A degraded verdict may supply a screened identity when the name
+ * check completed (see Censor.ts).
  */
 export async function verifyJoin(
   ip: string,

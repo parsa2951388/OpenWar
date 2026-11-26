@@ -54,6 +54,7 @@ vi.mock("../../src/client/ClientEnv", () => ({
   ClientEnv: {
     instanceId: vi.fn(() => "test-instance"),
     jwtIssuer: vi.fn(() => "ws://matchmaking.test"),
+    apiOrigin: vi.fn(() => "ws://matchmaking.test"),
     workerPath: vi.fn(() => "w0"),
     gitCommit: envMocks.gitCommit,
     gameVersion: envMocks.gameVersion,

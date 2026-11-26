@@ -465,7 +465,7 @@ export async function startMaster() {
   // registers nowhere; every deployed host registers under its own site.
   if (registers) {
     log.info(
-      `Checking in with ${ServerEnv.jwtIssuer()}/cluster/checkin every ${CHECKIN_INTERVAL_MS / 1000}s`,
+      `Checking in with ${ServerEnv.apiOrigin()}/cluster/checkin every ${CHECKIN_INTERVAL_MS / 1000}s`,
     );
     let lastRefusal: string | null = null;
     startPolling(async () => {

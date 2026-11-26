@@ -117,7 +117,7 @@ export async function sendCheckin(
   fetchFn: typeof fetch = fetch,
 ): Promise<CheckinResult> {
   try {
-    const res = await fetchFn(`${ServerEnv.jwtIssuer()}/cluster/checkin`, {
+    const res = await fetchFn(`${ServerEnv.apiOrigin()}/cluster/checkin`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
@@ -125,6 +125,8 @@ export async function sendCheckin(
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(CHECKIN_TIMEOUT_MS),
+      // API credentials must never follow a redirect to another origin.
+      redirect: "error",
     });
     if (res.status === 409) {
       const detail = RefusalBodySchema.safeParse(

@@ -134,7 +134,9 @@ export class ClientEnv {
     if (typeof window === "undefined") {
       throw new Error("ClientEnv is only available on the browser main thread");
     }
-    const bc = window.BOOTSTRAP_CONFIG;
+    const bc = window.BOOTSTRAP_CONFIG as typeof window.BOOTSTRAP_CONFIG & {
+      apiOrigin?: string;
+    };
     // Only the values that are the same for every player are required.
     //
     // Multi-server v2 (docs/MultiServer.md, roadmap item 2): the page becomes
@@ -167,6 +169,9 @@ export class ClientEnv {
       numWorkers: bc.numWorkers,
       turnstileSiteKey: bc.turnstileSiteKey,
       jwtAudience: bc.jwtAudience,
+      // Optional network origin for Open War's cluster/matchmaking gateway.
+      // JWT issuer and account APIs remain anchored to jwtAudience.
+      apiOrigin: bc.apiOrigin,
       // Optional: a deployment without a key (or a desktop shell, which
       // buys on Steam) omits it, and the inline Stripe flow stays off.
       stripePublishableKey: bc.stripePublishableKey,
@@ -250,9 +255,34 @@ export class ClientEnv {
       ? "http://localhost:8787"
       : `https://api.${audience}`;
   }
+  static apiOrigin(): string {
+    const configured = ClientEnv.get().apiOrigin?.trim();
+    if (!configured) return ClientEnv.jwtIssuer();
+
+    let parsed: URL;
+    try {
+      parsed = new URL(configured);
+    } catch {
+      throw new Error("Invalid API origin in BOOTSTRAP_CONFIG");
+    }
+    const localHttp =
+      parsed.protocol === "http:" &&
+      (parsed.hostname === "localhost" || parsed.hostname === "127.0.0.1");
+    if (
+      (parsed.protocol !== "https:" && !localHttp) ||
+      parsed.username !== "" ||
+      parsed.password !== "" ||
+      parsed.pathname !== "/" ||
+      parsed.search !== "" ||
+      parsed.hash !== ""
+    ) {
+      throw new Error("Invalid API origin in BOOTSTRAP_CONFIG");
+    }
+    return parsed.origin;
+  }
   static async jwkPublicKey(): Promise<JWK> {
     if (ClientEnv.publicKey) return ClientEnv.publicKey;
-    const jwksUrl = ClientEnv.jwtIssuer() + "/.well-known/jwks.json";
+    const jwksUrl = ClientEnv.apiOrigin() + "/.well-known/jwks.json";
     console.log(`Fetching JWKS from ${jwksUrl}`);
     const response = await fetch(jwksUrl);
     if (!response.ok) {
@@ -667,6 +697,8 @@ export interface ClientEnvValues {
   numWorkers?: number;
   turnstileSiteKey: string;
   jwtAudience: string;
+  // Optional: transport origin for the Open War cluster/matchmaking gateway.
+  apiOrigin?: string;
   // Optional: absent when the deployment carries no Stripe key (dev, desktop
   // shells). Environment-scoped like turnstileSiteKey, so a static page
   // carries it too.

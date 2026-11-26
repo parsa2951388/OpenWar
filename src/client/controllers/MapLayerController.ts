@@ -3,7 +3,9 @@
  * applies initial visibility from user settings.
  *
  * The renderer tolerates missing layers (warn + skip) until images arrive,
- * so the game starts without blocking on layer images.
+ * so the game starts without blocking on layer images. If the game is torn
+ * down while those requests are pending, the decoded bitmaps are closed when
+ * they eventually arrive instead of being leaked.
  */
 
 import { GameMapSize, GameMapType } from "@openfront/engine-api/game/GameTypes";
@@ -14,6 +16,15 @@ import { Controller } from "../Controller";
 import { pushMapLayerState } from "../MapLayerSettings";
 import { MapRenderer } from "../render/gl";
 import { UserSettings } from "../UserSettings";
+
+function closeLayerImages(images: ReadonlyMap<string, ImageBitmap>): void {
+  const closed = new Set<ImageBitmap>();
+  for (const image of images.values()) {
+    if (closed.has(image)) continue;
+    closed.add(image);
+    image.close();
+  }
+}
 
 export class MapLayerController implements Controller {
   constructor(
@@ -39,15 +50,17 @@ export class MapLayerController implements Controller {
       this.gameMap.layers,
     )
       .then((images) => {
-        if (!this.abortSignal.aborted) {
-          this.view.setMapLayers(this.gameMap.layers!, images);
-          pushMapLayerState(
-            this.userSettings,
-            this.gameMap.layers!,
-            (id, visible) => this.view.setLayerVisible(id, visible),
-            (id, alpha) => this.view.setLayerAlpha(id, alpha),
-          );
+        if (this.abortSignal.aborted) {
+          closeLayerImages(images);
+          return;
         }
+        this.view.setMapLayers(this.gameMap.layers!, images);
+        pushMapLayerState(
+          this.userSettings,
+          this.gameMap.layers!,
+          (id, visible) => this.view.setLayerVisible(id, visible),
+          (id, alpha) => this.view.setLayerAlpha(id, alpha),
+        );
       })
       .catch((e) =>
         console.warn("[MapLayerController] Failed to load layer images:", e),

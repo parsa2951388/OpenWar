@@ -41,12 +41,38 @@ describe("verifyJoin", () => {
       clanTag: "COOL",
     });
     const [, init] = fetchMock.mock.calls[0];
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      "http://localhost:8787/join_verify",
+    );
+    expect(init.redirect).toBe("error");
     expect(JSON.parse(init.body)).toEqual({
       ip: "1.2.3.4",
       token: "tok",
       username: "xXblackxX",
       clanTag: "CoOl",
     });
+  });
+
+  it("routes join verification through the configured API gateway", async () => {
+    vi.stubEnv(
+      "OPENWAR_API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    const fetchMock = vi.fn().mockResolvedValue(
+      jsonResponse({
+        status: "approved",
+        username: "Alice",
+        clanTag: null,
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    await verifyJoin("ip", "tok", "Alice", null);
+
+    expect(fetchMock.mock.calls[0][0]).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev/join_verify",
+    );
+    expect(fetchMock.mock.calls[0][1].redirect).toBe("error");
   });
 
   it("normalizes an absent clanTag to null on approval", async () => {

@@ -153,7 +153,10 @@
                     "maximum": 9007199254740991
                   }
                 ],
-                "description": "[x, y] tile position. Origin is top-left; y extends down."
+                "description": "[x, y] tile position. Origin is top-left; y extends down.",
+                "minItems": 2,
+                "maxItems": 2,
+                "items": false
               }
             },
             "required": ["name"],
@@ -185,7 +188,10 @@
                 "minimum": 0,
                 "maximum": 9007199254740991
               }
-            ]
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": false
           },
           "flag": {
             "description": "Flag file name in resources/flags/ without the .svg suffix. Empty means no flag.",
@@ -220,7 +226,10 @@
                 "minimum": 0,
                 "maximum": 9007199254740991
               }
-            ]
+            ],
+            "minItems": 2,
+            "maxItems": 2,
+            "items": false
           },
           "flag": {
             "description": "Flag file name in resources/flags/ without the .svg suffix. Empty means no flag.",

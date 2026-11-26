@@ -52,6 +52,41 @@ describe("Map schemas", () => {
     }
   });
 
+  test("coordinate JSON Schemas require exactly two tuple values", () => {
+    const coordinateSchemas: Record<string, unknown>[] = [];
+
+    function visit(value: unknown): void {
+      if (Array.isArray(value)) {
+        value.forEach(visit);
+        return;
+      }
+      if (value === null || typeof value !== "object") return;
+
+      for (const [key, child] of Object.entries(value)) {
+        if (
+          key === "coordinates" &&
+          child !== null &&
+          typeof child === "object" &&
+          !Array.isArray(child)
+        ) {
+          coordinateSchemas.push(child as Record<string, unknown>);
+        }
+        visit(child);
+      }
+    }
+
+    visit(JSON.parse(mapInfoJsonSchema()));
+    expect(coordinateSchemas).toHaveLength(3);
+    for (const schema of coordinateSchemas) {
+      expect(schema).toMatchObject({
+        type: "array",
+        minItems: 2,
+        maxItems: 2,
+        items: false,
+      });
+    }
+  });
+
   test("the committed JSON Schema is current (npm run gen-map-schema)", () => {
     expect(JSON.parse(fs.readFileSync(MAP_INFO_SCHEMA_PATH, "utf8"))).toEqual(
       JSON.parse(mapInfoJsonSchema()),

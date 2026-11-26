@@ -35,6 +35,19 @@ import type { AttackTroopLabel } from "./passes/WorldTextPass";
 import { GPURenderer } from "./Renderer";
 import type { RenderSettings } from "./RenderSettings";
 
+/** Release decoded layer bitmaps without closing images retained by a new layer set. */
+function closeLayerImages(
+  images: ReadonlyMap<string, ImageBitmap>,
+  retained: ReadonlySet<ImageBitmap> = new Set(),
+): void {
+  const closed = new Set<ImageBitmap>();
+  for (const image of images.values()) {
+    if (retained.has(image) || closed.has(image)) continue;
+    closed.add(image);
+    image.close();
+  }
+}
+
 export class MapRenderer {
   private renderer: GPURenderer | null = null;
   private resizeObs: ResizeObserver | null = null;
@@ -314,14 +327,19 @@ export class MapRenderer {
 
   /** Set up map-layer passes from the loaded layer data. */
   setMapLayers(layers: MapLayer[], images: Map<string, ImageBitmap>): void {
+    const previousImages = this.storedLayerImages;
+    // Upload first: the old bitmaps remain available if pass creation throws.
+    this.renderer?.setMapLayers(layers, images);
     this.storedLayers = layers;
     this.storedLayerImages = images;
-    this.renderer?.setMapLayers(layers, images);
     // The images can arrive after nukes have hit (a replay seeks ahead
     // while they load), and the new layer passes start undamaged.
     for (const [id, mask] of this.layerDestroyedMasks) {
       this.renderer?.setLayerDestroyedMask(id, mask);
     }
+    // Context restoration needs the current images, so release only bitmaps
+    // that are not part of the newly retained set.
+    closeLayerImages(previousImages, new Set(images.values()));
   }
 
   /** Toggle visibility of a single map layer. */
@@ -412,7 +430,17 @@ export class MapRenderer {
     this.resizeObs?.disconnect();
     this.resizeObs = null;
     this.onContextRestored = null;
-    this.renderer?.dispose();
+    const renderer = this.renderer;
+    this.renderer = null;
+    renderer?.dispose();
+    // The decoded images are deliberately kept through context loss, but
+    // ordinary game teardown is their final owner and must release them.
+    closeLayerImages(this.storedLayerImages);
+    this.storedLayerImages.clear();
+    this.storedLayers = [];
+    this.layerVisibility.clear();
+    this.layerAlpha.clear();
+    this.layerDestroyedMasks.clear();
     this.canvas.removeEventListener("webglcontextlost", this.handleContextLost);
     this.canvas.removeEventListener(
       "webglcontextrestored",
