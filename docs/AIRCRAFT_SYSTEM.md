@@ -96,9 +96,7 @@ Advanced Warfare matches add an early-warning radar network:
 
 - Active SAM launchers provide a 36-tile detection radius for friendly air
   patrols.
-- Dedicated Radar Stations provide a 56-tile detection radius but do not
-  intercept missiles.
-- Active radar installations owned by a team-mate share their coverage.
+- Active SAM launchers owned by a team-mate share their coverage.
 - Air fighters cannot automatically acquire an enemy stealth fighter outside
   friendly radar coverage.
 - Other game modes retain the legacy target-visibility rules.
