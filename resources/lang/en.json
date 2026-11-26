@@ -213,7 +213,6 @@
       "mirv": "Huge explosion, only targets selected player",
       "missile_silo": "Used to launch nukes",
       "port": "Sends trade ships to generate gold",
-      "radar_station": "Extends early-warning radar coverage for friendly air patrols; reveals stealth aircraft but cannot intercept missiles",
       "sam_launcher": "Defends against incoming nukes",
       "stealth_fighter": "Long-range stealth strike aircraft. Attacks aircraft and ground targets, then returns to rearm and refuel.",
       "warship": "Captures trade ships, destroys ships and boats"
@@ -2872,7 +2871,6 @@
     "mirv": "MIRV",
     "missile_silo": "Missile Silo",
     "port": "Port",
-    "radar_station": "Radar Station",
     "sam_launcher": "SAM Launcher",
     "stealth_fighter": "Stealth Fighter",
     "warship": "Warship"
