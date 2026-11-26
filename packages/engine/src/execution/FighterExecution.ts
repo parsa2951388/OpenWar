@@ -923,24 +923,16 @@ export class FighterExecution implements Execution {
   private hasFriendlyRadarCoverage(target: Unit): boolean {
     const fighter = this.fighter!;
     const config = this.mg!.config();
-    const maxRange = config.radarStationDetectionRange();
+    const range = this.mg!.config().fighterRadarDetectionRange();
     return this.mg!
-      .nearbyUnits(target.tile(), maxRange, [
-        UnitType.RadarStation,
-        UnitType.SAMLauncher,
-      ])
-      .some(({ unit, distSquared }) => {
-        const range =
-          unit.type() === UnitType.RadarStation
-            ? config.radarStationDetectionRange()
-            : config.fighterRadarDetectionRange();
-        return (
+      .nearbyUnits(target.tile(), range, [UnitType.SAMLauncher])
+      .some(
+        ({ unit, distSquared }) =>
           unit.isActive() &&
           isWithinRadarRange(distSquared, range) &&
           (unit.owner() === fighter.owner() ||
-            fighter.owner().isOnSameTeam(unit.owner()))
-        );
-      });
+            fighter.owner().isOnSameTeam(unit.owner())),
+      );
   }
 
   private findNearestCombatUnit(
