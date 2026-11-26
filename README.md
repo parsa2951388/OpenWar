@@ -23,6 +23,7 @@ The `main` source branch contains the OpenFront territorial-strategy foundation 
 - Aircraft fuel/range handling, return-to-base and servicing flows.
 - Air-combat and ground-attack interactions, including interception/evasion behavior.
 - Responsive client and map-rendering improvements.
+- Aircraft system developer guide: [docs/AIRCRAFT_SYSTEM.md](docs/AIRCRAFT_SYSTEM.md).
 
 These items describe code merged into the repository. They are **not a claim that every feature is currently working on the public deployment**.
 
