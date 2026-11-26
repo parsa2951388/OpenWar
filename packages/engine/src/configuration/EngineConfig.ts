@@ -25,6 +25,8 @@ import type { EngineUnitInfo, Game, Player, Unit } from "../game/Game";
 
 export interface AttackLogicInput {
   terrain: TerrainType;
+  /** Raw land elevation magnitude (0–30), when supplied by the map. */
+  terrainMagnitude?: number;
   attackTroops: number;
   attacker: { type: PlayerType; numTiles: number };
   /** null when attacking terra nullius. */
@@ -128,6 +130,11 @@ export class EngineConfig extends Config {
 
   traitorSpeedDebuff(): number {
     return 0.8;
+  }
+
+  /** Whether this match opts into Open War's expanded combat rules. */
+  advancedWarfare(): boolean {
+    return this._gameConfig.advancedWarfare ?? false;
   }
 
   teamLandShareWinThresholdTenths(): number {
@@ -763,6 +770,20 @@ export class EngineConfig extends Config {
   attackLogic(input: AttackLogicInput): AttackLogicResult {
     const { attackTroops, attacker, defender } = input;
     let { mag, tileCost } = terrainAttackBase(input.terrain);
+
+    // In Advanced Warfare, the upper tiles within each terrain band are
+    // harder to assault. The map already exposes elevation as 0–30; using
+    // the within-band value adds tactical depth without double-counting the
+    // existing Plains / Highland / Mountain base costs. Legacy matches keep
+    // their exact combat values because the modifier is opt-in.
+    if (this.advancedWarfare() && input.terrainMagnitude !== undefined) {
+      const magnitude = Math.max(0, Math.min(30, Math.floor(input.terrainMagnitude)));
+      const bandOffset = magnitude >= 20 ? magnitude - 20 : magnitude % 10;
+      const bandWidth = magnitude >= 20 ? 10 : 9;
+      const highGroundMultiplier = 1 + (bandOffset / bandWidth) * 0.08;
+      mag *= highGroundMultiplier;
+      tileCost *= highGroundMultiplier;
+    }
 
     if (defender !== null && input.defenderHasDefensePost) {
       mag *= this.defensePostDefenseBonus();
