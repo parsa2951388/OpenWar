@@ -186,6 +186,9 @@ export class HostLobbyModal extends BaseModal {
     if (!this.lobbyId || lobby.gameID !== this.lobbyId) {
       return;
     }
+    if (typeof lobby.gameConfig?.advancedWarfare === "boolean") {
+      this.advancedWarfare = lobby.gameConfig.advancedWarfare;
+    }
     // A host returning to an existing lobby (?host) starts with default
     // settings; without this, their next change of any setting would send
     // maxPlayers: null and clear the lobby's cap. Only a cap the server
