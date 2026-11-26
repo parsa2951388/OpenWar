@@ -26,11 +26,13 @@ npm test
 npm run build-prod
 ```
 
-- `typecheck` checks the root project and the engine, engine API, engine library, worker, shared and binary-schema TypeScript projects.
+- `typecheck` checks the root project and the engine, engine API, engine
+  library, worker, shared and binary-schema TypeScript projects.
 - `lint` runs Oxlint across the workspace.
 - `format:check` verifies formatting with Oxfmt.
 - `npm test` runs the client, client-forks and Node Vitest projects.
-- `build-prod` creates the production client bundle and asset hash manifest; it does not deploy the service.
+- `build-prod` creates the production client bundle and asset hash manifest; it
+  does not deploy the service.
 
 The GitHub Actions CI workflow runs the build/typecheck, three test shards and combined test result, lint, formatting and generated-map consistency checks. Inspect the run for the exact pull request head SHA; results from an earlier commit do not validate a later head.
 
@@ -38,12 +40,12 @@ The GitHub Actions CI workflow runs the build/typecheck, three test shards and c
 
 The aircraft work has focused tests in these files:
 
-| Test file | Main responsibility |
-| --- | --- |
-| `tests/AircraftRules.test.ts` | Flight distance, fuel planning, return reserve, carrier eligibility, refuelling, repair, damage and stealth detection rules |
-| `tests/AircraftWorkerParity.test.ts` | Worker configuration parity, aircraft role statistics, target filtering and target reservation |
-| `tests/client/InputHandlerAircraftPriority.test.ts` | Pointer-click priority between aircraft/warship controllers and the radial menu |
-| `tests/core/snapshot/AircraftExecutions.test.ts` | Snapshot round trips for airports, commercial flights, fighters, air attacks and movement |
+| Test file                                           | Main responsibility                                                                                                         |
+| --------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| `tests/AircraftRules.test.ts`                       | Flight distance, fuel planning, return reserve, carrier eligibility, refuelling, repair, damage and stealth detection rules |
+| `tests/AircraftWorkerParity.test.ts`                | Worker configuration parity, aircraft role statistics, target filtering and target reservation                              |
+| `tests/client/InputHandlerAircraftPriority.test.ts` | Pointer-click priority between aircraft/warship controllers and the radial menu                                             |
+| `tests/core/snapshot/AircraftExecutions.test.ts`    | Snapshot round trips for airports, commercial flights, fighters, air attacks and movement                                   |
 
 Run these tests directly while iterating on the aircraft layer:
 
@@ -61,8 +63,10 @@ A focused pass is useful feedback, but it does not replace the full test suite o
 
 The matchmaking scripts use separate test environments and are not part of `npm test`.
 
-- `npm run test:matchmaking` uses an in-process fake WebSocket matchmaking server.
-- `npm run test:matchmaking:e2e` uses a local API Worker and the development game server to test a real local queue and game assignment.
+- `npm run test:matchmaking` uses an in-process fake WebSocket matchmaking
+  server.
+- `npm run test:matchmaking:e2e` uses a local API Worker and the development
+  game server to test a real local queue and game assignment.
 - `npm run test:matchmaking:cancel` exercises cancellation and requeue behavior.
 
 Read [tests/matchmaking/README.md](../tests/matchmaking/README.md) for the required local services, ports, modes and expected outcomes. Do not point these harnesses at a public production service unless a dedicated, approved test plan explicitly requires it.
