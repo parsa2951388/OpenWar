@@ -261,6 +261,12 @@ export class Config {
           upgradable: true,
         };
         break;
+      case UnitType.RadarStation:
+        info = {
+          maxHealth: 800,
+          constructionDuration: this.instantBuild() ? 0 : 20 * 10,
+        };
+        break;
       case UnitType.City:
       case UnitType.Factory:
         info = {
