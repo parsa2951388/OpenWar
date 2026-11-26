@@ -80,12 +80,10 @@ and clears stale return/service state.
 
 The current combat roles have different intended jobs:
 
-| Role | Primary purpose |
-| --- | --- |
-| Air Fighter | Air-to-air interception and fighter combat |
-| Stealth Fighter | Air combat with a lower detection multiplier and stealth-oriented configuration |
-| Ground Attacker | Ground-target attacks, structure attacks and air-gun behavior where configured |
-| Commercial | Non-combat trading flights between eligible airports |
+- **Air Fighter:** Air-to-air interception and fighter combat.
+- **Stealth Fighter:** Stealth-oriented air combat and interception.
+- **Ground Attacker:** Ground strikes and structure attacks.
+- **Commercial:** Non-combat trading flights between eligible airports.
 
 Exact weapon counts, movement speed, fuel capacities, damage and service values
 are configuration data. Check `EngineConfig` and the regression tests before
@@ -139,20 +137,22 @@ When changing an execution, review:
 
 ## Relevant implementation and tests
 
-| Area | Source or test |
-| --- | --- |
-| Shared flight/fuel rules | `packages/engine/src/aircombat/AircraftRules.ts` |
-| Fighter patrol and combat | `packages/engine/src/execution/FighterExecution.ts` |
-| Airport lifecycle and trade-flight scheduling | `packages/engine/src/execution/AirportExecution.ts` |
-| Commercial aircraft routing | `packages/engine/src/execution/CommercialAircraftExecution.ts` |
-| Air pathfinding | `packages/engine/src/pathfinding/PathFinder.Air.ts` |
-| Air-to-air missiles | `packages/engine/src/execution/FighterAamExecution.ts` |
-| Ground-attack bombs | `packages/engine/src/execution/FighterBombExecution.ts` |
-| Direct movement orders | `packages/engine/src/execution/MoveFighterExecution.ts` |
-| Shared rule tests | `tests/AircraftRules.test.ts` |
-| Worker/config parity tests | `tests/AircraftWorkerParity.test.ts` |
-| Client input priority tests | `tests/client/InputHandlerAircraftPriority.test.ts` |
-| Execution snapshot tests | `tests/core/snapshot/AircraftExecutions.test.ts` |
+- Shared flight/fuel rules: `packages/engine/src/aircombat/AircraftRules.ts`
+- Fighter patrol and combat: `packages/engine/src/execution/FighterExecution.ts`
+- Airport lifecycle: `packages/engine/src/execution/AirportExecution.ts`
+- Commercial flight routing:
+  `packages/engine/src/execution/CommercialAircraftExecution.ts`
+- Air pathfinding: `packages/engine/src/pathfinding/PathFinder.Air.ts`
+- Air-to-air missiles: `packages/engine/src/execution/FighterAamExecution.ts`
+- Ground-attack bombs: `packages/engine/src/execution/FighterBombExecution.ts`
+- Direct movement orders:
+  `packages/engine/src/execution/MoveFighterExecution.ts`
+- Shared rule tests: `tests/AircraftRules.test.ts`
+- Worker/config parity tests: `tests/AircraftWorkerParity.test.ts`
+- Client input priority:
+  `tests/client/InputHandlerAircraftPriority.test.ts`
+- Execution snapshots:
+  `tests/core/snapshot/AircraftExecutions.test.ts` |
 
 Use the [testing guide](TESTING.md) for commands and the distinction between
 focused tests, full CI and live acceptance.
