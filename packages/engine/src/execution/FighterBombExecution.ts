@@ -87,6 +87,7 @@ export class FighterBombExecution implements Execution {
     )) {
       if (!unit.isActive()) continue;
       if (
+        this.launchingFighter !== undefined &&
         unit.owner() !== this.player &&
         this.player.canAttackPlayer(unit.owner(), true)
       ) {
