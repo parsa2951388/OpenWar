@@ -112,6 +112,7 @@ build/typecheck, three test shards, lint, formatting and generated-map
 consistency checks.
 
 For UI changes:
+
 - Include before/after screenshots where practical.
 - Check both desktop and a narrow mobile viewport.
 - Route all user-facing strings through the existing translation system and add
@@ -120,6 +121,7 @@ For UI changes:
 
 For networking, authentication, matchmaking, payments, deployment or security
 changes:
+
 - State the trust boundary and the configuration assumptions.
 - Never include secret values in code, logs, screenshots or the pull request
   description.
