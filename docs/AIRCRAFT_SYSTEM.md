@@ -27,10 +27,14 @@ The deterministic, renderer-independent rules live in `packages/engine/src/airco
 
 - Air distance is Euclidean map distance; it does not use land pathfinding.
 - Fuel costs round up, so a partial tile is not free.
-- Mission planning accounts for the outbound leg, the return leg to a recovery base and a reserve (10% by default).
-- A mission is rejected before takeoff if the aircraft is destroyed, already in flight/returning, or does not have enough fuel for the complete route.
-- Fuel consumption is atomic: the rule returns no result rather than allowing fuel to become negative.
-- Refuelling and repair are restricted to a friendly base and are clamped to the aircraft's configured capacity/health limit.
+- Mission planning accounts for the outbound leg, the return leg to a recovery
+  base and a reserve (10% by default).
+- A mission is rejected before takeoff if the aircraft is destroyed, already in
+  flight/returning, or does not have enough fuel for the complete route.
+- Fuel consumption is atomic: the rule returns no result rather than allowing
+  fuel to become negative.
+- Refuelling and repair are restricted to a friendly base and are clamped to the
+  aircraft's configured capacity/health limit.
 
 The operational status model includes `parked`, `in-flight`, `returning`, `refuelling`, `repairing` and `destroyed`.
 
@@ -52,22 +56,28 @@ The fighter simulation is implemented by `FighterExecution`. It tracks patrol, t
 
 The current combat roles have different intended jobs:
 
-| Role | Primary purpose |
-| --- | --- |
-| Air Fighter | Air-to-air interception and fighter combat |
+| Role            | Primary purpose                                                                 |
+| --------------- | ------------------------------------------------------------------------------- |
+| Air Fighter     | Air-to-air interception and fighter combat                                      |
 | Stealth Fighter | Air combat with a lower detection multiplier and stealth-oriented configuration |
-| Ground Attacker | Ground-target attacks, structure attacks and air-gun behavior where configured |
-| Commercial | Non-combat trading flights between eligible airports |
+| Ground Attacker | Ground-target attacks, structure attacks and air-gun behavior where configured  |
+| Commercial      | Non-combat trading flights between eligible airports                            |
 
 Exact weapon counts, movement speed, fuel capacities, damage and service values are configuration data. Check `EngineConfig` and the regression tests before changing balance; do not copy values from an old README or assume a balance value is universal across game modes.
 
 ### Weapons and defenses
 
-- Air-to-air missile flights are represented by `FighterAamExecution` and a moving shell entity.
-- Missile execution reserves a launching-fighter/target pair to avoid duplicate in-flight targeting and clears the reservation on completion.
-- Eligible aircraft can consume flares for an evasion attempt when the mission has flare evasion enabled.
-- Ground-attack bombing is represented by `FighterBombExecution`; it applies area effects to eligible nearby units and notifies a player defending the target tile.
-- Structure interactions and damage immunity are explicit engine rules. Change them with regression coverage rather than relying on visual behavior alone.
+- Air-to-air missile flights are represented by `FighterAamExecution` and a
+  moving shell entity.
+- Missile execution reserves a launching-fighter/target pair to avoid duplicate
+  in-flight targeting and clears the reservation on completion.
+- Eligible aircraft can consume flares for an evasion attempt when the mission
+  has flare evasion enabled.
+- Ground-attack bombing is represented by `FighterBombExecution`; it applies
+  area effects to eligible nearby units and notifies a player defending the
+  target tile.
+- Structure interactions and damage immunity are explicit engine rules. Change
+  them with regression coverage rather than relying on visual behavior alone.
 
 ## Pathfinding and deterministic state
 
@@ -82,19 +92,19 @@ When changing an execution, review:
 
 ## Relevant implementation and tests
 
-| Area | Source or test |
-| --- | --- |
-| Shared flight/fuel rules | `packages/engine/src/aircombat/AircraftRules.ts` |
-| Fighter patrol and combat | `packages/engine/src/execution/FighterExecution.ts` |
-| Airport lifecycle and trade-flight scheduling | `packages/engine/src/execution/AirportExecution.ts` |
-| Commercial aircraft routing | `packages/engine/src/execution/CommercialAircraftExecution.ts` |
-| Air pathfinding | `packages/engine/src/pathfinding/PathFinder.Air.ts` |
-| Air-to-air missiles | `packages/engine/src/execution/FighterAamExecution.ts` |
-| Ground-attack bombs | `packages/engine/src/execution/FighterBombExecution.ts` |
-| Direct movement orders | `packages/engine/src/execution/MoveFighterExecution.ts` |
-| Shared rule tests | `tests/AircraftRules.test.ts` |
-| Worker/config parity tests | `tests/AircraftWorkerParity.test.ts` |
-| Client input priority tests | `tests/client/InputHandlerAircraftPriority.test.ts` |
-| Execution snapshot tests | `tests/core/snapshot/AircraftExecutions.test.ts` |
+| Area                                          | Source or test                                                 |
+| --------------------------------------------- | -------------------------------------------------------------- |
+| Shared flight/fuel rules                      | `packages/engine/src/aircombat/AircraftRules.ts`               |
+| Fighter patrol and combat                     | `packages/engine/src/execution/FighterExecution.ts`            |
+| Airport lifecycle and trade-flight scheduling | `packages/engine/src/execution/AirportExecution.ts`            |
+| Commercial aircraft routing                   | `packages/engine/src/execution/CommercialAircraftExecution.ts` |
+| Air pathfinding                               | `packages/engine/src/pathfinding/PathFinder.Air.ts`            |
+| Air-to-air missiles                           | `packages/engine/src/execution/FighterAamExecution.ts`         |
+| Ground-attack bombs                           | `packages/engine/src/execution/FighterBombExecution.ts`        |
+| Direct movement orders                        | `packages/engine/src/execution/MoveFighterExecution.ts`        |
+| Shared rule tests                             | `tests/AircraftRules.test.ts`                                  |
+| Worker/config parity tests                    | `tests/AircraftWorkerParity.test.ts`                           |
+| Client input priority tests                   | `tests/client/InputHandlerAircraftPriority.test.ts`            |
+| Execution snapshot tests                      | `tests/core/snapshot/AircraftExecutions.test.ts`               |
 
 Use the [testing guide](TESTING.md) for commands and the distinction between focused tests, full CI and live acceptance.
