@@ -69,6 +69,19 @@ Exact weapon counts, movement speed, fuel capacities, damage and service values 
 - Ground-attack bombing is represented by `FighterBombExecution`; it applies area effects to eligible nearby units and notifies a player defending the target tile.
 - Structure interactions and damage immunity are explicit engine rules. Change them with regression coverage rather than relying on visual behavior alone.
 
+### Pilot career and aircraft veterancy
+
+Combat aircraft now retain a match-local career record:
+
+- A confirmed air-gun hit awards 2 experience points.
+- An air-to-air missile impact awards 20 points.
+- A bomb strike awards 16 points when the blast hits at least one hostile unit.
+- Every 120 points grants one rank, up to rank 3. Partial progress carries between ranks.
+- Each rank adds 5% to maximum health and 5% to configured weapon damage. The health cap rises without instantly healing the aircraft.
+- Commercial aircraft do not receive combat career progression.
+
+Career rank and partial experience are included in unit updates and versioned snapshots. Older unit snapshots migrate with rank and experience set to zero, so previously saved matches remain readable.
+
 ## Pathfinding and deterministic state
 
 Air movement uses `AirPathFinder`, separate from land pathfinding. Aircraft, commercial flights, missiles and related executions persist their state through versioned execution snapshot schemas. Snapshot compatibility matters for deterministic simulation, replay and worker parity.
