@@ -267,6 +267,16 @@ export function aircraftDetectionChance(
   return Math.max(0, Math.min(1, baseChance * profile.detectionMultiplier));
 }
 
+/** Returns whether a radar installation covers a target tile. */
+export function isWithinRadarRange(
+  distanceSquared: number,
+  radarRange: number,
+): boolean {
+  assertFiniteNonNegative(distanceSquared, "distanceSquared");
+  assertFiniteNonNegative(radarRange, "radarRange");
+  return distanceSquared <= radarRange * radarRange;
+}
+
 /**
  * In Advanced Warfare, stealth aircraft are detectable to air patrols only
  * while a friendly radar installation covers their position. Legacy matches
