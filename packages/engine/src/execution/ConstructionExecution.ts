@@ -203,6 +203,9 @@ export class ConstructionExecution implements Execution {
           new SAMLauncherExecution(player, null, this.structure!),
         );
         break;
+      case UnitType.RadarStation:
+        // Passive structure: detection is queried by friendly air patrols.
+        break;
       case UnitType.City:
         this.mg.addExecution(new CityExecution(this.structure!));
         break;
@@ -224,6 +227,7 @@ export class ConstructionExecution implements Execution {
       case UnitType.MissileSilo:
       case UnitType.DefensePost:
       case UnitType.SAMLauncher:
+      case UnitType.RadarStation:
       case UnitType.City:
       case UnitType.Factory:
         return true;
