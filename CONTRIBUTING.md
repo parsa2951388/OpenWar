@@ -6,21 +6,31 @@ Open War is an independent community fork of OpenFrontIO. Contributions to this 
 
 ## Before you start
 
-- Read the root [README](README.md) for the current implementation and release status.
-- Keep each change focused and explain the user or maintenance problem it solves.
-- Check the existing code and tests before introducing a new abstraction or dependency.
-- Do not assume that a feature present in source is already deployed or verified in multiplayer.
+- Read the root [README](README.md) for the current implementation and release
+  status.
+- Keep each change focused and explain the user or maintenance problem it
+  solves.
+- Check the existing code and tests before introducing a new abstraction or
+  dependency.
+- Do not assume that a feature present in source is already deployed or verified
+  in multiplayer.
 
 This repository currently has GitHub Issues and Discussions disabled. You can submit a focused pull request directly; do not follow instructions that ask you to create or wait for an upstream `approved` issue.
 
 ## Project boundaries
 
-- Open War-owned client, server, engine integration, tests and documentation may be changed when the change is appropriate for this fork.
+- Open War-owned client, server, engine integration, tests and documentation may
+  be changed when the change is appropriate for this fork.
 - Preserve upstream OpenFront copyright and attribution notices.
-- Do not copy assets from `/proprietary` or external hosting unless their license explicitly grants that use.
-- Do not commit credentials, access tokens, private keys, database dumps, production logs containing personal data, game packages or other proprietary content.
-- Do not add DRM circumvention, key extraction, decryption or protection-bypass functionality.
-- Do not change production secrets, live service settings or deployment targets as an incidental part of a code pull request.
+- Do not copy assets from `/proprietary` or external hosting unless their
+  license explicitly grants that use.
+- Do not commit credentials, access tokens, private keys, database dumps,
+  production logs containing personal data, game packages or other proprietary
+  content.
+- Do not add DRM circumvention, key extraction, decryption or protection-bypass
+  functionality.
+- Do not change production secrets, live service settings or deployment targets
+  as an incidental part of a code pull request.
 
 ## Development environment
 
@@ -90,14 +100,17 @@ For a small documentation-only change, state that it is documentation-only and c
 For UI changes:
 - Include before/after screenshots where practical.
 - Check both desktop and a narrow mobile viewport.
-- Route all user-facing strings through the existing translation system and add the required English string entries.
+- Route all user-facing strings through the existing translation system and add
+  the required English string entries.
 - Describe any controls that still need real-device or multiplayer testing.
 
 For networking, authentication, matchmaking, payments, deployment or security changes:
 - State the trust boundary and the configuration assumptions.
-- Never include secret values in code, logs, screenshots or the pull request description.
+- Never include secret values in code, logs, screenshots or the pull request
+  description.
 - Distinguish unit/CI results from live acceptance tests.
-- Do not claim a production fix until it has been verified against the deployed commit and the intended service.
+- Do not claim a production fix until it has been verified against the deployed
+  commit and the intended service.
 
 ## Opening a pull request
 
@@ -106,8 +119,10 @@ Open a pull request against `main` and include:
 1. **Problem:** the behavior or maintenance issue being addressed.
 2. **Change:** what changed and why this approach was chosen.
 3. **Validation:** the exact commands run and whether each passed.
-4. **Impact:** affected game modes, platforms, APIs, configuration and deployment behavior.
-5. **Follow-up:** any acceptance test or configuration step that remains outstanding.
+4. **Impact:** affected game modes, platforms, APIs, configuration and
+   deployment behavior.
+5. **Follow-up:** any acceptance test or configuration step that remains
+   outstanding.
 
 Keep the pull request limited to one coherent change. Link related work when relevant. A reviewer may assign a project milestone before merging; the repository's milestone check must pass.
 
