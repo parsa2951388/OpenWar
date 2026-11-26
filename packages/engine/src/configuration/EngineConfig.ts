@@ -532,6 +532,11 @@ export class EngineConfig extends Config {
     return 30;
   }
 
+  /** Radar detection radius for stealth aircraft in Advanced Warfare matches. */
+  fighterRadarDetectionRange(): number {
+    return 36;
+  }
+
   fighterSpeed(type: FighterType): number {
     switch (type) {
       case FighterType.Stealth:
