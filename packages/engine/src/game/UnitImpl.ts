@@ -391,7 +391,8 @@ export class UnitImpl implements Unit {
       throw new Error(`cannot delete ${this} not active`);
     }
 
-    // Record whether this unit was destroyed by an enemy (vs. arrived / retreated)
+    // Record whether this unit was destroyed by an enemy (vs. arrived /
+    // retreated).
     this._wasDestroyedByEnemy = destroyer !== undefined;
     this._destroyer = destroyer ?? undefined;
 
@@ -615,7 +616,8 @@ export class UnitImpl implements Unit {
       // nearbyUnits skips structures under construction, so this flip changes
       // what a rail plan sees.
       this.mg.noteStructureChange(this);
-      this._owner._myUnitsVersion++; // unitsOwned() weighs under-construction units differently
+      // unitsOwned() weighs under-construction units differently.
+      this._owner._myUnitsVersion++;
       this.mg.addUpdate(this.toUpdate());
     }
   }
@@ -800,7 +802,8 @@ export class UnitImpl implements Unit {
   }
 
   /**
-   * Add partial progress toward the next veterancy level from a non-kill source.
+   * Add partial progress toward the next veterancy level from a non-kill
+   * source.
    *
    * Transports and captures share one integer progress meter. One level =
    * transportThreshold * captureThreshold points; a transport is worth
@@ -857,7 +860,8 @@ export class UnitImpl implements Unit {
       };
     }
     this._level++;
-    // unitCount()/unitsOwned() are level-weighted and memoised on these versions
+    // unitCount()/unitsOwned() are level-weighted and memoised on these
+    // versions.
     this.mg.bumpUnitsVersion();
     this._owner._myUnitsVersion++;
     if ([UnitType.MissileSilo, UnitType.SAMLauncher].includes(this.type())) {
@@ -878,7 +882,8 @@ export class UnitImpl implements Unit {
       this.delete(true, destroyer);
       return;
     }
-    // unitCount()/unitsOwned() are level-weighted and memoised on these versions
+    // unitCount()/unitsOwned() are level-weighted and memoised on these
+    // versions.
     this.mg.bumpUnitsVersion();
     this._owner._myUnitsVersion++;
     this.mg.addUpdate(this.toUpdate());
