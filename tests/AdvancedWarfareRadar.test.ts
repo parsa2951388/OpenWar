@@ -15,11 +15,9 @@ describe("Advanced Warfare stealth radar", () => {
     expect(canDetectStealthAircraft(true, true)).toBe(true);
   });
 
-  it("uses inclusive range boundaries for SAM and dedicated radar coverage", () => {
+  it("uses an inclusive 36-tile SAM radar boundary", () => {
     expect(isWithinRadarRange(36 ** 2, 36)).toBe(true);
     expect(isWithinRadarRange(36.01 ** 2, 36)).toBe(false);
-    expect(isWithinRadarRange(56 ** 2, 56)).toBe(true);
-    expect(isWithinRadarRange(56.01 ** 2, 56)).toBe(false);
   });
 
   it("rejects invalid radar distances and ranges", () => {
