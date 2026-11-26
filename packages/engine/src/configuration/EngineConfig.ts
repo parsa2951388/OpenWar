@@ -532,9 +532,14 @@ export class EngineConfig extends Config {
     return 30;
   }
 
-  /** Radar detection radius for stealth aircraft in Advanced Warfare matches. */
+  /** Detection radius supplied by an active SAM launcher. */
   fighterRadarDetectionRange(): number {
     return 36;
+  }
+
+  /** Detection radius supplied by a dedicated radar station. */
+  radarStationDetectionRange(): number {
+    return 56;
   }
 
   fighterSpeed(type: FighterType): number {
@@ -606,6 +611,11 @@ export class EngineConfig extends Config {
         return this.costWrapper(
           (numUnits: number) => Math.min(3_000_000, (numUnits + 1) * 1_500_000),
           UnitType.SAMLauncher,
+        );
+      case UnitType.RadarStation:
+        return this.costWrapper(
+          (numUnits: number) => Math.min(1_800_000, (numUnits + 1) * 450_000),
+          UnitType.RadarStation,
         );
       case UnitType.City:
         return this.costWrapper(
