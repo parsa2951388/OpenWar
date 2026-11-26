@@ -267,7 +267,6 @@ export function aircraftDetectionChance(
   return Math.max(0, Math.min(1, baseChance * profile.detectionMultiplier));
 }
 
-
 /**
  * In Advanced Warfare, stealth aircraft are detectable to air patrols only
  * while a friendly radar installation covers their position. Legacy matches
