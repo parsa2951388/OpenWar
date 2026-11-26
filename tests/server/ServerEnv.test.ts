@@ -153,6 +153,42 @@ describe("ServerEnv.jwtIssuer", () => {
     vi.stubEnv("DOMAIN", "openfront.io");
     expect(ServerEnv.jwtIssuer()).toBe("https://api.openfront.io");
   });
+
+  test("uses API_DOMAIN as the API origin while keeping DOMAIN as the JWT audience", () => {
+    vi.stubEnv("DOMAIN", "open-war-online.onrender.com");
+    vi.stubEnv("API_DOMAIN", "api.openfront.io");
+
+    expect(ServerEnv.jwtAudience()).toBe("open-war-online.onrender.com");
+    expect(ServerEnv.jwtIssuer()).toBe("https://api.openfront.io");
+  });
+
+  test("accepts an explicit HTTPS API origin without adding another api prefix", () => {
+    vi.stubEnv("DOMAIN", "open-war-online.onrender.com");
+    vi.stubEnv("API_DOMAIN", "https://api.openfront.io");
+
+    expect(ServerEnv.jwtIssuer()).toBe("https://api.openfront.io");
+  });
+
+  test("allows a loopback HTTP API origin for local development", () => {
+    vi.stubEnv("DOMAIN", "localhost");
+    vi.stubEnv("API_DOMAIN", "127.0.0.1:8787");
+
+    expect(ServerEnv.jwtIssuer()).toBe("http://127.0.0.1:8787");
+  });
+
+  test("rejects an insecure remote API_DOMAIN", () => {
+    vi.stubEnv("DOMAIN", "open-war-online.onrender.com");
+    vi.stubEnv("API_DOMAIN", "http://api.openfront.io");
+
+    expect(() => ServerEnv.jwtIssuer()).toThrow(/API_DOMAIN.*HTTPS/);
+  });
+
+  test("rejects API_DOMAIN values containing a path", () => {
+    vi.stubEnv("DOMAIN", "open-war-online.onrender.com");
+    vi.stubEnv("API_DOMAIN", "https://api.openfront.io/internal");
+
+    expect(() => ServerEnv.jwtIssuer()).toThrow(/API_DOMAIN.*origin/);
+  });
 });
 
 describe("ServerEnv.allowedFlares", () => {
