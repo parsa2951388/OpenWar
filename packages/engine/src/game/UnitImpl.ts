@@ -733,11 +733,7 @@ export class UnitImpl implements Unit {
    */
   recordFighterCombatExperience(points: number): void {
     const state = this._fighterState;
-    if (
-      state === undefined ||
-      !Number.isSafeInteger(points) ||
-      points <= 0
-    ) {
+    if (state === undefined || !Number.isSafeInteger(points) || points <= 0) {
       return;
     }
     const config = this.mg.config();
