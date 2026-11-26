@@ -64,6 +64,7 @@ describe("LobbyPresets logic and schema", () => {
     gameMap: GameMapType.World,
     useRandomMap: false,
     compactMap: true,
+    advancedWarfare: true,
     difficulty: Difficulty.Medium,
     gameMode: GameMode.FFA,
     teamCount: 2,
@@ -122,6 +123,26 @@ describe("LobbyPresets logic and schema", () => {
       UnitType.AtomBomb,
       UnitType.Warship,
     ]);
+  });
+
+  it("preserves the opt-in Advanced Warfare rule in lobby presets", () => {
+    const parsed = parseLobbyPresetsJson(
+      JSON.stringify([
+        {
+          name: "Advanced Warfare",
+          config: sampleConfig,
+        },
+      ]),
+    );
+
+    expect(parsed).toHaveLength(1);
+    expect(parsed[0].config.advancedWarfare).toBe(true);
+    expect(
+      LobbyPresetConfigSchema.safeParse({
+        ...sampleConfig,
+        advancedWarfare: "enabled",
+      }).success,
+    ).toBe(false);
   });
 
   it("safely handles invalid JSON, null, or empty string", () => {
