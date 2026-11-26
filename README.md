@@ -37,7 +37,7 @@ The browser shell, world map, spawn flow, tutorial, HUD and basic map interactio
 - Physical-device mobile viewport and touch controls.
 - A fresh deployment check against the exact `main` commit.
 
-Deployment and API integration work is tracked separately in the repository's pull requests. A merged source change, a successful CI run, and a successful production deployment are three different states; do not treat one as proof of the others. Use the [release-readiness checklist](docs/RELEASE_CHECKLIST.md) before merging or promoting a release.
+Deployment and API integration work is tracked separately in the repository's pull requests. A merged source change, a successful CI run, and a successful production deployment are three different states; do not treat one as proof of the others. Use the [testing guide](docs/TESTING.md) when validating changes and the [release-readiness checklist](docs/RELEASE_CHECKLIST.md) before merging or promoting a release.
 
 ## Getting started
 
