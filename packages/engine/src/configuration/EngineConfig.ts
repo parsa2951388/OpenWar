@@ -1,5 +1,6 @@
 import {
   Difficulty,
+  FighterType,
   GameType,
   Gold,
   PlayerInfo,
@@ -7,7 +8,6 @@ import {
   TerrainType,
   TerraNullius,
   Tick,
-  FighterType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
 import { PlayerLike } from "@openfront/engine-api/game/ReadViews";
@@ -40,7 +40,9 @@ export interface AttackLogicInput {
   } | null;
   /** A defense post owned by the defender is in range of the tile. */
   defenderHasDefensePost: boolean;
-  /** Fraction of land tiles with fallout, or null if the tile has no fallout. */
+  /**
+   * Fraction of land tiles with fallout, or null if the tile has no fallout.
+   */
   falloutRatio: number | null;
   /** Tiles on the attack front this tick (plus jitter); fixed for the tick. */
   borderSize: number;
@@ -68,13 +70,17 @@ const BOT_DEFENDER_LOSS_MULT = 0.7;
 const TERRA_NULLIUS_COST_SCALE = 2000;
 const TERRA_NULLIUS_MIN_COST = 5;
 const TERRA_NULLIUS_MAX_COST = 100;
-// Attacker loss = mag * clampedRatio * (BASE * largeAttackerBonus + DENSITY * troopsPerTile).
+// Attacker loss = mag * clampedRatio *
+// (BASE * largeAttackerBonus + DENSITY * troopsPerTile).
 // BASE is the old 0.48 ratio weight times the 0.965 large-defender sigmoid
 // tail that every defender used to get. DENSITY sets which stack size pays
 // the old 0.0052 density weight: at 0.0039 a stack of 3/4 the defender's
 // army matches the old cost, bigger stacks pay less, smaller pay more.
 const ATTACKER_LOSS_BASE = 0.463;
-/** Defender troops per attacking troop at or below which the attacker's losses stop shrinking */
+/**
+ * Defender troops per attacking troop at or below which the attacker's losses
+ * stop shrinking.
+ */
 export const CHEAPEST_TROOP_RATIO = 0.6;
 const ATTACKER_LOSS_PER_DENSITY = 0.0039;
 // Speed divisor: 8.25 / 0.965, absorbing the same sigmoid tail. 8.25 is the
@@ -228,7 +234,8 @@ export class EngineConfig extends Config {
 
   trainSpawnRate(numPlayerFactories: number, numTrainUnits: number): number {
     // hyperbolic decay, midpoint at 10 factories
-    // expected number of trains = numPlayerFactories  / trainSpawnRate(numPlayerFactories)
+    // expected number of trains =
+    // numPlayerFactories / trainSpawnRate(numPlayerFactories)
     const rate = (numPlayerFactories + 10) * 15;
     const boost = this.smallEconomySpawnBoost(numPlayerFactories);
     return Math.max(
@@ -241,7 +248,8 @@ export class EngineConfig extends Config {
    * Per-unit spawn multiplier for a player's first few ports or factories
    * (counted in levels), so a new or knocked-back economy gets going
    * faster: up to half an extra unit's worth of spawns, 1.5x at 1 level,
-   * fading out by 6 levels. Additive, so total spawns still rise with every level
+   * fading out by 6 levels. Additive, so total spawns still rise with every
+   * level
    * built. Keyed on the player rather than game time or the world fleet, so
    * it works the same in every lobby size and doubles as a comeback boost.
    */
@@ -283,7 +291,8 @@ export class EngineConfig extends Config {
   }
 
   tradeShipGold(dist: number, player: PlayerLike): Gold {
-    // Sigmoid: concave start, sharp S-curve middle, linear end - heavily punishes trades under range debuff.
+    // Sigmoid: concave start, sharp S-curve middle, linear end - heavily
+    // punishes trades under range debuff.
     const debuff = this.tradeShipShortRangeDebuff();
     const baseGold = 75_000 / (1 + exp(-0.03 * (dist - debuff))) + 50 * dist;
     return BigInt(Math.floor(baseGold * this.goldMultiplierFor(player)));
@@ -777,7 +786,10 @@ export class EngineConfig extends Config {
     // existing Plains / Highland / Mountain base costs. Legacy matches keep
     // their exact combat values because the modifier is opt-in.
     if (this.advancedWarfare() && input.terrainMagnitude !== undefined) {
-      const magnitude = Math.max(0, Math.min(30, Math.floor(input.terrainMagnitude)));
+      const magnitude = Math.max(
+        0,
+        Math.min(30, Math.floor(input.terrainMagnitude)),
+      );
       const bandOffset = magnitude >= 20 ? magnitude - 20 : magnitude % 10;
       const bandWidth = magnitude >= 20 ? 10 : 9;
       const highGroundMultiplier = 1 + (bandOffset / bandWidth) * 0.08;
@@ -1028,7 +1040,8 @@ export class EngineConfig extends Config {
   }
 
   /** Health at or below which a warship retreats to repair, as a percent of its
-   *  (veterancy-adjusted) max health, so the threshold scales with max health. */
+   * (veterancy-adjusted) max health, so the threshold scales with max health.
+   */
   warshipRetreatHealthPercent(): number {
     return 75;
   }
