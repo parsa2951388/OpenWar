@@ -1,6 +1,10 @@
 # Aircraft systems overview
 
-This document describes the current aircraft implementation in the `main` source branch. It is a developer-oriented map of the engine rules and execution flow, not a claim that every behavior has passed live multiplayer acceptance. See the [release-readiness checklist](RELEASE_CHECKLIST.md) for the outstanding acceptance gates.
+This document describes the current aircraft implementation in the `main` source
+branch. It is a developer-oriented map of the engine rules and execution flow,
+not a claim that every behavior has passed live multiplayer acceptance. See the
+[release-readiness checklist](RELEASE_CHECKLIST.md) for the outstanding
+acceptance gates.
 
 ## Roles and profile data
 
@@ -11,7 +15,8 @@ The engine models four aircraft roles:
 - `ground-attacker`
 - `commercial`
 
-Combat-aircraft configuration is supplied by game configuration rather than embedding all balance values in the flight rules. An aircraft profile includes:
+Combat-aircraft configuration is supplied by game configuration rather than
+embedding all balance values in the flight rules. An aircraft profile includes:
 
 - fuel consumed per map tile and total fuel capacity;
 - maximum movement distance per simulation tick;
@@ -19,11 +24,14 @@ Combat-aircraft configuration is supplied by game configuration rather than embe
 - a detection multiplier; lower values make the aircraft harder to detect;
 - whether the aircraft can launch from and recover to an aircraft carrier.
 
-Commercial aircraft are non-combat aircraft: profile validation rejects non-zero air or ground damage for the commercial role.
+Commercial aircraft are non-combat aircraft: profile validation rejects non-zero
+air or ground damage for the commercial role.
 
 ## Flight, fuel and servicing
 
-The deterministic, renderer-independent rules live in `packages/engine/src/aircombat/AircraftRules.ts`. They are shared by simulation code and tests.
+The deterministic, renderer-independent rules live in
+`packages/engine/src/aircombat/AircraftRules.ts`. They are shared by simulation
+code and tests.
 
 - Air distance is Euclidean map distance; it does not use land pathfinding.
 - Fuel costs round up, so a partial tile is not free.
@@ -36,34 +44,51 @@ The deterministic, renderer-independent rules live in `packages/engine/src/airco
 - Refuelling and repair are restricted to a friendly base and are clamped to the
   aircraft's configured capacity/health limit.
 
-The operational status model includes `parked`, `in-flight`, `returning`, `refuelling`, `repairing` and `destroyed`.
+The operational status model includes `parked`, `in-flight`, `returning`,
+`refuelling`, `repairing` and `destroyed`.
 
 ### Airports and carriers
 
-Land airports are valid bases for aircraft. Carrier use is conditional on the aircraft profile's `carrierCapable` flag; do not infer that every aircraft can operate from a carrier.
+Land airports are valid bases for aircraft. Carrier use is conditional on the
+aircraft profile's `carrierCapable` flag; do not infer that every aircraft can
+operate from a carrier.
 
-Airport execution is maintained by `AirportExecution`. An active, completed airport periodically evaluates whether to spawn a commercial flight. Eligible destination airports belong to players who can trade with the source owner. The destination cache is refreshed periodically and uses destination level and route ordering as weights.
+Airport execution is maintained by `AirportExecution`. An active, completed
+airport periodically evaluates whether to spawn a commercial flight. Eligible
+destination airports belong to players who can trade with the source owner. The
+destination cache is refreshed periodically and uses destination level and route
+ordering as weights.
 
 ### Commercial flights
 
-`CommercialAircraftExecution` uses the air pathfinder to move a commercial aircraft between airports. The flight is cancelled when the destination or trade relationship is no longer valid. If the aircraft is captured, it seeks a suitable airport belonging to its new owner; when it completes successfully, the gold reward is credited to the captor instead of the original trading pair.
+`CommercialAircraftExecution` uses the air pathfinder to move a commercial
+aircraft between airports. The flight is cancelled when the destination or trade
+relationship is no longer valid. If the aircraft is captured, it seeks a
+suitable airport belonging to its new owner; when it completes successfully, the
+gold reward is credited to the captor instead of the original trading pair.
 
-Commercial aircraft do not carry combat damage. Their purpose is trade-route activity and gold income, not air combat.
+Commercial aircraft do not carry combat damage. Their purpose is trade-route
+activity and gold income, not air combat.
 
 ## Combat aircraft and missions
 
-The fighter simulation is implemented by `FighterExecution`. It tracks patrol, target selection, combat state, low-fuel and damage/ammunition return behavior, refuelling and recovery. Manual movement is represented by `MoveFighterExecution`, which updates the selected aircraft's patrol destination and clears stale return/service state.
+The fighter simulation is implemented by `FighterExecution`. It tracks patrol,
+target selection, combat state, low-fuel and damage/ammunition return behavior,
+refuelling and recovery. Manual movement is represented by
+`MoveFighterExecution`, which updates the selected aircraft's patrol destination
+and clears stale return/service state.
 
 The current combat roles have different intended jobs:
 
-| Role            | Primary purpose                                                                 |
-| --------------- | ------------------------------------------------------------------------------- |
-| Air Fighter     | Air-to-air interception and fighter combat                                      |
-| Stealth Fighter | Air combat with a lower detection multiplier and stealth-oriented configuration |
-| Ground Attacker | Ground-target attacks, structure attacks and air-gun behavior where configured  |
-| Commercial      | Non-combat trading flights between eligible airports                            |
+- **Air Fighter:** Air-to-air interception and fighter combat.
+- **Stealth Fighter:** Stealth-oriented air combat and interception.
+- **Ground Attacker:** Ground strikes and structure attacks.
+- **Commercial:** Non-combat trading flights between eligible airports.
 
-Exact weapon counts, movement speed, fuel capacities, damage and service values are configuration data. Check `EngineConfig` and the regression tests before changing balance; do not copy values from an old README or assume a balance value is universal across game modes.
+Exact weapon counts, movement speed, fuel capacities, damage and service values
+are configuration data. Check `EngineConfig` and the regression tests before
+changing balance; do not copy values from an old README or assume a balance
+value is universal across game modes.
 
 ### Weapons and defenses
 
@@ -81,9 +106,13 @@ Exact weapon counts, movement speed, fuel capacities, damage and service values 
 
 ## Pathfinding and deterministic state
 
-Air movement uses `AirPathFinder`, separate from land pathfinding. Aircraft, commercial flights, missiles and related executions persist their state through versioned execution snapshot schemas. Snapshot compatibility matters for deterministic simulation, replay and worker parity.
+Air movement uses `AirPathFinder`, separate from land pathfinding. Aircraft,
+commercial flights, missiles and related executions persist their state through
+versioned execution snapshot schemas. Snapshot compatibility matters for
+deterministic simulation, replay and worker parity.
 
 When changing an execution, review:
+
 - initialization and per-tick state transitions;
 - invalid/deleted targets and missing recovery bases;
 - fuel, service and return paths;
@@ -92,19 +121,22 @@ When changing an execution, review:
 
 ## Relevant implementation and tests
 
-| Area                                          | Source or test                                                 |
-| --------------------------------------------- | -------------------------------------------------------------- |
-| Shared flight/fuel rules                      | `packages/engine/src/aircombat/AircraftRules.ts`               |
-| Fighter patrol and combat                     | `packages/engine/src/execution/FighterExecution.ts`            |
-| Airport lifecycle and trade-flight scheduling | `packages/engine/src/execution/AirportExecution.ts`            |
-| Commercial aircraft routing                   | `packages/engine/src/execution/CommercialAircraftExecution.ts` |
-| Air pathfinding                               | `packages/engine/src/pathfinding/PathFinder.Air.ts`            |
-| Air-to-air missiles                           | `packages/engine/src/execution/FighterAamExecution.ts`         |
-| Ground-attack bombs                           | `packages/engine/src/execution/FighterBombExecution.ts`        |
-| Direct movement orders                        | `packages/engine/src/execution/MoveFighterExecution.ts`        |
-| Shared rule tests                             | `tests/AircraftRules.test.ts`                                  |
-| Worker/config parity tests                    | `tests/AircraftWorkerParity.test.ts`                           |
-| Client input priority tests                   | `tests/client/InputHandlerAircraftPriority.test.ts`            |
-| Execution snapshot tests                      | `tests/core/snapshot/AircraftExecutions.test.ts`               |
+- Shared flight/fuel rules: `packages/engine/src/aircombat/AircraftRules.ts`
+- Fighter patrol and combat: `packages/engine/src/execution/FighterExecution.ts`
+- Airport lifecycle: `packages/engine/src/execution/AirportExecution.ts`
+- Commercial flight routing:
+  `packages/engine/src/execution/CommercialAircraftExecution.ts`
+- Air pathfinding: `packages/engine/src/pathfinding/PathFinder.Air.ts`
+- Air-to-air missiles: `packages/engine/src/execution/FighterAamExecution.ts`
+- Ground-attack bombs: `packages/engine/src/execution/FighterBombExecution.ts`
+- Direct movement orders:
+  `packages/engine/src/execution/MoveFighterExecution.ts`
+- Shared rule tests: `tests/AircraftRules.test.ts`
+- Worker/config parity tests: `tests/AircraftWorkerParity.test.ts`
+- Client input priority:
+  `tests/client/InputHandlerAircraftPriority.test.ts`
+- Execution snapshots:
+  `tests/core/snapshot/AircraftExecutions.test.ts`
 
-Use the [testing guide](TESTING.md) for commands and the distinction between focused tests, full CI and live acceptance.
+Use the [testing guide](TESTING.md) for commands and the distinction between
+focused tests, full CI and live acceptance.
