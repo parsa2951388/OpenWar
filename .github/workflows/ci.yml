@@ -145,29 +145,3 @@ jobs:
             git --no-pager diff
             exit 1
           fi
-
-  format-preview:
-    name: Temporary Oxfmt preview
-    runs-on: ubuntu-latest
-    timeout-minutes: 20
-    steps:
-      - name: Checkout repository
-        uses: actions/checkout@v7
-      - name: Setup Node
-        uses: actions/setup-node@v7
-        with:
-          node-version: 24
-      - name: Setup npm
-        run: npm install --global --ignore-scripts npm@12.1.0
-      - run: npm ci
-      - name: Format with the repository's pinned Oxfmt
-        run: npm run format
-      - name: Emit exact formatted contents
-        shell: bash
-        run: |
-          for file in CONTRIBUTING.md docs/AIRCRAFT_SYSTEM.md docs/RELEASE_CHECKLIST.md packages/engine/src/game/UnitImpl.ts tests/FighterVeterancy.test.ts; do
-            echo "O X F M T _ B E G I N: $file"
-            base64 -w0 "$file"
-            echo
-            echo "O X F M T _ E N D"
-          done
