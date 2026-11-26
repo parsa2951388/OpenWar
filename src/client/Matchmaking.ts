@@ -350,7 +350,7 @@ export class MatchmakingModal extends BaseModal {
     const siteParam =
       site === undefined ? "" : `&site=${encodeURIComponent(site)}`;
     const socket = new WebSocket(
-      `${ClientEnv.jwtIssuer()}/matchmaking/join?${instanceParam}mode=${this.mode}${versionParam}${siteParam}`,
+      `${ClientEnv.apiOrigin()}/matchmaking/join?${instanceParam}mode=${this.mode}${versionParam}${siteParam}`,
     );
     this.socket = socket;
     let openedAt: number | null = null;

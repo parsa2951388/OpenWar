@@ -189,6 +189,18 @@ describe("sendCheckin", () => {
     expect(init.signal).toBeInstanceOf(AbortSignal);
   });
 
+  test("uses the configured gateway for cluster transport", async () => {
+    vi.stubEnv(
+      "OPENWAR_API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    const fetchFn = fetchReturning({ state: "open" });
+    await expect(sendCheckin(body, fetchFn)).resolves.toBe("open");
+    expect(vi.mocked(fetchFn).mock.calls[0][0]).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev/cluster/checkin",
+    );
+  });
+
   test("parses a fenced reply instead of discarding it as unknown", async () => {
     await expect(
       sendCheckin(body, fetchReturning({ state: "fenced" })),

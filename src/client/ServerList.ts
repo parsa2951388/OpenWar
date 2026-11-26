@@ -12,7 +12,6 @@ import {
   versionMatches,
 } from "@openfront/shared/ServerList";
 import { z } from "zod";
-import { getApiBase } from "./ApiBase";
 import { ClientEnv } from "./ClientEnv";
 import { isDesktopShell } from "./DesktopShell";
 import { pagePin } from "./PagePin";
@@ -213,7 +212,7 @@ export function matchmakingSite(): string | undefined {
 }
 
 export function serverListUrl(site: string): string {
-  return `${getApiBase()}/cluster.json?site=${encodeURIComponent(site)}`;
+  return `${ClientEnv.apiOrigin()}/cluster.json?site=${encodeURIComponent(site)}`;
 }
 
 /**

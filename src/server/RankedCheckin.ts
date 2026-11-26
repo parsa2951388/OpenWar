@@ -167,7 +167,7 @@ export async function rankedCheckinPass(
   if (!gate.shouldCheckIn()) return;
 
   try {
-    const url = `${ServerEnv.jwtIssuer() + "/matchmaking/checkin"}`;
+    const url = `${ServerEnv.apiOrigin() + "/matchmaking/checkin"}`;
     const gameId = ServerEnv.generateGameIdForWorker(workerId);
     if (gameId === null) {
       log.warn(`Failed to generate game ID for worker ${workerId}`);

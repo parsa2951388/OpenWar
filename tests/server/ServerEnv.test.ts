@@ -155,6 +155,64 @@ describe("ServerEnv.jwtIssuer", () => {
   });
 });
 
+describe("ServerEnv.gitCommit", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  test("uses a configured commit when it is commit-shaped", () => {
+    vi.stubEnv("GIT_COMMIT", "a".repeat(40));
+    vi.stubEnv("RENDER_GIT_COMMIT", "b".repeat(40));
+    expect(ServerEnv.gitCommit()).toBe("a".repeat(40));
+  });
+
+  test("uses Render's commit when the configured label is not a SHA", () => {
+    vi.stubEnv("GIT_COMMIT", "OPENWAR");
+    vi.stubEnv("RENDER_GIT_COMMIT", "b".repeat(40));
+    expect(ServerEnv.gitCommit()).toBe("b".repeat(40));
+  });
+
+  test("preserves a non-commit development label outside Render", () => {
+    vi.stubEnv("GIT_COMMIT", "DEV");
+    vi.stubEnv("RENDER_GIT_COMMIT", "");
+    expect(ServerEnv.gitCommit()).toBe("DEV");
+  });
+
+  test("throws only when neither commit nor development label is configured", () => {
+    vi.stubEnv("GIT_COMMIT", "");
+    vi.stubEnv("RENDER_GIT_COMMIT", "");
+    expect(() => ServerEnv.gitCommit()).toThrow(/GIT_COMMIT not set/);
+  });
+});
+
+describe("ServerEnv.apiOrigin", () => {
+  afterEach(() => vi.unstubAllEnvs());
+
+  test("defaults to the JWT issuer when no gateway is configured", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("OPENWAR_API_ORIGIN", "");
+    expect(ServerEnv.apiOrigin()).toBe("https://api.openfront.io");
+  });
+
+  test("routes transport through the gateway without changing JWT identity", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv(
+      "OPENWAR_API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev/",
+    );
+    expect(ServerEnv.apiOrigin()).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    expect(ServerEnv.jwtIssuer()).toBe("https://api.openfront.io");
+  });
+
+  test("rejects insecure remote origins and non-origin paths", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("OPENWAR_API_ORIGIN", "http://gateway.example");
+    expect(() => ServerEnv.apiOrigin()).toThrow(/HTTPS origin/);
+    vi.stubEnv("OPENWAR_API_ORIGIN", "https://gateway.example/proxy");
+    expect(() => ServerEnv.apiOrigin()).toThrow(/without a path/);
+  });
+});
+
 describe("ServerEnv.allowedFlares", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
@@ -234,6 +292,20 @@ describe("ServerEnv.publicHost", () => {
     vi.stubEnv("GAME_DOMAIN", "server.openfront.dev");
     vi.stubEnv("GAME_HOST", "");
     expect(ServerEnv.publicHost()).toBe("main.server.openfront.dev");
+  });
+
+  test("uses Render's public hostname for a standalone web service", () => {
+    vi.stubEnv("SUBDOMAIN", "");
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("GAME_HOST", "");
+    vi.stubEnv("RENDER_EXTERNAL_HOSTNAME", "open-war-online.onrender.com");
+    expect(ServerEnv.publicHost()).toBe("open-war-online.onrender.com");
+  });
+
+  test("prefers an explicitly configured game host over Render's hostname", () => {
+    vi.stubEnv("GAME_HOST", "game.open-war.example");
+    vi.stubEnv("RENDER_EXTERNAL_HOSTNAME", "open-war-online.onrender.com");
+    expect(ServerEnv.publicHost()).toBe("game.open-war.example");
   });
 
   // An empty repo variable is how GitHub delivers "not set", and deploy.sh
