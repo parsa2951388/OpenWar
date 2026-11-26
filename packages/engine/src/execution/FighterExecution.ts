@@ -958,8 +958,9 @@ export class FighterExecution implements Execution {
         unit.type() === UnitType.TradeShip ||
         (state.fighterType === FighterType.Air &&
           unit.type() === UnitType.StealthFighter &&
+          this.mg!.config().advancedWarfare() &&
           !canDetectStealthAircraft(
-            this.mg!.config().advancedWarfare(),
+            true,
             this.hasFriendlyRadarCoverage(unit),
           )) ||
         (state.fighterType === FighterType.Stealth &&
