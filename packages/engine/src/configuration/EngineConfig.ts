@@ -1047,6 +1047,51 @@ export class EngineConfig extends Config {
     return 25;
   }
 
+  // --- Aircraft veterancy ---
+
+  /** Maximum career rank an aircraft can reach in one match. */
+  fighterMaxVeterancy(): number {
+    return 3;
+  }
+
+  /** Successful combat actions required for each aircraft rank. */
+  fighterVeterancyExperiencePerLevel(): number {
+    return 120;
+  }
+
+  /** Effective max-health increase per aircraft rank, in whole percent. */
+  fighterVeterancyHealthBonus(): number {
+    return 5;
+  }
+
+  /** Weapon damage increase per aircraft rank, in whole percent. */
+  fighterVeterancyDamageBonus(): number {
+    return 5;
+  }
+
+  /** Experience awarded for a confirmed gun hit. */
+  fighterVeterancyGunExperience(): number {
+    return 2;
+  }
+
+  /** Experience awarded when an air-to-air missile reaches its target. */
+  fighterVeterancyAamExperience(): number {
+    return 20;
+  }
+
+  /** Experience awarded when a released bomb damages an enemy unit. */
+  fighterVeterancyBombExperience(): number {
+    return 16;
+  }
+
+  /** Integer-only damage scaling keeps the simulation deterministic. */
+  fighterDamageWithVeterancy(baseDamage: number, veterancy: number): number {
+    const rank = Math.max(0, Math.min(this.fighterMaxVeterancy(), veterancy));
+    return Math.floor(
+      (baseDamage * (100 + rank * this.fighterVeterancyDamageBonus())) / 100,
+    );
+  }
+
   defensePostShellAttackRate(): number {
     return 100;
   }
