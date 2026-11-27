@@ -50,13 +50,14 @@ describe("LangSelector applyTranslation", () => {
     const modal = document.createElement("language-modal") as HTMLElement & {
       requestUpdate: () => void;
     };
-    modal.requestUpdate = vi.fn();
     document.body.appendChild(modal);
+    const requestUpdate = vi.fn();
+    modal.requestUpdate = requestUpdate;
 
     const selector = makeSelector({ "main.title": "Open War" });
     (selector as unknown as { applyTranslation(): void }).applyTranslation();
 
-    expect(modal.requestUpdate).toHaveBeenCalledOnce();
+    expect(requestUpdate).toHaveBeenCalledOnce();
   });
 });
 
