@@ -1,0 +1,26 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 720 144" role="img" aria-labelledby="title desc">
+  <title id="title">Open War</title>
+  <desc id="desc">Open War strategic operations wordmark</desc>
+  <defs>
+    <linearGradient id="ow-mark" x1="0" y1="0" x2="1" y2="1">
+      <stop offset="0" stop-color="#6de3da"/>
+      <stop offset="1" stop-color="#25a8b7"/>
+    </linearGradient>
+    <linearGradient id="ow-gold" x1="0" y1="0" x2="1" y2="0">
+      <stop offset="0" stop-color="#f4d28a"/>
+      <stop offset="1" stop-color="#d69b43"/>
+    </linearGradient>
+  </defs>
+  <g transform="translate(8 8)">
+    <path d="M64 3 116 23v36c0 35-20 58-52 74C32 117 12 94 12 59V23L64 3Z" fill="#0b1c29" stroke="url(#ow-mark)" stroke-width="4"/>
+    <path d="M64 19 100 33v26c0 25-12 43-36 56-24-13-36-31-36-56V33l36-14Z" fill="none" stroke="#254656" stroke-width="2"/>
+    <path d="m36 81 28-46 28 46M47 64h34M64 35v67" fill="none" stroke="url(#ow-gold)" stroke-linecap="square" stroke-linejoin="miter" stroke-width="6"/>
+    <circle cx="64" cy="64" r="7" fill="#eaf8f5" stroke="#0b1c29" stroke-width="3"/>
+    <path d="M4 64h15m90 0h15M64-4v15m0 106v15" stroke="#6de3da" stroke-width="2" opacity=".7"/>
+  </g>
+  <g font-family="Inter,Arial,sans-serif" font-weight="900">
+    <text x="150" y="91" font-size="76" letter-spacing="3" fill="#f4f7f8">OPEN</text>
+    <text x="405" y="91" font-size="76" letter-spacing="3" fill="url(#ow-gold)">WAR</text>
+    <text x="155" y="119" font-size="13" letter-spacing="5.1" fill="#89a7b6">GLOBAL STRATEGY COMMAND</text>
+  </g>
+</svg>
