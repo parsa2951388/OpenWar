@@ -6,7 +6,7 @@ on:
       application_name:
         description: Arvan Edge application name
         required: true
-        default: open-war-competition
+        default: openwar
         type: string
 
 permissions:
