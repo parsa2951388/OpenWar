@@ -28,7 +28,14 @@ function runRenderStart(
   const fakeTsx = path.join(tempDirectory, "tsx");
   fs.writeFileSync(
     fakeTsx,
-    '#!/bin/sh\nprintf "%s|%s|%s\\n" "$GAME_ENV" "${TURNSTILE_SITE_KEY:-}" "${GIT_COMMIT:-}"\n',
+    [
+      "#!/bin/sh",
+      "printf '%s|%s|%s\\\\n' \\",
+      '  "$GAME_ENV" \\',
+      '  "${TURNSTILE_SITE_KEY:-}" \\',
+      '  "${GIT_COMMIT:-}"',
+      "",
+    ].join("\\n"),
   );
   fs.chmodSync(fakeTsx, 0o755);
 
