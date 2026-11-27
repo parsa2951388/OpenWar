@@ -3866,5 +3866,20 @@
     "you_won": "You Won!",
     "your_team": "Your team won!",
     "youtube_tutorial": "Need some help?"
+  },
+  "open_war": {
+    "hero_eyebrow": "STRATEGIC OPERATIONS",
+    "hero_title": "TAKE THE FRONTLINE.",
+    "hero_title_prefix": "TAKE THE",
+    "hero_title_focus": "FRONTLINE.",
+    "hero_description": "Build your nation. Coordinate your forces. Turn every move into territory.",
+    "choose_theatre": "CHOOSE YOUR THEATRE",
+    "deploy_strategy": "DEPLOY YOUR STRATEGY",
+    "theatre_status": "THEATRE STATUS",
+    "ready_for_deployment": "READY FOR DEPLOYMENT",
+    "global_conflict_network": "GLOBAL CONFLICT NETWORK",
+    "commander_callsign": "COMMANDER CALLSIGN",
+    "deployment_board": "DEPLOYMENT BOARD",
+    "choose_operation": "Choose your operation"
   }
 }
