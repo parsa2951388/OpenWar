@@ -398,6 +398,8 @@ describe("RenderHtml environment-only render", () => {
     expect(match).not.toBeNull();
     const data = JSON.parse(match![1]);
     expect(data["@type"]).toBe("VideoGame");
-    expect(data.name).toBe("OpenFront");
+    expect(data.name).toBe("Open War");
+    expect(data.url).toBe("https://open-war-live.onrender.com/");
+    expect(data.image).toBe("/images/OpenWarSocialCard.svg");
   });
 });
