@@ -26,12 +26,19 @@ function runRenderStart(
   tempDirectories.push(tempDirectory);
 
   const fakeTsx = path.join(tempDirectory, "tsx");
-  fs.writeFileSync(,    fakeTsx,,    [,      "#!/bin/sh",,      'echo "$GAME_ENV|${TURNSTILE_SITE_KEY:-}|${GIT_COMMIT:-}"',,      "",,    ].join("\n"),,  );,
+  fs.writeFileSync(
+    fakeTsx,
+    [
+      "#!/bin/sh",
+      'echo "$GAME_ENV|$TURNSTILE_SITE_KEY|$GIT_COMMIT"',
+      "",
+    ].join("\n"),
+  );
   fs.chmodSync(fakeTsx, 0o755);
 
   const env = {
     ...process.env,
-    PATH: `${tempDirectory}:${process.env.PATH ?? ""}`,
+    PATH: `${tempDirectory}:${process.env.PATH ?? ""}` ,
     RENDER: "true",
     GAME_ENV: overrides.GAME_ENV ?? "",
     TURNSTILE_SITE_KEY: overrides.TURNSTILE_SITE_KEY ?? "",
