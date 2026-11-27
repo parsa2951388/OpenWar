@@ -1,4 +1,10 @@
-export const REPO = { owner: "openfrontio", repo: "OpenFrontIO" } as const;
+const repository = process.env.GITHUB_REPOSITORY ?? "openfrontio/OpenFrontIO";
+const [owner, repo] = repository.split("/");
+if (!owner || !repo) {
+  throw new Error(`Invalid GITHUB_REPOSITORY value: ${repository}`);
+}
+
+export const REPO = { owner, repo } as const;
 
 export const TRUSTED_REPO_PERMISSIONS = ["admin", "maintain", "write"] as const;
 
