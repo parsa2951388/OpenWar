@@ -405,9 +405,7 @@ describe("grid placement", () => {
     await pushLobbies({ team: [publicLobby("team-1")] });
     expect(heroSlot()).not.toBeNull();
     expect(heroSlot()!.querySelector('div[role="status"]')).toBeNull();
-    const placeholder = heroSlot()!.querySelector(
-      "div.rounded-2xl.bg-surface",
-    );
+    const placeholder = heroSlot()!.querySelector("div.rounded-2xl.bg-surface");
     expect(placeholder).not.toBeNull();
     expect(placeholder!.className).toContain("h-44 sm:h-full");
     expect(section()).toBeTruthy();
