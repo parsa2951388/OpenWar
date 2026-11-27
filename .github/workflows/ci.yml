@@ -31,10 +31,13 @@ jobs:
       # engine-lib get no DOM and no Node types).
       - run: npm run typecheck
       - run: npm run build-prod
-      - uses: actions/upload-artifact@v7
+      - name: Upload built Open War static preview
+        uses: actions/upload-artifact@v7
         with:
-          path: out/index.html
-          retention-days: 1
+          name: open-war-v2-static-preview
+          path: static/
+          if-no-files-found: error
+          retention-days: 7
   test-shard:
     name: 🔬 Test (${{ matrix.shard }}/3)
     runs-on: ubuntu-latest
