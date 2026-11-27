@@ -121,7 +121,7 @@ export async function sendCheckin(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": ServerEnv.apiKey(),
+        ...ServerEnv.apiKeyHeaders(),
       },
       body: JSON.stringify(body),
       signal: AbortSignal.timeout(CHECKIN_TIMEOUT_MS),
