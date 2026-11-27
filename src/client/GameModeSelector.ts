@@ -701,9 +701,9 @@ export class GameModeSelector extends LitElement {
         <header class="ow-operations__heading">
           <div>
             <span class="ow-operations__eyebrow">
-              DEPLOYMENT BOARD <i></i>
+              ${translateText("open_war.deployment_board")} <i></i>
             </span>
-            <h2 id="ow-operations-title">Choose your operation</h2>
+            <h2 id="ow-operations-title">${translateText("open_war.choose_operation")}</h2>
           </div>
           <span class="ow-operations__serial">OW / COMMAND 01</span>
         </header>
