@@ -47,7 +47,7 @@
     "gen-map-schema": "tsx scripts/genMapInfoSchema.ts && npx --no-install oxfmt --write map-generator/info.schema.json",
     "inst": "npm ci --ignore-scripts",
     "build:cosmetic-preview": "tsx scripts/buildCosmeticPreview.ts",
-    "start:render": "sh -c 'export GAME_ENV=${GAME_ENV:-prod}; if [ \"$GAME_ENV\" = \"dev\" ]; then export TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY:-1x00000000000000000000AA}; elif [ -z \"${TURNSTILE_SITE_KEY:-}\" ]; then echo \"TURNSTILE_SITE_KEY must be configured for non-development Render deployments\" >&2; exit 1; fi; export API_ORIGIN=${API_ORIGIN:-https://openwar-api-gateway.parsaoj.workers.dev}; export GIT_COMMIT=${RENDER_GIT_COMMIT:-${GIT_COMMIT:-OPENWAR}}; exec tsx src/server/Server.ts'"
+    "start:render": "sh -c 'if [ \"${RENDER:-}\" = \"true\" ]; then export GAME_ENV=prod; else export GAME_ENV=${GAME_ENV:-prod}; fi; if [ \"$GAME_ENV\" = \"dev\" ] && [ \"${RENDER:-}\" != \"true\" ]; then export TURNSTILE_SITE_KEY=${TURNSTILE_SITE_KEY:-1x00000000000000000000AA}; elif [ -z \"${TURNSTILE_SITE_KEY:-}\" ]; then echo \"TURNSTILE_SITE_KEY must be configured for non-development Render deployments\" >&2; exit 1; fi; export API_ORIGIN=${API_ORIGIN:-https://openwar-api-gateway.parsaoj.workers.dev}; export GIT_COMMIT=${RENDER_GIT_COMMIT:-${GIT_COMMIT:-OPENWAR}}; exec tsx src/server/Server.ts'"
   },
   "lint-staged": {
     "**/*.{js,mjs,cjs,ts,jsx,tsx}": [
