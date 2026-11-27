@@ -6,18 +6,18 @@ const DEFAULT_ALLOWED_ORIGINS = [
 ];
 
 const ROUTES = [
-  [/^\\/matchmaking\\/(?:join|checkin)$/, "matchmaking"],
-  [/^\\/join_verify$/, "join-verify"],
-  [/^\\/cluster\\/(?:checkin|lobbies)$/, "cluster"],
-  [/^\\/map_weights$/, "map-weights"],
-  [/^\\/cluster\\.json$/, "cluster-list"],
-  [/^\\/\\.well-known\\/jwks\\.json$/, "jwks"],
-  [/^\\/(?:cosmetics\\.json|reserved_clan_tags)$/, "privileges"],
-  [/^\\/users\\/@me$/, "user-profile"],
+  [/^\/matchmaking\/(?:join|checkin)$/, "matchmaking"],
+  [/^\/join_verify$/, "join-verify"],
+  [/^\/cluster\/(?:checkin|lobbies)$/, "cluster"],
+  [/^\/map_weights$/, "map-weights"],
+  [/^\/cluster\.json$/, "cluster-list"],
+  [/^\/\.well-known\/jwks\.json$/, "jwks"],
+  [/^\/(?:cosmetics\.json|reserved_clan_tags)$/, "privileges"],
+  [/^\/users\/@me$/, "user-profile"],
   // Explicitly allow only the authentication routes used by the Open War
   // client. Do not expose an unrestricted /auth/* reverse-proxy surface.
   [
-    /^\\/auth\\/(?:login\\/(?:discord|google|steam|token)|google(?:\\/link)?|link\\/(?:google|steam)|(?:logout|revoke|refresh|steam|crazygames|poki|viverse|magic-link))$/,
+    /^\/auth\/(?:login\/(?:discord|google|steam|token)|google(?:\/link)?|link\/(?:google|steam)|(?:logout|revoke|refresh|steam|crazygames|poki|viverse|magic-link))$/,
     "auth",
   ],
 ];
