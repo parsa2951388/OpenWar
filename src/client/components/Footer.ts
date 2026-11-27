@@ -78,7 +78,7 @@ export class Footer extends LitElement {
           >
             <a
               href="/terms-of-service.html"
-              data-i18n="main.terms_of_service"
+              data-i18n="main.upstream_terms"
               target="_blank"
               class="hover:text-white transition-colors"
             ></a>
@@ -96,7 +96,7 @@ export class Footer extends LitElement {
             </a>
             <a
               href="/privacy-policy.html"
-              data-i18n="main.privacy_policy"
+              data-i18n="main.upstream_privacy"
               target="_blank"
               class="hover:text-white transition-colors"
             ></a>
