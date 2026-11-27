@@ -391,9 +391,7 @@ describe("the upcoming heading (the route to the lobby browser)", () => {
 describe("grid placement", () => {
   const section = () => selector.querySelector(".ow-lobby-column")!;
   const heroSlot = () =>
-    selector.querySelector(
-      ".ow-operations > .ow-grid > div.sm\\:col-start-1",
-    );
+    selector.querySelector(".ow-operations > .ow-grid > div.sm\\:col-start-1");
 
   it("keeps the upcoming column beside the spinner while loading", () => {
     expect(heroSlot()).not.toBeNull();
