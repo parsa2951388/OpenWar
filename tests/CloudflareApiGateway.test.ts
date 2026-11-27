@@ -138,4 +138,23 @@ describe("Open War API gateway route allowlist", () => {
     expect(await response.json()).toEqual({ error: "origin_not_allowed" });
     expect(fetchMock).not.toHaveBeenCalled();
   });
+
+  it("advertises only the HTTP methods allowed for a route", async () => {
+    const response = await gateway.fetch(
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/users/@me/username",
+        {
+          method: "OPTIONS",
+          headers: { Origin: allowedOrigin },
+        },
+      ),
+      env,
+      context,
+    );
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-methods")).toBe(
+      "PUT, OPTIONS",
+    );
+  });
 });
