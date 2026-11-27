@@ -157,7 +157,7 @@ export class ServerEnv {
     // A redirect would forward x-api-key to the new origin; the JWKS
     // endpoint never redirects, so refuse to follow one.
     const response = await fetch(jwksUrl, {
-      headers: { "x-api-key": ServerEnv.apiKey() },
+      headers: ServerEnv.apiKeyHeaders(),
       redirect: "error",
     });
     if (!response.ok) {
