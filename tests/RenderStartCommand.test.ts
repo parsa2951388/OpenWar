@@ -1,11 +1,5 @@
 import { spawnSync } from "node:child_process";
-import {
-  chmodSync,
-  readFileSync,
-  mkdtempSync,
-  rmSync,
-  writeFileSync,
-} from "node:fs";
+import fs from "node:fs";
 import { tmpdir } from "node:os";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
@@ -13,7 +7,7 @@ import { afterEach, describe, expect, test } from "vitest";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
 const packageJson = JSON.parse(
-  readFileSync(new URL("../package.json", import.meta.url), "utf8"),
+  fs.readFileSync(new URL("../package.json", import.meta.url), "utf8"),
 ) as { scripts: Record<string, string> };
 
 const tempDirectories: string[] = [];
@@ -26,17 +20,17 @@ function runRenderStart(
     >
   > = {},
 ) {
-  const tempDirectory = mkdtempSync(
+  const tempDirectory = fs.mkdtempSync(
     path.join(tmpdir(), "openwar-render-start-"),
   );
   tempDirectories.push(tempDirectory);
 
   const fakeTsx = path.join(tempDirectory, "tsx");
-  writeFileSync(
+  fs.writeFileSync(
     fakeTsx,
     '#!/bin/sh\nprintf "%s|%s|%s\\n" "$GAME_ENV" "${TURNSTILE_SITE_KEY:-}" "${GIT_COMMIT:-}"\n',
   );
-  chmodSync(fakeTsx, 0o755);
+  fs.chmodSync(fakeTsx, 0o755);
 
   const env = {
     ...process.env,
@@ -57,7 +51,7 @@ function runRenderStart(
 
 afterEach(() => {
   for (const directory of tempDirectories.splice(0)) {
-    rmSync(directory, { recursive: true, force: true });
+    fs.rmSync(directory, { recursive: true, force: true });
   }
 });
 
@@ -69,7 +63,9 @@ describe("Render start command", () => {
     });
 
     expect(result.status).toBe(0);
-    expect(result.stdout.trim()).toBe("prod|production-site-key|release-commit");
+    expect(result.stdout.trim()).toBe(
+      "prod|production-site-key|release-commit",
+    );
   });
 
   test("fails closed instead of using a development Turnstile key in production", () => {
@@ -83,6 +79,8 @@ describe("Render start command", () => {
     const result = runRenderStart({ GAME_ENV: "dev" });
 
     expect(result.status).toBe(0);
-    expect(result.stdout.trim()).toBe("dev|1x00000000000000000000AA|OPENWAR");
+    expect(result.stdout.trim()).toBe(
+      "dev|1x00000000000000000000AA|OPENWAR",
+    );
   });
 });
