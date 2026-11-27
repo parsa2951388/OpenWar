@@ -15,7 +15,11 @@ const tempDirectories: string[] = [];
 function runRenderStart(
   overrides: Partial<
     Record<
-      "GAME_ENV" | "TURNSTILE_SITE_KEY" | "GIT_COMMIT" | "RENDER_GIT_COMMIT" | "API_ORIGIN",
+      | "GAME_ENV"
+      | "TURNSTILE_SITE_KEY"
+      | "GIT_COMMIT"
+      | "RENDER_GIT_COMMIT"
+      | "API_ORIGIN",
       string
     >
   > = {},
