@@ -12,6 +12,11 @@ import { mockLogger } from "../util/GameServerHarness";
 
 vi.mock("../../src/server/PollingLoop", () => ({ startPolling: vi.fn() }));
 
+// Keep mocked poll registrations isolated between tests.
+beforeEach(() => {
+  vi.mocked(startPolling).mockClear();
+});
+
 // OPE-469: a draining deployment kept offering ranked matches, so players on
 // the new build were matched onto the old one, bounced on version_mismatch,
 // and the match cancelled short-handed. The ranked check-in must follow the
