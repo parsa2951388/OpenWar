@@ -375,6 +375,10 @@ export class ServerEnv {
   static apiKey(): string {
     return process.env.API_KEY ?? "";
   }
+  static apiKeyHeaders(apiKey: string = ServerEnv.apiKey()): Record<string, string> {
+    const key = apiKey.trim();
+    return key ? { "x-api-key": key } : {};
+  }
   // Long-lived shared secret for the trusted admin bot HTTP API.
   // Undefined when unset, which disables the admin bot API entirely.
   static adminBotKey(): string | undefined {
