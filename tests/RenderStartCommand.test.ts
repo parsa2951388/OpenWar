@@ -107,36 +107,30 @@ describe("Render start command", () => {
     );
   });
 
-  test(
-    "routes the legacy Render start command to production using the service ID",
-    () => {
-      const result = runPackageScript("start:server-dev", {
-        RENDER: "false",
-        RENDER_SERVICE_ID: "srv-open-war-game",
-        GAME_ENV: "dev",
-        TURNSTILE_SITE_KEY: "production-site-key",
-        RENDER_GIT_COMMIT: "release-commit",
-      });
+  test("routes the legacy Render start command to production using the service ID", () => {
+    const result = runPackageScript("start:server-dev", {
+      RENDER: "false",
+      RENDER_SERVICE_ID: "srv-open-war-game",
+      GAME_ENV: "dev",
+      TURNSTILE_SITE_KEY: "production-site-key",
+      RENDER_GIT_COMMIT: "release-commit",
+    });
 
-      expect(result.status).toBe(0);
-      expect(result.stdout).toContain("Render detected; using start:render");
-      expect(result.stdout).toContain(
-        "prod|production-site-key|release-commit|https://openwar-api-gateway.parsaoj.workers.dev",
-      );
-    },
-  );
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Render detected; using start:render");
+    expect(result.stdout).toContain(
+      "prod|production-site-key|release-commit|https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+  });
 
-  test(
-    "does not allow the legacy Render start command to bypass the production key",
-    () => {
-      const result = runPackageScript("start:server-dev", {
-        RENDER: "false",
-        RENDER_SERVICE_ID: "srv-open-war-game",
-        GAME_ENV: "dev",
-      });
+  test("does not allow the legacy Render start command to bypass the production key", () => {
+    const result = runPackageScript("start:server-dev", {
+      RENDER: "false",
+      RENDER_SERVICE_ID: "srv-open-war-game",
+      GAME_ENV: "dev",
+    });
 
-      expect(result.status).not.toBe(0);
-      expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
-    },
-  );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
+  });
 });
