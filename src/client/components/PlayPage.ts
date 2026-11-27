@@ -158,7 +158,14 @@ export class PlayPage extends LitElement {
                 stroke-dasharray="2 9"
                 opacity=".45"
               />
-              <circle cx="220" cy="150" r="90" stroke="#6de3da" stroke-width="1.3" opacity=".45"/>
+                            <circle
+                cx="220"
+                cy="150"
+                r="90"
+                stroke="#6de3da"
+                stroke-width="1.3"
+                opacity=".45"
+              />
               <circle
                 cx="220"
                 cy="150"
@@ -168,15 +175,15 @@ export class PlayPage extends LitElement {
                 stroke-dasharray="4 5"
                 opacity=".65"
               />
-              <circle cx="220" cy="150" r="7" fill="#f3cf8b"/>
+                            <circle cx="220" cy="150" r="7" fill="#f3cf8b" />
               <path
                 d="M220 130v-16m0 72v-16m-20-20h-16m72 0h-16"
                 stroke="#f3cf8b"
                 stroke-width="2"
               />
-              <circle cx="122" cy="104" r="5" fill="#f3cf8b"/>
-              <circle cx="317" cy="196" r="4" fill="#6de3da"/>
-              <circle cx="286" cy="83" r="3" fill="#f3cf8b"/>
+              <circle cx="122" cy="104" r="5" fill="#f3cf8b" />
+              <circle cx="317" cy="196" r="4" fill="#6de3da" />
+              <circle cx="286" cy="83" r="3" fill="#f3cf8b" />
             </svg>
             <div class="ow-hero__readout">
               <span>THEATRE STATUS</span>
