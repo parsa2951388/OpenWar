@@ -4,7 +4,7 @@ import { customElement, property } from "lit/decorators.js";
 import { isDesktopShell } from "../DesktopShell";
 import { gamePortal } from "../GamePortal";
 import { translateText } from "../Utils";
-import { steamStoreUrl } from "./SteamWishlist";
+import { OPEN_WAR_STEAM_APP_ID, steamStoreUrl } from "./SteamWishlist";
 
 /**
  * Wide, short promo strip linking to the Steam store page, for slots too short
@@ -18,7 +18,6 @@ import { steamStoreUrl } from "./SteamWishlist";
  * the Steamworks dashboard alongside it. Self-hides inside either app shell
  * (Steam, Android) and on Poki, matching `<steam-wishlist>`.
  */
-const OPEN_WAR_STEAM_PRODUCT_PUBLISHED = false;
 
 @customElement("steam-wishlist-button")
 export class SteamWishlistButton extends LitElement {
@@ -31,7 +30,7 @@ export class SteamWishlistButton extends LitElement {
 
   render() {
     if (
-      !OPEN_WAR_STEAM_PRODUCT_PUBLISHED ||
+      OPEN_WAR_STEAM_APP_ID === null ||
       isDesktopShell() ||
       gamePortal.name() === "poki"
     ) {
