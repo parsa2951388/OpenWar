@@ -3,12 +3,12 @@ import { CosmeticsSchema } from "@openfront/shared/CosmeticSchemas";
 import { base64url } from "jose";
 import { Logger } from "winston";
 import { startPolling } from "./PollingLoop";
-import { ServerEnv } from "./ServerEnv";
 import {
   FailOpenPrivilegeChecker,
   PrivilegeChecker,
   PrivilegeCheckerImpl,
 } from "./Privilege";
+import { ServerEnv } from "./ServerEnv";
 
 // Refreshes the privilege checker every 3 minutes.
 // WARNING: This fails open if cosmetics.json is not available.
