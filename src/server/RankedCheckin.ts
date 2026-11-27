@@ -36,6 +36,36 @@ const CHECKIN_ABORT_MS = 20_000;
 // does not synchronise into one thundering herd against the API.
 const CHECKIN_INTERVAL_MS = 5_000;
 const CHECKIN_JITTER_MS = 1_000;
+const RETRY_BASE_MS = 60_000;
+const RETRY_MAX_MS = 5 * 60_000;
+
+/**
+ * Prevents an unavailable upstream matchmaking API from being polled every
+ * five seconds by every worker. Each queue backs off independently and
+ * automatically retries, so a restored credential or upstream route recovers
+ * without a process restart.
+ */
+export class RankedCheckinRetryGate {
+  private readonly failures = new Map<RankedMode, number>();
+  private readonly retryAt = new Map<RankedMode, number>();
+
+  isReady(mode: RankedMode, now = Date.now()): boolean {
+    return now >= (this.retryAt.get(mode) ?? 0);
+  }
+
+  recordFailure(mode: RankedMode, now = Date.now()): number {
+    const failures = (this.failures.get(mode) ?? 0) + 1;
+    this.failures.set(mode, failures);
+    const delay = Math.min(RETRY_BASE_MS * 2 ** (failures - 1), RETRY_MAX_MS);
+    this.retryAt.set(mode, now + delay);
+    return delay;
+  }
+
+  recordSuccess(mode: RankedMode): void {
+    this.failures.delete(mode);
+    this.retryAt.delete(mode);
+  }
+}
 
 // Deadline for the slowest matched player: after match-assignment the client
 // still has to poll game existence, pass Turnstile, and clear join auth;
@@ -158,6 +188,7 @@ export async function rankedCheckinPass(
   mode: RankedMode,
   gate: RankedCheckinGate,
   deps: RankedCheckinDeps,
+  retryGate?: RankedCheckinRetryGate,
 ): Promise<void> {
   const { gm, playlist, workerId, log } = deps;
   const fetchFn = deps.fetchFn ?? fetch;
@@ -165,6 +196,7 @@ export async function rankedCheckinPass(
   // Before anything else, and before the long poll is opened: a draining,
   // standby or fenced deployment must not be holding a slot in the queue.
   if (!gate.shouldCheckIn()) return;
+  if (retryGate && !retryGate.isReady(mode)) return;
 
   try {
     const url = `${ServerEnv.jwtIssuer() + "/matchmaking/checkin"}`;
@@ -176,33 +208,41 @@ export async function rankedCheckinPass(
 
     const controller = new AbortController();
     const timeoutId = setTimeout(() => controller.abort(), CHECKIN_ABORT_MS);
-    const response = await fetchFn(url, {
-      method: "POST",
-      headers: {
-        "Content-Type": "application/json",
-        ...ServerEnv.apiKeyHeaders(),
-      },
-      body: JSON.stringify({
-        id: workerId,
-        gameId: gameId,
-        ccu: gm.activeClients(),
-        instanceId: process.env.INSTANCE_ID,
-        mode,
-        ...buildVersionField(),
-        ...buildSiteField(),
-      }),
-      signal: controller.signal,
-    });
-
-    clearTimeout(timeoutId);
+    let response: Response;
+    try {
+      response = await fetchFn(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...ServerEnv.apiKeyHeaders(),
+        },
+        body: JSON.stringify({
+          id: workerId,
+          gameId: gameId,
+          ccu: gm.activeClients(),
+          instanceId: process.env.INSTANCE_ID,
+          mode,
+          ...buildVersionField(),
+          ...buildSiteField(),
+        }),
+        signal: controller.signal,
+      });
+    } finally {
+      clearTimeout(timeoutId);
+    }
 
     if (!response.ok) {
+      const retryDelay = retryGate?.recordFailure(mode);
+      const retryMessage = retryDelay
+        ? `; retrying in ${Math.round(retryDelay / 1000)}s`
+        : "";
       log.warn(
-        `Failed to poll ${mode} lobby: ${response.status} ${response.statusText}`,
+        `Failed to poll ${mode} lobby: ${response.status} ${response.statusText}${retryMessage}`,
       );
       return;
     }
 
+    retryGate?.recordSuccess(mode);
     const data = await response.json();
     // Every worker polls every queue every few seconds; only a poll that
     // hands us a match is worth an info line.
@@ -246,7 +286,11 @@ export async function rankedCheckinPass(
       // Abort is expected if no game is scheduled on this worker.
       return;
     }
-    log.error(`Error polling ${mode} lobby:`, error);
+    const retryDelay = retryGate?.recordFailure(mode);
+    const retryMessage = retryDelay
+      ? `; retrying in ${Math.round(retryDelay / 1000)}s`
+      : "";
+    log.error(`Error polling ${mode} lobby${retryMessage}:`, error);
   }
 }
 
@@ -291,9 +335,10 @@ function createClanWarsGame(
  */
 export function startRankedCheckinLoops(deps: RankedCheckinDeps): void {
   const gate = new RankedCheckinGate(deps.isActive, deps.log);
+  const retryGate = new RankedCheckinRetryGate();
   for (const mode of RANKED_MODES) {
     startPolling(
-      async () => rankedCheckinPass(mode, gate, deps),
+      async () => rankedCheckinPass(mode, gate, deps, retryGate),
       CHECKIN_INTERVAL_MS + Math.random() * CHECKIN_JITTER_MS,
     );
   }
