@@ -703,20 +703,20 @@ export class GameModeSelector extends LitElement {
             <span class="ow-operations__eyebrow">
               ${translateText("open_war.deployment_board")} <i></i>
             </span>
-            <h2 id="ow-operations-title">${translateText("open_war.choose_operation")}</h2>
+            <h2 id="ow-operations-title">
           </div>
           <span class="ow-operations__serial">OW / COMMAND 01</span>
         </header>
         <div class="ow-grid">
           <div
-            class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
-            >
-              <div class="flex-[2]">
-                ${this.renderSmallActionCard(
-                  translateText("main.solo"),
-                  this.openSinglePlayerModal,
-                  PRIMARY_ACTION,
-                )}
+          class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
+          >
+            <div class="flex-[2]">
+              ${this.renderSmallActionCard(
+                translateText("main.solo"),
+                this.openSinglePlayerModal,
+                PRIMARY_ACTION,
+              )}
               </div>
               ${
                 getGamesPlayed() < TUTORIAL_CARD_MAX_GAMES
