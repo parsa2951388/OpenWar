@@ -2877,5 +2877,20 @@
     "step_scroll_and_tap": "به پایین بروید و ضربه بزنید",
     "step_share": "روی دکمه اشتراک‌گذاری در مرورگر خود ضربه بزنید",
     "text": "برای تمام صفحه، Open War را به صفحه اصلی خود اضافه کنید"
+  },
+  "open_war": {
+    "hero_eyebrow": "فرماندهی عملیات راهبردی",
+    "hero_title": "خط مقدم را تصاحب کن.",
+    "hero_title_prefix": "خط مقدم را",
+    "hero_title_focus": "تصاحب کن.",
+    "hero_description": "کشورت را بساز، نیروهایت را هماهنگ کن و هر حرکت را به قلمرو تبدیل کن.",
+    "choose_theatre": "میدان نبرد را انتخاب کن",
+    "deploy_strategy": "راهبردت را اجرا کن",
+    "theatre_status": "وضعیت میدان نبرد",
+    "ready_for_deployment": "آمادهٔ استقرار",
+    "global_conflict_network": "شبکهٔ نبرد جهانی",
+    "commander_callsign": "نام فرمانده",
+    "deployment_board": "میز عملیات",
+    "choose_operation": "عملیات خود را انتخاب کن"
   }
 }
