@@ -123,10 +123,14 @@ describe("GameModeSelector Click-Lock & In-Lobby State", () => {
     expect(typeof (el as GameModeSelector).setLobbiesForTest).toBe("function");
   });
 
-  it("renders the Open War deployment board while retaining action and lobby cards", () => {
+  it("renders the Open War operations board and entry cards", () => {
     expect(selector!.querySelector("section.ow-operations")).not.toBeNull();
-    expect(selector!.querySelector("#ow-operations-title")?.textContent).toBe("Choose your operation");
-    expect(selector!.querySelectorAll(".ow-grid button").length).toBeGreaterThanOrEqual(4);
+    expect(
+      selector!.querySelector("#ow-operations-title")?.textContent,
+    ).toBe("Choose your operation");
+    expect(
+      selector!.querySelectorAll(".ow-grid button").length,
+    ).toBeGreaterThanOrEqual(4);
     expect(selector!.querySelector("button.ow-lobby-card")).not.toBeNull();
   });
 
