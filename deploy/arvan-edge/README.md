@@ -70,7 +70,10 @@ Use the URL shown by the Arvan panel/CLI as the candidate competition URL.
 4. Select **Run workflow** and keep the application name
    open-war-competition unless a different name is required.
 
-The workflow is manual only; pushing code does not deploy to Arvan.
+The workflow is manual only; pushing code does not deploy to Arvan. Because
+GitHub exposes manual dispatch for workflows present on the default branch,
+merge this preparation PR into main before using the Actions workflow. Until
+then, deploy directly from this branch with the PowerShell commands above.
 
 ## Verify the deployment
 
