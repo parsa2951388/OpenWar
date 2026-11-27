@@ -111,7 +111,13 @@ export class SteamWishlist extends LitElement {
     // Poki doesn't allow promoting other platforms, and neither app shell
     // shows it: the Steam app has nothing to wishlist, and the Android app
     // must not send the player to another store.
-    if (!OPEN_WAR_STEAM_PRODUCT_PUBLISHED || isDesktopShell() || gamePortal.name() === "poki") return nothing;
+    if (
+      !OPEN_WAR_STEAM_PRODUCT_PUBLISHED ||
+      isDesktopShell() ||
+      gamePortal.name() === "poki"
+    ) {
+      return nothing;
+    }
 
     const frameWidth = Math.min(
       WIDGET_WIDTH,
