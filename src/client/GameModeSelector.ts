@@ -770,7 +770,7 @@ export class GameModeSelector extends LitElement {
               true,
             )}
           </div>
-  
+
           <div class="min-w-0 sm:col-start-1 sm:row-start-1">
             ${
               ffa?.gameConfig
@@ -792,11 +792,9 @@ export class GameModeSelector extends LitElement {
                       ></div>`
             }
           </div>
-  
+
           <!-- Always rendered: the heading is the only way into the lobby browser. -->
-          <section
-            class="ow-lobby-column"
-          >
+          <section class="ow-lobby-column">
             ${
               teams
                 ? html`<div class="min-w-0 sm:min-h-0 ${cardRows.teams}">
@@ -819,7 +817,7 @@ export class GameModeSelector extends LitElement {
             }
             ${this.renderUpcomingHeading()}
           </section>
-  
+
           ${
             this.showTrustRequired
               ? trustRequiredDialog(
