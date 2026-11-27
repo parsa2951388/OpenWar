@@ -322,7 +322,11 @@ export default defineConfig(({ mode }) => {
       assetManifest,
       cdnBase,
     ),
-    mobileLogoImageUrl: buildAssetUrl("images/OpenWarLogo.svg", assetManifest, cdnBase),
+    mobileLogoImageUrl: buildAssetUrl(
+      "images/OpenWarLogo.svg",
+      assetManifest,
+      cdnBase,
+    ),
   };
 
   // Vite's HTML transform replaces the source <script src="/src/client/Main.ts">
