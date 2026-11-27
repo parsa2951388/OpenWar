@@ -12,7 +12,7 @@ const SHA = "bf739f86c4e1d2a3b5c6d7e8f90123456789abcd";
 
 describe("shipped release identity", () => {
   it("uses a real semantic release version instead of the placeholder", () => {
-    expect(version.trim()).toMatch(/^v\\d+\\.\\d+\\.\\d+$/);
+    expect(version.trim()).toMatch(/^v\d+\.\d+\.\d+$/);
   });
 });
 
