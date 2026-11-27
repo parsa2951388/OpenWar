@@ -59,11 +59,19 @@ describe("play-page mobile top bar", () => {
       expect(rightSlot()).toEqual(["nav-utility-icons", "nav-account-menu"]);
     });
 
-    it("renders the Open War command identity and preserves the play entry point", () => {
-      expect(el.querySelector("#page-play")?.classList.contains("ow-home-page")).toBe(true);
-      expect(el.querySelector("#ow-hero-title")?.textContent).toContain("TAKE THE FRONTLINE.");
-      expect(el.querySelector('img[alt="Open War"]')?.getAttribute("src")).toBe("images/OpenWarLogo.svg");
-      expect(el.querySelector(".ow-field-label")?.textContent).toBe("COMMANDER CALLSIGN");
+    it("renders the Open War identity and keeps the play entry point", () => {
+      expect(
+        el.querySelector("#page-play")?.classList.contains("ow-home-page"),
+      ).toBe(true);
+      expect(el.querySelector("#ow-hero-title")?.textContent).toContain(
+        "TAKE THE FRONTLINE.",
+      );
+      expect(
+        el.querySelector('img[alt="Open War"]')?.getAttribute("src"),
+      ).toBe("images/OpenWarLogo.svg");
+      expect(el.querySelector(".ow-field-label")?.textContent).toBe(
+        "COMMANDER CALLSIGN",
+      );
       expect(el.querySelector("game-mode-selector")).not.toBeNull();
       expect(el.querySelector("steam-wishlist")).toBeNull();
     });
