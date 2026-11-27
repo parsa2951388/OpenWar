@@ -680,6 +680,7 @@ export class GameModeSelector extends LitElement {
   }
 
   render() {
+    const operationTitle = translateText("open_war.choose_operation");
     const ffa = this.lobbies?.games?.["ffa"]?.[0];
     const teams = this.lobbies?.games?.["team"]?.[0];
     const special = this.lobbies?.games?.["special"]?.[0];
@@ -703,7 +704,7 @@ export class GameModeSelector extends LitElement {
             <span class="ow-operations__eyebrow">
               ${translateText("open_war.deployment_board")} <i></i>
             </span>
-            <h2 id="ow-operations-title">${translateText("open_war.choose_operation")}</h2>
+            <h2 id="ow-operations-title">${operationTitle}</h2>
           </div>
           <span class="ow-operations__serial">OW / COMMAND 01</span>
         </header>
