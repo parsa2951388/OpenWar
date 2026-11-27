@@ -697,9 +697,17 @@ export class GameModeSelector extends LitElement {
     // On compact screens (styles.css) Solo/Tutorial sit under the hero card only,
     // and the lobby column runs down beside them, so its two cards get that height.
     return html`
-      <div
-        class="flex flex-col gap-4 sm:compact:gap-3 w-full px-4 pb-4 mx-auto sm:px-0 sm:pb-0 sm:grid sm:grid-cols-[2fr_1fr] sm:grid-rows-[min(24rem,40vh)_auto_auto] sm:compact:grid-rows-[minmax(min(24rem,40vh),auto)_3.5rem_auto] desktop:sm:grid-rows-[40vh_auto_auto] sm:[reading-flow:grid-rows]"
-      >
+      <section class="ow-operations" aria-labelledby="ow-operations-title">
+        <header class="ow-operations__heading">
+          <div>
+            <span class="ow-operations__eyebrow">DEPLOYMENT BOARD <i></i></span>
+            <h2 id="ow-operations-title">Choose your operation</h2>
+          </div>
+          <span class="ow-operations__serial">OW / COMMAND 01</span>
+        </header>
+        <div
+          class="ow-mode-grid flex flex-col gap-4 sm:compact:gap-3 w-full px-4 pb-4 mx-auto sm:px-0 sm:pb-0 sm:grid sm:grid-cols-[2fr_1fr] sm:grid-rows-[min(24rem,40vh)_auto_auto] sm:compact:grid-rows-[minmax(min(24rem,40vh),auto)_3.5rem_auto] desktop:sm:grid-rows-[40vh_auto_auto] sm:[reading-flow:grid-rows]"
+        >
         <div
           class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
         >
@@ -818,7 +826,8 @@ export class GameModeSelector extends LitElement {
               )
             : nothing
         }
-      </div>
+        </div>
+      </section>
     `;
   }
 
@@ -1009,7 +1018,7 @@ export class GameModeSelector extends LitElement {
         @click=${onClick}
         ?disabled=${disabled}
         aria-disabled=${blocked || this.inLobby}
-        class="relative flex items-center justify-center w-full h-full rounded-lg ${bgClass} transition-all duration-200 text-sm lg:text-base font-medium text-white uppercase tracking-wider text-center ${
+        class="ow-action-card relative flex items-center justify-center w-full h-full rounded-lg ${bgClass} transition-all duration-200 text-sm lg:text-base font-medium text-white uppercase tracking-wider text-center ${
           disabled ? DISABLED : blocked ? "opacity-50 cursor-not-allowed" : ""
         }"
       >
