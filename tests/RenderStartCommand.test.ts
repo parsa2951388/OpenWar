@@ -96,7 +96,10 @@ describe("Render start command", () => {
   });
 
   test("keeps the explicit local development mode available off Render", () => {
-    const result = runPackageScript("start:render", { GAME_ENV: "dev", RENDER: "false" });
+    const result = runPackageScript("start:render", {
+      GAME_ENV: "dev",
+      RENDER: "false",
+    });
 
     expect(result.status).toBe(0);
     expect(result.stdout.trim()).toBe(
