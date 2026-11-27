@@ -4,7 +4,7 @@ import { isDesktopShell } from "../DesktopShell";
 import { gamePortal } from "../GamePortal";
 import { translateText } from "../Utils";
 
-const STEAM_APP_ID = "3560670";
+const OPEN_WAR_STEAM_PRODUCT_PUBLISHED = false;
 
 /** Nominal size of Steam's store widget, as published in its embed snippet. */
 const WIDGET_WIDTH = 646;
@@ -30,12 +30,12 @@ const WIDGET_MIN_WIDTH = 501;
  * See https://partner.steamgames.com/doc/marketing/utm_analytics
  */
 function steamWidgetUrl(campaign: string): string {
-  return steamUrl(`widget/${STEAM_APP_ID}/`, "widget", campaign);
+  return steamUrl("widget/3560670/", "widget", campaign);
 }
 
 /** Store page for OpenFront, tagged for the same UTM dashboard. */
 export function steamStoreUrl(campaign: string): string {
-  return steamUrl(`app/${STEAM_APP_ID}/OpenFront/`, "link", campaign);
+  return steamUrl("app/3560670/OpenFront/", "link", campaign);
 }
 
 function steamUrl(path: string, medium: string, campaign: string): string {
@@ -111,7 +111,7 @@ export class SteamWishlist extends LitElement {
     // Poki doesn't allow promoting other platforms, and neither app shell
     // shows it: the Steam app has nothing to wishlist, and the Android app
     // must not send the player to another store.
-    if (isDesktopShell() || gamePortal.name() === "poki") return nothing;
+    if (!OPEN_WAR_STEAM_PRODUCT_PUBLISHED || isDesktopShell() || gamePortal.name() === "poki") return nothing;
 
     const frameWidth = Math.min(
       WIDGET_WIDTH,
