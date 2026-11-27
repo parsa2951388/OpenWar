@@ -1,5 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import gateway, { routeGroup } from "../infra/cloudflare/openwar-api-gateway.js";
+import gateway, {
+  routeGroup,
+} from "../infra/cloudflare/openwar-api-gateway.js";
 
 const allowedOrigin = "https://open-war-live.onrender.com";
 
@@ -80,9 +82,7 @@ describe("Open War API gateway route allowlist", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const response = await gateway.fetch(
-      new Request(
-        "https://openwar-api-gateway.parsaoj.workers.dev/auth/admin",
-      ),
+      new Request("https://openwar-api-gateway.parsaoj.workers.dev/auth/admin"),
       { ALLOWED_ORIGINS: allowedOrigin },
       { waitUntil: () => undefined },
     );
