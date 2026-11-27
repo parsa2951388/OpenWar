@@ -35,7 +35,7 @@ function runRenderStart(
       '  "${TURNSTILE_SITE_KEY:-}" \\',
       '  "${GIT_COMMIT:-}"',
       "",
-    ].join("\\n"),
+    ].join("\n"),
   );
   fs.chmodSync(fakeTsx, 0o755);
 
