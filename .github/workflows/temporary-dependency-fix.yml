@@ -48,7 +48,7 @@ jobs:
       - name: Generated maps
         run: |
           npm run gen-maps
-          git diff --exit-code -- '*.json' '*.ts' '*.tsx'
+          git diff --exit-code -- . ':(exclude)package.json' ':(exclude)package-lock.json'
       - name: Test shard 1/3
         run: npm test -- --shard=1/3
       - name: Test shard 2/3
