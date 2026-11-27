@@ -30,7 +30,7 @@ function runRenderStart(
     fakeTsx,
     [
       "#!/bin/sh",
-      "printf '%s|%s|%s\\\\n' \\",
+      "printf '%s|%s|%s\\n' \",
       '  "$GAME_ENV" \\',
       '  "${TURNSTILE_SITE_KEY:-}" \\',
       '  "${GIT_COMMIT:-}"',
