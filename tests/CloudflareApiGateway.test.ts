@@ -157,4 +157,51 @@ describe("Open War API gateway route allowlist", () => {
       "PUT, OPTIONS",
     );
   });
+
+  it("allows the Open War game page origin from the default allowlist", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const gameOrigin = "https://open-war-game.onrender.com";
+    const response = await gateway.fetch(
+      new Request("https://openwar-api-gateway.parsaoj.workers.dev/users/@me", {
+        headers: { Origin: gameOrigin },
+      }),
+      env,
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      gameOrigin,
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+  it("allows CORS preflight from the Open War game page origin", async () => {
+    const gameOrigin = "https://open-war-game.onrender.com";
+    const response = await gateway.fetch(
+      new Request("https://openwar-api-gateway.parsaoj.workers.dev/users/@me", {
+        method: "OPTIONS",
+        headers: { Origin: gameOrigin },
+      }),
+      env,
+      context,
+    );
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      gameOrigin,
+    );
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true",
+    );
+    expect(response.headers.get("access-control-allow-methods")).toBe(
+      "GET, DELETE, OPTIONS",
+    );
+  });
 });
