@@ -94,7 +94,7 @@ export class PlayPage extends LitElement {
 
             <!-- Identity row: username over the currently selected cosmetic background. -->
             <div
-              class="ow-callsign-panel sm:min-h-[60px] sm:compact:min-h-[45px]"
+              class="ow-callsign-panel bg-surface border-y border-white/10 sm:min-h-[60px] sm:compact:min-h-[45px]"
             >
               <!-- Selected skin/pattern fills the bubble like the player's territory in game. -->
               <cosmetic-background
