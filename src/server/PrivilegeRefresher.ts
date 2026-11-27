@@ -3,6 +3,7 @@ import { CosmeticsSchema } from "@openfront/shared/CosmeticSchemas";
 import { base64url } from "jose";
 import { Logger } from "winston";
 import { startPolling } from "./PollingLoop";
+import { ServerEnv } from "./ServerEnv";
 import {
   FailOpenPrivilegeChecker,
   PrivilegeChecker,
@@ -46,7 +47,7 @@ export class PrivilegeRefresher {
         try {
           return await fetch(url, {
             signal: AbortSignal.timeout(5000),
-            headers: { "x-api-key": this.apiKey },
+            headers: ServerEnv.apiKeyHeaders(this.apiKey),
           });
         } catch (error) {
           this.log.warn(`Failed to fetch ${url}: ${error}`);
