@@ -19,7 +19,8 @@ function runRenderStart(
       | "TURNSTILE_SITE_KEY"
       | "GIT_COMMIT"
       | "RENDER_GIT_COMMIT"
-      | "API_ORIGIN",
+      | "API_ORIGIN"
+      | "RENDER",
       string
     >
   > = {},
@@ -43,7 +44,7 @@ function runRenderStart(
   const env = {
     ...process.env,
     PATH: `${tempDirectory}:${process.env.PATH ?? ""}`,
-    RENDER: "true",
+    RENDER: overrides.RENDER ?? "true",
     GAME_ENV: overrides.GAME_ENV ?? "",
     TURNSTILE_SITE_KEY: overrides.TURNSTILE_SITE_KEY ?? "",
     GIT_COMMIT: overrides.GIT_COMMIT ?? "",
@@ -84,8 +85,15 @@ describe("Render start command", () => {
     expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
   });
 
-  test("keeps the explicit local development mode available", () => {
+  test("does not allow a stale dev environment to run on Render", () => {
     const result = runRenderStart({ GAME_ENV: "dev" });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
+  });
+
+  test("keeps the explicit local development mode available off Render", () => {
+    const result = runRenderStart({ GAME_ENV: "dev", RENDER: "false" });
 
     expect(result.status).toBe(0);
     expect(result.stdout.trim()).toBe(
