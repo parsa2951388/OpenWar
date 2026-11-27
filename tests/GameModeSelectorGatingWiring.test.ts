@@ -409,16 +409,18 @@ describe("grid placement", () => {
   it(
     "renders a static placeholder without role=status when loaded without an FFA lobby",
     async () => {
-    await pushLobbies({ team: [publicLobby("team-1")] });
-    expect(heroSlot()).not.toBeNull();
-    expect(heroSlot()!.querySelector('div[role="status"]')).toBeNull();
-    const placeholder = heroSlot()!.querySelector("div.rounded-2xl.bg-surface");
-    expect(placeholder).not.toBeNull();
-    expect(placeholder!.className).toContain("h-44 sm:h-full");
-    expect(section().classList.contains("ow-lobby-column")).toBe(true);
-    expect(
-      selector.querySelector(".ow-operations > .ow-grid"),
-    ).not.toBeNull();
+      await pushLobbies({ team: [publicLobby("team-1")] });
+      expect(heroSlot()).not.toBeNull();
+      expect(heroSlot()!.querySelector('div[role="status"]')).toBeNull();
+      const placeholder = heroSlot()!.querySelector(
+        "div.rounded-2xl.bg-surface",
+      );
+      expect(placeholder).not.toBeNull();
+      expect(placeholder!.className).toContain("h-44 sm:h-full");
+      expect(section().classList.contains("ow-lobby-column")).toBe(true);
+      expect(
+        selector.querySelector(".ow-operations > .ow-grid"),
+      ).not.toBeNull();
     },
   );
 
