@@ -2071,7 +2071,9 @@
     "troubleshooting": "Troubleshooting",
     "tutorial": "Tutorial",
     "user_avatar_alt": "{username}'s avatar",
-    "wiki": "Wiki"
+    "wiki": "Wiki",
+    "upstream_terms": "Upstream Terms",
+    "upstream_privacy": "Upstream Privacy"
   },
   "map": {
     "achiran": "Achiran",
