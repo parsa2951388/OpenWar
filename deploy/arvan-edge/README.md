@@ -56,7 +56,7 @@ From the repository root:
 \`\`\`powershell
 npm install --global r1ec
 r1ec login -m "<ARVAN_MACHINE_KEY>"
-r1ec deploy open-war-competition -f deploy/arvan-edge/worker.js
+r1ec deploy openwar -f deploy/arvan-edge/worker.js
 \`\`\`
 
 Arvan assigns a default arvanedge.ir subdomain to a new Edge application.
@@ -68,7 +68,7 @@ Use the URL shown by the Arvan panel/CLI as the candidate competition URL.
 2. Add a repository secret named ARVAN_MACHINE_KEY.
 3. Open Actions → **Deploy Open War to Arvan Edge**.
 4. Select **Run workflow** and keep the application name
-   open-war-competition unless a different name is required.
+   openwar unless a different name is required.
 
 The workflow is manual only; pushing code does not deploy to Arvan. Because
 GitHub exposes manual dispatch for workflows present on the default branch,
