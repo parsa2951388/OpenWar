@@ -711,7 +711,7 @@ export class GameModeSelector extends LitElement {
         </header>
         <div class="ow-grid">
           <div
-            class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
+            class="ow-action-row flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
           >
             <div class="flex-[2]">
               ${this.renderSmallActionCard(
@@ -733,7 +733,7 @@ export class GameModeSelector extends LitElement {
             }
           </div>
           <div
-            class="grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-3"
+            class="ow-action-row grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-3"
           >
             ${this.renderSmallActionCard(
               translateText("main.create"),
