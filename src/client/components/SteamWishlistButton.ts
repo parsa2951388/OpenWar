@@ -30,7 +30,13 @@ export class SteamWishlistButton extends LitElement {
   }
 
   render() {
-    if (!OPEN_WAR_STEAM_PRODUCT_PUBLISHED || isDesktopShell() || gamePortal.name() === "poki") return nothing;
+    if (
+      !OPEN_WAR_STEAM_PRODUCT_PUBLISHED ||
+      isDesktopShell() ||
+      gamePortal.name() === "poki"
+    ) {
+      return nothing;
+    }
 
     return html`
       <a
