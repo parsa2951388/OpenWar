@@ -28,9 +28,11 @@ function runRenderStart(
   const fakeTsx = path.join(tempDirectory, "tsx");
   fs.writeFileSync(
     fakeTsx,
-    ["#!/bin/sh", 'echo "$GAME_ENV|$TURNSTILE_SITE_KEY|$GIT_COMMIT|$API_ORIGIN"', ""].join(
-      "\n",
-    ),
+    [
+      "#!/bin/sh",
+      'echo "$GAME_ENV|$TURNSTILE_SITE_KEY|$GIT_COMMIT|$API_ORIGIN"',
+      "",
+    ].join("\n"),
   );
   fs.chmodSync(fakeTsx, 0o755);
 
@@ -82,6 +84,8 @@ describe("Render start command", () => {
     const result = runRenderStart({ GAME_ENV: "dev" });
 
     expect(result.status).toBe(0);
-    expect(result.stdout.trim()).toBe("dev|1x00000000000000000000AA|OPENWAR|https://openwar-api-gateway.parsaoj.workers.dev");
+    expect(result.stdout.trim()).toBe(
+      "dev|1x00000000000000000000AA|OPENWAR|https://openwar-api-gateway.parsaoj.workers.dev",
+    );
   });
 });
