@@ -365,7 +365,9 @@ export class HostLobbyModal extends BaseModal {
   // Listed lobbies only: pay plutonium to put the lobby in the public
   // Special queue, right behind the lobby that's counting down.
   private renderQueueButton() {
-    if (!this.publiclyListed) return nothing;
+    if (!OPEN_WAR_FEATURES.specialPublicLobbyQueue || !this.publiclyListed) {
+      return nothing;
+    }
     if (this.queued) {
       return html`<span
         class="px-3 py-1 text-[10px] font-bold uppercase tracking-widest rounded-full bg-green-500/15 text-green-400 border border-green-500/30 shrink-0"
@@ -401,6 +403,7 @@ export class HostLobbyModal extends BaseModal {
   }
 
   private async handleQueue() {
+    if (!OPEN_WAR_FEATURES.specialPublicLobbyQueue) return;
     const price = this.queuePriceHard;
     if (this.queueRequestInFlight || price === null || !this.lobbyId) return;
     this.queueRequestInFlight = true;
