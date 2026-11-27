@@ -1,35 +1,30 @@
 <p align="center">
-  <picture>
-    <source media="(prefers-color-scheme: dark)" srcset="proprietary/images/OpenFrontLogoDark.svg">
-    <source media="(prefers-color-scheme: light)" srcset="proprietary/images/OpenFrontLogo.svg">
-    <img src="proprietary/images/OpenFrontLogo.svg" alt="OpenFrontIO Logo" width="300">
-  </picture>
+  <img src="proprietary/images/OpenWarLogo.svg" alt="Open War — Global Strategy Command" width="420">
 </p>
 
-[OpenFront.io](https://openfront.io/) is an online real-time strategy game focused on territorial control and alliance building. Players compete to expand their territory, build structures, and form strategic alliances in various maps based on real-world geography.
+# Open War
 
-This is a fork/rewrite of WarFront.io. Credit to https://github.com/WarFrontIO.
+Open War is a community-maintained browser strategy game focused on territorial control, alliances, and multiplayer matches. This repository is an independently branded fork based on the open-source real-time strategy codebase of [OpenFrontIO](https://github.com/openfrontio/OpenFrontIO).
 
-![CI](https://github.com/openfrontio/OpenFrontIO/actions/workflows/ci.yml/badge.svg)
-[![Crowdin](https://badges.crowdin.net/openfront-mls/localized.svg)](https://crowdin.com/project/openfront-mls)
-[![CLA assistant](https://cla-assistant.io/readme/badge/openfrontio/OpenFrontIO)](https://cla-assistant.io/openfrontio/OpenFrontIO)
+The project also preserves the earlier [WarFrontIO](https://github.com/WarFrontIO) fork lineage. Open War has its own name, visual identity, and deployment, while upstream source attribution and license obligations remain in place.
+
+![CI](https://github.com/parsa2951388/OpenWar/actions/workflows/ci.yml/badge.svg)
 [![License: AGPL v3](https://img.shields.io/badge/License-AGPL%20v3-blue.svg)](https://www.gnu.org/licenses/agpl-3.0)
 [![Assets: CC BY-SA 4.0](https://img.shields.io/badge/Assets-CC%20BY--SA%204.0-lightgrey.svg)](https://creativecommons.org/licenses/by-sa/4.0/)
 
-## License
+## License and upstream attribution
 
-OpenFront source code is licensed under the **GNU Affero General Public License v3.0**
+The inherited game source is licensed under the **GNU Affero General Public License v3.0**. Open War is a modified version and must preserve the upstream copyright notices.
 
-Current copyright notices appear in:
+The following notice is intentionally retained in the visible game UI:
 
-- Footer: "© OpenFront and Contributors"
-- Loading screen: "© OpenFront and Contributors"
+- `© OpenFront and Contributors`
 
-Modified versions must preserve these notices in reasonably visible locations.
+Modified versions must preserve this notice in reasonably visible locations. Open War branding is additional identity; it does not replace upstream attribution.
 
 See the [LICENSE](LICENSE) for complete requirements.
 
-For asset licensing, see [LICENSE-ASSETS](LICENSE-ASSETS).  
+For asset licensing, see [LICENSE-ASSETS](LICENSE-ASSETS).
 For license history, see [LICENSING.md](LICENSING.md).
 
 ## 🌟 Features
@@ -57,8 +52,8 @@ npm install --global --ignore-scripts npm@12.1.0
 1. **Clone the repository**
 
    ```bash
-   git clone https://github.com/openfrontio/OpenFrontIO.git
-   cd OpenFrontIO
+   git clone https://github.com/parsa2951388/OpenWar.git
+   cd OpenWar
    ```
 
 2. **Install dependencies**
@@ -107,7 +102,7 @@ npm run start:server-dev
 
 Sometimes it's useful to connect to production servers when replaying a game, testing user profiles, purchases, or login flow.
 
-> To replay a production game, make sure you're on the same commit that the game you want to replay was executed on, you can find the `gitCommit` value via `https://api.openfront.io/game/[gameId]`.
+> To replay a production game, make sure you're on the same commit that the game you want to replay was executed on, the `gitCommit` value is exposed by the configured upstream API for that game ID.
 > Unfinished games cannot be replayed on localhost.
 
 To connect to staging api servers:

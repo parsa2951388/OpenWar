@@ -48,6 +48,64 @@ function startAllWorkers(
   return workers;
 }
 
+describe("MasterLobbyService.healthStatus", () => {
+  it("reports zero ready workers before startup", () => {
+    const service = createService(4);
+    expect(service.healthStatus()).toEqual({
+      ready: false,
+      started: false,
+      readyWorkers: 0,
+      expectedWorkers: 4,
+      minimumReadyWorkers: 2,
+    });
+  });
+
+  it("reports progress while workers are starting", () => {
+    const service = createService(4);
+    const worker = createMockWorker();
+    service.registerWorker(1, worker as any);
+    sendWorkerReady(worker, 1);
+
+    expect(service.healthStatus()).toEqual({
+      ready: false,
+      started: false,
+      readyWorkers: 1,
+      expectedWorkers: 4,
+      minimumReadyWorkers: 2,
+    });
+  });
+
+  it("reports a healthy fleet and its surviving worker count", () => {
+    const service = createService(4);
+    const workers = startAllWorkers(service, 4);
+    service.removeWorker(workers[3].id);
+
+    expect(service.healthStatus()).toEqual({
+      ready: true,
+      started: true,
+      readyWorkers: 3,
+      expectedWorkers: 4,
+      minimumReadyWorkers: 2,
+    });
+  });
+
+  it("reports degraded readiness after the fleet falls below its threshold", () => {
+    const service = createService(4);
+    const workers = startAllWorkers(service, 4);
+    service.removeWorker(workers[1].id);
+    service.removeWorker(workers[2].id);
+    service.removeWorker(workers[3].id);
+
+    expect(service.healthStatus()).toEqual({
+      ready: false,
+      started: true,
+      readyWorkers: 1,
+      expectedWorkers: 4,
+      minimumReadyWorkers: 2,
+    });
+  });
+});
+
 describe("MasterLobbyService.isHealthy", () => {
   it("unhealthy before any workers register", () => {
     const service = createService(4);

@@ -86,6 +86,20 @@ describe("HelpModal mobile rendering", () => {
     expect(content?.hidden).toBe(false);
   });
 
+  it("labels the embedded community guide and preserves its source credit", async () => {
+    setPrimaryPointerIsTouch(false);
+
+    const modal = await mountHelpModal();
+    const video = modal.querySelector<HTMLIFrameElement | HTMLVideoElement>(
+      "#tutorial-video-iframe, #tutorial-video-player",
+    );
+
+    expect(video?.getAttribute("title")).toBe(
+      "Community gameplay guide by Lonely_Millennial",
+    );
+    expect(modal.querySelector("#help-video-tutorial-credit")).not.toBeNull();
+  });
+
   it("shows Hotkeys on a non-touch device", async () => {
     setPrimaryPointerIsTouch(false);
 

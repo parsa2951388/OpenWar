@@ -167,6 +167,8 @@ export class ClientEnv {
       numWorkers: bc.numWorkers,
       turnstileSiteKey: bc.turnstileSiteKey,
       jwtAudience: bc.jwtAudience,
+      // Optional public API transport override; the audience remains unchanged.
+      apiOrigin: bc.apiOrigin,
       // Optional: a deployment without a key (or a desktop shell, which
       // buys on Steam) omits it, and the inline Stripe flow stays off.
       stripePublishableKey: bc.stripePublishableKey,
@@ -238,6 +240,9 @@ export class ClientEnv {
   static jwtAudience(): string {
     return ClientEnv.get().jwtAudience;
   }
+  static apiOrigin(): string | undefined {
+    return ClientEnv.get().apiOrigin;
+  }
   static instanceId(): string {
     return ClientEnv.get().instanceId;
   }
@@ -245,6 +250,8 @@ export class ClientEnv {
     return ClientEnv.get().gitCommit;
   }
   static jwtIssuer(): string {
+    const configured = ClientEnv.apiOrigin();
+    if (configured) return configured;
     const audience = ClientEnv.jwtAudience();
     return audience === "localhost"
       ? "http://localhost:8787"
@@ -667,6 +674,7 @@ export interface ClientEnvValues {
   numWorkers?: number;
   turnstileSiteKey: string;
   jwtAudience: string;
+  apiOrigin?: string;
   // Optional: absent when the deployment carries no Stripe key (dev, desktop
   // shells). Environment-scoped like turnstileSiteKey, so a static page
   // carries it too.

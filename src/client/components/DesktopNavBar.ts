@@ -54,14 +54,14 @@ export class DesktopNavBar extends LitElement {
     // not the sticky host, so the host's offset below a header ad stays exact.
     return html`
       <nav
-        class="hidden lg:flex w-full bg-zinc-900/90 backdrop-blur-md items-center justify-center gap-8 py-4 shrink-0 z-50 relative compact:[zoom:0.75]"
+        class="hidden lg:flex w-full bg-[#07131e]/95 backdrop-blur-xl border-b border-[#29404d]/70 items-center justify-center gap-8 py-4 shrink-0 z-50 relative compact:[zoom:0.75]"
       >
         <div class="flex flex-col items-center justify-center">
           <div class="h-8">
             <img
-              class="block h-full aspect-[1364/259]"
-              src=${assetUrl("images/OpenFrontLogo.svg")}
-              alt="OpenFront"
+              class="block h-full aspect-[720/144] w-auto"
+              src=${assetUrl("images/OpenWarLogo.svg")}
+              alt="Open War"
             />
           </div>
           <div

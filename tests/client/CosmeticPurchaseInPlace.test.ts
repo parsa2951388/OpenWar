@@ -573,6 +573,7 @@ describe("buying on the end screen", () => {
       // The local API base, as AuthRefreshFailure.test.ts sets it.
       const { ClientEnv } = await import("../../src/client/ClientEnv");
       vi.spyOn(ClientEnv, "jwtAudience").mockReturnValue("localhost");
+      vi.spyOn(ClientEnv, "apiOrigin").mockReturnValue(undefined);
       vi.spyOn(console, "log").mockImplementation(() => undefined);
       vi.spyOn(console, "warn").mockImplementation(() => undefined);
       vi.spyOn(console, "error").mockImplementation(() => undefined);

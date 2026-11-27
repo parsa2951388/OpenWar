@@ -9,7 +9,7 @@
     "close": "Stäng"
   },
   "main": {
-    "title": "OpenFront (ALPHA)",
+    "title": "Open War (ALPHA)",
     "join_discord": "Gå med i Discord!",
     "login_discord": "Logga in med Discord",
     "checking_login": "Kontrollerar inloggning...",
@@ -23,7 +23,8 @@
     "advertise": "Annonsera",
     "wiki": "Wiki",
     "privacy_policy": "Sekretesspolicy",
-    "terms_of_service": "Användarvillkor"
+    "terms_of_service": "Användarvillkor",
+    "copyright": "© Open War community edition"
   },
   "news": {
     "full_changelog": "Se fullständig ändringslogg",
@@ -569,8 +570,8 @@
       "cursor": "Muspekare",
       "hand": "Hand",
       "radiation": "Radioaktivitet",
-      "openfront_qr": "OpenFront.io QR kod",
-      "openfront": "OpenFront",
+      "openfront_qr": "Open War QR kod",
+      "openfront": "Open War",
       "t_rex": "T-Rex",
       "embelem": "Emblem",
       "grogu_head": "Grogu Huvud",

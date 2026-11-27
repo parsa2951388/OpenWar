@@ -26,6 +26,9 @@ declare global {
       numWorkers?: number;
       turnstileSiteKey?: string;
       jwtAudience?: string;
+      // Optional public transport origin for the API gateway. It changes
+      // where requests are sent, not the JWT audience used for verification.
+      apiOrigin?: string;
       // Environment-scoped like turnstileSiteKey, but optional: a deployment
       // without one (dev, desktop shells) just keeps the inline Stripe flow
       // off.

@@ -1,4 +1,5 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
+import en from "../../resources/lang/en.json";
 
 const { isOnCrazyGames } = vi.hoisted(() => ({
   isOnCrazyGames: vi.fn(() => false),
@@ -16,8 +17,8 @@ vi.mock("@openfront/shared/AssetUrls", () => ({
   assetUrl: (path: string) => path,
 }));
 
-// Rendering play-page mounts its children too (steam-wishlist, cosmetic
-// background, …), and some reach for browser APIs jsdom doesn't ship.
+// Rendering play-page mounts its children too (cosmetic background, news,
+// account controls, …), and some reach for browser APIs jsdom does not ship.
 vi.stubGlobal(
   "ResizeObserver",
   class {
@@ -27,12 +28,36 @@ vi.stubGlobal(
   },
 );
 
+function flatten(
+  value: Record<string, unknown>,
+  prefix = "",
+  out: Record<string, string> = {},
+): Record<string, string> {
+  for (const [key, child] of Object.entries(value)) {
+    const fullKey = prefix ? prefix + "." + key : key;
+    if (typeof child === "string") out[fullKey] = child;
+    else if (child && typeof child === "object") {
+      flatten(child as Record<string, unknown>, fullKey, out);
+    }
+  }
+  return out;
+}
+
 import { PlayPage } from "../../src/client/components/PlayPage";
 
 describe("play-page mobile top bar", () => {
   let el: PlayPage;
+  let languageFixture: HTMLElement | undefined;
 
   async function mount() {
+    const translations = flatten(en as Record<string, unknown>);
+    languageFixture = document.createElement("lang-selector");
+    Object.assign(languageFixture, {
+      currentLang: "en",
+      translations,
+      defaultTranslations: translations,
+    });
+    document.body.appendChild(languageFixture);
     if (!customElements.get("play-page")) {
       customElements.define("play-page", PlayPage);
     }
@@ -43,6 +68,8 @@ describe("play-page mobile top bar", () => {
 
   afterEach(() => {
     el?.remove();
+    languageFixture?.remove();
+    languageFixture = undefined;
     vi.clearAllMocks();
     isOnCrazyGames.mockReturnValue(false);
   });
@@ -57,6 +84,23 @@ describe("play-page mobile top bar", () => {
 
     it("puts the bell/help icons beside the profile menu", () => {
       expect(rightSlot()).toEqual(["nav-utility-icons", "nav-account-menu"]);
+    });
+
+    it("renders the Open War identity and keeps the play entry point", () => {
+      expect(
+        el.querySelector("#page-play")?.classList.contains("ow-home-page"),
+      ).toBe(true);
+      expect(
+        el.querySelector("#ow-hero-title")?.getAttribute("aria-label"),
+      ).toBe("TAKE THE FRONTLINE.");
+      expect(el.querySelector('img[alt="Open War"]')?.getAttribute("src")).toBe(
+        "images/OpenWarLogo.svg",
+      );
+      expect(el.querySelector(".ow-field-label")?.textContent).toBe(
+        "COMMANDER CALLSIGN",
+      );
+      expect(el.querySelector("game-mode-selector")).not.toBeNull();
+      expect(el.querySelector("steam-wishlist")).toBeNull();
     });
   });
 
@@ -80,9 +124,7 @@ describe("play-page mobile top bar", () => {
     it("marks the top strip as group/strip for descendant streaming-live overrides", () => {
       const strip = el.querySelector(".group\\/strip");
       expect(strip).not.toBeNull();
-      expect(strip?.className).toContain(
-        "lg:has-[.streaming-live]:grid-cols-[2fr_1fr]",
-      );
+      expect(strip?.className).toContain("ow-strip");
 
       const streamingNow = strip!.querySelector("streaming-now");
       expect(streamingNow).not.toBeNull();

@@ -9,7 +9,7 @@
     "close": "Zavrieť"
   },
   "main": {
-    "title": "OpenFront (ALFA)",
+    "title": "Open War (ALFA)",
     "join_discord": "Pridaj sa do Discordu!",
     "login_discord": "Prihlás sa cez Discord",
     "checking_login": "Kontrolujem prihlásenie...",
@@ -23,7 +23,8 @@
     "advertise": "Inzerovať",
     "wiki": "Wiki",
     "privacy_policy": "Zásady ochrany osobných údajov",
-    "terms_of_service": "Podmienky používania"
+    "terms_of_service": "Podmienky používania",
+    "copyright": "© Open War community edition"
   },
   "news": {
     "see_all_releases": "Zobraziť všetky vydania",
@@ -580,8 +581,8 @@
       "cursor": "Kurzor",
       "hand": "Ruka",
       "radiation": "Radiácia",
-      "openfront_qr": "QR kód OpenFront.io",
-      "openfront": "OpenFront",
+      "openfront_qr": "QR kód Open War",
+      "openfront": "Open War",
       "t_rex": "T-rex",
       "embelem": "Odznak",
       "contributor": "Prispievateľ",

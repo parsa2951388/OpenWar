@@ -89,6 +89,10 @@ export async function renderHtmlContent(
     gameEnv: JSON.stringify(ServerEnv.gameEnvName()),
     turnstileSiteKey: JSON.stringify(ServerEnv.turnstileSiteKey()),
     jwtAudience: JSON.stringify(ServerEnv.jwtAudience()),
+    apiOrigin:
+      ServerEnv.apiOrigin() === undefined
+        ? undefined
+        : JSON.stringify(ServerEnv.apiOrigin()),
     // Environment-scoped like the two above (so the static per-version page
     // carries it too), but optional: absent when the deployment has no key,
     // and the guarded template line then drops out entirely.
@@ -104,12 +108,12 @@ export async function renderHtmlContent(
     manifestHref: buildAssetUrl("manifest.json", assetManifest, cdnBase),
     faviconHref: buildAssetUrl("images/Favicon.svg", assetManifest, cdnBase),
     appleTouchIconHref: buildAssetUrl(
-      "icons/icon512_maskable.png",
+      "icons/open-war-touch.png",
       assetManifest,
       cdnBase,
     ),
     gameplayScreenshotUrl: buildAssetUrl(
-      "images/KeyArt.jpg",
+      "images/OpenWarSocialCard.svg",
       assetManifest,
       cdnBase,
     ),
@@ -119,11 +123,15 @@ export async function renderHtmlContent(
       cdnBase,
     ),
     desktopLogoImageUrl: buildAssetUrl(
-      "images/OpenFront.png",
+      "images/OpenWarLogo.svg",
       assetManifest,
       cdnBase,
     ),
-    mobileLogoImageUrl: buildAssetUrl("images/OF.png", assetManifest, cdnBase),
+    mobileLogoImageUrl: buildAssetUrl(
+      "images/OpenWarLogo.svg",
+      assetManifest,
+      cdnBase,
+    ),
   });
 }
 

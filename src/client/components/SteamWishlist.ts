@@ -4,7 +4,7 @@ import { isDesktopShell } from "../DesktopShell";
 import { gamePortal } from "../GamePortal";
 import { translateText } from "../Utils";
 
-const STEAM_APP_ID = "3560670";
+export const OPEN_WAR_STEAM_APP_ID: number | null = null;
 
 /** Nominal size of Steam's store widget, as published in its embed snippet. */
 const WIDGET_WIDTH = 646;
@@ -20,7 +20,7 @@ const WIDGET_HEIGHT = 190;
 const WIDGET_MIN_WIDTH = 501;
 
 /**
- * Steam's store widget for OpenFront.
+ * Steam's store widget for Open War, enabled only after its own app is published.
  *
  * UTM parameters are forwarded by Steam into every link the widget renders
  * (store page, "Wishlist on Steam" button), so `campaign` is what shows up in
@@ -30,18 +30,23 @@ const WIDGET_MIN_WIDTH = 501;
  * See https://partner.steamgames.com/doc/marketing/utm_analytics
  */
 function steamWidgetUrl(campaign: string): string {
-  return steamUrl(`widget/${STEAM_APP_ID}/`, "widget", campaign);
+  return steamUrl("widget", campaign);
 }
 
-/** Store page for OpenFront, tagged for the same UTM dashboard. */
+/** Store page for Open War, tagged for the same UTM dashboard. */
 export function steamStoreUrl(campaign: string): string {
-  return steamUrl(`app/${STEAM_APP_ID}/OpenFront/`, "link", campaign);
+  return steamUrl("app", campaign);
 }
 
-function steamUrl(path: string, medium: string, campaign: string): string {
+function steamUrl(kind: "widget" | "app", campaign: string): string {
+  const appId = OPEN_WAR_STEAM_APP_ID;
+  if (appId === null) {
+    throw new Error("Open War does not have a published Steam product yet.");
+  }
+  const path = kind === "widget" ? `widget/${appId}/` : `app/${appId}/`;
   const params = new URLSearchParams({
-    utm_source: "openfront",
-    utm_medium: medium,
+    utm_source: "openwar",
+    utm_medium: kind === "widget" ? "widget" : "link",
     utm_campaign: campaign,
   });
   return `https://store.steampowered.com/${path}?${params}`;
@@ -111,7 +116,13 @@ export class SteamWishlist extends LitElement {
     // Poki doesn't allow promoting other platforms, and neither app shell
     // shows it: the Steam app has nothing to wishlist, and the Android app
     // must not send the player to another store.
-    if (isDesktopShell() || gamePortal.name() === "poki") return nothing;
+    if (
+      OPEN_WAR_STEAM_APP_ID === null ||
+      isDesktopShell() ||
+      gamePortal.name() === "poki"
+    ) {
+      return nothing;
+    }
 
     const frameWidth = Math.min(
       WIDGET_WIDTH,

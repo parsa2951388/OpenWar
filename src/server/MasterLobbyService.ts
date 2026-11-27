@@ -152,11 +152,29 @@ export class MasterLobbyService {
     return total;
   }
 
+  healthStatus(): {
+    ready: boolean;
+    started: boolean;
+    readyWorkers: number;
+    expectedWorkers: number;
+    minimumReadyWorkers: number;
+  } {
+    // Keep the existing readiness policy: scheduling starts only after every
+    // worker has reported ready; after startup, at least half must remain.
+    const expectedWorkers = ServerEnv.numWorkers();
+    const minimumReadyWorkers = Math.max(Math.ceil(expectedWorkers / 2), 1);
+    const readyWorkers = this.readyWorkers.size;
+    return {
+      ready: this.started && readyWorkers >= minimumReadyWorkers,
+      started: this.started,
+      readyWorkers,
+      expectedWorkers,
+      minimumReadyWorkers,
+    };
+  }
+
   isHealthy(): boolean {
-    // We consider the lobby service healthy if at least half of the workers are ready.
-    // This allows for some leeway if a worker crashes.
-    const minWorkers = Math.max(ServerEnv.numWorkers() / 2, 1);
-    return this.started && this.readyWorkers.size >= minWorkers;
+    return this.healthStatus().ready;
   }
 
   /**

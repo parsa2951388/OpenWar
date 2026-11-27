@@ -19,22 +19,26 @@ vi.stubGlobal(
   },
 );
 
-import "../../../src/client/components/SteamWishlist";
-import type { SteamWishlist } from "../../../src/client/components/SteamWishlist";
+import {
+  OPEN_WAR_STEAM_APP_ID,
+  steamStoreUrl,
+  type SteamWishlist,
+} from "../../../src/client/components/SteamWishlist";
 import "../../../src/client/components/SteamWishlistButton";
 import { gamePortal } from "../../../src/client/GamePortal";
 
 describe("steam-wishlist", () => {
-  it("gives the widget's iframe Steam's light color scheme on the dark page", async () => {
+  it("keeps the unpublished Open War Steam widget out of the DOM", async () => {
     const el = document.createElement("steam-wishlist") as SteamWishlist;
     el.campaign = "test";
     document.body.appendChild(el);
     try {
       await el.updateComplete;
-      const iframe = el.querySelector("iframe");
-      expect(iframe).not.toBeNull();
-      // A scheme differing from the embedded page's paints a white backdrop.
-      expect(iframe!.style.colorScheme).toBe("light");
+      expect(OPEN_WAR_STEAM_APP_ID).toBeNull();
+      expect(() => steamStoreUrl("test")).toThrow(
+        "Open War does not have a published Steam product yet.",
+      );
+      expect(el.querySelector("iframe, .steam-wishlist-frame")).toBeNull();
     } finally {
       el.remove();
     }

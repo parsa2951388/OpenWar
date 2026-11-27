@@ -4,7 +4,7 @@ import { customElement, property } from "lit/decorators.js";
 import { isDesktopShell } from "../DesktopShell";
 import { gamePortal } from "../GamePortal";
 import { translateText } from "../Utils";
-import { steamStoreUrl } from "./SteamWishlist";
+import { OPEN_WAR_STEAM_APP_ID, steamStoreUrl } from "./SteamWishlist";
 
 /**
  * Wide, short promo strip linking to the Steam store page, for slots too short
@@ -18,6 +18,7 @@ import { steamStoreUrl } from "./SteamWishlist";
  * the Steamworks dashboard alongside it. Self-hides inside either app shell
  * (Steam, Android) and on Poki, matching `<steam-wishlist>`.
  */
+
 @customElement("steam-wishlist-button")
 export class SteamWishlistButton extends LitElement {
   /** UTM campaign identifying the placement, e.g. "homepage". */
@@ -28,7 +29,13 @@ export class SteamWishlistButton extends LitElement {
   }
 
   render() {
-    if (isDesktopShell() || gamePortal.name() === "poki") return nothing;
+    if (
+      OPEN_WAR_STEAM_APP_ID === null ||
+      isDesktopShell() ||
+      gamePortal.name() === "poki"
+    ) {
+      return nothing;
+    }
 
     return html`
       <a
@@ -38,7 +45,7 @@ export class SteamWishlistButton extends LitElement {
         class="group flex w-full items-center justify-center gap-3 rounded border-t border-l border-[#424c5c] bg-[linear-gradient(130deg,#3b4351,#282e39)] px-3 py-2 shadow-md transition-shadow hover:shadow-lg xl:justify-start"
       >
         <img
-          src=${assetUrl("images/OpenFrontLogo.svg")}
+          src=${assetUrl("images/OpenWarLogo.svg")}
           alt=""
           class="hidden h-7 w-auto max-w-[120px] shrink-0 object-contain pointer-events-none min-[1600px]:block"
           draggable="false"

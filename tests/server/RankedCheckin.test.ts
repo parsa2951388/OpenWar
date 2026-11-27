@@ -12,6 +12,11 @@ import { mockLogger } from "../util/GameServerHarness";
 
 vi.mock("../../src/server/PollingLoop", () => ({ startPolling: vi.fn() }));
 
+// Keep mocked poll registrations isolated between tests.
+beforeEach(() => {
+  vi.mocked(startPolling).mockClear();
+});
+
 // OPE-469: a draining deployment kept offering ranked matches, so players on
 // the new build were matched onto the old one, bounced on version_mismatch,
 // and the match cancelled short-handed. The ranked check-in must follow the
@@ -100,6 +105,60 @@ describe("RankedCheckinGate", () => {
     gate.shouldCheckIn();
     gate.shouldCheckIn();
     expect(log.info).toHaveBeenCalledTimes(1);
+  });
+});
+
+describe("ranked matchmaking retry backoff", () => {
+  beforeEach(() => {
+    vi.stubEnv("GAME_ENV", "prod");
+    vi.stubEnv("INSTANCE_LETTER", "a");
+    vi.stubEnv("NUM_WORKERS", "4");
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("SUBDOMAIN", "blue");
+    vi.stubEnv("API_KEY", "test-key");
+    vi.stubEnv("INSTANCE_ID", "abcd1234");
+    vi.stubEnv("GIT_COMMIT", "bfd5563a11111111111111111111111111111111");
+  });
+
+  afterEach(() => {
+    vi.unstubAllEnvs();
+    vi.useRealTimers();
+  });
+
+  it("backs off a forbidden queue and retries automatically", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 403 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ assignment: null }), { status: 200 }),
+      ) as unknown as typeof fetch;
+    const deps = makeDeps(() => true, fetchFn);
+    startRankedCheckinLoops(deps);
+    const task = vi.mocked(startPolling).mock.calls[0][0];
+
+    await task();
+    await task();
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(60_000);
+    await task();
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears the request timeout when fetch fails", async () => {
+    vi.useFakeTimers();
+    const fetchFn = vi.fn(async () => {
+      throw new Error("network unavailable");
+    }) as unknown as typeof fetch;
+    const deps = makeDeps(() => true, fetchFn);
+    const gate = new RankedCheckinGate(deps.isActive, deps.log);
+
+    await rankedCheckinPass("1v1", gate, deps);
+
+    expect(deps.log.error).toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
   });
 });
 

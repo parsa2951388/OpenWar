@@ -10,7 +10,6 @@ import type {
   Progress,
   UserMeResponse,
 } from "@openfront/shared/ApiSchemas";
-import { assetUrl } from "@openfront/shared/AssetUrls";
 import type { Cosmetics, Pattern } from "@openfront/shared/CosmeticSchemas";
 import { EventBus } from "@openfront/shared/EventBus";
 import { html, LitElement, nothing, PropertyValues, TemplateResult } from "lit";
@@ -69,7 +68,6 @@ import { isDesktopShell } from "../../DesktopShell";
 import { COSMETICS_CHANGED } from "../../Experiments";
 import "../../components/ProfileShare";
 import "../../components/PurchaseButton";
-import "../../components/SteamWishlist";
 import { gamePortal } from "../../GamePortal";
 import { lobbyPublicGameType } from "../../LobbyPublicGameType";
 import { lobbyLevelBadge } from "../../LobbyRosterLevels";
@@ -746,7 +744,7 @@ export class WinModal extends LitElement implements Controller {
       // The Steam desktop build has nothing to wishlist, and the Android app
       // must not send the player to another store — fall through to the
       // other promos so the box is never empty.
-      canWishlist: !isDesktopShell(),
+      canWishlist: false,
       rand: this.rand,
       hasLooks: looks.length > 0,
     });
@@ -759,9 +757,9 @@ export class WinModal extends LitElement implements Controller {
 
     switch (this.promo()) {
       case "steam":
-        return this.steamWishlist();
+        return nothing;
       case "discord":
-        return this.discordDisplay();
+        return this.renderPatternButton();
       case "tutorial":
         return this.renderYoutubeTutorial();
       case "pending":
@@ -931,58 +929,6 @@ export class WinModal extends LitElement implements Controller {
             </div>
           `;
         })}
-      </div>
-    `;
-  }
-
-  steamWishlist(): TemplateResult {
-    return html`
-      <div data-win-promo="steam" class="rounded-lg bg-white/6 p-3">
-        <h3 class="mb-2 text-base font-bold text-white">
-          ${translateText("steam_wishlist.buy_on_steam")}
-        </h3>
-        <div class="overflow-hidden rounded-sm">
-          <steam-wishlist
-            campaign="win_modal"
-            .active=${this.isVisible}
-          ></steam-wishlist>
-        </div>
-      </div>
-    `;
-  }
-
-  discordDisplay(): TemplateResult {
-    return html`
-      <div
-        data-win-promo="discord"
-        class="flex flex-wrap items-center gap-3 rounded-lg bg-white/6 p-3"
-      >
-        <span
-          class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#5865F2]"
-        >
-          <img
-            src=${assetUrl("images/DiscordLogo.svg")}
-            alt=""
-            width="22"
-            height="22"
-          />
-        </span>
-        <div class="flex min-w-0 flex-[1_1_14rem] flex-col">
-          <h3 class="m-0 text-sm font-bold text-white">
-            ${translateText("win_modal.join_discord")}
-          </h3>
-          <p class="m-0 text-xs text-white/70">
-            ${translateText("win_modal.discord_description")}
-          </p>
-        </div>
-        <a
-          href="https://discord.com/invite/openfront"
-          target="_blank"
-          rel="noopener noreferrer"
-          class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-[#5865F2] px-4 text-sm font-bold uppercase tracking-widest text-white no-underline transition-colors hover:bg-[#4752C4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aquarius max-sm:basis-full"
-        >
-          ${translateText("win_modal.join_server")}
-        </a>
       </div>
     `;
   }

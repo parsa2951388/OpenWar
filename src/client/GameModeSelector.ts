@@ -680,6 +680,7 @@ export class GameModeSelector extends LitElement {
   }
 
   render() {
+    const operationTitle = translateText("open_war.choose_operation");
     const ffa = this.lobbies?.games?.["ffa"]?.[0];
     const teams = this.lobbies?.games?.["team"]?.[0];
     const special = this.lobbies?.games?.["special"]?.[0];
@@ -697,128 +698,135 @@ export class GameModeSelector extends LitElement {
     // On compact screens (styles.css) Solo/Tutorial sit under the hero card only,
     // and the lobby column runs down beside them, so its two cards get that height.
     return html`
-      <div
-        class="flex flex-col gap-4 sm:compact:gap-3 w-full px-4 pb-4 mx-auto sm:px-0 sm:pb-0 sm:grid sm:grid-cols-[2fr_1fr] sm:grid-rows-[min(24rem,40vh)_auto_auto] sm:compact:grid-rows-[minmax(min(24rem,40vh),auto)_3.5rem_auto] desktop:sm:grid-rows-[40vh_auto_auto] sm:[reading-flow:grid-rows]"
-      >
-        <div
-          class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
-        >
-          <div class="flex-[2]">
+      <section class="ow-operations" aria-labelledby="ow-operations-title">
+        <header class="ow-operations__heading">
+          <div>
+            <span class="ow-operations__eyebrow">
+              ${translateText("open_war.deployment_board")} <i></i>
+            </span>
+            <h2 id="ow-operations-title">${operationTitle}</h2>
+          </div>
+          <span class="ow-operations__serial">OW / COMMAND 01</span>
+        </header>
+        <div class="ow-grid">
+          <div
+            class="ow-action-row flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
+          >
+            <div class="flex-[2]">
+              ${this.renderSmallActionCard(
+                translateText("main.solo"),
+                this.openSinglePlayerModal,
+                PRIMARY_ACTION,
+              )}
+            </div>
+            ${
+              getGamesPlayed() < TUTORIAL_CARD_MAX_GAMES
+                ? html`<div class="flex-1">
+                    ${this.renderSmallActionCard(
+                      translateText("main.tutorial"),
+                      this.startTutorial,
+                      TUTORIAL_ACTION,
+                    )}
+                  </div>`
+                : nothing
+            }
+          </div>
+          <div
+            class="ow-action-row grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-3"
+          >
             ${this.renderSmallActionCard(
-              translateText("main.solo"),
-              this.openSinglePlayerModal,
-              PRIMARY_ACTION,
+              translateText("main.create"),
+              this.openHostLobby,
+              SECONDARY_ACTION,
+              undefined,
+              true,
+            )}
+            ${this.renderSmallActionCard(
+              translateText("mode_selector.ranked_title"),
+              this.openRankedMenu,
+              SECONDARY_ACTION,
+              undefined,
+              true,
+              // Ranked admits trusted accounts only. A trusted viewer gets the
+              // green open lock; anyone else meets the red locks and the trust
+              // popup inside the ranked modal. Small, so it clears the label on
+              // narrow (mobile) buttons.
+              this.viewerTrusted
+                ? trustLockIcon(true, {
+                    tooltipTitle: translateText(
+                      "mode_selector.ranked_trust_tooltip_title",
+                    ),
+                    position: "top-1 right-1",
+                    small: true,
+                  })
+                : nothing,
+            )}
+            ${this.renderSmallActionCard(
+              translateText("main.join"),
+              this.openJoinLobby,
+              SECONDARY_ACTION,
+              this.hostedLobbyCount(),
+              true,
             )}
           </div>
+
+          <div class="min-w-0 sm:col-start-1 sm:row-start-1">
+            ${
+              ffa?.gameConfig
+                ? this.renderLobbyCard(ffa, getGameModeLabel(ffa.gameConfig))
+                : this.offlineForLobbies()
+                  ? this.renderLobbiesUnavailable()
+                  : this.lobbies === null
+                    ? html`<div
+                        class="flex items-center justify-center h-44 sm:h-full"
+                        role="status"
+                        aria-label=${translateText("common.loading")}
+                      >
+                        <span
+                          class="size-24 rounded-full border-[6px] border-blue-500/30 border-t-blue-500 animate-spin"
+                        ></span>
+                      </div>`
+                    : html`<div
+                        class="h-44 sm:h-full rounded-2xl bg-surface"
+                      ></div>`
+            }
+          </div>
+
+          <!-- Always rendered: the heading is the only way into the lobby browser. -->
+          <section class="ow-lobby-column">
+            ${
+              teams
+                ? html`<div class="min-w-0 sm:min-h-0 ${cardRows.teams}">
+                    ${this.renderLobbyCard(
+                      teams,
+                      getGameModeLabel(teams.gameConfig!),
+                    )}
+                  </div>`
+                : nothing
+            }
+            ${
+              special
+                ? html`<div class="min-w-0 sm:min-h-0 ${cardRows.special}">
+                    ${this.renderLobbyCard(
+                      special,
+                      getGameModeLabel(special.gameConfig!),
+                    )}
+                  </div>`
+                : nothing
+            }
+            ${this.renderUpcomingHeading()}
+          </section>
+
           ${
-            getGamesPlayed() < TUTORIAL_CARD_MAX_GAMES
-              ? html`<div class="flex-1">
-                  ${this.renderSmallActionCard(
-                    translateText("main.tutorial"),
-                    this.startTutorial,
-                    TUTORIAL_ACTION,
-                  )}
-                </div>`
+            this.showTrustRequired
+              ? trustRequiredDialog(
+                  this.viewerSignedIn,
+                  () => (this.showTrustRequired = false),
+                )
               : nothing
           }
         </div>
-        <div
-          class="grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-3"
-        >
-          ${this.renderSmallActionCard(
-            translateText("main.create"),
-            this.openHostLobby,
-            SECONDARY_ACTION,
-            undefined,
-            true,
-          )}
-          ${this.renderSmallActionCard(
-            translateText("mode_selector.ranked_title"),
-            this.openRankedMenu,
-            SECONDARY_ACTION,
-            undefined,
-            true,
-            // Ranked admits trusted accounts only. A trusted viewer gets the
-            // green open lock; anyone else meets the red locks and the trust
-            // popup inside the ranked modal. Small, so it clears the label on
-            // narrow (mobile) buttons.
-            this.viewerTrusted
-              ? trustLockIcon(true, {
-                  tooltipTitle: translateText(
-                    "mode_selector.ranked_trust_tooltip_title",
-                  ),
-                  position: "top-1 right-1",
-                  small: true,
-                })
-              : nothing,
-          )}
-          ${this.renderSmallActionCard(
-            translateText("main.join"),
-            this.openJoinLobby,
-            SECONDARY_ACTION,
-            this.hostedLobbyCount(),
-            true,
-          )}
-        </div>
-
-        <div class="min-w-0 sm:col-start-1 sm:row-start-1">
-          ${
-            ffa?.gameConfig
-              ? this.renderLobbyCard(ffa, getGameModeLabel(ffa.gameConfig))
-              : this.offlineForLobbies()
-                ? this.renderLobbiesUnavailable()
-                : this.lobbies === null
-                  ? html`<div
-                      class="flex items-center justify-center h-44 sm:h-full"
-                      role="status"
-                      aria-label=${translateText("common.loading")}
-                    >
-                      <span
-                        class="size-24 rounded-full border-[6px] border-blue-500/30 border-t-blue-500 animate-spin"
-                      ></span>
-                    </div>`
-                  : html`<div
-                      class="h-44 sm:h-full rounded-2xl bg-surface"
-                    ></div>`
-          }
-        </div>
-
-        <!-- Always rendered: the heading is the only way into the lobby browser. -->
-        <section
-          class="flex flex-col gap-4 sm:compact:gap-3 min-w-0 sm:grid sm:grid-rows-[auto_1fr_1fr] sm:row-start-1 sm:min-h-0 sm:[reading-flow:grid-rows] sm:col-start-2 sm:compact:row-end-3 sm:compact:grid-rows-[auto_minmax(7.5rem,1fr)_minmax(7.5rem,1fr)]"
-        >
-          ${
-            teams
-              ? html`<div class="min-w-0 sm:min-h-0 ${cardRows.teams}">
-                  ${this.renderLobbyCard(
-                    teams,
-                    getGameModeLabel(teams.gameConfig!),
-                  )}
-                </div>`
-              : nothing
-          }
-          ${
-            special
-              ? html`<div class="min-w-0 sm:min-h-0 ${cardRows.special}">
-                  ${this.renderLobbyCard(
-                    special,
-                    getGameModeLabel(special.gameConfig!),
-                  )}
-                </div>`
-              : nothing
-          }
-          ${this.renderUpcomingHeading()}
-        </section>
-
-        ${
-          this.showTrustRequired
-            ? trustRequiredDialog(
-                this.viewerSignedIn,
-                () => (this.showTrustRequired = false),
-              )
-            : nothing
-        }
-      </div>
+      </section>
     `;
   }
 

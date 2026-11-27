@@ -37,6 +37,10 @@ const server = http.createServer(app);
 
 const log = logger.child({ comp: "m" });
 
+// Deduplicate repeated readiness warnings during one continuous startup or
+// degraded period; a recovery resets the latch so a later failure is visible.
+let lastReadinessFailure: string | null = null;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -283,8 +287,8 @@ export async function startMaster() {
       `Restarted worker ${workerId} (New PID: ${newWorker.process.pid})`,
     );
   });
-  const PORT = 3000;
-  server.listen(PORT, () => {
+  const PORT = ServerEnv.httpPort();
+  server.listen(PORT, "0.0.0.0", () => {
     log.info(`Master HTTP server listening on port ${PORT}`);
   });
 
@@ -325,14 +329,44 @@ export async function startMaster() {
 }
 
 app.get("/api/health", (_req, res) => {
-  const ready = lobbyService?.isHealthy() ?? false;
+  const readiness = lobbyService?.healthStatus() ?? null;
+  const ready = readiness?.ready ?? false;
   // instanceId is diagnostics: it tells the machines behind an apex apart.
   const instanceId = ServerEnv.instanceId();
-  if (ready) {
-    res.json({ status: "ok", instanceId });
-  } else {
-    res.status(503).json({ status: "unavailable", instanceId });
+  if (ready && readiness !== null) {
+    if (lastReadinessFailure !== null) {
+      log.info("Readiness restored", { instanceId, ...readiness });
+    }
+    lastReadinessFailure = null;
+    res.json({ status: "ok", instanceId, readiness });
+    return;
   }
+
+  const reason =
+    readiness === null
+      ? "lobby_service_initializing"
+      : !readiness.started
+        ? "workers_initializing"
+        : "insufficient_ready_workers";
+  const failureSignature = [
+    reason,
+    readiness?.readyWorkers ?? 0,
+    readiness?.expectedWorkers ?? 0,
+  ].join(":");
+  if (failureSignature !== lastReadinessFailure) {
+    log.warn("Readiness check failed", {
+      instanceId,
+      reason,
+      readiness,
+    });
+    lastReadinessFailure = failureSignature;
+  }
+  res.status(503).json({
+    status: "unavailable",
+    instanceId,
+    reason,
+    readiness,
+  });
 });
 
 // SPA fallback route

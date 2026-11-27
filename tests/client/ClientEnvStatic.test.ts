@@ -1,6 +1,7 @@
 import { GameEnv } from "@openfront/shared/configuration/Env";
 import { ServerList } from "@openfront/shared/ServerList";
 import { afterEach, beforeEach, describe, expect, it } from "vitest";
+import { getApiBase } from "../../src/client/ApiBase";
 import { ClientEnv, NoServerError } from "../../src/client/ClientEnv";
 
 // Multi-server v2, roadmap item 2 (docs/MultiServer.md): the page becomes a
@@ -73,6 +74,22 @@ describe("a page carrying only environment values", () => {
     expect(ClientEnv.jwtAudience()).toBe("openfront.io");
     expect(ClientEnv.turnstileSiteKey()).toBe("site-key");
     expect(ClientEnv.jwtIssuer()).toBe("https://api.openfront.io");
+  });
+
+  it("uses the configured API gateway without changing the JWT audience", () => {
+    (window as any).BOOTSTRAP_CONFIG = {
+      gameEnv: "prod",
+      turnstileSiteKey: "site-key",
+      jwtAudience: "openfront.io",
+      gitCommit: OWN,
+      apiOrigin: "https://gateway.example",
+    };
+    ClientEnv.reset();
+
+    expect(ClientEnv.apiOrigin()).toBe("https://gateway.example");
+    expect(ClientEnv.jwtIssuer()).toBe("https://gateway.example");
+    expect(getApiBase()).toBe("https://gateway.example");
+    expect(ClientEnv.jwtAudience()).toBe("openfront.io");
   });
 
   it("reports no instance id rather than throwing", () => {

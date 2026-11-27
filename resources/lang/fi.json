@@ -9,7 +9,7 @@
     "close": "Sulje"
   },
   "main": {
-    "title": "OpenFront (ALPHA)",
+    "title": "Open War (ALPHA)",
     "join_discord": "Liity Discordiin!",
     "login_discord": "Kirjaudu sisään Discordilla",
     "checking_login": "Tarkistetaan sisäänkirjautumista...",
@@ -23,7 +23,8 @@
     "advertise": "Mainosta",
     "wiki": "Wiki",
     "privacy_policy": "Tietosuojaseloste",
-    "terms_of_service": "Käyttöehdot"
+    "terms_of_service": "Käyttöehdot",
+    "copyright": "© Open War community edition"
   },
   "news": {
     "see_all_releases": "Katso kaikki julkaisut",
@@ -461,8 +462,8 @@
     "not_enough_money": "Ei tarpeeksi rahaa"
   },
   "win_modal": {
-    "support_openfront": "Tue OpenFrontia!",
-    "territory_pattern": "Osta aluekuvio tukeaksesi OpenFrontia!",
+    "support_openfront": "Tue Open Waria!",
+    "territory_pattern": "Osta aluekuvio tukeaksesi Open Waria!",
     "died": "Sinä kuolit",
     "your_team": "Joukkueesi voitti!",
     "other_team": "{team} joukkue on voittanut!",
@@ -618,8 +619,8 @@
       "cursor": "Kursori",
       "hand": "Käsi",
       "radiation": "Säteily",
-      "openfront_qr": "OpenFront.io:n QR-koodi",
-      "openfront": "OpenFront",
+      "openfront_qr": "Open War:n QR-koodi",
+      "openfront": "Open War",
       "t_rex": "T-Rex",
       "embelem": "Tunnus",
       "contributor": "Avustaja",

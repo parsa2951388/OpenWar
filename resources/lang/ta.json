@@ -23,7 +23,7 @@
     "delete_account_confirm_button": "நிரந்தரமாக நீக்கு",
     "delete_account_confirm_word": "நீக்கு",
     "delete_account_desc": "உங்கள் கணக்கையும் அதன் எல்லா தரவையும் நிரந்தரமாக நீக்கவும்.",
-    "delete_account_failed": "கணக்கை நீக்க முடியவில்லை. உதவிக்கு support@openfront.io என்ற முகவரியைத் தொடர்புகொள்ளவும்.",
+    "delete_account_failed": "கணக்கை நீக்க முடியவில்லை. உதவிக்கு GitHub Issues: github.com/parsa2951388/OpenWar/issues என்ற முகவரியைத் தொடர்புகொள்ளவும்.",
     "delete_account_rate_limited": "தற்போது கணக்கை நீக்க முடியாது. பின்னர் மீண்டும் முயலவும்.",
     "delete_account_scheduled": "உங்கள் கணக்கு 24 மணிநேரத்தில் நீக்கப்படும். உங்கள் முடிவை மாற்றினால், இதை ரத்துசெய்ய உதவிக் குழுவைத் தொடர்புகொள்ளவும்.",
     "delete_account_title": "கணக்கை நீக்கு",
@@ -1421,7 +1421,7 @@
   "main": {
     "account": "கணக்கு",
     "clans": "வீரர் குழுக்கள்",
-    "copyright": "© ஓபன்ஃபிரண்ட்™ மற்றும் பங்களிப்பாளர்கள்",
+    "copyright": "© Open War community edition",
     "create": "ஆட்டக் காத்திருப்பு அறையை உருவாக்கு",
     "discord_avatar_alt": "டிஸ்கார்ட் சுயவிவரப் படம்",
     "github": "கிட்ட்ஹப்",

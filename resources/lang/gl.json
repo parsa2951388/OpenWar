@@ -9,7 +9,7 @@
     "close": "Pechar"
   },
   "main": {
-    "title": "OpenFront (ALFA)",
+    "title": "Open War (ALFA)",
     "join_discord": "Únete ó Discord!",
     "login_discord": "Iniciar sesión con Discord",
     "checking_login": "Comprobando a sesión...",
@@ -23,7 +23,8 @@
     "advertise": "Promoción",
     "wiki": "Wiki",
     "privacy_policy": "Política de privacidade",
-    "terms_of_service": "Termos de servizo"
+    "terms_of_service": "Termos de servizo",
+    "copyright": "© Open War community edition"
   },
   "news": {
     "see_all_releases": "Ver todas as versións",
@@ -580,8 +581,8 @@
       "cursor": "Cursor",
       "hand": "Man",
       "radiation": "Radiación",
-      "openfront_qr": "Código QR de OpenFront.io",
-      "openfront": "OpenFront",
+      "openfront_qr": "Código QR de Open War",
+      "openfront": "Open War",
       "t_rex": "Tiranosauro",
       "embelem": "Emblema",
       "contributor": "Contribuidor",
