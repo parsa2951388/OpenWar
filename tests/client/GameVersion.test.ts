@@ -10,6 +10,12 @@ import {
 
 const SHA = "bf739f86c4e1d2a3b5c6d7e8f90123456789abcd";
 
+describe("shipped release identity", () => {
+  it("uses a real semantic release version instead of the placeholder", () => {
+    expect(version.trim()).toMatch(/^v\\d+\\.\\d+\\.\\d+$/);
+  });
+});
+
 // The rule this exists for: only a TAGGED deploy overwrites version.txt, so on
 // every nightly, staging deploy and Steam depot build the version label read
 // "vx.xx.xx" -- naming no build at all, and it is the one string a player is
