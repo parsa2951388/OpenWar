@@ -18,6 +18,8 @@ import { steamStoreUrl } from "./SteamWishlist";
  * the Steamworks dashboard alongside it. Self-hides inside either app shell
  * (Steam, Android) and on Poki, matching `<steam-wishlist>`.
  */
+const OPEN_WAR_STEAM_PRODUCT_PUBLISHED = false;
+
 @customElement("steam-wishlist-button")
 export class SteamWishlistButton extends LitElement {
   /** UTM campaign identifying the placement, e.g. "homepage". */
@@ -28,7 +30,7 @@ export class SteamWishlistButton extends LitElement {
   }
 
   render() {
-    if (gamePortal.name() === "open-war-steam-disabled") return nothing;
+    if (!OPEN_WAR_STEAM_PRODUCT_PUBLISHED || isDesktopShell() || gamePortal.name() === "poki") return nothing;
 
     return html`
       <a
