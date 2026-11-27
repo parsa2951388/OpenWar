@@ -214,7 +214,10 @@ export class LobbyCoordinatorClient {
     if (this.stopped) return;
     let socket: CoordinatorSocket;
     try {
-      socket = this.connect(this.opts.url, ServerEnv.apiKeyHeaders(this.opts.apiKey));
+      socket = this.connect(
+        this.opts.url,
+        ServerEnv.apiKeyHeaders(this.opts.apiKey),
+      );
     } catch (error) {
       this.opts.log.warn("lobby coordinator: connect failed", { error });
       this.scheduleReconnect(this.nextBackoff());
