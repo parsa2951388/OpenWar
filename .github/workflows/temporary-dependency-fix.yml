@@ -1,0 +1,36 @@
+name: 🔧 Temporary dependency fix candidate
+
+on:
+  pull_request:
+    types: [opened, synchronize, reopened]
+
+permissions:
+  contents: read
+
+jobs:
+  candidate:
+    runs-on: ubuntu-latest
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@v7
+        with:
+          submodules: false
+      - uses: actions/setup-node@v7
+        with:
+          node-version: 24
+      - name: Setup npm
+        run: npm install --global --ignore-scripts npm@12.1.0
+      - run: npm ci --no-audit --no-fund
+      - name: Apply semver-compatible security fixes only
+        run: npm audit fix
+      - name: Verify the resulting audit report
+        run: |
+          npm audit --json > /tmp/audit.json || true
+          node -e 'const r=require("/tmp/audit.json"); console.log("AUDIT_SUMMARY", JSON.stringify(r.metadata?.vulnerabilities ?? {}));'
+      - uses: actions/upload-artifact@v7
+        with:
+          name: openwar-dependency-fix-candidate
+          path: |
+            package.json
+            package-lock.json
+          retention-days: 1
