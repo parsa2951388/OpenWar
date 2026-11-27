@@ -19,7 +19,8 @@ function runRenderStart(
       | "TURNSTILE_SITE_KEY"
       | "GIT_COMMIT"
       | "RENDER_GIT_COMMIT"
-      | "API_ORIGIN",
+      | "API_ORIGIN"
+      | "RENDER",
       string
     >
   > = {},
