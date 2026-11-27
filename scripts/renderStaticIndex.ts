@@ -39,7 +39,9 @@ async function main(): Promise<void> {
   const rendered = await renderHtmlContent(indexPath, { perServer: false });
 
   if (/<%[-=]?/.test(rendered)) {
-    throw new Error("Static index still contains unrendered EJS template tags.");
+    throw new Error(
+      "Static index still contains unrendered EJS template tags.",
+    );
   }
   if (!rendered.includes("window.BOOTSTRAP_CONFIG")) {
     throw new Error("Static index is missing BOOTSTRAP_CONFIG.");
@@ -56,3 +58,4 @@ main().catch((error: unknown) => {
   console.error("Failed to render the Open War static index:", error);
   process.exitCode = 1;
 });
+
