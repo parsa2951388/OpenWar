@@ -191,6 +191,8 @@ export interface ToggleOptionConfig {
 }
 
 export interface GameConfigSettingsData {
+  /** Hides experimental host modifiers and unit-disable controls. */
+  basicMode?: boolean;
   map: {
     selected: GameMapType;
     useRandom: boolean;
@@ -618,15 +620,15 @@ export class GameConfigSettings extends LitElement {
                     </div>`
                   : nothing
               }
-              ${settings.options.toggles.map((toggle) =>
+              ${settings.basicMode ? nothing : settings.options.toggles.map((toggle) =>
                 this.renderOptionToggle(toggle),
               )}
-              ${settings.options.inputCards}
+              ${settings.basicMode ? nothing : settings.options.inputCards}
             </div>
           `,
         )}
         ${
-          settings.hostCheats?.visible
+          !settings.basicMode && settings.hostCheats?.visible
             ? renderSection(
                 HOST_CHEATS_ICON,
                 "text-yellow-400",
@@ -648,7 +650,7 @@ export class GameConfigSettings extends LitElement {
               )
             : nothing
         }
-        ${renderSection(
+        ${settings.basicMode ? nothing : renderSection(
           ENABLES_ICON,
           "text-teal-400",
           "bg-teal-500/20",
