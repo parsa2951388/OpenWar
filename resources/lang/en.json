@@ -43,7 +43,7 @@
     "get_magic_link": "Get Magic Link",
     "google_alt": "Google",
     "google_sign_in_failed": "Google sign-in failed. Please try again.",
-    "google_sign_in_needs_update": "Google sign-in needs a newer version of the app. Update Open War from the Play Store, then try again.",
+    "google_sign_in_needs_update": "Google sign-in needs a newer version of Open War. Reload the latest version and try again.",
     "google_sign_in_no_account": "There's no Google account on this device. Add one in your device settings, then try again.",
     "google_sign_in_unavailable": "Google sign-in isn't available on this device.",
     "identity_token_copied": "Copied",
@@ -313,7 +313,7 @@
       "coastline": "Please let me get a coastline.",
       "fun": "This game is fun!",
       "go": "Let’s go!",
-      "join_discord": "You should join the Open War Discord server!",
+      "join_discord": "Visit the Open War project repository to follow development and report issues.",
       "pr": "When will my PR finally get merged...?",
       "strategy": "Nice strategy!",
       "team_up": "Let’s team up against [P1]!"
@@ -1355,7 +1355,7 @@
     "custom_lobbies": "Private custom lobbies with friends",
     "free_heading": "Playing for free includes",
     "full_game": "The full game: every map and mode, online and single-player",
-    "licence_heading": "Owning Open War on Steam includes",
+    "licence_heading": "Verified Open War access",
     "licence_public_lobbies": "Custom lobbies in the public lobby list",
     "licence_verified_name": "Your verified username",
     "ranked": "Ranked play"
@@ -2043,7 +2043,7 @@
   "main": {
     "account": "Account",
     "clans": "Clans",
-    "copyright": "© Open War™ and Contributors",
+    "copyright": "Open War · Community strategy project",
     "create": "Create Lobby",
     "discord_avatar_alt": "Discord profile avatar",
     "github": "GitHub",
@@ -2066,7 +2066,7 @@
     "solo": "Solo",
     "store": "Store",
     "terms_of_service": "Terms of Service",
-    "title": "Open War (ALPHA)",
+    "title": "Open War — Global Strategy Command",
     "troubleshooting": "Troubleshooting",
     "tutorial": "Tutorial",
     "user_avatar_alt": "{username}'s avatar",
@@ -2917,7 +2917,7 @@
     "neutral": "Neutral"
   },
   "renewal_pushed": {
-    "body_base": "You already have {tier}, so your copy of Open War gives you a free month instead.",
+    "body_base": "You already have {tier}, so your Open War access includes a free month instead.",
     "body_dlc": "You already have {tier}, so the Deluxe Edition gives you a free month instead.",
     "body_gift": "The free days you had left have been added to your subscription.",
     "heading": "Your next payment has moved",
@@ -3193,7 +3193,7 @@
   },
   "steam_awards": {
     "cta": "Nominate",
-    "desc": "Nominate Open War for the Just 5 More Minutes award. It takes ten seconds. Nominations close 30 November.",
+    "desc": "Steam award promotions are not enabled for this Open War edition.",
     "title": "Steam Awards"
   },
   "steam_grant": {
@@ -3214,7 +3214,7 @@
     "launched": "Opening this lobby in the Steam app. If nothing happens, make sure Steam is running.",
     "open_in_steam": "Open in Steam",
     "play_in_browser": "Play in browser",
-    "prompt": "You have Open War on Steam. Where do you want to join this lobby?",
+    "prompt": "Choose where to join this Open War lobby.",
     "remember": "Remember my choice",
     "title": "Join Lobby",
     "try_again": "Try again"
@@ -3253,16 +3253,16 @@
     "title": "Link Steam Account"
   },
   "steam_notices": {
-    "conversion_body": "You own Open War on Steam, so we've moved you to Steam Plus.",
+    "conversion_body": "Your Open War account access has been updated.",
     "conversion_from_vanguard": "You now get 550 plutonium a month instead of 220, still $4.99.",
     "conversion_from_warlord": "You get the same 550 plutonium a month, and your price drops from $9.99 to $4.99.",
     "conversion_heading": "You're on Steam Plus",
-    "conversion_licence": "Custom lobbies and your verified name now come with your copy of Open War, so you keep them whatever you subscribe to.",
+    "conversion_licence": "Custom lobbies and your verified name are available through your Open War account.",
     "licence_intro_body": "Custom lobbies and your verified name are now part of the game you bought. No subscription needed.",
     "licence_intro_grant": "Your plutonium bonus runs until {date}. After that you keep everything you can do, and only the daily plutonium stops.",
-    "licence_intro_heading": "Included with your copy of Open War",
+    "licence_intro_heading": "Included with your Open War access",
     "licence_intro_plus": "Steam Plus keeps the plutonium coming: 10 a day and 250 a month for $4.99.",
-    "plus_welcome_body": "Your copy of Open War includes a month of Steam Plus: 10 plutonium a day and 250 a month.",
+    "plus_welcome_body": "Your Open War account benefits are shown in your account settings.",
     "plus_welcome_heading": "A month of Steam Plus",
     "plus_welcome_until": "Your Steam Plus month runs until {date}."
   },
@@ -3272,7 +3272,7 @@
   },
   "steam_wishlist": {
     "buy_cta": "Buy on Steam",
-    "buy_on_steam": "Buy Open War on Steam"
+    "buy_on_steam": "Steam purchasing is not available for this Open War edition."
   },
   "store": {
     "already_owned": "You already own this item. Nothing was charged.",
@@ -3393,7 +3393,7 @@
     "sale_was": "Was",
     "see_all": "See all",
     "steam_browser_approval": "Steam has opened the purchase in your browser. Approve it there, then come back here. It will show up once Steam confirms it.",
-    "steam_licence_required": "This subscription is only for players who own Open War on Steam.",
+    "steam_licence_required": "This subscription requires verified Open War access.",
     "steam_overlay_cancelled": "Purchase cancelled. You haven't been charged.",
     "steam_overlay_waiting": "Approve the purchase in the Steam overlay to continue.",
     "subscribe_heading": "Start Subscription",
@@ -3403,7 +3403,7 @@
     "subscription_purchase_success": "Subscription activated!",
     "subscriptions": "Subscriptions",
     "switch_button": "Switch",
-    "tier_change_steam_needs_desktop": "Your subscription is billed through Steam. Change it from the Open War app on Steam, or manage it in your Steam account settings.",
+    "tier_change_steam_needs_desktop": "Manage this subscription from the desktop app or your Open War account settings.",
     "tier_change_unavailable_steam": "To switch tiers on Steam, cancel your subscription in your Steam account settings and subscribe to the new tier after your current month ends.",
     "title": "Store",
     "top_up_leaves_game": "This leaves the game. We'll keep {item} ready for you.",
@@ -3827,14 +3827,14 @@
   },
   "win_modal": {
     "died": "You died",
-    "discord_description": "Connect with players, discover new features, and win prizes!",
+    "discord_description": "Read project updates, follow releases, and report issues in the source repository.",
     "edit_card": "Edit my card",
     "eliminated_by": "Eliminated by",
     "exit": "Exit Game",
     "get_look_players": "{n, plural, one {# player} other {# players}}",
     "get_the_look": "Get the look",
-    "join_discord": "Join Our Discord Community!",
-    "join_server": "Join Server",
+    "join_discord": "Follow Open War development",
+    "join_server": "OPEN PROJECT",
     "keep": "Keep Playing",
     "loadout_type_cardBackground": "Background",
     "loadout_type_cardTracker": "Tracker",
