@@ -153,6 +153,24 @@ describe("ServerEnv.jwtIssuer", () => {
     vi.stubEnv("DOMAIN", "openfront.io");
     expect(ServerEnv.jwtIssuer()).toBe("https://api.openfront.io");
   });
+
+  test("uses API_ORIGIN without changing the JWT audience", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv(
+      "API_ORIGIN",
+      "https://openwar-api-gateway.parsaoj.workers.dev/",
+    );
+    expect(ServerEnv.jwtIssuer()).toBe(
+      "https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+    expect(ServerEnv.jwtAudience()).toBe("openfront.io");
+  });
+
+  test("rejects an insecure non-local API_ORIGIN", () => {
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("API_ORIGIN", "http://gateway.example.com");
+    expect(() => ServerEnv.jwtIssuer()).toThrow(/API_ORIGIN/);
+  });
 });
 
 describe("ServerEnv.allowedFlares", () => {
