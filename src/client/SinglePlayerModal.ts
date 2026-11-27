@@ -14,7 +14,7 @@ import { UserMeResponse } from "@openfront/shared/ApiSchemas";
 import { assetUrl } from "@openfront/shared/AssetUrls";
 import { generateID } from "@openfront/shared/SharedUtil";
 import { PlayerCosmetics } from "@openfront/shared/WireSchemas";
-import { html, TemplateResult } from "lit";
+import { html, nothing, TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { showToast, translateText } from "../client/Utils";
 import { responseHasLinkedIdentity } from "./AccountIdentity";
@@ -375,14 +375,16 @@ export class SinglePlayerModal extends BaseModal {
       onBack: () => this.close(),
       ariaLabel: translateText("common.back"),
       rightContent: html`<div class="flex flex-wrap items-center gap-2">
-          <lobby-preset-controls
-            .presets=${this.lobbyPresets}
-            .selectedName=${this.selectedPresetName}
-            @preset-select=${this.handlePresetSelect}
-            @preset-load=${this.handlePresetLoad}
-            @preset-save=${this.handlePresetSave}
-            @preset-delete=${this.handlePresetDelete}
-          ></lobby-preset-controls>
+          ${OPEN_WAR_FEATURES.lobbyPresets ? html`
+            <lobby-preset-controls
+              .presets=${this.lobbyPresets}
+              .selectedName=${this.selectedPresetName}
+              @preset-select=${this.handlePresetSelect}
+              @preset-load=${this.handlePresetLoad}
+              @preset-save=${this.handlePresetSave}
+              @preset-delete=${this.handlePresetDelete}
+            ></lobby-preset-controls>
+          ` : nothing}
           ${
             signedIn
               ? html`<button
