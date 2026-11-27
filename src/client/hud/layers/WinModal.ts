@@ -69,7 +69,6 @@ import { isDesktopShell } from "../../DesktopShell";
 import { COSMETICS_CHANGED } from "../../Experiments";
 import "../../components/ProfileShare";
 import "../../components/PurchaseButton";
-import "../../components/SteamWishlist";
 import { gamePortal } from "../../GamePortal";
 import { lobbyPublicGameType } from "../../LobbyPublicGameType";
 import { lobbyLevelBadge } from "../../LobbyRosterLevels";
@@ -746,7 +745,7 @@ export class WinModal extends LitElement implements Controller {
       // The Steam desktop build has nothing to wishlist, and the Android app
       // must not send the player to another store — fall through to the
       // other promos so the box is never empty.
-      canWishlist: !isDesktopShell(),
+      canWishlist: false,
       rand: this.rand,
       hasLooks: looks.length > 0,
     });
@@ -759,7 +758,7 @@ export class WinModal extends LitElement implements Controller {
 
     switch (this.promo()) {
       case "steam":
-        return this.steamWishlist();
+        return nothing;
       case "discord":
         return this.discordDisplay();
       case "tutorial":
@@ -954,14 +953,14 @@ export class WinModal extends LitElement implements Controller {
   discordDisplay(): TemplateResult {
     return html`
       <div
-        data-win-promo="discord"
+        data-win-promo="open-war-community"
         class="flex flex-wrap items-center gap-3 rounded-lg bg-white/6 p-3"
       >
         <span
-          class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#5865F2]"
+          class="grid size-10 shrink-0 place-items-center rounded-xl bg-[#123344] ring-1 ring-[#6de3da]/30"
         >
           <img
-            src=${assetUrl("images/DiscordLogo.svg")}
+            src=${assetUrl("images/Favicon.svg")}
             alt=""
             width="22"
             height="22"
@@ -976,7 +975,7 @@ export class WinModal extends LitElement implements Controller {
           </p>
         </div>
         <a
-          href="https://discord.com/invite/openfront"
+          href="https://github.com/parsa2951388/OpenWar"
           target="_blank"
           rel="noopener noreferrer"
           class="inline-flex min-h-10 shrink-0 items-center justify-center rounded-lg bg-[#5865F2] px-4 text-sm font-bold uppercase tracking-widest text-white no-underline transition-colors hover:bg-[#4752C4] focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-aquarius max-sm:basis-full"
