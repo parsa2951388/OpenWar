@@ -428,9 +428,9 @@ describe("grid placement", () => {
       team: [publicLobby("t")],
       special: [publicLobby("s")],
     });
-    const rows = Array.from(
-      section().querySelectorAll("div.sm\\:min-h-0"),
-    ).map((c) => c.className);
+    const rows = Array.from(section().querySelectorAll("div.sm\\:min-h-0")).map(
+      (c) => c.className,
+    );
     expect(rows.some((c) => c.includes("sm:row-start-3"))).toBe(true);
     expect(rows.some((c) => c.includes("sm:row-span-2"))).toBe(false);
   });
