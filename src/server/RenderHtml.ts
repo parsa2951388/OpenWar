@@ -104,12 +104,12 @@ export async function renderHtmlContent(
     manifestHref: buildAssetUrl("manifest.json", assetManifest, cdnBase),
     faviconHref: buildAssetUrl("images/Favicon.svg", assetManifest, cdnBase),
     appleTouchIconHref: buildAssetUrl(
-      "icons/icon512_maskable.png",
+      "icons/open-war-mark.svg",
       assetManifest,
       cdnBase,
     ),
     gameplayScreenshotUrl: buildAssetUrl(
-      "images/KeyArt.jpg",
+      "images/OpenWarSocialCard.svg",
       assetManifest,
       cdnBase,
     ),
@@ -119,11 +119,11 @@ export async function renderHtmlContent(
       cdnBase,
     ),
     desktopLogoImageUrl: buildAssetUrl(
-      "images/OpenFront.png",
+      "images/OpenWarLogo.svg",
       assetManifest,
       cdnBase,
     ),
-    mobileLogoImageUrl: buildAssetUrl("images/OF.png", assetManifest, cdnBase),
+    mobileLogoImageUrl: buildAssetUrl("images/OpenWarLogo.svg", assetManifest, cdnBase),
   });
 }
 
