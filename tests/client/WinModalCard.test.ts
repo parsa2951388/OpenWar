@@ -369,9 +369,9 @@ describe("WinModal Get the look block", () => {
     block(modal)!
       .looks.find((l) => l.name === name)!
       .items.map((i) => i.item.name);
-  // Today's Discord promo (rand 0.4), as a stand-in for any of them.
+  // The Open War project promo (rand 0.4), as a stand-in for the legacy promo slot.
   const promo = (modal: HTMLElement) =>
-    modal.textContent!.includes("win_modal.join_discord");
+    modal.querySelector('[data-win-promo="patterns"]') !== null;
 
   beforeEach(() => {
     localStorage.setItem("gamesPlayed", "10");
@@ -399,7 +399,7 @@ describe("WinModal Get the look block", () => {
 
   it("takes the promo slot from every other promo", async () => {
     saveLook("g1", look("a", "Ada", [bg("bg_a")]));
-    // rand 0.1 would be Steam, 0.4 Discord; the first games the tutorial.
+    // Promo selection still covers the former Steam, community, and tutorial slots.
     for (const state of [{ rand: 0.1 }, { rand: 0.4 }, { rand: 0.9 }]) {
       const modal = await renderModal({
         ...base,
@@ -581,7 +581,7 @@ describe("WinModal Get the look block", () => {
       loadoutPending: true,
       rand: 0.4,
     })) as HTMLElement & Record<string, unknown>;
-    // Neither the block nor the Discord promo it would replace.
+    // Neither the block nor the Open War community promo it would replace.
     expect(block(modal)).toBeNull();
     expect(promo(modal)).toBe(false);
     modal.loadout = [KILLER_ITEM];
