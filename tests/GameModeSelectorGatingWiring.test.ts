@@ -389,7 +389,7 @@ describe("the upcoming heading (the route to the lobby browser)", () => {
  * with only one of its two cards.
  */
 describe("grid placement", () => {
-  const section = () => selector.querySelector("section")!;
+  const section = () => selector.querySelector(".ow-lobby-column")!;
   const heroSlot = () =>
     selector.querySelector(".ow-operations > .ow-grid > div.sm\\:col-start-1");
 
