@@ -81,8 +81,6 @@ describe("Render start command", () => {
     const result = runRenderStart({ GAME_ENV: "dev" });
 
     expect(result.status).toBe(0);
-    expect(result.stdout.trim()).toBe(
-      "dev|1x00000000000000000000AA|OPENWAR",
-    );
+    expect(result.stdout.trim()).toBe("dev|1x00000000000000000000AA|OPENWAR");
   });
 });
