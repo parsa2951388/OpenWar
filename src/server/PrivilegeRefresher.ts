@@ -8,6 +8,7 @@ import {
   PrivilegeChecker,
   PrivilegeCheckerImpl,
 } from "./Privilege";
+import { ServerEnv } from "./ServerEnv";
 
 // Refreshes the privilege checker every 3 minutes.
 // WARNING: This fails open if cosmetics.json is not available.
@@ -44,9 +45,10 @@ export class PrivilegeRefresher {
     try {
       const fetchWithTimeout = async (url: string) => {
         try {
+          const headers = ServerEnv.apiKeyHeaders(this.apiKey);
           return await fetch(url, {
             signal: AbortSignal.timeout(5000),
-            headers: { "x-api-key": this.apiKey },
+            headers,
           });
         } catch (error) {
           this.log.warn(`Failed to fetch ${url}: ${error}`);

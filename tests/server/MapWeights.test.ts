@@ -12,6 +12,7 @@ function jsonResponse(body: unknown, status = 200) {
 describe("fetchMapWeights", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   it("returns the weights, sending the API key", async () => {
@@ -20,12 +21,13 @@ describe("fetchMapWeights", () => {
       Europe: { teamWeight: 0 },
     };
     const fetchMock = vi.fn().mockResolvedValue(jsonResponse({ maps }));
+    vi.stubEnv("API_KEY", "test-api-key");
     vi.stubGlobal("fetch", fetchMock);
 
     expect(await fetchMapWeights()).toEqual(maps);
     const [url, init] = fetchMock.mock.calls[0];
     expect(url).toContain("/map_weights");
-    expect(init.headers["x-api-key"]).toBeDefined();
+    expect(init.headers["x-api-key"]).toBe("test-api-key");
   });
 
   it("ignores the legacy frequency fields", async () => {

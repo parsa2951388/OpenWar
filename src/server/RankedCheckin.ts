@@ -180,7 +180,7 @@ export async function rankedCheckinPass(
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        "x-api-key": ServerEnv.apiKey(),
+        ...ServerEnv.apiKeyHeaders(),
       },
       body: JSON.stringify({
         id: workerId,

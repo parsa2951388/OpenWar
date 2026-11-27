@@ -157,7 +157,7 @@ export class ServerEnv {
     // A redirect would forward x-api-key to the new origin; the JWKS
     // endpoint never redirects, so refuse to follow one.
     const response = await fetch(jwksUrl, {
-      headers: { "x-api-key": ServerEnv.apiKey() },
+      headers: ServerEnv.apiKeyHeaders(),
       redirect: "error",
     });
     if (!response.ok) {
@@ -374,6 +374,12 @@ export class ServerEnv {
   }
   static apiKey(): string {
     return process.env.API_KEY ?? "";
+  }
+  static apiKeyHeaders(
+    apiKey: string = ServerEnv.apiKey(),
+  ): Record<string, string> {
+    const key = apiKey.trim();
+    return key ? { "x-api-key": key } : {};
   }
   // Long-lived shared secret for the trusted admin bot HTTP API.
   // Undefined when unset, which disables the admin bot API entirely.
