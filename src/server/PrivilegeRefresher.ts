@@ -45,9 +45,10 @@ export class PrivilegeRefresher {
     try {
       const fetchWithTimeout = async (url: string) => {
         try {
+          const headers = ServerEnv.apiKeyHeaders(this.apiKey);
           return await fetch(url, {
             signal: AbortSignal.timeout(5000),
-            headers: ServerEnv.apiKeyHeaders(this.apiKey),
+            headers,
           });
         } catch (error) {
           this.log.warn(`Failed to fetch ${url}: ${error}`);
