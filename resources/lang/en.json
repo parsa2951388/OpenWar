@@ -2067,9 +2067,9 @@
     "title": "Open War — Global Strategy Command",
     "troubleshooting": "Troubleshooting",
     "tutorial": "Tutorial",
-    "user_avatar_alt": "{username}'s avatar",
+    "upstream_privacy": "Upstream Privacy",
     "upstream_terms": "Upstream Terms",
-    "upstream_privacy": "Upstream Privacy"
+    "user_avatar_alt": "{username}'s avatar"
   },
   "map": {
     "achiran": "Achiran",
@@ -2505,6 +2505,21 @@
     "step_counter": "Step {current} of {total}",
     "won_body": "You know the basics. Now try a real game: a guide will show you buildings, alliances, nukes and more.",
     "won_title": "You won!"
+  },
+  "open_war": {
+    "choose_operation": "Choose your operation",
+    "choose_theatre": "CHOOSE YOUR THEATRE",
+    "commander_callsign": "COMMANDER CALLSIGN",
+    "deploy_strategy": "DEPLOY YOUR STRATEGY",
+    "deployment_board": "DEPLOYMENT BOARD",
+    "global_conflict_network": "GLOBAL CONFLICT NETWORK",
+    "hero_description": "Build your nation. Coordinate your forces. Turn every move into territory.",
+    "hero_eyebrow": "STRATEGIC OPERATIONS",
+    "hero_title": "TAKE THE FRONTLINE.",
+    "hero_title_focus": "FRONTLINE.",
+    "hero_title_prefix": "TAKE THE",
+    "ready_for_deployment": "READY FOR DEPLOYMENT",
+    "theatre_status": "THEATRE STATUS"
   },
   "overtime": {
     "first_place": "1st: {name} ({pct}%)",
@@ -3862,20 +3877,5 @@
     "you_won": "You Won!",
     "your_team": "Your team won!",
     "youtube_tutorial": "Need some help?"
-  },
-  "open_war": {
-    "hero_eyebrow": "STRATEGIC OPERATIONS",
-    "hero_title": "TAKE THE FRONTLINE.",
-    "hero_title_prefix": "TAKE THE",
-    "hero_title_focus": "FRONTLINE.",
-    "hero_description": "Build your nation. Coordinate your forces. Turn every move into territory.",
-    "choose_theatre": "CHOOSE YOUR THEATRE",
-    "deploy_strategy": "DEPLOY YOUR STRATEGY",
-    "theatre_status": "THEATRE STATUS",
-    "ready_for_deployment": "READY FOR DEPLOYMENT",
-    "global_conflict_network": "GLOBAL CONFLICT NETWORK",
-    "commander_callsign": "COMMANDER CALLSIGN",
-    "deployment_board": "DEPLOYMENT BOARD",
-    "choose_operation": "Choose your operation"
   }
-}
+}\n
