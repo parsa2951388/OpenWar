@@ -121,9 +121,7 @@ export class ServerEnv {
     try {
       url = new URL(configured);
     } catch {
-      throw new Error(
-        "Invalid API_ORIGIN: expected an absolute HTTPS origin",
-      );
+      throw new Error("Invalid API_ORIGIN: expected an absolute HTTPS origin");
     }
 
     const localHttp =
