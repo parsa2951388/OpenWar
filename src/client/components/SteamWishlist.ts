@@ -38,10 +38,7 @@ export function steamStoreUrl(campaign: string): string {
   return steamUrl("app", campaign);
 }
 
-function steamUrl(
-  kind: "widget" | "app",
-  campaign: string,
-): string {
+function steamUrl(kind: "widget" | "app", campaign: string): string {
   const appId = OPEN_WAR_STEAM_APP_ID;
   if (appId === null) {
     throw new Error("Open War does not have a published Steam product yet.");
