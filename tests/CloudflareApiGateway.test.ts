@@ -1,9 +1,9 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import gateway, {
-  routeGroup,
-} from "../infra/cloudflare/openwar-api-gateway.js";
+import gateway, { routeGroup } from "../infra/cloudflare/openwar-api-gateway.js";
 
 const allowedOrigin = "https://open-war-live.onrender.com";
+const context = { waitUntil: () => undefined };
+const env = { ALLOWED_ORIGINS: allowedOrigin };
 
 afterEach(() => {
   vi.unstubAllGlobals();
@@ -41,6 +41,19 @@ describe("Open War API gateway route allowlist", () => {
     expect(routeGroup(pathname)).toBeNull();
   });
 
+  it.each([
+    ["/users/@me", "GET", "user-profile"],
+    ["/users/@me", "DELETE", "user-profile"],
+    ["/users/@me/username", "PUT", "user-profile"],
+    ["/users/@me/creator", "DELETE", "user-profile"],
+    ["/users/@me/tribe_names/123/boosts", "POST", "user-profile"],
+    ["/public/player/123/games", "GET", "public-player"],
+    ["/leaderboard/ranked/ffa/diamond", "GET", "leaderboard"],
+    ["/payments/google/finalize", "POST", "payments"],
+  ])("maps client API endpoint %s to group %s", (pathname, _method, group) => {
+    expect(routeGroup(pathname)).toBe(group);
+  });
+
   it("forwards the Google OAuth redirect and preserves its Location header", async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(null, {
@@ -54,11 +67,7 @@ describe("Open War API gateway route allowlist", () => {
       "https://openwar-api-gateway.parsaoj.workers.dev/auth/login/google?redirect_uri=https%3A%2F%2Fopen-war-live.onrender.com",
       { headers: { Origin: allowedOrigin } },
     );
-    const response = await gateway.fetch(
-      request,
-      { ALLOWED_ORIGINS: allowedOrigin },
-      { waitUntil: () => undefined },
-    );
+    const response = await gateway.fetch(request, env, context);
 
     expect(fetchMock).toHaveBeenCalledTimes(1);
     expect(fetchMock.mock.calls[0][0].url).toBe(
@@ -82,13 +91,33 @@ describe("Open War API gateway route allowlist", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const response = await gateway.fetch(
-      new Request("https://openwar-api-gateway.parsaoj.workers.dev/auth/admin"),
-      { ALLOWED_ORIGINS: allowedOrigin },
-      { waitUntil: () => undefined },
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/auth/admin",
+      ),
+      env,
+      context,
     );
 
     expect(response.status).toBe(404);
     expect(await response.json()).toEqual({ error: "route_not_found" });
+    expect(fetchMock).not.toHaveBeenCalled();
+  });
+
+  it("rejects methods that are not explicitly allowed for a route", async () => {
+    const fetchMock = vi.fn();
+    vi.stubGlobal("fetch", fetchMock);
+
+    const response = await gateway.fetch(
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/auth/login/google",
+        { method: "POST" },
+      ),
+      env,
+      context,
+    );
+
+    expect(response.status).toBe(405);
+    expect(await response.json()).toEqual({ error: "method_not_allowed" });
     expect(fetchMock).not.toHaveBeenCalled();
   });
 
@@ -101,8 +130,8 @@ describe("Open War API gateway route allowlist", () => {
         "https://openwar-api-gateway.parsaoj.workers.dev/auth/login/google",
         { headers: { Origin: "https://attacker.example" } },
       ),
-      { ALLOWED_ORIGINS: allowedOrigin },
-      { waitUntil: () => undefined },
+      env,
+      context,
     );
 
     expect(response.status).toBe(403);
