@@ -37,6 +37,10 @@ const server = http.createServer(app);
 
 const log = logger.child({ comp: "m" });
 
+// Deduplicate repeated readiness warnings during one continuous startup or
+// degraded period; a recovery resets the latch so a later failure is visible.
+let lastReadinessFailure: string | null = null;
+
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
@@ -330,6 +334,10 @@ app.get("/api/health", (_req, res) => {
   // instanceId is diagnostics: it tells the machines behind an apex apart.
   const instanceId = ServerEnv.instanceId();
   if (ready && readiness !== null) {
+    if (lastReadinessFailure !== null) {
+      log.info("Readiness restored", { instanceId, ...readiness });
+    }
+    lastReadinessFailure = null;
     res.json({ status: "ok", instanceId, readiness });
     return;
   }
@@ -340,11 +348,19 @@ app.get("/api/health", (_req, res) => {
       : !readiness.started
         ? "workers_initializing"
         : "insufficient_ready_workers";
-  log.warn("Readiness check failed", {
-    instanceId,
+  const failureSignature = [
     reason,
-    ...(readiness ?? {}),
-  });
+    readiness?.readyWorkers ?? 0,
+    readiness?.expectedWorkers ?? 0,
+  ].join(":");
+  if (failureSignature !== lastReadinessFailure) {
+    log.warn("Readiness check failed", {
+      instanceId,
+      reason,
+      ...(readiness ?? {}),
+    });
+    lastReadinessFailure = failureSignature;
+  }
   res.status(503).json({
     status: "unavailable",
     instanceId,
