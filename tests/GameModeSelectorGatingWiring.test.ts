@@ -398,8 +398,10 @@ describe("grid placement", () => {
     const spinner = heroSlot()!.querySelector('div[role="status"]');
     expect(spinner).not.toBeNull();
     expect(spinner!.className).toContain("h-44 sm:h-full");
-    expect(section().className).toContain("sm:col-start-2");
-    expect(section().className).not.toContain("sm:col-span-2");
+    expect(section().classList.contains("ow-lobby-column")).toBe(true);
+    expect(
+      selector.querySelector(".ow-operations > .ow-grid"),
+    ).not.toBeNull();
   });
 
   it("renders a static placeholder without role=status when loaded without an FFA lobby", async () => {
@@ -409,8 +411,10 @@ describe("grid placement", () => {
     const placeholder = heroSlot()!.querySelector("div.rounded-2xl.bg-surface");
     expect(placeholder).not.toBeNull();
     expect(placeholder!.className).toContain("h-44 sm:h-full");
-    expect(section().className).toContain("sm:col-start-2");
-    expect(section().className).not.toContain("sm:col-span-2");
+    expect(section().classList.contains("ow-lobby-column")).toBe(true);
+    expect(
+      selector.querySelector(".ow-operations > .ow-grid"),
+    ).not.toBeNull();
   });
 
   it("lets a lone card take both card rows", async () => {
