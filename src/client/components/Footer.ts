@@ -74,7 +74,7 @@ export class Footer extends LitElement {
               : nothing
           }
           <div
-            class="text-xs mt-1 lg:mt-2 flex items-center justify-center gap-4 px-4"
+            class="text-xs mt-1 lg:mt-2 flex flex-wrap items-center justify-center gap-x-4 gap-y-2 px-4"
           >
             <a
               href="/terms-of-service.html"
