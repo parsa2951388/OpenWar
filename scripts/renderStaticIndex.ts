@@ -58,4 +58,3 @@ main().catch((error: unknown) => {
   console.error("Failed to render the Open War static index:", error);
   process.exitCode = 1;
 });
-
