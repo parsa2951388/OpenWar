@@ -6,6 +6,7 @@
  */
 
 import type { GameRecord } from "@openfront/shared/WireSchemas";
+import type { PlayerStats } from "../../../src/client/hud/layers/PlayerStats";
 import type { SettingsModal } from "../../../src/client/hud/layers/SettingsModal";
 import { MapRenderer } from "../../../src/client/render/gl";
 import type {
@@ -80,12 +81,14 @@ function viewer() {
     unverifiedNotice: boolean;
     classicFallback: boolean;
     growing: boolean;
+    partial: boolean;
     gameLength: number | null;
     playback: FakePlayback | null;
     applying: Promise<void>;
     start(source: unknown): Promise<void>;
     open(): Promise<void>;
     reportError(err: unknown, inReplay?: boolean): void;
+    exportReplay(format: string): Promise<void>;
     view: unknown;
     disconnectedCallback(): void;
   };
@@ -295,10 +298,51 @@ test("a desync while playing keeps what was processed watchable", async () => {
   expect(v.status).toBe("ready");
   expect(v.stoppedEarly).toBe("replay_viewer.unavailable_desync");
   expect(v.growing).toBe(false);
+  expect(v.partial).toBe(true);
   expect(playback.live).toBe(false);
   expect(playback.pause).not.toHaveBeenCalled();
   // A replay that isn't whole isn't kept.
   expect(replayStore.put).not.toHaveBeenCalled();
+});
+
+test("blocks export while growing or partial, persisting across banner dismissal", async () => {
+  const messages: { message: string; color: string; duration: number }[] = [];
+  const listener = (e: Event) =>
+    messages.push(
+      (e as CustomEvent<{ message: string; color: string; duration: number }>)
+        .detail,
+    );
+  window.addEventListener("show-message", listener);
+  try {
+    const { v, handlers } = await processing();
+    handlers.onAppend(FIRST);
+    await v.applying;
+    expect(v.growing).toBe(true);
+    expect(v.partial).toBe(false);
+
+    // Export while growing is blocked
+    await v.exportReplay("json");
+    expect(messages).toHaveLength(1);
+    expect(messages[0].color).toBe("red");
+    expect(messages[0].message).toBe("replay_viewer.export_incomplete");
+
+    // Desync occurs: processing stops early
+    handlers.onError("diverged at turn 3000", true);
+    await v.applying;
+    expect(v.growing).toBe(false);
+    expect(v.partial).toBe(true);
+
+    // Dismiss banner: stoppedEarly is cleared, but partial stays true
+    v.stoppedEarly = "";
+
+    // Export after banner dismissal is still blocked
+    await v.exportReplay("json");
+    expect(messages).toHaveLength(2);
+    expect(messages[1].color).toBe("red");
+    expect(messages[1].message).toBe("replay_viewer.export_incomplete");
+  } finally {
+    window.removeEventListener("show-message", listener);
+  }
 });
 
 test("a renderer failure stops processing and ignores later appends", async () => {
@@ -359,6 +403,46 @@ test("the HUD elements are in the page while the replay loads", async () => {
   await started;
   element.remove();
   expect(found).toEqual(["events-display", "player-info-overlay"]);
+});
+
+test("a seek tells the leaderboard, a frame played on does not", () => {
+  const element = new ReplayViewer();
+  const stats = document.createElement("player-stats") as PlayerStats;
+  element.appendChild(stats);
+  const seeked = vi.spyOn(stats, "seeked");
+  type OnFrame = (fd: unknown, seeked: boolean, source: unknown) => void;
+  const playback: { header: { mapWidth: number }; onFrame?: OnFrame } = {
+    header: { mapWidth: 1 },
+  };
+  // A renderer that takes any upload.
+  const view = new Proxy({}, { get: () => () => {} });
+  (
+    element as unknown as {
+      bindPlayback(...args: unknown[]): void;
+    }
+  ).bindPlayback(
+    playback,
+    view,
+    { apply: () => [] },
+    { seek: () => {}, advance: () => {} },
+    { update: () => {} },
+  );
+  const frame = (tick: number) => ({
+    tick,
+    changedTiles: [],
+    trailDirtyRowMax: -1,
+    events: { deadUnits: [], conquestEvents: [], bonusEvents: [] },
+    names: new Map(),
+    players: new Map(),
+    playerStatus: new Map(),
+  });
+
+  playback.onFrame!(frame(600), false, {});
+  expect(seeked).not.toHaveBeenCalled();
+
+  // Dragged ten minutes on.
+  playback.onFrame!(frame(6600), true, {});
+  expect(seeked).toHaveBeenCalledOnce();
 });
 
 test("playback keys do nothing while the settings menu is open", () => {
@@ -458,4 +542,87 @@ test("playback keys do nothing while the game settings are open, or in their sli
   } finally {
     gameSettings.remove();
   }
+});
+
+test("Escape key aborts active export and prevents default", () => {
+  const element = new ReplayViewer();
+  const v = element as unknown as {
+    exporting: boolean;
+    exportAbort: AbortController | null;
+    cancelExport(): void;
+    onKey(e: KeyboardEvent): void;
+  };
+  v.exporting = true;
+  const abortController = new AbortController();
+  v.exportAbort = abortController;
+
+  const escEvent = new KeyboardEvent("keydown", {
+    key: "Escape",
+    cancelable: true,
+  });
+  v.onKey(escEvent);
+
+  expect(escEvent.defaultPrevented).toBe(true);
+  expect(abortController.signal.aborted).toBe(true);
+  expect(v.exportAbort).toBeNull();
+});
+
+test("Escape key does not prevent default when not exporting", () => {
+  const element = new ReplayViewer();
+  const v = element as unknown as {
+    status: string;
+    playback: unknown;
+    exporting: boolean;
+    onKey(e: KeyboardEvent): void;
+  };
+  v.status = "ready";
+  v.playback = { playing: false, frame: 10 };
+  v.exporting = false;
+
+  const escEvent = new KeyboardEvent("keydown", {
+    key: "Escape",
+    cancelable: true,
+  });
+  v.onKey(escEvent);
+
+  expect(escEvent.defaultPrevented).toBe(false);
+});
+
+test("Escape key does not abort export while settings menu is open", () => {
+  const element = new ReplayViewer();
+  const v = element as unknown as {
+    exporting: boolean;
+    exportAbort: AbortController | null;
+    cancelExport(): void;
+    onKey(e: KeyboardEvent): void;
+  };
+  v.exporting = true;
+  const abortController = new AbortController();
+  v.exportAbort = abortController;
+
+  const menu = document.createElement("settings-modal") as SettingsModal;
+  element.appendChild(menu);
+  menu.openModal();
+
+  const escEvent = new KeyboardEvent("keydown", {
+    key: "Escape",
+    cancelable: true,
+  });
+  v.onKey(escEvent);
+
+  expect(abortController.signal.aborted).toBe(false);
+  expect(v.exportAbort).toBe(abortController);
+});
+
+test("openMenu does nothing while exporting", () => {
+  const element = new ReplayViewer();
+  const v = element as unknown as {
+    exporting: boolean;
+    openMenu(): void;
+    hudBus: { emit: ReturnType<typeof vi.fn> };
+  };
+  v.exporting = true;
+  v.hudBus = { emit: vi.fn() };
+  v.openMenu();
+  expect(v.hudBus.emit).not.toHaveBeenCalled();
 });

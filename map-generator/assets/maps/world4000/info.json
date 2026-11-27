@@ -3,7 +3,7 @@
   "id": "World4000",
   "name": "World 4000",
   "translation_key": "map.world4000",
-  "categories": ["new", "featured", "world"],
+  "categories": ["featured", "world"],
   "author": "evanpelle",
   "description": "Rebuild by Patrick Plays Badly. This is an overhaul of Giant World. Did you know Giant World was originally a test map? It was too laggy for public play. When first released some major water ways were still missing. Oops!",
   "forced_modifiers": ["isCrowded:50"],
@@ -139,6 +139,7 @@
       "name": "Yukon",
       "flag": "Yukon"
     },
+
     {
       "coordinates": [1200, 1100],
       "name": "Amazonas",
@@ -179,6 +180,7 @@
       "name": "Venezuela",
       "flag": "ve"
     },
+
     {
       "coordinates": [2260, 420],
       "name": "Belarus",
@@ -274,6 +276,7 @@
       "name": "United Kingdom",
       "flag": "gb"
     },
+
     {
       "coordinates": [1950, 700],
       "name": "Algeria",
@@ -394,6 +397,7 @@
       "name": "Zimbabwe",
       "flag": "zw"
     },
+
     {
       "coordinates": [2650, 670],
       "name": "Afghanistan",
@@ -509,6 +513,7 @@
       "name": "Yemen",
       "flag": "ye"
     },
+
     {
       "coordinates": [3560, 1400],
       "name": "Australia",
@@ -549,6 +554,7 @@
       "name": "Philippines",
       "flag": "ph"
     },
+
     {
       "coordinates": [680, 1970],
       "name": "Western Ice Sheet",
@@ -565,6 +571,7 @@
       "flag": "aq"
     }
   ],
+
   "layers": [
     {
       "id": "w4kland",

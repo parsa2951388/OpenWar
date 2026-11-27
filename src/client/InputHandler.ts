@@ -19,13 +19,9 @@ import { ReplaySpeedMultiplier } from "./utilities/ReplaySpeedMultiplier";
 import { GameView, UnitView } from "./view";
 
 export class MouseUpEvent implements GameEvent {
-  /** Set by a controller that has handled this world click. */
-  public handled = false;
-
   constructor(
     public readonly x: number,
     public readonly y: number,
-    public readonly shiftKey: boolean = false,
   ) {}
 }
 
@@ -36,9 +32,6 @@ export class MouseOverEvent implements GameEvent {
   ) {}
 }
 export class TouchEvent implements GameEvent {
-  /** Set by a controller that has handled this world tap. */
-  public handled = false;
-
   constructor(
     public readonly x: number,
     public readonly y: number,
@@ -154,7 +147,13 @@ export function highlightTypesForUnit(
   }
 }
 
-export class ConfirmGhostStructureEvent implements GameEvent {}
+export class ConfirmGhostStructureEvent implements GameEvent {
+  /**
+   * Drops the ghost afterwards whether it built or not, instead of keeping
+   * it when it can't build there or when it's a nuke kept for another launch.
+   */
+  constructor(public readonly endsPlacement = false) {}
+}
 
 export class TouchGhostPlacementEvent implements GameEvent {
   constructor(
@@ -1416,18 +1415,15 @@ export class InputHandler {
         return;
       }
 
-      // Let map controllers claim a unit click before opening the radial menu.
-      // Otherwise enabling "left click opens menu" blocks aircraft selection.
-      const mouseUpEvent = new MouseUpEvent(event.x, event.y, event.shiftKey);
-      this.eventBus.emit(mouseUpEvent);
-
-      const shouldOpenRadialMenu =
-        this.userSettings.leftClickOpensMenu() &&
-        !event.shiftKey &&
-        !this.gameView.inSpawnPhase() &&
-        this.uiState.ghostStructure === null &&
-        this.gameView.config().gameConfig().tutorial !== true;
-      if (shouldOpenRadialMenu && !mouseUpEvent.handled) {
+      if (
+        !this.userSettings.leftClickOpensMenu() ||
+        event.shiftKey ||
+        this.gameView.inSpawnPhase() || // No Radial Menu during spawn phase, only spawn point selection
+        this.uiState.ghostStructure !== null || // Block radial menu on left click if building
+        this.gameView.config().gameConfig().tutorial === true // The tutorial teaches the click that attacks
+      ) {
+        this.eventBus.emit(new MouseUpEvent(event.x, event.y));
+      } else {
         this.eventBus.emit(new ContextMenuEvent(event.clientX, event.clientY));
       }
       return;
@@ -1679,6 +1675,9 @@ export class InputHandler {
       switch (source) {
         case "GUIclick":
         case "hotkey":
+          if (!this.userSettings.buildMultiplierCycle()) {
+            return;
+          }
           // first jump goes 1 -> 5 as before
           this.uiState.upgradeMultiplier =
             currentMultiplier === 1 ? 5 : currentMultiplier + 5;

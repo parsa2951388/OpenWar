@@ -63,6 +63,7 @@ import {
   linkGoogle,
   linkSteam,
 } from "../../src/client/Auth";
+import { fetchCosmetics } from "../../src/client/Cosmetics";
 
 function makeUserMe(
   overrides: Partial<UserMeResponse["user"]>,
@@ -124,6 +125,95 @@ describe("AccountModal — rendering", () => {
     await new Promise((resolve) => setTimeout(resolve, 0));
     await modal.updateComplete;
   }
+
+  describe("the player card header", () => {
+    function withCard(owns: boolean): UserMeResponse {
+      const me = makeUserMe({ email: "a@b.c" });
+      me.player.username = "iamlewis";
+      me.player.flares = owns ? ["playerCard:standard"] : [];
+      me.player.progress = {
+        level: 80,
+        prestige: 2,
+        legend: false,
+        xp: 204,
+        xpInLevel: 204,
+        xpForNext: 690,
+      } as unknown as UserMeResponse["player"]["progress"];
+      me.player.card = owns ? { trackers: [] } : null;
+      return me;
+    }
+
+    it("a failed catalogue read is retried at the next opening; a good one is kept", async () => {
+      const fetchMock = vi.mocked(fetchCosmetics);
+      fetchMock.mockClear();
+      fetchMock.mockResolvedValueOnce(null);
+      const openAsOwner = async () => {
+        modal.open();
+        await flushOpen();
+        await setLoggedInUser(withCard(true));
+        await flushOpen();
+      };
+      await openAsOwner();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+      // Not on every render: offline, that would be a request loop.
+      modal.requestUpdate();
+      await flushOpen();
+      expect(fetchMock).toHaveBeenCalledTimes(1);
+
+      modal.close();
+      fetchMock.mockResolvedValueOnce({} as never);
+      await openAsOwner();
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+
+      modal.close();
+      await openAsOwner();
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+    });
+
+    it("account tab header is the player card for owners", async () => {
+      await setLoggedInUser(withCard(true));
+      expect(
+        modal.querySelector("[data-account-card-header] player-card"),
+      ).toBeTruthy();
+      expect(
+        modal.querySelector("[data-account-card-header] [data-xp-bar]"),
+      ).toBeTruthy();
+      // The header is one of the cards that animates.
+      const card = modal.querySelector(
+        "[data-account-card-header] player-card",
+      ) as unknown as { animated: boolean };
+      expect(card.animated).toBe(true);
+      expect(modal.querySelector("[data-account-edit-card]")).toBeTruthy();
+    });
+
+    it("non-owners keep the profile card header and a get-card link", async () => {
+      await setLoggedInUser(withCard(false));
+      expect(modal.querySelector("player-card")).toBeNull();
+      expect(modal.querySelector("profile-card")).toBeTruthy();
+      expect(modal.querySelector("[data-account-get-card]")).toBeTruthy();
+    });
+
+    it("Edit card opens the Inventory's Player card tab", async () => {
+      await setLoggedInUser(withCard(true));
+      window.location.hash = "";
+      (modal.querySelector("[data-account-edit-card]") as HTMLElement).click();
+      expect(window.location.hash).toBe("#modal=inventory&tab=card");
+    });
+
+    it("Get the card opens the Inventory's Player card tab too", async () => {
+      await setLoggedInUser(withCard(false));
+      window.location.hash = "";
+      (modal.querySelector("[data-account-get-card]") as HTMLElement).click();
+      expect(window.location.hash).toBe("#modal=inventory&tab=card");
+    });
+
+    it("connected accounts and the creator panel sit side by side", async () => {
+      await setLoggedInUser(withCard(true));
+      const panels = modal.querySelector("[data-account-panels]");
+      expect(panels).toBeTruthy();
+      expect(panels!.querySelector("creator-code-panel")).toBeTruthy();
+    });
+  });
 
   it("shows the Steam account (no link/login CTAs) for a Steam-primary user", async () => {
     const userMe = makeUserMe({
@@ -311,6 +401,7 @@ describe("AccountModal — rendering", () => {
 
     it("captions the provider buttons as continuing in the browser when the bridge is present", async () => {
       (window as unknown as { openfrontDesktop: unknown }).openfrontDesktop = {
+        steam: {},
         showLinkGate: vi.fn(async () => undefined),
       };
       modal.open();
@@ -360,6 +451,7 @@ describe("AccountModal — rendering", () => {
     // not.
     it("keeps the browser captions when the bridge lacks showLinkGate", async () => {
       (window as unknown as { openfrontDesktop: unknown }).openfrontDesktop = {
+        steam: {},
         linkGate: {},
       };
       modal.open();
@@ -376,6 +468,7 @@ describe("AccountModal — rendering", () => {
     // key is a prefix of the desktop one.
     it("captions the Google link button as opening the website on desktop", async () => {
       (window as unknown as { openfrontDesktop: unknown }).openfrontDesktop = {
+        steam: {},
         showLinkGate: vi.fn(async () => undefined),
       };
       await setLoggedInUser(
@@ -485,7 +578,9 @@ describe("AccountModal — rendering", () => {
   it("offers no Steam sign-in or link inside the desktop shell", async () => {
     // A shell player already holds the Steam identity through the native
     // ticket, so both surfaces would be no-ops that look like options.
-    (window as unknown as { openfrontDesktop: unknown }).openfrontDesktop = {};
+    (window as unknown as { openfrontDesktop: unknown }).openfrontDesktop = {
+      steam: {},
+    };
     await setLoggedInUser(
       makeUserMe({
         discord: {

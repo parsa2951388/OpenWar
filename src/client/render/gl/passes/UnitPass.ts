@@ -13,7 +13,7 @@
  *   Ground/sea (boats, trains) → rendered below structures
  *   Missiles (nukes, shells, SAM, MIRV warheads) → rendered above structures
  *
- * Atlas layout (18 columns × 13px cells, including aircraft, carrier and AAM sprites):
+ * Atlas layout (12 columns × 13px cells, pre-built by generate-sprite-atlases.mjs):
  *   Col 0: Transport (5×5)
  *   Col 1: Trade Ship (5×5)
  *   Col 2: Warship (11×11)
@@ -48,12 +48,6 @@ import {
   UT_TRAIN,
   UT_TRANSPORT,
   UT_WARSHIP,
-  UT_AIRCRAFT_CARRIER,
-  UT_COMMERCIAL_AIRCRAFT,
-  UT_STEALTH_FIGHTER,
-  UT_GROUND_ATTACKER,
-  UT_AIR_FIGHTER,
-  UT_AIR_MISSILE,
 } from "../../types";
 import { DynamicInstanceBuffer } from "../DynamicBuffer";
 import type { RenderSettings } from "../RenderSettings";
@@ -91,12 +85,6 @@ const UNIT_ORDER = [
   "TrainEngine",
   "TrainCarriage",
   "TrainCarriageLoaded",
-  UT_AIRCRAFT_CARRIER,
-  UT_COMMERCIAL_AIRCRAFT,
-  UT_STEALTH_FIGHTER,
-  UT_GROUND_ATTACKER,
-  UT_AIR_FIGHTER,
-  UT_AIR_MISSILE,
 ] as const;
 
 const ATLAS_COLS = UNIT_ORDER.length;
@@ -159,7 +147,6 @@ const MISSILE_TYPES: ReadonlySet<string> = new Set([
   UT_SAM_MISSILE,
   UT_SHELL,
   UT_MIRV_WARHEAD,
-  UT_AIR_MISSILE,
 ]);
 
 /** Values per smoothing segment in the flat `smoothSegs` array:

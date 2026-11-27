@@ -40,158 +40,6 @@ const log = logger.child({ comp: "m" });
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
-// The production Nginx routes /wN/* and game-creation requests to the
-// matching Node worker. Managed single-service hosts do not provide that
-// Nginx layer, so reproduce the same routing here before body parsers consume
-// request streams. This keeps HTTP and WebSocket game traffic on the worker
-// that owns the game ID.
-const RANDOM_WORKER_PATHS = new Set([
-  "/api/create_game",
-  "/api/adminbot/create_game",
-  "/api/adminbot/create_pool",
-]);
-
-function workerIdFromPath(pathname: string): number | null {
-  const match = /^\/w(\d+)(?:\/|$)/.exec(pathname);
-  if (!match) return null;
-  const id = Number(match[1]);
-  const count = ServerEnv.numWorkers();
-  return Number.isSafeInteger(id) && id >= 0 && id < count ? id : -1;
-}
-
-function proxyWorkerHttp(
-  req: http.IncomingMessage,
-  res: http.ServerResponse,
-  workerId: number,
-): void {
-  const port = ServerEnv.workerPortByIndex(workerId);
-  const upstream = http.request({
-    hostname: "127.0.0.1",
-    port,
-    method: req.method,
-    path: req.url ?? "/",
-    headers: { ...req.headers, host: `127.0.0.1:${port}` },
-  });
-  upstream.on("response", (response) => {
-    res.writeHead(response.statusCode ?? 502, response.headers);
-    response.pipe(res);
-  });
-  upstream.on("error", (error) => {
-    log.error("Worker HTTP proxy failed", {
-      workerId,
-      message: error.message,
-    });
-    if (!res.headersSent) {
-      res.statusCode = 502;
-      res.end("Game worker unavailable");
-    } else {
-      res.destroy(error);
-    }
-  });
-  req.pipe(upstream);
-}
-
-function proxyWorkerUpgrade(
-  req: http.IncomingMessage,
-  socket: import("stream").Duplex,
-  head: Buffer,
-  workerId: number,
-): void {
-  const port = ServerEnv.workerPortByIndex(workerId);
-  const upstream = http.request({
-    hostname: "127.0.0.1",
-    port,
-    method: req.method,
-    path: req.url ?? "/",
-    headers: { ...req.headers, host: `127.0.0.1:${port}` },
-  });
-
-  upstream.on("upgrade", (response, upstreamSocket, upstreamHead) => {
-    socket.write(
-      `HTTP/1.1 ${response.statusCode ?? 101} ${response.statusMessage ?? "Switching Protocols"}\r\n`,
-    );
-    for (let i = 0; i < response.rawHeaders.length; i += 2) {
-      socket.write(
-        `${response.rawHeaders[i]}: ${response.rawHeaders[i + 1]}\r\n`,
-      );
-    }
-    socket.write("\r\n");
-    if (upstreamHead.length > 0) socket.write(upstreamHead);
-    if (head.length > 0) upstreamSocket.write(head);
-    upstreamSocket.pipe(socket);
-    socket.pipe(upstreamSocket);
-  });
-
-  upstream.on("response", (response) => {
-    socket.write(
-      `HTTP/1.1 ${response.statusCode ?? 502} ${response.statusMessage ?? "Bad Gateway"}\r\n`,
-    );
-    for (const [name, value] of Object.entries(response.headers)) {
-      if (value === undefined) continue;
-      socket.write(
-        `${name}: ${Array.isArray(value) ? value.join(", ") : value}\r\n`,
-      );
-    }
-    socket.write("\r\n");
-    response.pipe(socket);
-  });
-
-  upstream.on("error", (error) => {
-    log.warn("Worker WebSocket proxy failed", {
-      workerId,
-      message: error.message,
-    });
-    socket.destroy();
-  });
-  upstream.end();
-}
-
-app.use((req, res, next) => {
-  const pathname = (req.url ?? "/").split("?")[0];
-
-  // A shared lobby URL is a browser document, not a Worker asset or API call.
-  // Serve the EJS shell from the Master so Main.handleUrl() can read
-  // /wN/game/<id> and open JoinLobbyModal. Proxying this path to Worker would
-  // strip /wN and then return a 404 because Worker only serves assets/APIs.
-  // Keep all other /wN/* requests on the owning Worker, including HTTP APIs.
-  const gameDocumentPath = /^\/(?:v\/[^/]+\/)?w\d+\/game\/[^/]+\/?$/.test(
-    pathname,
-  );
-  if (
-    req.method === "GET" &&
-    gameDocumentPath &&
-    (req.headers.accept ?? "").includes("text/html")
-  ) {
-    void renderAppShell(
-      res,
-      path.join(__dirname, "../../static/index.html"),
-    ).catch((error) => {
-      log.error("Error rendering shared game page:", error);
-      if (!res.headersSent) res.status(500).send("Internal Server Error");
-    });
-    return;
-  }
-
-  const match = /^\/w(\d+)(?:\/|$)/.exec(pathname);
-  if (match) {
-    const workerId = workerIdFromPath(pathname);
-    if (workerId === null || workerId < 0) {
-      res.status(404).json({ error: "Unknown game worker" });
-      return;
-    }
-    proxyWorkerHttp(req, res, workerId);
-    return;
-  }
-
-  if (RANDOM_WORKER_PATHS.has(pathname)) {
-    const count = ServerEnv.numWorkers();
-    const workerId = Math.floor(Math.random() * count);
-    proxyWorkerHttp(req, res, workerId);
-    return;
-  }
-  next();
-});
-
 app.use(express.json());
 
 // Serve the shared app shell for the root document.
@@ -305,19 +153,6 @@ app.use("/api", (_req, res, next) => {
 });
 
 // Start the master process
-// Forward WebSocket upgrades using the same /wN mapping as nginx.
-function registerWorkerWebSocketProxy(server: http.Server): void {
-  server.on("upgrade", (req, socket, head) => {
-    const pathname = (req.url ?? "/").split("?")[0];
-    const workerId = workerIdFromPath(pathname);
-    if (workerId === null || workerId < 0) {
-      socket.destroy();
-      return;
-    }
-    proxyWorkerUpgrade(req, socket, head, workerId);
-  });
-}
-
 export async function startMaster() {
   if (!cluster.isPrimary) {
     throw new Error(
@@ -448,12 +283,7 @@ export async function startMaster() {
       `Restarted worker ${workerId} (New PID: ${newWorker.process.pid})`,
     );
   });
-  // Render and other managed hosts inject PORT. Keep the local default for development.
-  registerWorkerWebSocketProxy(server);
-  const PORT = Number(process.env.PORT ?? 3000);
-  if (!Number.isInteger(PORT) || PORT < 1 || PORT > 65535) {
-    throw new Error(`Invalid PORT: ${JSON.stringify(process.env.PORT)}`);
-  }
+  const PORT = 3000;
   server.listen(PORT, () => {
     log.info(`Master HTTP server listening on port ${PORT}`);
   });

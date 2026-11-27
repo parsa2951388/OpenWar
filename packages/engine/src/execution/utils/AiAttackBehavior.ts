@@ -198,8 +198,22 @@ export abstract class AiAttackBehavior {
   // Troops kept home when attacking target: the expand ratio for free land and bots holding
   // structures, as we need those back ASAP, the reserve ratio otherwise
   protected reserveTroops(target: Player | TerraNullius): number {
+    // Free land next to fallout includes the fallout, so it waits until we're near our max troops
+    if (!target.isPlayer() && this.bordersFallout()) {
+      return this.game.config().maxTroops(this.player) * this.reserveRatio;
+    }
     const expansion = !target.isPlayer() || target.type() === PlayerType.Bot;
-    const maxTroops = this.reserveBasis(expansion);
+    let maxTroops = this.reserveBasis(expansion);
+    if (expansion) {
+      // Troops grown past the no-city basis keep what they would at the trigger ratio, so they don't all flow out
+      maxTroops = Math.max(
+        maxTroops,
+        Math.min(
+          this.game.config().maxTroops(this.player),
+          this.homeTroops() / this.triggerRatio,
+        ),
+      );
+    }
     const botWithStructures =
       target.isPlayer() &&
       target.type() === PlayerType.Bot &&
@@ -207,6 +221,11 @@ export abstract class AiAttackBehavior {
     const useReserve = target.isPlayer() && !botWithStructures;
     const reserveRatio = useReserve ? this.reserveRatio : this.expandRatio;
     return maxTroops * reserveRatio;
+  }
+
+  // Whether we border nuked land, which costs several times the troops to take
+  protected bordersFallout(): boolean {
+    return false;
   }
 
   // `opponent` is a player we take on on purpose (see NationAttackBehavior)
@@ -401,6 +420,7 @@ export abstract class AiAttackBehavior {
 
   // The launch follows from the landing: our shore closest to it by water
   private routeTo(landing: TileRef, warships: Unit[]): BoatRoute | null {
+    if (this.everyLaunchBlocked(landing, warships)) return null;
     const launch = canBuildTransportShip(this.game, this.player, landing);
     if (launch === false) return null;
     return { landing, ...this.sail(launch, landing, warships) };
@@ -459,6 +479,13 @@ export abstract class AiAttackBehavior {
       picked.push(tile);
     }
     return picked.slice(1);
+  }
+
+  // Whether a warship blocks the boat to landing from every shore we could launch from, so
+  // the launch needn't be pathfound. Only for those that read nothing of a blocked route but
+  // that it's blocked: to them it's as good as no route at all.
+  protected everyLaunchBlocked(_landing: TileRef, _warships: Unit[]): boolean {
+    return false;
   }
 
   protected hostileWarships(): Unit[] {

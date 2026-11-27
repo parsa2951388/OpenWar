@@ -31,14 +31,19 @@ type TestMenu = SettingsModal & { updateComplete: Promise<unknown> };
 const SNAPSHOT = new Uint8Array([1, 2, 3]);
 
 function fakeGame(
-  opts: { gameType?: GameType; replay?: boolean; tutorial?: boolean } = {},
+  opts: {
+    gameType?: GameType;
+    replay?: boolean;
+    tutorial?: boolean;
+    gameMap?: string;
+  } = {},
 ) {
   const snapshot = vi.fn(async () => SNAPSHOT);
   const game = {
     config: () => ({
       gameConfig: () => ({
         gameType: opts.gameType ?? GameType.Singleplayer,
-        gameMap: "World",
+        gameMap: opts.gameMap ?? "World",
         tutorial: opts.tutorial,
       }),
       isReplay: () => opts.replay ?? false,
@@ -90,6 +95,7 @@ describe("in-game menu: save game", () => {
     ["a multiplayer game", { gameType: GameType.Public }],
     ["a replay", { replay: true }],
     ["the onboarding tutorial", { tutorial: true }],
+    ["a scenario's Custom map", { gameMap: "Custom" }],
   ])("is not offered in %s", async (_, opts) => {
     await open(fakeGame(opts).game);
     expect(saveRow()).toBeNull();
@@ -139,6 +145,26 @@ describe("in-game menu: save game", () => {
       expect(status()).toBe("saved_games.save_status.request_failed"),
     );
     expect(api.uploadSavedGame).not.toHaveBeenCalled();
+  });
+
+  it("cannot be pressed again while the save is in progress", async () => {
+    let finish!: (result: { id: string }) => void;
+    api.uploadSavedGame.mockReturnValue(
+      new Promise((resolve) => (finish = resolve)),
+    );
+    await open(fakeGame().game);
+
+    saveRow()!.click();
+    await vi.waitFor(() => expect(api.uploadSavedGame).toHaveBeenCalled());
+    await menu.updateComplete;
+    expect(saveRow()!.disabled).toBe(true);
+    expect(status()).toBe("saved_games.save_status.saving");
+
+    finish({ id: "x" });
+    await vi.waitFor(() =>
+      expect(status()).toBe("saved_games.save_status.saved"),
+    );
+    expect(saveRow()!.disabled).toBe(false);
   });
 
   it("starts the next opening without the last save's outcome", async () => {

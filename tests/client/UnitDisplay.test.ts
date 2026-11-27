@@ -1,16 +1,17 @@
 import {
+  BuildMenus,
   PlayerBuildableUnitType,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
 import { EventBus } from "@openfront/shared/EventBus";
 import { describe, expect, test, vi } from "vitest";
+import type { UnitDisplay } from "../../src/client/hud/layers/UnitDisplay";
+import "../../src/client/hud/layers/UnitDisplay";
 import {
-  QUICK_BUILD_TYPES,
-  type UnitDisplay,
-} from "../../src/client/hud/layers/UnitDisplay";
-import {
+  ConfirmGhostStructureEvent,
   FORWARDED_TOUCH_CLICK,
   ToggleStructureEvent,
+  TouchGhostPlacementMoveEvent,
   TouchGhostPlacementSelectEvent,
 } from "../../src/client/InputHandler";
 
@@ -60,9 +61,26 @@ function makeDisplay(
  * pointer has to be faked for the touch case.
  */
 async function withCoarsePointer(run: () => void | Promise<void>) {
+  await withMediaQueries((query) => query.includes("pointer: coarse"), run);
+}
+
+/** A portrait screen narrower than lg, where the bar is a column on the right edge. */
+async function withSideBar(run: () => void | Promise<void>) {
+  await withMediaQueries(
+    (query) =>
+      query.includes("orientation: portrait") ||
+      query.includes("pointer: coarse"),
+    run,
+  );
+}
+
+async function withMediaQueries(
+  matches: (query: string) => boolean,
+  run: () => void | Promise<void>,
+) {
   const original = window.matchMedia;
   window.matchMedia = ((query: string) => ({
-    matches: query.includes("pointer: coarse"),
+    matches: matches(query),
     media: query,
     onchange: null,
     addEventListener: () => {},
@@ -87,7 +105,7 @@ function dispatchTouch(target: EventTarget, type: string, identifier: number) {
 }
 
 describe("mobile UnitDisplay layout", () => {
-  test("keeps the quick-build items in one horizontally scrollable row", async () => {
+  test("is a row, and a vertically scrolling column below lg in portrait", async () => {
     const { display } = makeDisplay();
     try {
       await display.updateComplete;
@@ -95,89 +113,33 @@ describe("mobile UnitDisplay layout", () => {
       const scroller = display.querySelector(".unit-display-scroll");
       const grid = scroller?.querySelector<HTMLElement>(".unit-display-grid");
       expect(scroller).not.toBeNull();
-      expect(scroller?.classList.contains("touch-pan-x")).toBe(true);
+      expect(scroller?.classList.contains("overflow-x-auto")).toBe(true);
+      // No touch panning: a drag from a button goes to the map, whichever
+      // way it heads.
+      expect(scroller?.classList.contains("touch-none")).toBe(true);
       expect(scroller?.classList.contains("lg:overflow-visible")).toBe(true);
-      expect(grid?.classList.contains("max-lg:grid-flow-col")).toBe(true);
-      expect(grid?.classList.contains("max-lg:grid-cols-none")).toBe(true);
-      expect(grid?.classList.contains("max-lg:auto-cols-[58px]")).toBe(true);
-      expect(grid?.classList.contains("max-lg:w-max")).toBe(true);
+      expect(scroller?.classList.contains("side-bar:overflow-y-auto")).toBe(
+        true,
+      );
+      expect(grid?.classList.contains("grid-flow-col")).toBe(true);
+      expect(grid?.classList.contains("auto-cols-fr")).toBe(true);
+      expect(grid?.classList.contains("lg:auto-cols-max")).toBe(true);
+      expect(grid?.classList.contains("side-bar:grid-flow-row")).toBe(true);
+      expect(grid?.classList.contains("side-bar:grid-cols-1")).toBe(true);
       expect(grid?.children).toHaveLength(10);
-      expect(grid?.style.getPropertyValue("--unit-display-columns")).toBe("10");
     } finally {
       display.remove();
     }
   });
 
-  test("portrait grid uses only the visible build buttons", async () => {
+  test("shows only the enabled build buttons", async () => {
     const { display } = makeDisplay(null, [UnitType.City]);
     try {
       await display.updateComplete;
 
       const grid = display.querySelector<HTMLElement>(".unit-display-grid");
-      expect(grid?.children).toHaveLength(QUICK_BUILD_TYPES.length - 1);
-      expect(grid?.style.getPropertyValue("--unit-display-columns")).toBe(
-        String(QUICK_BUILD_TYPES.length - 1),
-      );
-      expect(grid?.classList.contains("lg:grid-cols-none")).toBe(true);
-      expect(grid?.classList.contains("lg:auto-cols-max")).toBe(true);
+      expect(grid?.children).toHaveLength(BuildMenus.types.length - 1);
     } finally {
-      display.remove();
-    }
-  });
-
-  test("quick-build buttons keep their name and gold cost visible", async () => {
-    const { display } = makeDisplay();
-    try {
-      (
-        display as unknown as {
-          playerBuildables: { type: UnitType; cost: bigint }[];
-        }
-      ).playerBuildables = QUICK_BUILD_TYPES.map((type) => ({
-        type,
-        cost: 1250n,
-      }));
-      await display.updateComplete;
-
-      const city = display.querySelector<HTMLElement>(
-        ".unit-display-grid > div",
-      );
-      expect(
-        city?.querySelector(".unit-display-name")?.textContent?.trim(),
-      ).toBeTruthy();
-      expect(
-        city?.querySelector(".unit-display-cost")?.textContent?.trim(),
-      ).toBeTruthy();
-      expect(city?.querySelector(".unit-display-cost img")).not.toBeNull();
-    } finally {
-      display.remove();
-    }
-  });
-  test("throttles buildable-cost refreshes instead of requesting them every frame", async () => {
-    const { display } = makeDisplay();
-    const player = display.game.myPlayer() as any;
-    const buildables = vi
-      .fn()
-      .mockResolvedValue(
-        QUICK_BUILD_TYPES.map((type) => ({ type, cost: 1250n })),
-      );
-    player.buildables = buildables;
-    player.totalUnitLevels = vi.fn().mockReturnValue(0);
-    const now = vi.spyOn(Date, "now").mockReturnValue(10_000);
-
-    try {
-      display.tick();
-      display.tick();
-      expect(buildables).toHaveBeenCalledTimes(1);
-
-      now.mockReturnValue(10_500);
-      await vi.waitFor(() => {
-        display.tick();
-        expect(buildables).toHaveBeenCalledTimes(2);
-      });
-      display.tick();
-      expect(buildables).toHaveBeenCalledTimes(2);
-    } finally {
-      now.mockRestore();
       display.remove();
     }
   });
@@ -190,7 +152,6 @@ describe("mobile UnitDisplay layout", () => {
       const grid = display.querySelector<HTMLElement>(".unit-display-grid");
       expect(display.classList.contains("hidden")).toBe(false);
       expect(grid?.children).toHaveLength(1);
-      expect(grid?.style.getPropertyValue("--unit-display-columns")).toBe("1");
     } finally {
       display.remove();
     }
@@ -213,11 +174,12 @@ describe("mobile UnitDisplay layout", () => {
     try {
       await display.updateComplete;
       const cityButton = display.querySelector(".unit-display-grid > * > div");
+      const classes = [...(cityButton?.classList ?? [])];
 
-      expect(cityButton?.classList.contains("hover:bg-gray-800")).toBe(false);
-      expect(
-        cityButton?.classList.contains("pointer-fine:hover:bg-gray-800"),
-      ).toBe(true);
+      expect(classes.some((c) => c.startsWith("hover:"))).toBe(false);
+      expect(classes.some((c) => c.startsWith("pointer-fine:hover:"))).toBe(
+        true,
+      );
     } finally {
       display.remove();
     }
@@ -1087,7 +1049,7 @@ describe("mobile UnitDisplay layout", () => {
     }
   });
 
-  test("fades the edge that still hides actions", async () => {
+  test("fades the end of the row that still hides actions", async () => {
     const { display } = makeDisplay();
     try {
       await display.updateComplete;
@@ -1111,8 +1073,8 @@ describe("mobile UnitDisplay layout", () => {
       scroller.dispatchEvent(new Event("scroll"));
       await display.updateComplete;
 
-      expect(root.classList.contains("unit-display-more-right")).toBe(true);
-      expect(root.classList.contains("unit-display-more-left")).toBe(false);
+      expect(root.classList.contains("unit-display-more-end")).toBe(true);
+      expect(root.classList.contains("unit-display-more-start")).toBe(false);
 
       Object.defineProperty(scroller, "scrollLeft", {
         value: 300,
@@ -1121,8 +1083,8 @@ describe("mobile UnitDisplay layout", () => {
       scroller.dispatchEvent(new Event("scroll"));
       await display.updateComplete;
 
-      expect(root.classList.contains("unit-display-more-right")).toBe(false);
-      expect(root.classList.contains("unit-display-more-left")).toBe(true);
+      expect(root.classList.contains("unit-display-more-end")).toBe(false);
+      expect(root.classList.contains("unit-display-more-start")).toBe(true);
     } finally {
       display.remove();
     }
@@ -1148,8 +1110,8 @@ describe("mobile UnitDisplay layout", () => {
       scroller.dispatchEvent(new Event("scroll"));
       await display.updateComplete;
 
-      expect(root.classList.contains("unit-display-more-right")).toBe(false);
-      expect(root.classList.contains("unit-display-more-left")).toBe(false);
+      expect(root.classList.contains("unit-display-more-end")).toBe(false);
+      expect(root.classList.contains("unit-display-more-start")).toBe(false);
     } finally {
       display.remove();
     }
@@ -1171,6 +1133,573 @@ describe("mobile UnitDisplay layout", () => {
         null,
         "GUIclick",
       );
+    } finally {
+      display.remove();
+    }
+  });
+});
+
+describe("dragging a build button onto the map", () => {
+  function touch(type: string, x: number, y: number) {
+    return new PointerEvent(type, {
+      button: 0,
+      clientX: x,
+      clientY: y,
+      pointerId: 7,
+      pointerType: "touch",
+      bubbles: true,
+    });
+  }
+
+  async function setup(gold = 1000n) {
+    const made = makeDisplay();
+    await made.display.updateComplete;
+    // jsdom has no layout: the bar is a column on the right edge.
+    const root = made.display.querySelector(
+      ".unit-display-root",
+    ) as HTMLElement;
+    root.getBoundingClientRect = () =>
+      ({ left: 340, right: 390, top: 200, bottom: 540 }) as DOMRect;
+    const cityItem = made.display.querySelector(".unit-display-grid")
+      ?.firstElementChild as HTMLElement;
+    const moves: TouchGhostPlacementMoveEvent[] = [];
+    const confirms: ConfirmGhostStructureEvent[] = [];
+    made.eventBus.on(TouchGhostPlacementMoveEvent, (e) => moves.push(e));
+    made.eventBus.on(ConfirmGhostStructureEvent, (e) => confirms.push(e));
+    if (gold !== 1000n) {
+      (made.display.game.myPlayer() as any).gold = () => gold;
+      (made.display as any).playerBuildables = [
+        { type: UnitType.City, cost: 500n },
+      ];
+    }
+    return { ...made, cityItem, moves, confirms };
+  }
+
+  test("picks the unit once the finger leaves the bar, and builds where it lets go", async () => {
+    const { display, inputHandler, cityItem, moves, confirms } = await setup();
+    try {
+      cityItem.dispatchEvent(touch("pointerdown", 365, 220));
+      // Still over the bar: nothing is picked yet.
+      cityItem.dispatchEvent(touch("pointermove", 350, 222));
+      expect(inputHandler.setGhostStructure).not.toHaveBeenCalled();
+
+      cityItem.dispatchEvent(touch("pointermove", 300, 230));
+      expect(inputHandler.setGhostStructure).toHaveBeenCalledWith(
+        UnitType.City,
+        "GUIclick",
+      );
+      cityItem.dispatchEvent(touch("pointermove", 200, 260));
+      cityItem.dispatchEvent(touch("pointerup", 180, 270));
+
+      // The unit rides above the finger, so the finger doesn't hide it.
+      expect(moves.map((m) => [m.x, m.y])).toEqual([
+        [300, 186],
+        [200, 216],
+        [180, 226],
+      ]);
+      expect(confirms).toHaveLength(1);
+      // Where it can't be built, the unit is dropped rather than left held.
+      expect(confirms[0].endsPlacement).toBe(true);
+      // The release's click (if the browser makes one) must not toggle the
+      // unit off again.
+      cityItem
+        .querySelector("div > div")
+        ?.dispatchEvent(new MouseEvent("click", { bubbles: true }));
+      expect(inputHandler.setGhostStructure).toHaveBeenCalledTimes(1);
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("dragging the unit that's already held keeps it as it was", async () => {
+    const { display, inputHandler, cityItem, confirms } = await setup();
+    try {
+      display.uiState.ghostStructure = UnitType.City;
+      cityItem.dispatchEvent(touch("pointerdown", 365, 220));
+      cityItem.dispatchEvent(touch("pointermove", 300, 230));
+      cityItem.dispatchEvent(touch("pointerup", 200, 260));
+
+      // Picking it again would raise its upgrade multiplier.
+      expect(inputHandler.setGhostStructure).not.toHaveBeenCalled();
+      expect(display.uiState.ghostStructure).toBe(UnitType.City);
+      expect(confirms).toHaveLength(1);
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("letting go back over the bar cancels", async () => {
+    const { display, inputHandler, cityItem, confirms } = await setup();
+    try {
+      cityItem.dispatchEvent(touch("pointerdown", 365, 220));
+      cityItem.dispatchEvent(touch("pointermove", 300, 230));
+      cityItem.dispatchEvent(touch("pointerup", 360, 300));
+
+      expect(confirms).toHaveLength(0);
+      expect(inputHandler.setGhostStructure).toHaveBeenLastCalledWith(
+        null,
+        "GUIclick",
+      );
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("a cancelled touch drops the unit", async () => {
+    const { display, inputHandler, cityItem, confirms } = await setup();
+    try {
+      cityItem.dispatchEvent(touch("pointerdown", 365, 220));
+      cityItem.dispatchEvent(touch("pointermove", 300, 230));
+      cityItem.dispatchEvent(touch("pointercancel", 300, 230));
+
+      expect(confirms).toHaveLength(0);
+      expect(inputHandler.setGhostStructure).toHaveBeenLastCalledWith(
+        null,
+        "GUIclick",
+      );
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("a press that stays on the bar is not a drag", async () => {
+    const { display, inputHandler, cityItem, moves, confirms } = await setup();
+    try {
+      cityItem.dispatchEvent(touch("pointerdown", 365, 220));
+      cityItem.dispatchEvent(touch("pointermove", 362, 226));
+      cityItem.dispatchEvent(touch("pointerup", 362, 226));
+
+      expect(moves).toHaveLength(0);
+      expect(confirms).toHaveLength(0);
+      expect(inputHandler.setGhostStructure).not.toHaveBeenCalled();
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("a unit the player can't afford is not dragged out", async () => {
+    const { display, inputHandler, cityItem, moves, confirms } =
+      await setup(100n);
+    try {
+      cityItem.dispatchEvent(touch("pointerdown", 365, 220));
+      cityItem.dispatchEvent(touch("pointermove", 300, 230));
+      cityItem.dispatchEvent(touch("pointerup", 200, 260));
+
+      expect(moves).toHaveLength(0);
+      expect(confirms).toHaveLength(0);
+      expect(inputHandler.setGhostStructure).not.toHaveBeenCalled();
+    } finally {
+      display.remove();
+    }
+  });
+});
+
+describe("UnitDisplay as a side column below lg in portrait", () => {
+  test("places the tooltip left of the item, centred on it", async () => {
+    await withSideBar(async () => {
+      const { display } = makeDisplay();
+      try {
+        await display.updateComplete;
+        const root = display.querySelector(".unit-display-root") as HTMLElement;
+        const cityItem = display.querySelector(".unit-display-grid")
+          ?.firstElementChild as HTMLElement;
+        root.getBoundingClientRect = () =>
+          ({ left: 340, top: 200, width: 50, height: 340 }) as DOMRect;
+        cityItem.getBoundingClientRect = () =>
+          ({ left: 343, top: 240, width: 44, height: 32 }) as DOMRect;
+        cityItem.dispatchEvent(new MouseEvent("mouseenter"));
+        await display.updateComplete;
+
+        const tooltip = display.querySelector(
+          ".unit-display-tooltip",
+        ) as HTMLElement;
+        // 6px left of the item and at its middle, in the bar's coordinates;
+        // the transform pulls the box fully left and half up from there.
+        expect(tooltip.style.left).toBe("-3px");
+        expect(tooltip.style.top).toBe("56px");
+        expect(tooltip.classList.contains("-translate-x-full")).toBe(true);
+        expect(tooltip.classList.contains("-translate-y-1/2")).toBe(true);
+      } finally {
+        display.remove();
+      }
+    });
+  });
+
+  test("keeps the tooltip on the screen vertically", async () => {
+    await withSideBar(async () => {
+      const { display } = makeDisplay();
+      try {
+        await display.updateComplete;
+        const root = display.querySelector(".unit-display-root") as HTMLElement;
+        const cityItem = display.querySelector(".unit-display-grid")
+          ?.firstElementChild as HTMLElement;
+        root.getBoundingClientRect = () =>
+          ({ left: 340, top: 10, width: 50, height: 340 }) as DOMRect;
+        cityItem.getBoundingClientRect = () =>
+          ({ left: 343, top: 12, width: 44, height: 32 }) as DOMRect;
+        cityItem.dispatchEvent(new MouseEvent("mouseenter"));
+        await display.updateComplete;
+
+        const tooltip = display.querySelector(
+          ".unit-display-tooltip",
+        ) as HTMLElement;
+        // Centred on the item (y 28) it would start at y -32, off the top.
+        tooltip.getBoundingClientRect = () =>
+          ({ left: 200, top: -32, width: 130, height: 120 }) as DOMRect;
+        display.requestUpdate();
+        await display.updateComplete;
+
+        // Pushed down to the 8px margin: top 8, so its centre is at y 68,
+        // which is 58 in the bar's coordinates.
+        expect(parseFloat(tooltip.style.top)).toBe(58);
+      } finally {
+        display.remove();
+      }
+    });
+  });
+
+  test("fades the end of the column that still hides actions", async () => {
+    await withSideBar(async () => {
+      const { display } = makeDisplay();
+      try {
+        await display.updateComplete;
+        const root = display.querySelector(".unit-display-root") as HTMLElement;
+        const scroller = display.querySelector(
+          ".unit-display-scroll",
+        ) as HTMLElement;
+        const set = (name: string, value: number) =>
+          Object.defineProperty(scroller, name, { value, configurable: true });
+        set("scrollHeight", 340);
+        set("clientHeight", 280);
+        set("scrollTop", 0);
+        // The row's measures must not count in the column.
+        set("scrollWidth", 50);
+        set("clientWidth", 50);
+
+        scroller.dispatchEvent(new Event("scroll"));
+        await display.updateComplete;
+        expect(root.classList.contains("unit-display-more-end")).toBe(true);
+        expect(root.classList.contains("unit-display-more-start")).toBe(false);
+
+        set("scrollTop", 60);
+        scroller.dispatchEvent(new Event("scroll"));
+        await display.updateComplete;
+        expect(root.classList.contains("unit-display-more-end")).toBe(false);
+        expect(root.classList.contains("unit-display-more-start")).toBe(true);
+      } finally {
+        display.remove();
+      }
+    });
+  });
+});
+
+describe("UnitDisplay tiles", () => {
+  test("each tile is named after its unit, with its count, and says whether it is armed", async () => {
+    const { display } = makeDisplay(UnitType.Port);
+    try {
+      await display.updateComplete;
+
+      const tiles = display.querySelectorAll('[role="button"]');
+      expect(tiles).toHaveLength(BuildMenus.types.length);
+      // The label replaces the tile's own text, so it carries the count.
+      expect(tiles[0].getAttribute("aria-label")).toBe("unit_type.city, 0");
+      const pressed = [...tiles].filter(
+        (tile) => tile.getAttribute("aria-pressed") === "true",
+      );
+      expect(pressed).toHaveLength(1);
+      expect(pressed[0].closest("[data-unit]")?.getAttribute("data-unit")).toBe(
+        "port",
+      );
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("a unit that costs more than my gold is marked and a click does not pick it", async () => {
+    const { display, inputHandler } = makeDisplay();
+    try {
+      (display as any).playerBuildables = [
+        { type: UnitType.City, cost: 1001n },
+      ];
+      display.requestUpdate();
+      await display.updateComplete;
+
+      const city = display.querySelector<HTMLElement>(
+        '[data-unit="city"] > [role="button"]',
+      );
+      const factory = display.querySelector(
+        '[data-unit="factory"] > [role="button"]',
+      );
+      expect(city?.getAttribute("aria-disabled")).toBe("true");
+      expect(factory?.getAttribute("aria-disabled")).toBe("false");
+
+      city?.click();
+      expect(inputHandler.setGhostStructure).not.toHaveBeenCalled();
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("the details show a unit's price", async () => {
+    const { display } = makeDisplay();
+    try {
+      (display as any).playerBuildables = [
+        { type: UnitType.City, cost: 1000n },
+      ];
+      display.requestUpdate();
+      await display.updateComplete;
+      display
+        .querySelector('[data-unit="city"]')
+        ?.dispatchEvent(new MouseEvent("mouseenter"));
+      await display.updateComplete;
+
+      expect(
+        display.querySelector(".unit-display-tooltip")?.textContent,
+      ).toContain("1.00K");
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("shows a count for buildings and warships, none for bombs", async () => {
+    const { display } = makeDisplay();
+    try {
+      // With a port and a silo, so no tile shows a lock in place of its count.
+      (display.game.myPlayer() as any).units = () => [{}];
+      display.requestUpdate();
+      await display.updateComplete;
+
+      expect(
+        display.querySelector('[data-unit="city"] [data-unit-count]'),
+      ).not.toBeNull();
+      expect(
+        display.querySelector('[data-unit="warship"] [data-unit-count]'),
+      ).not.toBeNull();
+      expect(
+        display.querySelector('[data-unit="atom_bomb"] [data-unit-count]'),
+      ).toBeNull();
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("the grid holds only the tiles, and each tile comes first in its item", async () => {
+    const { display } = makeDisplay(null, [UnitType.Factory]);
+    try {
+      await display.updateComplete;
+
+      const items = [
+        ...(display.querySelector(".unit-display-grid")?.children ?? []),
+      ];
+      expect(items).toHaveLength(BuildMenus.types.length - 1);
+      for (const item of items) {
+        expect(item.firstElementChild?.getAttribute("role")).toBe("button");
+      }
+    } finally {
+      display.remove();
+    }
+  });
+});
+
+describe("why a unit cannot be built", () => {
+  /** Gives my player the gold and the buildings a test asks for. */
+  function own(display: UnitDisplay, gold: bigint, owned: UnitType[] = []) {
+    const player = display.game.myPlayer() as any;
+    player.gold = vi.fn(() => gold);
+    player.units = vi.fn((unitType: UnitType) =>
+      owned.includes(unitType) ? [{}] : [],
+    );
+    (display as any).playerBuildables = [
+      { type: UnitType.City, cost: 1000n },
+      { type: UnitType.Warship, cost: 500n },
+      { type: UnitType.AtomBomb, cost: 750n },
+    ];
+    display.requestUpdate();
+    return player;
+  }
+
+  const tile = (display: UnitDisplay, unit: string) =>
+    display.querySelector<HTMLElement>(
+      `[data-unit="${unit}"] > [role="button"]`,
+    );
+
+  test("canBuild is true exactly when the unit is ready, and answers as before", () => {
+    const { display } = makeDisplay(null, [UnitType.Factory]);
+    try {
+      const cases: [bigint, UnitType[], UnitType, boolean][] = [
+        [1000n, [], UnitType.City, true],
+        [999n, [], UnitType.City, false],
+        [1000n, [], UnitType.AtomBomb, false],
+        [1000n, [UnitType.MissileSilo], UnitType.AtomBomb, true],
+        [1000n, [], UnitType.Warship, false],
+        [1000n, [UnitType.Port], UnitType.Warship, true],
+        [1000n, [], UnitType.Factory, false],
+      ];
+      for (const [gold, owned, unitType, buildable] of cases) {
+        own(display, gold, owned);
+        const ud = display as any;
+        expect(ud.canBuild(unitType)).toBe(buildable);
+        expect(ud.buildState(unitType) === "ready").toBe(buildable);
+      }
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("a missing silo or port locks a unit even with the gold for it", async () => {
+    const { display } = makeDisplay();
+    try {
+      own(display, 999n);
+      await display.updateComplete;
+      expect(tile(display, "city")?.dataset.buildState).toBe("poor");
+      expect(tile(display, "atom_bomb")?.dataset.buildState).toBe("locked");
+      expect(tile(display, "warship")?.dataset.buildState).toBe("locked");
+
+      own(display, 1000n);
+      await display.updateComplete;
+      expect(tile(display, "city")?.dataset.buildState).toBe("ready");
+      expect(tile(display, "atom_bomb")?.dataset.buildState).toBe("locked");
+
+      own(display, 1000n, [UnitType.MissileSilo, UnitType.Port]);
+      await display.updateComplete;
+      expect(tile(display, "atom_bomb")?.dataset.buildState).toBe("ready");
+      expect(tile(display, "warship")?.dataset.buildState).toBe("ready");
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("a tile that cannot be picked is disabled and its name says why", async () => {
+    const { display } = makeDisplay();
+    try {
+      own(display, 999n);
+      await display.updateComplete;
+
+      const city = tile(display, "city");
+      expect(city?.getAttribute("aria-disabled")).toBe("true");
+      expect(city?.getAttribute("aria-label")).toBe(
+        "unit_type.city, 0, build_menu.not_enough_money",
+      );
+      const bomb = tile(display, "atom_bomb");
+      expect(bomb?.getAttribute("aria-disabled")).toBe("true");
+      expect(bomb?.getAttribute("aria-label")).toBe(
+        "unit_type.atom_bomb, build_menu.requires",
+      );
+      const post = tile(display, "defense_post");
+      expect(post?.getAttribute("aria-disabled")).toBe("false");
+      expect(post?.getAttribute("aria-label")).toBe(
+        "unit_type.defense_post, 0",
+      );
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("a locked tile shows a lock in place of its count", async () => {
+    const { display } = makeDisplay();
+    try {
+      own(display, 999n);
+      await display.updateComplete;
+
+      const warship = display.querySelector('[data-unit="warship"]');
+      expect(warship?.querySelector("[data-unit-lock]")).not.toBeNull();
+      expect(warship?.querySelector("[data-unit-count]")).toBeNull();
+      expect(
+        display.querySelector('[data-unit="atom_bomb"] [data-unit-lock]'),
+      ).not.toBeNull();
+      const city = display.querySelector('[data-unit="city"]');
+      expect(city?.querySelector("[data-unit-lock]")).toBeNull();
+      expect(city?.querySelector("[data-unit-count]")).not.toBeNull();
+
+      own(display, 1000n, [UnitType.Port]);
+      await display.updateComplete;
+      expect(warship?.querySelector("[data-unit-lock]")).toBeNull();
+      expect(warship?.querySelector("[data-unit-count]")).not.toBeNull();
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("the details say why a unit cannot be picked", async () => {
+    const { display } = makeDisplay();
+    try {
+      own(display, 999n);
+      await display.updateComplete;
+      const details = async (unit: string) => {
+        display
+          .querySelector(`[data-unit="${unit}"]`)
+          ?.dispatchEvent(new MouseEvent("mouseenter"));
+        await display.updateComplete;
+        return display.querySelector(".unit-display-tooltip")?.textContent;
+      };
+
+      expect(await details("city")).toContain("build_menu.not_enough_money");
+      expect(await details("city")).not.toContain("build_menu.requires");
+      expect(await details("atom_bomb")).toContain("build_menu.requires");
+      expect(await details("atom_bomb")).not.toContain(
+        "build_menu.not_enough_money",
+      );
+      const ready = await details("defense_post");
+      expect(ready).not.toContain("build_menu.not_enough_money");
+      expect(ready).not.toContain("build_menu.requires");
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("a disabled unit has no tile and cannot be built", async () => {
+    const { display } = makeDisplay(null, [UnitType.AtomBomb]);
+    try {
+      own(display, 1000n, [UnitType.MissileSilo]);
+      await display.updateComplete;
+
+      expect(display.querySelector('[data-unit="atom_bomb"]')).toBeNull();
+      expect((display as any).canBuild(UnitType.AtomBomb)).toBe(false);
+      expect(tile(display, "hydrogen_bomb")?.dataset.buildState).toBe("ready");
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("the armed unit stays pressed when I can no longer afford it, and a click puts it down", async () => {
+    const { display, inputHandler } = makeDisplay(UnitType.City);
+    try {
+      own(display, 999n);
+      await display.updateComplete;
+
+      const city = tile(display, "city");
+      expect(city?.dataset.buildState).toBe("poor");
+      expect(city?.getAttribute("aria-pressed")).toBe("true");
+      // Still enabled: a click on it puts it down.
+      expect(city?.getAttribute("aria-disabled")).toBe("false");
+
+      city?.click();
+      expect(inputHandler.setGhostStructure).toHaveBeenCalledWith(
+        null,
+        "GUIclick",
+      );
+    } finally {
+      display.remove();
+    }
+  });
+
+  test("one render reads my gold once and my buildings once each", async () => {
+    const { display } = makeDisplay();
+    try {
+      const player = own(display, 999n);
+      await display.updateComplete;
+      // With the details open too, which say why for the hovered unit.
+      display
+        .querySelector('[data-unit="atom_bomb"]')
+        ?.dispatchEvent(new MouseEvent("mouseenter"));
+      await display.updateComplete;
+      player.gold.mockClear();
+      player.units.mockClear();
+
+      display.requestUpdate();
+      await display.updateComplete;
+      expect(player.gold).toHaveBeenCalledTimes(1);
+      expect(player.units).toHaveBeenCalledTimes(2);
     } finally {
       display.remove();
     }

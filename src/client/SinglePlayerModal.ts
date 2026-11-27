@@ -8,11 +8,14 @@ import {
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
 import type { SnapshotHeader } from "@openfront/engine-api/game/SnapshotHeader";
-import { TeamCountConfig } from "@openfront/engine-api/Schemas";
+import { MAX_BOTS, TeamCountConfig } from "@openfront/engine-api/Schemas";
 import { DoomsdayClockSpeed } from "@openfront/engine-lib/game/DoomsdayClock";
 import { UserMeResponse } from "@openfront/shared/ApiSchemas";
 import { assetUrl } from "@openfront/shared/AssetUrls";
-import { generateID } from "@openfront/shared/SharedUtil";
+import {
+  generateID,
+  generateSingleplayerGameID,
+} from "@openfront/shared/SharedUtil";
 import { PlayerCosmetics } from "@openfront/shared/WireSchemas";
 import { html, TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
@@ -43,6 +46,17 @@ import {
 import { JoinLobbyEvent } from "./Main";
 import { fallbackPlayerName, ResolvedPlayerName } from "./PlayerName";
 import { downloadSavedGame } from "./SavedGamesApi";
+import {
+  type ScenarioBundle,
+  ScenarioBundleError,
+  useScenarioMap,
+} from "./scenario/ScenarioBundle";
+import {
+  scenarioPickerAllowed,
+  scenarioPlayErrorKey,
+} from "./scenario/ScenarioPicker";
+import "./scenario/ScenarioPickerPanel";
+import type { PlayScenarioDetail } from "./scenario/ScenarioPickerPanel";
 import { lastUserMeResponse } from "./UserMeBroadcast";
 import { UsernameInput } from "./UsernameInput";
 import { UserSettings } from "./UserSettings";
@@ -554,6 +568,16 @@ export class SinglePlayerModal extends BaseModal {
             @open-shared-save=${(e: CustomEvent<string>) =>
               (this.sharedSaveId = e.detail)}
           ></saved-games-panel>
+          ${
+            scenarioPickerAllowed(this.userMeResponse)
+              ? html`<scenario-picker-panel
+                  class="block mb-6"
+                  .signedIn=${responseHasLinkedIdentity(this.userMeResponse)}
+                  .busy=${this.starting}
+                  @play-scenario=${this.handlePlayScenario}
+                ></scenario-picker-panel>`
+              : null
+          }
           <game-config-settings
             class="block"
             .sectionGapClass=${"space-y-6"}
@@ -575,7 +599,6 @@ export class SinglePlayerModal extends BaseModal {
                 selected: this.teamCount,
               },
               options: {
-                titleKey: "game_settings.options",
                 bots: {
                   value: this.bots,
                   labelKey: "game_settings.bots",
@@ -715,6 +738,8 @@ export class SinglePlayerModal extends BaseModal {
       }
     }
     this.sharedSaveId = null;
+    // Drops a downloaded scenario bundle, which can be large.
+    this.querySelector("scenario-picker-panel")?.reset();
     this.resetOptions();
   }
 
@@ -728,7 +753,7 @@ export class SinglePlayerModal extends BaseModal {
     void prewarmCosmetics();
     if (this.starting) return;
     await this.launch(async ({ resolvedName, cosmetics }, usernameInput) => {
-      const gameID = generateID();
+      const gameID = generateSingleplayerGameID();
       return {
         gameID,
         gameStartInfo: {
@@ -1053,7 +1078,7 @@ export class SinglePlayerModal extends BaseModal {
   private handleBotsChange = (e: Event) => {
     const customEvent = e as CustomEvent<{ value: number }>;
     const value = customEvent.detail.value;
-    if (isNaN(value) || value < 0 || value > 400) {
+    if (isNaN(value) || value < 0 || value > MAX_BOTS) {
       return;
     }
     this.bots = value;
@@ -1314,7 +1339,7 @@ export class SinglePlayerModal extends BaseModal {
         `Starting single player game with map: ${GameMapType[this.selectedMap as keyof typeof GameMapType]}${this.useRandomMap ? " (Randomly selected)" : ""}`,
       );
       const clientID = generateID();
-      const gameID = generateID();
+      const gameID = generateSingleplayerGameID();
       return {
         gameID: gameID,
         gameStartInfo: {
@@ -1430,7 +1455,7 @@ export class SinglePlayerModal extends BaseModal {
           `Resuming saved game ${id} on ${header.gameConfig.gameMap} at tick ${header.tick}`,
         );
         // A fresh id: a shared save is played by many, each its own game.
-        const gameID = generateID();
+        const gameID = generateSingleplayerGameID();
         return {
           gameID,
           gameStartInfo: {
@@ -1466,17 +1491,63 @@ export class SinglePlayerModal extends BaseModal {
     }
   }
 
+  private handlePlayScenario = (e: Event) => {
+    const { bundle, nationID } = (e as CustomEvent<PlayScenarioDetail>).detail;
+    void this.startScenario(bundle, nationID);
+  };
+
+  /**
+   * Plays a published scenario as one of its nations, from the bundle the
+   * picker downloaded and checked. Like a saved game, it starts from a
+   * snapshot, so it is not archived and awards nothing.
+   */
+  private async startScenario(bundle: ScenarioBundle, nationID: string) {
+    if (this.starting) return;
+    // launch() takes the next attempt; one started after it retires this one.
+    const attempt = this.startAttempt + 1;
+    try {
+      await this.launch(
+        async ({ resolvedName, cosmetics }, usernameInput) => {
+          // It reads the snapshot on a worker (this page can't load the
+          // engine).
+          const { scenarioBundleGameStart } =
+            await import("./scenario/ScenarioStart");
+          return scenarioBundleGameStart(bundle, nationID, {
+            username: resolvedName.name,
+            clanTag: usernameInput?.getClanTag() ?? null,
+            cosmetics,
+          });
+        },
+        () => useScenarioMap(bundle),
+      );
+    } catch (err) {
+      console.error("Failed to start the scenario", err);
+      // A start retired while it downloaded or read the bundle isn't the
+      // player's to hear about.
+      if (attempt !== this.startAttempt) return;
+      await showInGameAlert(
+        translateText(
+          err instanceof ScenarioBundleError
+            ? scenarioPlayErrorKey(err.problem)
+            : "scenario_picker.error.start_failed",
+        ),
+      );
+    }
+  }
+
   /**
    * What every solo start shares: the busy button, the starting overlay, the
    * player's name and cosmetics, the midgame ad and the join-lobby dispatch.
    * `build` makes the event once the name and cosmetics are known, before
    * the ad; throwing from it abandons the start (and reaches the caller).
+   * `beforeDispatch` runs only for the attempt that dispatches.
    */
   private async launch(
     build: (
       prepared: StartPreparation,
       usernameInput: UsernameInput | null,
     ) => Promise<JoinLobbyEvent>,
+    beforeDispatch?: () => void,
   ): Promise<void> {
     // Everything past this point awaits something, some of it network-bound.
     // Hold the button in its busy state until join-lobby is away so the wait
@@ -1532,11 +1603,16 @@ export class SinglePlayerModal extends BaseModal {
       // The ad is long enough that the modal can be closed while it runs.
       if (attempt !== this.startAttempt) return;
 
+      // Global state the start installs (a scenario's map) goes in here,
+      // past the last check, so a retired attempt can't replace the live
+      // one's.
+      beforeDispatch?.();
       this.dispatchEvent(
         new CustomEvent("join-lobby", {
           detail,
           bubbles: true,
           composed: true,
+          cancelable: true,
         }),
       );
       // The overlay is the join pipeline's now — GameRenderer or Main's

@@ -2,8 +2,8 @@ import { TileRef } from "@openfront/engine-api/game/GameMap";
 import { UnitType } from "@openfront/engine-api/game/GameTypes";
 import { PseudoRandom } from "@openfront/engine-lib/PseudoRandom";
 import {
+  zFinite,
   zInt,
-  zNum,
   zPlayerRef,
   zRandom,
   zRef,
@@ -11,7 +11,14 @@ import {
 } from "@openfront/engine-lib/snapshot/SnapshotType";
 import { findMinimumBy } from "@openfront/engine-lib/Util";
 import { z } from "zod";
-import { Execution, Game, isUnit, OwnerComp, Unit } from "../game/Game";
+import {
+  Execution,
+  Game,
+  isUnit,
+  OwnerComp,
+  Unit,
+  UnitParams,
+} from "../game/Game";
 import { WaterPathFinder } from "../pathfinding/PathFinder";
 import { PathStatus } from "../pathfinding/types";
 import { execSnapshotType } from "../snapshot/ExecutionSnapshot";
@@ -38,34 +45,20 @@ export class WarshipExecution implements Execution {
   private lastObservedPatrolTile: TileRef | undefined;
   private activeHealingRemainder = 0;
   private lastEmittedCombat = false;
-  private unitType: UnitType.Warship | UnitType.AircraftCarrier =
-    UnitType.Warship;
-  private lastCarrierMoveTick = 0;
 
   constructor(
-    private input:
-      | (OwnerComp & {
-          patrolTile: TileRef;
-          unitType?: UnitType.AircraftCarrier;
-        })
-      | Unit,
+    private input: (UnitParams<UnitType.Warship> & OwnerComp) | Unit,
   ) {}
 
   init(mg: Game, ticks: number): void {
     this.mg = mg;
     this.pathfinder = new WaterPathFinder(mg);
     this.random = new PseudoRandom(mg.ticks());
-    this.lastCarrierMoveTick = ticks;
     if (isUnit(this.input)) {
       this.warship = this.input;
-      this.unitType =
-        this.input.type() === UnitType.AircraftCarrier
-          ? UnitType.AircraftCarrier
-          : UnitType.Warship;
     } else {
-      this.unitType = this.input.unitType ?? UnitType.Warship;
       const spawn = this.input.owner.canBuild(
-        this.unitType,
+        UnitType.Warship,
         this.input.patrolTile,
       );
       if (spawn === false) {
@@ -74,9 +67,11 @@ export class WarshipExecution implements Execution {
         );
         return;
       }
-      this.warship = this.input.owner.buildUnit(this.unitType, spawn, {
-        patrolTile: this.input.patrolTile,
-      });
+      this.warship = this.input.owner.buildUnit(
+        UnitType.Warship,
+        spawn,
+        this.input,
+      );
     }
     this.lastObservedPatrolTile = this.warship.warshipState().patrolTile;
   }
@@ -119,18 +114,6 @@ export class WarshipExecution implements Execution {
     }
 
     if (this.handleRepairRetreat()) {
-      return;
-    }
-
-    // Aircraft carriers are mobile airbases, not gun ships. They keep
-    // patrolling and withdraw for port repairs, but never enter naval target
-    // acquisition or fire shells.
-    if (this.warship.type() === UnitType.AircraftCarrier) {
-      if (this.shouldStartRepairRetreat(healthBeforeHealing)) {
-        this.startRepairRetreat();
-        if (this.handleRepairRetreat()) return;
-      }
-      this.patrol();
       return;
     }
 
@@ -469,13 +452,13 @@ export class WarshipExecution implements Execution {
     const result = this.pathfinder.next(this.warship.tile(), retreatPortTile);
     switch (result.status) {
       case PathStatus.COMPLETE:
-        this.moveUnit(result.node);
+        this.warship.move(result.node);
         if (result.node === retreatPortTile) {
           this.warship.setTargetTile(undefined);
         }
         break;
       case PathStatus.NEXT:
-        this.moveUnit(result.node);
+        this.warship.move(result.node);
         break;
       case PathStatus.NOT_FOUND: {
         const newPort = this.findNearestAvailablePortTile();
@@ -710,7 +693,7 @@ export class WarshipExecution implements Execution {
       if (dist <= 20) {
         const nextTile = this.bestNeighborToward(targetTile);
         if (nextTile !== undefined) {
-          this.moveUnit(nextTile);
+          this.warship.move(nextTile);
           continue;
         }
       }
@@ -724,7 +707,7 @@ export class WarshipExecution implements Execution {
           this.warship.touch();
           return;
         case PathStatus.NEXT:
-          this.moveUnit(result.node);
+          this.warship.move(result.node);
           break;
         case PathStatus.NOT_FOUND:
           console.log(`path not found to target`);
@@ -763,10 +746,10 @@ export class WarshipExecution implements Execution {
     switch (result.status) {
       case PathStatus.COMPLETE:
         this.warship.setTargetTile(undefined);
-        this.moveUnit(result.node);
+        this.warship.move(result.node);
         break;
       case PathStatus.NEXT:
-        this.moveUnit(result.node);
+        this.warship.move(result.node);
         break;
       case PathStatus.NOT_FOUND: {
         console.log(`path not found to target`);
@@ -774,15 +757,6 @@ export class WarshipExecution implements Execution {
         break;
       }
     }
-  }
-
-  private moveUnit(tile: TileRef): void {
-    if (this.warship.type() === UnitType.AircraftCarrier) {
-      const interval = this.mg.config().aircraftCarrierTicksPerMove();
-      if (this.mg.ticks() - this.lastCarrierMoveTick < interval) return;
-      this.lastCarrierMoveTick = this.mg.ticks();
-    }
-    this.warship.move(tile);
   }
 
   isActive(): boolean {
@@ -873,10 +847,6 @@ export class WarshipExecution implements Execution {
         : {
             owner: w.player(this.input.owner),
             patrolTile: this.input.patrolTile,
-            unitType:
-              this.unitType === UnitType.AircraftCarrier
-                ? UnitType.AircraftCarrier
-                : undefined,
           },
       initialized: this.mg !== undefined,
       random: this.random === undefined ? null : w.random(this.random),
@@ -891,7 +861,6 @@ export class WarshipExecution implements Execution {
       lastObservedPatrolTile: this.lastObservedPatrolTile,
       activeHealingRemainder: this.activeHealingRemainder,
       lastEmittedCombat: this.lastEmittedCombat,
-      lastCarrierMoveTick: this.lastCarrierMoveTick,
     });
   }
 
@@ -899,17 +868,7 @@ export class WarshipExecution implements Execution {
     this.input =
       "unit" in s.input
         ? r.unit(s.input.unit)
-        : {
-            owner: r.player(s.input.owner),
-            patrolTile: s.input.patrolTile,
-            unitType: s.input.unitType,
-          };
-    this.unitType =
-      "unit" in s.input
-        ? r.unit(s.input.unit).type() === UnitType.AircraftCarrier
-          ? UnitType.AircraftCarrier
-          : UnitType.Warship
-        : (s.input.unitType ?? UnitType.Warship);
+        : { owner: r.player(s.input.owner), patrolTile: s.input.patrolTile };
     if (s.initialized) this.mg = r.game;
     if (s.random !== null) this.random = r.random(s.random);
     if (s.warship !== null) this.warship = r.unit(s.warship);
@@ -923,7 +882,6 @@ export class WarshipExecution implements Execution {
     this.lastObservedPatrolTile = s.lastObservedPatrolTile;
     this.activeHealingRemainder = s.activeHealingRemainder;
     this.lastEmittedCombat = s.lastEmittedCombat;
-    this.lastCarrierMoveTick = s.lastCarrierMoveTick;
   }
 }
 
@@ -931,11 +889,7 @@ const WarshipExecutionStateSchema = z.object({
   /** An existing warship, or the params to build one in init(). */
   input: z.union([
     z.object({ unit: zRef() }),
-    z.object({
-      owner: zPlayerRef(),
-      patrolTile: zTile(),
-      unitType: z.literal(UnitType.AircraftCarrier).optional(),
-    }),
+    z.object({ owner: zPlayerRef(), patrolTile: zTile() }),
   ]),
   initialized: z.boolean(),
   random: zRandom().nullable(),
@@ -947,9 +901,8 @@ const WarshipExecutionStateSchema = z.object({
   alreadySentShell: z.array(zRef()),
   lastManualMoveTickRetreatDisabled: zInt(),
   lastObservedPatrolTile: zTile().optional(),
-  activeHealingRemainder: zNum(),
+  activeHealingRemainder: zFinite(),
   lastEmittedCombat: z.boolean(),
-  lastCarrierMoveTick: zInt().default(0),
 });
 type WarshipExecutionState = z.infer<typeof WarshipExecutionStateSchema>;
 

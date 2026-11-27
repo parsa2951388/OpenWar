@@ -6,7 +6,6 @@ import {
   Cell,
   Difficulty,
   EmojiMessage,
-  FighterState,
   GameUpdates,
   Gold,
   MessageType,
@@ -66,32 +65,6 @@ export interface UnitParamsMap {
 
   [UnitType.Warship]: {
     patrolTile: TileRef;
-  };
-
-  [UnitType.AircraftCarrier]: {
-    patrolTile: TileRef;
-  };
-
-  [UnitType.Airport]: Record<string, never>;
-
-  [UnitType.CommercialAircraft]: {
-    targetUnit: Unit;
-  };
-
-  [UnitType.StealthFighter]: {
-    patrolTile: TileRef;
-  };
-
-  [UnitType.GroundAttacker]: {
-    patrolTile: TileRef;
-  };
-
-  [UnitType.AirFighter]: {
-    patrolTile: TileRef;
-  };
-
-  [UnitType.AirMissile]: {
-    targetUnit: Unit;
   };
 
   [UnitType.Shell]: Record<string, never>;
@@ -280,8 +253,6 @@ export interface Unit extends UnitLike {
   hasHealth(): boolean;
   warshipState(): WarshipState;
   updateWarshipState(update: Partial<WarshipState>): void;
-  fighterState(): FighterState;
-  updateFighterState(update: Partial<FighterState>): void;
   transportShipState(): TransportShipState;
   updateTransportShipState(update: Partial<TransportShipState>): void;
   nukeState(): NukeState;
@@ -325,6 +296,11 @@ export interface Unit extends UnitLike {
   level(): number;
   increaseLevel(): void;
   decreaseLevel(destroyer?: Player): void;
+  /**
+   * Scenario editor: the structure as if built at this level, not upgraded
+   * to it: loaded, and a SAM at its full range at once.
+   */
+  placeAtLevel(level: number): void;
 }
 
 export interface Embargo {
@@ -354,6 +330,9 @@ export interface Player extends PlayerLike {
   isPlayer(): this is Player;
   toString(): string;
   isLobbyCreator(): boolean;
+  /** A scenario nation a human may be assigned (docs/ScenarioEditor.md). */
+  playable(): boolean;
+  setPlayable(playable: boolean): void;
 
   // State & Properties
   isAlive(): boolean;
@@ -393,6 +372,8 @@ export interface Player extends PlayerLike {
 
   // Resources & Troops
   gold(): Gold;
+  /** Sets gold outright, as starting gold is: not counted as income. */
+  setGold(gold: Gold): void;
   addGold(toAdd: Gold, tile?: TileRef): void;
   removeGold(toRemove: Gold): Gold;
 
@@ -579,6 +560,11 @@ export interface Game extends GameLike {
   teamSpawnArea(team: Team): SpawnArea | undefined;
 
   // Alliances
+  /**
+   * Makes the two players allies from now, as an accepted request does,
+   * for the config's alliance duration. Throws if they already are.
+   */
+  createAlliance(requestor: Player, recipient: Player): MutableAlliance;
   expireAlliance(alliance: Alliance): void;
 
   // Immunity timer
@@ -592,6 +578,7 @@ export interface Game extends GameLike {
   endSpawnPhase(): void;
   queueViewResync(): void;
   executeNextTick(): GameUpdates;
+  drainPendingUpdates(): GameUpdates;
   drainPackedTileUpdates(): Uint32Array;
   recordMotionPlan(record: MotionPlanRecord): void;
   drainPackedMotionPlans(): Uint32Array | null;
@@ -641,10 +628,6 @@ export interface Game extends GameLike {
 
   addExecution(...exec: Execution[]): void;
   executions(): Execution[];
-  recordFighterBombAlert(fighterId: number, tile: TileRef): boolean;
-  clearFighterBombAlerts(fighterId: number): void;
-  reserveFighterAamTarget(fighterId: number, targetId: number): boolean;
-  clearFighterAamTarget(fighterId: number, targetId: number): void;
   removeExecution(exec: Execution): void;
   takeoverPlayer(player: Player | PlayerID, localClientID: ClientID): void;
   convertHumanToNation(player: Player | PlayerID, gameID: GameID): Execution;
@@ -678,6 +661,26 @@ export interface Game extends GameLike {
 
   // Nations
   nations(): Nation[];
+  // Scenario editor (docs/ScenarioEditor.md)
+  addNation(info: PlayerInfo): Player;
+  removeNation(nation: Player): void;
+  restoreNation(info: PlayerInfo): void;
+  removeAlliance(alliance: Alliance): void;
+  setNationInfo(nation: Player, info: PlayerInfo): void;
+  /**
+   * Writes the authored terrain of the tiles and repairs the terrain around
+   * them, except what waits for endTerrainEdit() (WaterManager.editTerrain).
+   */
+  setTerrain(tiles: readonly TileRef[], terrain: readonly number[]): void;
+  /** Redoes the ocean bit and the depth of water with no coast. */
+  endTerrainEdit(): void;
+  /** The map16x the map generator would make from the minimap. */
+  downscaleMiniMap(): GameMap;
+  /**
+   * Relabels the water components and rebuilds the water graph after
+   * terrain edits. The scenario editor runs it before test play.
+   */
+  rebuildWaterGraph(): void;
 
   numTilesWithFallout(): number;
   stats(): Stats;

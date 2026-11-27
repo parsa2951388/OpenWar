@@ -199,6 +199,7 @@ export class PlayerImpl implements Player {
   private _spawnTile: TileRef | undefined;
   private _isDisconnected = false;
   private _disconnectSnapshot: DisconnectSnapshot | null = null;
+  private _playable = false;
 
   /**
    * Last PlayerUpdate emitted for this player on the worker→main channel.
@@ -416,6 +417,7 @@ export class PlayerImpl implements Player {
       betrayals: this._betrayalCount,
       lastDeleteUnitTick: this.lastDeleteUnitTick,
       isLobbyCreator: this.isLobbyCreator(),
+      playable: this._playable,
     };
   }
 
@@ -735,6 +737,14 @@ export class PlayerImpl implements Player {
 
   isLobbyCreator(): boolean {
     return this.playerInfo.isLobbyCreator;
+  }
+
+  playable(): boolean {
+    return this._playable;
+  }
+
+  setPlayable(playable: boolean): void {
+    this._playable = playable;
   }
 
   isAlive(): boolean {
@@ -1345,6 +1355,10 @@ export class PlayerImpl implements Player {
     return this._goldEarned;
   }
 
+  setGold(gold: Gold): void {
+    this._gold = gold;
+  }
+
   addGold(toAdd: Gold, tile?: TileRef): void {
     this._gold += toAdd;
     // Every gold grant flows through here (workers, trade, trains, piracy,
@@ -1615,14 +1629,7 @@ export class PlayerImpl implements Player {
       case UnitType.Port:
         return this.portSpawn(targetTile, validTiles);
       case UnitType.Warship:
-      case UnitType.AircraftCarrier:
         return this.warshipSpawn(targetTile);
-      case UnitType.StealthFighter:
-      case UnitType.GroundAttacker:
-      case UnitType.AirFighter:
-        return this.fighterSpawn(targetTile);
-      case UnitType.CommercialAircraft:
-      case UnitType.AirMissile:
       case UnitType.Shell:
       case UnitType.SAMMissile:
         return targetTile;
@@ -1637,7 +1644,6 @@ export class PlayerImpl implements Player {
       case UnitType.SAMLauncher:
       case UnitType.City:
       case UnitType.Factory:
-      case UnitType.Airport:
         return this.landBasedStructureSpawn(targetTile, validTiles);
       default:
         assertNever(unitType);
@@ -1723,36 +1729,6 @@ export class PlayerImpl implements Player {
     );
 
     return bestPort?.tile() ?? false;
-  }
-
-  fighterSpawn(targetTile: TileRef): TileRef | false {
-    const airports = this.units(UnitType.Airport).filter(
-      (airport) => airport.isActive() && !airport.isUnderConstruction(),
-    );
-    if (airports.length === 0) return false;
-
-    // Prefer the closest airport with free service capacity. Each airport
-    // level provides one simultaneous fighter service slot.
-    const available = airports.filter((airport) => {
-      const servicing = this.mg
-        .nearbyUnits(airport.tile(), this.mg.config().fighterRefuelRange(), [
-          UnitType.StealthFighter,
-          UnitType.GroundAttacker,
-          UnitType.AirFighter,
-        ])
-        .filter(({ unit }) => {
-          if (unit.owner() !== this) return false;
-          const state = unit.fighterState();
-          return state.state === "returning" || state.state === "refueling";
-        });
-      return servicing.length < airport.level();
-    });
-    const candidates = available.length > 0 ? available : airports;
-    return (
-      findClosestBy(candidates, (airport) =>
-        this.mg.manhattanDist(airport.tile(), targetTile),
-      )?.tile() ?? false
-    );
   }
 
   landBasedUnitSpawn(tile: TileRef): TileRef | false {
@@ -2059,6 +2035,7 @@ export class PlayerImpl implements Player {
       disconnectSnapshot: this._disconnectSnapshot
         ? { ...this._disconnectSnapshot }
         : null,
+      playable: this._playable,
       // Never assigned until the first PlayerExecution tick; keep that apart
       // from an explicit null.
       largestClusterBoundingBox: box
@@ -2136,6 +2113,7 @@ export class PlayerImpl implements Player {
     this._disconnectSnapshot = s.disconnectSnapshot
       ? { ...s.disconnectSnapshot }
       : null;
+    this._playable = s.playable;
     this.lastSentUpdate = undefined;
     const box = s.largestClusterBoundingBox;
     this.largestClusterBoundingBox = box
@@ -2151,7 +2129,11 @@ export class PlayerImpl implements Player {
 
 export const PlayerSnapshot = snapshotType({
   name: "Player",
-  version: 1,
+  version: 2,
+  migrations: {
+    // v1 had no scenario nations, so none was playable.
+    1: (d) => ({ ...d, playable: false }),
+  },
   schema: z.object({
     smallID: zInt(),
     info: PlayerInfoSchema,
@@ -2210,6 +2192,7 @@ export const PlayerSnapshot = snapshotType({
         wasAlive: z.boolean(),
       })
       .nullable(),
+    playable: z.boolean(),
     largestClusterBoundingBox: z
       .object({ minX: zInt(), minY: zInt(), maxX: zInt(), maxY: zInt() })
       .nullable()

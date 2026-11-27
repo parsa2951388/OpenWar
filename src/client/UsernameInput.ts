@@ -2,6 +2,8 @@ import { UserMeResponse } from "@openfront/shared/ApiSchemas";
 import { sanitizeClanTag } from "@openfront/shared/SharedUtil";
 import { html, LitElement } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { unsafeSVG } from "lit/directives/unsafe-svg.js";
+import diceIcon from "../../resources/images/DiceIcon.svg?raw";
 import { translateText } from "../client/Utils";
 import { getUserMe, invalidateUserMe } from "./Api";
 import { checkClanTagOwnership } from "./ClanApi";
@@ -13,6 +15,7 @@ import {
   accountVerifiedName,
   clampUsername,
   genAnonUsername,
+  generateRandomPlayerName,
   LAPSE_NOTICE_KEY,
   lapseNoticeMarker,
   looksGenerated,
@@ -29,6 +32,7 @@ import {
   steamGrantEndedShown,
 } from "./SteamGrantNotices";
 import { steamSDK } from "./SteamSDK";
+import { UserSettings } from "./UserSettings";
 import {
   MAX_CLAN_TAG_LENGTH,
   MAX_USERNAME_LENGTH,
@@ -152,6 +156,9 @@ export class UsernameInput extends LitElement {
   // grace value itself only changes on account events, which a sitting client
   // never receives.
   private claimGraceTimer: ReturnType<typeof setTimeout> | null = null;
+  // The reminder the player closed, as its lapseNoticeMarker. Session-only and
+  // keyed on the phase, so it returns next launch or when the name goes at risk.
+  @state() private claimGraceDismissed: string | null = null;
 
   // Clans aren't supported on portals — hide the tag input and never submit one.
   private readonly onGamePortal = gamePortal.isOnGamePortal();
@@ -668,9 +675,18 @@ export class UsernameInput extends LitElement {
     // — falls back to a fresh guest username instead of keeping the account
     // name. addAuthListener only fires on login; portals refresh the page on
     // logout, so there is no logout event to handle.
+    const nameBeforePortalRequest = this.baseUsername;
     const portalSeed = gamePortal
       .getUsername()
-      .then((username) => this.applyPortalUsername(username))
+      .then((username) => {
+        // Even restoring the original text is a player choice.
+        if (
+          this.baseUsername === nameBeforePortalRequest &&
+          this.usernameIsGenerated
+        ) {
+          this.applyPortalUsername(username);
+        }
+      })
       .catch(() => {
         // Swallow: keep the name in hand so the player can always play.
       });
@@ -838,7 +854,9 @@ export class UsernameInput extends LitElement {
            countdown the player cannot recover once it lapses. Hiding the
            second behind the first put the time-critical one last. -->
       ${
-        this.validationError || this.clanTagOwnershipError || this.claimGrace
+        this.validationError ||
+        this.clanTagOwnershipError ||
+        this.claimGraceVisible()
           ? html`<div
               class="absolute top-full left-0 z-50 w-full sm:w-auto sm:max-w-[calc((100%-1rem)*2/3)] lg:group-has-[.streaming-live]/strip:max-w-full mt-1 flex flex-col gap-1 items-start"
             >
@@ -870,17 +888,37 @@ export class UsernameInput extends LitElement {
   // stacks under any validation error rather than replacing it — a player
   // mid-edit on an invalid name is exactly who still needs to know their
   // reserved name is expiring. Positioning lives on the shared wrapper.
+  private claimGraceVisible(): boolean {
+    const grace = this.claimGrace;
+    return (
+      grace !== null && lapseNoticeMarker(grace) !== this.claimGraceDismissed
+    );
+  }
+
   private renderClaimGrace() {
     const grace = this.claimGrace;
-    if (grace === null) return null;
+    if (grace === null || !this.claimGraceVisible()) return null;
     return html`<div
       id="username-claim-grace"
-      class="w-full sm:w-auto px-3 py-2 text-sm font-medium border border-amber-500/40 rounded-lg bg-amber-950/90 text-amber-200 backdrop-blur-md shadow-lg"
+      class="flex items-start gap-2 w-full sm:w-auto px-3 py-2 text-sm font-medium border border-amber-500/40 rounded-lg bg-amber-950/90 text-amber-200 backdrop-blur-md shadow-lg"
     >
-      ${translateText(
-        grace.atRisk ? "username.claim_at_risk" : "username.claim_reserved",
-        { name: grace.name, date: formatClaimDate(grace.expiresAt) },
-      )}
+      <span class="flex-1">
+        ${translateText(
+          grace.atRisk ? "username.claim_at_risk" : "username.claim_reserved",
+          { name: grace.name, date: formatClaimDate(grace.expiresAt) },
+        )}
+      </span>
+      <button
+        type="button"
+        id="username-claim-grace-close"
+        class="shrink-0 px-1 leading-none text-amber-200/70 hover:text-amber-100 cursor-pointer"
+        aria-label=${translateText("common.close")}
+        @click=${() => {
+          this.claimGraceDismissed = lapseNoticeMarker(grace);
+        }}
+      >
+        ✕
+      </button>
     </div>`;
   }
 
@@ -1063,6 +1101,7 @@ export class UsernameInput extends LitElement {
       ${
         this.verifiedActive ? this.renderVerifiedChip() : this.renderNameInput()
       }
+      ${this.verifiedActive ? null : this.renderRandomNameButton()}
       <!-- The buttons differ in width, so this resizes the name field — which
            is transparent and left-aligned, so only its invisible right edge
            moves. -->
@@ -1133,6 +1172,34 @@ export class UsernameInput extends LitElement {
         class="text-left text-white placeholder-white/50 transition-colors text-ellipsis hover:bg-white/5 focus:bg-white/5 focus:outline-none focus:ring-2 focus:ring-malibu-blue/60 ${NAME_BOX} ${NAME_TEXT}"
       />
     `;
+  }
+
+  private renderRandomNameButton() {
+    return html`
+      <button
+        type="button"
+        class="shrink-0 h-full max-h-[44px] px-2 flex items-center justify-center rounded-lg border border-white/15 bg-black/25 text-white/70 hover:bg-black/40 hover:text-white focus-visible:outline-2 focus-visible:outline-malibu-blue cursor-pointer"
+        title=${translateText("username.random_name")}
+        aria-label=${translateText("username.random_name")}
+        @click=${this.handleRandomName}
+      >
+        <span class="w-5 h-5" aria-hidden="true"> ${unsafeSVG(diceIcon)} </span>
+      </button>
+    `;
+  }
+
+  private handleRandomName() {
+    this.baseUsername = generateRandomPlayerName(
+      new UserSettings().randomNameStyle(),
+      this.resolvedName().name,
+    );
+    // A button-generated name is an explicit choice: Steam must not reseed it.
+    this.usernameIsGenerated = false;
+    // Account details may still be loading, so clear the preference even when
+    // the verified chip has not appeared yet.
+    this.verifiedActive = false;
+    localStorage.setItem(useVerifiedNameKey, "false");
+    this.validateAndStore();
   }
 
   private renderUseVerifiedButton() {

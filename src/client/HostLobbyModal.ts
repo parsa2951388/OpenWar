@@ -8,6 +8,7 @@ import {
 import {
   GameConfigPatch,
   isValidGameID,
+  MAX_BOTS,
   TeamCountConfig,
 } from "@openfront/engine-api/Schemas";
 import { DoomsdayClockSpeed } from "@openfront/engine-lib/game/DoomsdayClock";
@@ -698,8 +699,8 @@ export class HostLobbyModal extends BaseModal {
           <!-- Players joined a listed lobby for its advertised settings, so
                they are frozen (the server rejects changes too). -->
           <game-config-settings
-            class="block ${this.publiclyListed ? "opacity-60" : ""}"
-            ?inert=${this.publiclyListed}
+            class="block"
+            .locked=${this.publiclyListed}
             .sectionGapClass=${"space-y-10"}
             .settings=${{
               map: {
@@ -718,7 +719,6 @@ export class HostLobbyModal extends BaseModal {
                 selected: this.teamCount,
               },
               options: {
-                titleKey: "game_settings.options",
                 bots: {
                   value: this.bots,
                   labelKey: "game_settings.bots",
@@ -992,6 +992,7 @@ export class HostLobbyModal extends BaseModal {
             } as JoinLobbyEvent,
             bubbles: true,
             composed: true,
+            cancelable: true,
           }),
         );
       })
@@ -1027,6 +1028,7 @@ export class HostLobbyModal extends BaseModal {
         } as JoinLobbyEvent,
         bubbles: true,
         composed: true,
+        cancelable: true,
       }),
     );
   }
@@ -1281,7 +1283,7 @@ export class HostLobbyModal extends BaseModal {
   private handleBotsChange = (e: Event) => {
     const customEvent = e as CustomEvent<{ value: number }>;
     const value = customEvent.detail.value;
-    if (isNaN(value) || value < 0 || value > 400) {
+    if (isNaN(value) || value < 0 || value > MAX_BOTS) {
       return;
     }
 
@@ -1717,6 +1719,8 @@ export class HostLobbyModal extends BaseModal {
       key = "private_lobby.listing_full";
     } else if (serverError === "listing_max_players_too_low") {
       key = "private_lobby.listing_max_players_too_low";
+    } else if (serverError === "listing_max_players_too_high") {
+      key = "private_lobby.listing_max_players_too_high";
     }
     showToast(translateText(key), "red", 3000);
   }

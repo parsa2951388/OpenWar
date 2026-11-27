@@ -34,6 +34,7 @@ import {
 import { TerrainMapData } from "@openfront/engine-lib/game/TerrainMapLoader";
 import { TerraNulliusImpl } from "@openfront/engine-lib/game/TerraNulliusImpl";
 import { UnitGrid } from "@openfront/engine-lib/game/UnitGrid";
+import type { PlayerCard } from "@openfront/shared/PlayerCardSchemas";
 import { PlayerCosmetics, WirePlayer } from "@openfront/shared/WireSchemas";
 import { computeAllianceClusters } from "../render/frame/derive/AllianceClusters";
 import { extractAttackRings } from "../render/frame/derive/AttackRings";
@@ -148,6 +149,8 @@ export class GameView implements GameLike {
   private toDelete = new Set<number>();
 
   private _cosmetics: Map<string, PlayerCosmetics> = new Map();
+  // Each human's player card as this viewer was sent it (card owners only).
+  private _cards: Map<ClientID, PlayerCard> = new Map();
   private _cosmeticVisibility: CosmeticVisibility = readCosmeticVisibility();
 
   private _map: GameMap;
@@ -169,6 +172,9 @@ export class GameView implements GameLike {
     this._cosmetics = new Map(
       humans.map((h) => [h.clientID, h.cosmetics ?? {}]),
     );
+    for (const h of humans) {
+      if (h.card !== undefined) this._cards.set(h.clientID, h.card);
+    }
 
     // Nation-type players carry their own flag on the wire (PlayerUpdate.nationFlag,
     // sourced from the manifest via PlayerInfo) rather than being looked up here by
@@ -540,6 +546,8 @@ export class GameView implements GameLike {
     f.railroadDirty = this.railroadCache.railroadDirty;
     f.trailDirtyRowMin = this.trailManager.dirtyRowMin;
     f.trailDirtyRowMax = this.trailManager.dirtyRowMax;
+    // References TrailManager's live array; must be read before the next tick clears it.
+    f.changedTrailTiles = this.trailManager.changedTiles;
 
     f.playerStatus = computePlayerStatus(this._playerStates, this._unitStates, {
       localPlayerSmallID: this._myPlayer?.smallID() ?? 0,
@@ -992,6 +1000,19 @@ export class GameView implements GameLike {
   height(): number {
     return this._map.height();
   }
+  // A human's player card, undefined when they don't own one (or it was
+  // withheld from this viewer), with the flag they equipped. The flag is the
+  // one they wear, not the one this viewer's cosmetic settings draw.
+  playerCardOf(clientID: ClientID): {
+    card: PlayerCard | undefined;
+    flag: string | undefined;
+  } {
+    return {
+      card: this._cards.get(clientID),
+      flag: this._cosmetics.get(clientID)?.flag,
+    };
+  }
+
   numLandTiles(): number {
     return this._map.numLandTiles();
   }
@@ -1044,6 +1065,9 @@ export class GameView implements GameLike {
   }
   setMagnitude(ref: TileRef, value: number): void {
     this._map.setMagnitude(ref, value);
+  }
+  setTerrainByte(ref: TileRef, value: number): void {
+    this._map.setTerrainByte(ref, value);
   }
   ownerID(ref: TileRef): number {
     return this._map.ownerID(ref);

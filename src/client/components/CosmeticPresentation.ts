@@ -1,6 +1,7 @@
 import { CosmeticPack, Pack } from "@openfront/shared/CosmeticSchemas";
 import { ResolvedCosmetic, translateCosmetic } from "../Cosmetics";
 import { translateText } from "../Utils";
+import { type CardItem, cardItemName, isCardItemType } from "./card/CardItems";
 
 export function cosmeticDisplayName(resolved: ResolvedCosmetic): string {
   const cosmetic = resolved.cosmetic;
@@ -30,6 +31,9 @@ export function cosmeticDisplayName(resolved: ResolvedCosmetic): string {
   }
   if (resolved.type === "crown") {
     return translateCosmetic("crowns", cosmetic.name);
+  }
+  if (isCardItemType(resolved.type)) {
+    return cardItemName(resolved.type, cosmetic as CardItem);
   }
   return translateCosmetic("flags", cosmetic.name);
 }
@@ -88,6 +92,9 @@ export function cosmeticRarityLabel(resolved: ResolvedCosmetic): string {
       return translateText("cosmetics.epic");
     case "legendary":
       return translateText("cosmetics.legendary");
+    // Card items only: the one tier above Legendary.
+    case "oneofone":
+      return translateText("cosmetics.oneofone");
     default:
       return translateText("cosmetics.common");
   }
@@ -99,6 +106,8 @@ const RARITY_BADGE_CLASSES: Record<string, string> = {
   rare: "bg-blue-500/15 text-blue-300 border-blue-400/40",
   epic: "bg-purple-500/15 text-purple-300 border-purple-400/40",
   legendary: "bg-orange-500/15 text-orange-300 border-orange-400/40",
+  // Yellow, like the 1 of 1 card's own border.
+  oneofone: "bg-yellow-400/15 text-yellow-200 border-yellow-300/60",
 };
 
 /** Tailwind classes for a rarity pill, tinted by tier (matches CosmeticInfo's text colors). */

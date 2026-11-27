@@ -13,12 +13,6 @@ const trainLoadedCarriageSprite = assetUrl("sprites/trainCarriageLoaded.png");
 const trainEngineSprite = assetUrl("sprites/trainEngine.png");
 const transportShipSprite = assetUrl("sprites/transportship.png");
 const warshipSprite = assetUrl("sprites/warship.png");
-const aircraftCarrierSprite = assetUrl("sprites/aircraftcarrier.png");
-const commercialAircraftSprite = assetUrl("sprites/commercialaircraft.png");
-const stealthFighterSprite = assetUrl("sprites/stealthfighter.png");
-const groundAttackerSprite = assetUrl("sprites/groundattacker.png");
-const airFighterSprite = assetUrl("sprites/airfighter.png");
-const airMissileSprite = assetUrl("sprites/airmissile.png");
 
 // Can't reuse TrainType because "loaded" is not a type, just an attribute
 const TrainTypeSprite = {
@@ -32,12 +26,6 @@ type TrainTypeSprite = (typeof TrainTypeSprite)[keyof typeof TrainTypeSprite];
 const SPRITE_CONFIG: Partial<Record<UnitType | TrainTypeSprite, string>> = {
   [UnitType.TransportShip]: transportShipSprite,
   [UnitType.Warship]: warshipSprite,
-  [UnitType.AircraftCarrier]: aircraftCarrierSprite,
-  [UnitType.CommercialAircraft]: commercialAircraftSprite,
-  [UnitType.StealthFighter]: stealthFighterSprite,
-  [UnitType.GroundAttacker]: groundAttackerSprite,
-  [UnitType.AirFighter]: airFighterSprite,
-  [UnitType.AirMissile]: airMissileSprite,
   [UnitType.SAMMissile]: samMissileSprite,
   [UnitType.AtomBomb]: atomBombSprite,
   [UnitType.HydrogenBomb]: hydrogenBombSprite,
@@ -49,64 +37,44 @@ const SPRITE_CONFIG: Partial<Record<UnitType | TrainTypeSprite, string>> = {
 };
 
 const spriteMap: Map<UnitType | TrainTypeSprite, ImageBitmap> = new Map();
-const spriteLoadPromises = new Map<UnitType | TrainTypeSprite, Promise<void>>();
 
-// Preload once per asset. Reusing completed sprites and sharing in-flight loads
-// prevents repeated ImageBitmap allocations when players rejoin matches.
+// preload all images
 export const loadAllSprites = async (): Promise<void> => {
   const entries = Object.entries(SPRITE_CONFIG);
+  const totalSprites = entries.length;
+  let loadedCount = 0;
 
   await Promise.all(
     entries.map(async ([unitType, url]) => {
       const typedUnitType = unitType as UnitType | TrainTypeSprite;
+
       if (!url || url === "") {
         console.warn(`No sprite URL for ${typedUnitType}, skipping...`);
         return;
       }
-      if (spriteMap.has(typedUnitType)) return;
 
-      const pending = spriteLoadPromises.get(typedUnitType);
-      if (pending !== undefined) {
-        await pending;
-        return;
-      }
-
-      const load = (async () => {
-        try {
-          const img = new Image();
-          img.crossOrigin = "anonymous";
-          await new Promise<void>((resolve, reject) => {
-            img.onload = () => resolve();
-            img.onerror = (err) => reject(err);
-            img.src = url;
-          });
-
-          const bitmap = await createImageBitmap(img);
-          if (!spriteMap.has(typedUnitType)) {
-            spriteMap.set(typedUnitType, bitmap);
-          } else {
-            bitmap.close();
-          }
-        } catch (err) {
-          // Keep failures retryable on the next game initialization.
-          console.warn(`Failed to load sprite for ${typedUnitType}:`, err);
-        }
-      })();
-
-      spriteLoadPromises.set(typedUnitType, load);
       try {
-        await load;
-      } finally {
-        if (spriteLoadPromises.get(typedUnitType) === load) {
-          spriteLoadPromises.delete(typedUnitType);
+        const img = new Image();
+        img.crossOrigin = "anonymous";
+        img.src = url;
+
+        await new Promise<void>((resolve, reject) => {
+          img.onload = () => resolve();
+          img.onerror = (err) => reject(err);
+        });
+
+        const bitmap = await createImageBitmap(img);
+        spriteMap.set(typedUnitType, bitmap);
+        loadedCount++;
+
+        if (loadedCount === totalSprites) {
+          console.log("All sprites loaded.");
         }
+      } catch (err) {
+        console.warn(`Failed to load sprite for ${typedUnitType}:`, err);
       }
     }),
   );
-
-  if (spriteMap.size === entries.length) {
-    console.log("All sprites loaded.");
-  }
 };
 
 /**
@@ -137,11 +105,6 @@ const getSpriteForUnit = (unit: UnitView): ImageBitmap | null => {
 };
 
 const coloredSpriteCache: Map<string, HTMLCanvasElement> = new Map();
-
-/** Drop per-player canvases when a match ends; raw ImageBitmaps remain reusable. */
-export const clearColoredSpriteCache = (): void => {
-  coloredSpriteCache.clear();
-};
 
 /**
  * Load a canvas and replace grayscale with border colors

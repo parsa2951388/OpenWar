@@ -20,7 +20,7 @@
     "none": "Brak"
   },
   "main": {
-    "title": "Open War (ALPHA)",
+    "title": "OpenFront (ALPHA)",
     "join_discord": "Dołącz do Discord'a!",
     "login_discord": "Zaloguj się przez Discorda",
     "checking_login": "Sprawdzanie logowania...",
@@ -502,7 +502,7 @@
     "not_enough_money": "Za mało złota"
   },
   "win_modal": {
-    "support_openfront": "Wesprzyj Open War!",
+    "support_openfront": "Wesprzyj OpenFront!",
     "territory_pattern": "Kup skórkę na terytorium, aby zwolnić z reklam!",
     "died": "Nie żyjesz",
     "your_team": "Twoja drużyna wygrała!",

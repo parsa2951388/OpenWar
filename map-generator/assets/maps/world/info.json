@@ -69,6 +69,7 @@
       "name": "Yukon",
       "flag": "Yukon"
     },
+
     {
       "coordinates": [600, 730],
       "name": "Argentina",
@@ -104,6 +105,7 @@
       "name": "Venezuela",
       "flag": "ve"
     },
+
     {
       "coordinates": [1120, 220],
       "name": "Belarus",
@@ -189,6 +191,7 @@
       "name": "United Kingdom",
       "flag": "gb"
     },
+
     {
       "coordinates": [960, 340],
       "name": "Algeria",
@@ -269,6 +272,7 @@
       "name": "Zambia",
       "flag": "zm"
     },
+
     {
       "coordinates": [1490, 390],
       "name": "Bhutan",
@@ -339,6 +343,7 @@
       "name": "Thailand",
       "flag": "th"
     },
+
     {
       "coordinates": [1760, 700],
       "name": "Australia",
@@ -360,6 +365,7 @@
       "flag": "ph"
     }
   ],
+
   "layers": [
     {
       "id": "w2kland",

@@ -1,5 +1,15 @@
+import { authoredTerrain } from "@openfront/engine-api/EditorCommands";
 import { GameMap, TileRef } from "@openfront/engine-api/game/GameMap";
+import { GameMapImpl } from "@openfront/engine-lib/game/GameMapImpl";
+import { deriveTerrain } from "@openfront/engine-lib/mapgen/DeriveTerrain";
 import {
+  countLandTiles,
+  downscaledTile,
+  downscaleTerrain,
+  terrainKind,
+} from "@openfront/engine-lib/mapgen/TerrainBytes";
+import {
+  SnapshotError,
   snapshotType,
   zBytes,
   zInt,
@@ -31,6 +41,9 @@ const MAX_MAG_DIST = 62;
 const TERRAIN_LAND_MASK = 0x80;
 const TERRAIN_MAG_MASK = 0x1f;
 const IMPASSABLE_MAG = 31;
+const TERRAIN_SHORELINE_BIT = 0x40;
+// The map generator's depth for water next to impassable terrain (packed).
+const IMPASSABLE_NEIGHBOR_MAG = 10;
 
 interface CraterBounds {
   minX: number;
@@ -121,6 +134,11 @@ export class WaterManager {
     this._waterGraphDirty = s.waterGraphDirty;
     this._waterGraphLastRebuildTick = s.waterGraphLastRebuildTick;
     this._pendingWaterTiles = new Set(s.pendingWaterTiles);
+    // zTiles checks refs against the full map; these are minimap tiles.
+    const miniTiles = this.miniMap.width() * this.miniMap.height();
+    if (s.dirtyMiniTiles.some((t) => t >= miniTiles)) {
+      throw new SnapshotError("dirty minimap tile is off the minimap");
+    }
     this._dirtyMiniTiles = new Set(s.dirtyMiniTiles);
     if (s.components !== null && this._miniWaterCC !== null) {
       this._miniWaterCC.restoreSnapshot(s.components);
@@ -309,6 +327,229 @@ export class WaterManager {
     if (componentId === null) return null;
     if (!this._miniWaterGraph) return 0;
     return this._miniWaterGraph.getComponentSize(componentId) * 4;
+  }
+
+  /**
+   * The scenario editor's terrain edit (docs/ScenarioEditor.md, "Terrain").
+   * Writes the authored part of each tile's terrain byte, `terrain[i]` for
+   * `tiles[i]` (water 0, land 0x80 | elevation, impassable 0x9f), and
+   * repairs what the map generator derives from it around the tiles: the
+   * shoreline bits, the water depth, and the minimap tiles above them, with
+   * the generator's rules.
+   *
+   * What needs the whole map waits for endTerrainEdit(): new water has no
+   * ocean bit, a water body with no coast gets depth 31 instead of the
+   * generator's, and the water components and graph are not updated.
+   * Returns the full-map tiles whose terrain changed.
+   */
+  editTerrain(
+    tiles: readonly TileRef[],
+    terrain: readonly number[],
+  ): TileRef[] {
+    const map = this.map;
+    const changed = new Set<TileRef>();
+    const edited: TileRef[] = [];
+    const kindChanged = new Set<TileRef>();
+    for (let i = 0; i < tiles.length; i++) {
+      if (writeAuthored(map, tiles[i], terrain[i], kindChanged)) {
+        edited.push(tiles[i]);
+        changed.add(tiles[i]);
+      }
+    }
+    if (edited.length === 0) return [];
+    this.repairAround(map, edited, kindChanged, false, changed);
+
+    const mini = this.miniMap;
+    const miniEdited: TileRef[] = [];
+    const miniKindChanged = new Set<TileRef>();
+    for (const tile of edited) {
+      const mx = map.x(tile) >> 1;
+      const my = map.y(tile) >> 1;
+      if (!mini.isValidCoord(mx, my)) continue;
+      const miniTile = mini.ref(mx, my);
+      const value = downscaledTile(terrainOf(map), map.width(), mx, my);
+      if (writeAuthored(mini, miniTile, value, miniKindChanged)) {
+        miniEdited.push(miniTile);
+      }
+    }
+    if (miniEdited.length > 0) {
+      this.repairAround(mini, miniEdited, miniKindChanged, true, null);
+    }
+    return [...changed];
+  }
+
+  /**
+   * Ends a run of editTerrain() calls. Derives every tile's terrain byte
+   * from its authored part again, on both maps, as the map generator does:
+   * this sets the ocean bit and the depth of water bodies with no coast,
+   * which editTerrain() leaves. The minimap is downscaled from the full map
+   * again first, so it depends on the full map alone, not on which tiles
+   * were edited: a stock map's minimap had small islands and lakes removed
+   * that editTerrain() would otherwise restore only where it was painted.
+   * The water components and graph wait for rebuildWaterGraph(). Returns
+   * the full-map tiles whose terrain changed.
+   */
+  endTerrainEdit(): TileRef[] {
+    DebugSpan.start("WaterManager:endTerrainEdit");
+    const changed: TileRef[] = [];
+    this.deriveTerrain(this.map, null, changed);
+    const mini = this.miniMap;
+    const miniTerrain = terrainOf(mini);
+    const terrain = terrainOf(this.map);
+    const w = this.map.width();
+    for (let my = 0, t = 0; my < mini.height(); my++) {
+      for (let mx = 0; mx < mini.width(); mx++, t++) {
+        const value = downscaledTile(terrain, w, mx, my);
+        if (authoredTerrain(miniTerrain[t]) !== value) {
+          mini.setTerrainByte(t, value);
+        }
+      }
+    }
+    this.deriveTerrain(mini, this.map, null);
+    DebugSpan.end("WaterManager:endTerrainEdit");
+    return changed;
+  }
+
+  /**
+   * The map generator's map16x: the minimap downscaled by the minimap's
+   * rule and derived, with no small islands removed, as the generator makes
+   * it from map4x. For the scenario editor's export, after endTerrainEdit()
+   * has derived the minimap.
+   */
+  downscaleMiniMap(): GameMap {
+    const mini = this.miniMap;
+    const w = mini.width() >> 1;
+    const h = mini.height() >> 1;
+    const terrain = downscaleTerrain(
+      terrainOf(mini),
+      mini.width(),
+      mini.height(),
+    );
+    deriveTerrain(terrain, w, h, {
+      source: { terrain: terrainOf(mini), width: mini.width() },
+    });
+    return new GameMapImpl(w, h, terrain, countLandTiles(terrain));
+  }
+
+  /**
+   * Labels the water components and builds the water graph afresh, as game
+   * load does, after terrain edits: an edit can split a body of water,
+   * which the water nukes' incremental updates never have to handle. The
+   * scenario editor runs this before test play rather than at each
+   * stroke's end: on the largest map it costs about as much as the game's
+   * load (docs/ScenarioEditor.md, "Terrain").
+   */
+  rebuildWaterGraph(): void {
+    DebugSpan.start("WaterManager:rebuildWaterGraphFully");
+    if (this._miniWaterCC !== null) {
+      this._miniWaterCC.initialize();
+      this._miniWaterGraph = new AbstractGraphBuilder(
+        this.miniMap,
+        AbstractGraphBuilder.CLUSTER_SIZE,
+        undefined,
+        undefined,
+        this._miniWaterCC,
+        this._builderBFS ?? undefined,
+      ).build();
+      this._miniWaterHPA?.setGraph(this._miniWaterGraph);
+    }
+    this._waterGraphDirty = false;
+    this._dirtyMiniTiles.clear();
+    this._waterGraphVersion++;
+    DebugSpan.end("WaterManager:rebuildWaterGraphFully");
+  }
+
+  /**
+   * After editTerrain() wrote `edited`: fixes the shoreline bits of the
+   * edited tiles and the neighbours of those that changed kind, and the
+   * water depth around the latter.
+   */
+  private repairAround(
+    map: GameMap,
+    edited: TileRef[],
+    kindChanged: Set<TileRef>,
+    mini: boolean,
+    changed: Set<TileRef> | null,
+  ): void {
+    const w = map.width();
+    const h = map.height();
+    const terrain = terrainOf(map);
+    const check = new Set<TileRef>(edited);
+    for (const tile of kindChanged) {
+      const x = tile % w;
+      if (tile >= w) check.add(tile - w);
+      if (tile < (h - 1) * w) check.add(tile + w);
+      if (x > 0) check.add(tile - 1);
+      if (x < w - 1) check.add(tile + 1);
+    }
+    for (const tile of check) {
+      const b = terrain[tile];
+      const value = isShorelineTile(terrain, w, h, tile)
+        ? b | TERRAIN_SHORELINE_BIT
+        : b & ~TERRAIN_SHORELINE_BIT;
+      if (value !== b) {
+        map.setTerrainByte(tile, value);
+        changed?.add(tile);
+      }
+    }
+    if (kindChanged.size === 0) return;
+    const { stampArr, distArr } = this.magnitudeScratch(mini);
+    for (const g of this.computeCraterGroups(kindChanged, w, MAX_MAG_DIST)) {
+      this.recomputeMagnitudesInBox(
+        map,
+        g,
+        stampArr,
+        distArr,
+        mini ? this.bumpMiniStamp() : this.bumpFullMapStamp(),
+        true,
+        changed,
+        true,
+      );
+    }
+  }
+
+  /**
+   * deriveTerrain (mapgen/DeriveTerrain) on `map`, through setTerrainByte.
+   * `source` is the map `map` was downscaled from, if any.
+   */
+  private deriveTerrain(
+    map: GameMap,
+    source: GameMap | null,
+    changed: TileRef[] | null,
+  ): void {
+    deriveTerrain(terrainOf(map), map.width(), map.height(), {
+      source:
+        source === null
+          ? undefined
+          : { terrain: terrainOf(source), width: source.width() },
+      dist: this.magnitudeScratch(source !== null).distArr,
+      set: (tile, value) => {
+        map.setTerrainByte(tile, value);
+        changed?.push(tile);
+      },
+    });
+  }
+
+  private magnitudeScratch(mini: boolean): {
+    stampArr: Uint16Array;
+    distArr: Uint16Array;
+  } {
+    const map = mini ? this.miniMap : this.map;
+    const total = map.width() * map.height();
+    if (mini) {
+      if (!this._miniDistArr || this._miniDistArr.length !== total) {
+        this._miniDistArr = new Uint16Array(total);
+        this._miniStampArr = new Uint16Array(total);
+        this._miniStamp = 0;
+      }
+      return { stampArr: this._miniStampArr!, distArr: this._miniDistArr };
+    }
+    if (!this._waterDistArr || this._waterDistArr.length !== total) {
+      this._waterDistArr = new Uint16Array(total);
+      this._waterStampArr = new Uint16Array(total);
+      this._waterStamp = 0;
+    }
+    return { stampArr: this._waterStampArr!, distArr: this._waterDistArr };
   }
 
   private finalizeWaterChanges(
@@ -772,6 +1013,8 @@ export class WaterManager {
    *   (Used on the full map; the minimap counts any land as coastline.)
    * @param changed When set, tiles whose magnitude changed are recorded
    *   for client updates.
+   * @param impassableNeighborDepth When true, water next to impassable
+   *   terrain gets the map generator's fixed depth instead (editor edits).
    */
   private recomputeMagnitudesInBox(
     map: GameMap,
@@ -781,6 +1024,7 @@ export class WaterManager {
     stamp: number,
     passableCoastOnly: boolean,
     changed: Set<TileRef> | null,
+    impassableNeighborDepth = false,
   ): void {
     const w = map.width();
     const h = map.height();
@@ -823,10 +1067,13 @@ export class WaterManager {
       }
     }
 
-    // BFS outward through water, clipped to the seed box.
+    // BFS outward through water, clipped to the seed box. It stops at
+    // MAX_MAG_DIST, from where the depth is 31 either way, so the distance
+    // fits distArr however far the water runs.
     let head = 0;
     while (head < queue.length) {
       const tile = queue[head++];
+      if (distArr[tile] >= MAX_MAG_DIST) continue;
       const nextDist = distArr[tile] + 1;
       const x = tile % w;
       const y = (tile - x) / w;
@@ -874,9 +1121,11 @@ export class WaterManager {
         // Reached by BFS → magnitude from distance; unreached → nearest
         // coast is >MAX_MAG_DIST away → deep water (31).
         const newMag =
-          stampArr[tile] === stamp
-            ? Math.min(Math.ceil(distArr[tile] / 2), 31)
-            : 31;
+          impassableNeighborDepth && touchesImpassable(terrain, w, h, tile)
+            ? IMPASSABLE_NEIGHBOR_MAG
+            : stampArr[tile] === stamp
+              ? Math.min(Math.ceil(distArr[tile] / 2), 31)
+              : 31;
         if ((b & TERRAIN_MAG_MASK) !== newMag) {
           map.setMagnitude(tile, newMag);
           changed?.add(tile);
@@ -884,6 +1133,65 @@ export class WaterManager {
       }
     }
   }
+}
+
+function terrainOf(map: GameMap): Uint8Array {
+  // Direct terrain access, same precedent as ConnectedComponents
+  return (map as unknown as { terrain: Uint8Array }).terrain;
+}
+
+/**
+ * Writes the authored byte `value` to the tile, clearing what is derived
+ * from it, unless the tile has it already. Returns whether it wrote.
+ */
+function writeAuthored(
+  map: GameMap,
+  tile: TileRef,
+  value: number,
+  kindChanged: Set<TileRef>,
+): boolean {
+  const b = map.terrainByte(tile);
+  if (authoredTerrain(b) === value) return false;
+  if (terrainKind(b) !== terrainKind(value)) kindChanged.add(tile);
+  map.setTerrainByte(tile, value);
+  return true;
+}
+
+/**
+ * The map generator's shoreline rule: land next to water, or water next to
+ * passable land. Impassable terrain is never shoreline.
+ */
+function isShorelineTile(
+  terrain: Uint8Array,
+  w: number,
+  h: number,
+  tile: number,
+): boolean {
+  const kind = terrainKind(terrain[tile]);
+  if (kind === 2) return false;
+  const coast = kind === 0 ? 1 : 0;
+  const x = tile % w;
+  return (
+    (tile >= w && terrainKind(terrain[tile - w]) === coast) ||
+    (tile < (h - 1) * w && terrainKind(terrain[tile + w]) === coast) ||
+    (x > 0 && terrainKind(terrain[tile - 1]) === coast) ||
+    (x < w - 1 && terrainKind(terrain[tile + 1]) === coast)
+  );
+}
+
+function touchesImpassable(
+  terrain: Uint8Array,
+  w: number,
+  h: number,
+  tile: number,
+): boolean {
+  const x = tile % w;
+  return (
+    (tile >= w && terrainKind(terrain[tile - w]) === 2) ||
+    (tile < (h - 1) * w && terrainKind(terrain[tile + w]) === 2) ||
+    (x > 0 && terrainKind(terrain[tile - 1]) === 2) ||
+    (x < w - 1 && terrainKind(terrain[tile + 1]) === 2)
+  );
 }
 
 export const WaterManagerSnapshot = snapshotType({

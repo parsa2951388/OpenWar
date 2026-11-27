@@ -27,11 +27,6 @@ import {
 import { UIState } from "../../UIState";
 import { GameView } from "../../view";
 const warshipIcon = assetUrl("images/BattleshipIconWhite.svg");
-const aircraftCarrierIcon = assetUrl("images/AircraftCarrierIcon.svg");
-const airportIcon = assetUrl("images/AirportIcon.svg");
-const airFighterIcon = assetUrl("images/AirFighterIcon.svg");
-const stealthFighterIcon = assetUrl("images/StealthFighterIcon.svg");
-const groundAttackerIcon = assetUrl("images/GroundAttackerIcon.svg");
 const cityIcon = assetUrl("images/CityIconWhite.svg");
 const factoryIcon = assetUrl("images/FactoryIconWhite.svg");
 const goldCoinIcon = assetUrl("images/GoldCoinIcon.svg");
@@ -79,41 +74,6 @@ const buildTable: BuildItemDisplay[][] = [
       icon: warshipIcon,
       description: "build_menu.desc.warship",
       key: "unit_type.warship",
-      countable: true,
-    },
-    {
-      unitType: UnitType.AircraftCarrier,
-      icon: aircraftCarrierIcon,
-      description: "build_menu.desc.aircraft_carrier",
-      key: "unit_type.aircraft_carrier",
-      countable: true,
-    },
-    {
-      unitType: UnitType.Airport,
-      icon: airportIcon,
-      description: "build_menu.desc.airport",
-      key: "unit_type.airport",
-      countable: true,
-    },
-    {
-      unitType: UnitType.AirFighter,
-      icon: airFighterIcon,
-      description: "build_menu.desc.air_fighter",
-      key: "unit_type.air_fighter",
-      countable: true,
-    },
-    {
-      unitType: UnitType.StealthFighter,
-      icon: stealthFighterIcon,
-      description: "build_menu.desc.stealth_fighter",
-      key: "unit_type.stealth_fighter",
-      countable: true,
-    },
-    {
-      unitType: UnitType.GroundAttacker,
-      icon: groundAttackerIcon,
-      description: "build_menu.desc.ground_attacker",
-      key: "unit_type.ground_attacker",
       countable: true,
     },
     {
@@ -198,14 +158,8 @@ export class BuildMenu extends LitElement implements Controller {
     this.eventBus.on(MouseDownEvent, () => this.hideMenu());
   }
 
-  private _lastRefreshAt = 0;
-  private static readonly REFRESH_INTERVAL_MS = 500;
-
   tick() {
-    if (
-      !this._hidden &&
-      Date.now() - this._lastRefreshAt >= BuildMenu.REFRESH_INTERVAL_MS
-    ) {
+    if (!this._hidden) {
       void this.refresh();
     }
   }
@@ -220,206 +174,181 @@ export class BuildMenu extends LitElement implements Controller {
       left: 50%;
       transform: translate(-50%, -50%);
       z-index: 9999;
+      background-color: #1e1e1e;
+      padding: 15px;
+      box-shadow: 0 0 20px rgba(0, 0, 0, 0.5);
+      border-radius: 10px;
       display: flex;
       flex-direction: column;
-      align-items: stretch;
-      width: min(94vw, 900px);
-      max-width: 94vw;
-      max-height: min(88dvh, 780px);
+      align-items: center;
+      max-width: 95vw;
+      max-height: 95vh;
       overflow-y: auto;
-      padding: 14px;
-      border: 1px solid rgba(69, 221, 207, 0.34);
-      border-radius: 16px;
-      background: linear-gradient(
-        145deg,
-        rgba(12, 32, 43, 0.98),
-        rgba(8, 20, 30, 0.98)
-      );
-      box-shadow:
-        0 18px 48px rgba(0, 0, 0, 0.48),
-        inset 0 1px rgba(255, 255, 255, 0.05);
-      overscroll-behavior: contain;
+    }
+    .build-description {
+      font-size: 0.6rem;
     }
     .build-row {
-      display: grid;
-      grid-template-columns: repeat(auto-fit, minmax(132px, 1fr));
-      gap: 8px;
+      display: flex;
+      justify-content: center;
+      flex-wrap: wrap;
       width: 100%;
-      margin-bottom: 8px;
     }
     .build-button {
       position: relative;
+      width: 120px;
+      height: 140px;
+      border: 2px solid #444;
+      background-color: #2c2c2c;
+      color: white;
+      border-radius: 12px;
+      cursor: pointer;
+      transition: all 0.3s ease;
       display: flex;
       flex-direction: column;
-      justify-content: flex-start;
+      justify-content: center;
       align-items: center;
-      width: 100%;
-      min-width: 0;
-      min-height: 136px;
-      margin: 0;
-      padding: 10px 8px 9px;
-      gap: 4px;
-      border: 1px solid rgba(142, 175, 188, 0.28);
-      border-radius: 11px;
-      background: linear-gradient(
-        160deg,
-        rgba(38, 64, 75, 0.92),
-        rgba(21, 39, 50, 0.96)
-      );
-      color: #f2fbff;
-      cursor: pointer;
-      text-align: center;
-      transition:
-        border-color 120ms ease,
-        background-color 120ms ease,
-        transform 120ms ease;
+      margin: 8px;
+      padding: 10px;
+      gap: 5px;
     }
     .build-button:not(:disabled):hover {
-      border-color: rgba(101, 228, 216, 0.72);
-      background: linear-gradient(
-        160deg,
-        rgba(46, 88, 94, 0.96),
-        rgba(24, 53, 63, 0.98)
-      );
+      background-color: #3a3a3a;
+      transform: scale(1.05);
+      border-color: #666;
     }
     .build-button:not(:disabled):active {
-      transform: scale(0.98);
+      background-color: #4a4a4a;
+      transform: scale(0.95);
     }
     .build-button:disabled {
-      border-color: rgba(120, 140, 148, 0.18);
-      background: rgba(12, 25, 34, 0.9);
+      background-color: #1a1a1a;
+      border-color: #333;
       cursor: not-allowed;
-      opacity: 0.64;
+      opacity: 0.7;
     }
-    .build-button img {
-      width: 34px;
-      height: 34px;
-      flex: 0 0 auto;
-      object-fit: contain;
-    }
-    .build-name {
-      min-height: 2.2em;
-      margin: 0;
-      color: #f5fbff;
-      font-size: 12px;
-      font-weight: 850;
-      line-height: 1.1;
-      text-align: center;
-      overflow-wrap: anywhere;
-    }
-    .build-description {
-      display: -webkit-box;
-      min-height: 2.35em;
-      overflow: hidden;
-      color: #a9c0c8;
-      font-size: 9px;
-      line-height: 1.2;
-      text-align: center;
-      -webkit-box-orient: vertical;
-      -webkit-line-clamp: 2;
-    }
-    .build-cost {
-      display: inline-flex;
-      align-items: center;
-      justify-content: center;
-      gap: 4px;
-      margin-top: auto;
-      color: #ffd08c;
-      font-size: 12px;
-      font-weight: 900;
-      line-height: 1.2;
-      white-space: nowrap;
+    .build-button:disabled img {
+      opacity: 0.5;
     }
     .build-button:disabled .build-cost {
-      color: #ff8c83;
+      color: #ff4444;
     }
-    .build-cost img {
-      width: 13px;
-      height: 13px;
+    .build-icon {
+      font-size: 40px;
+      margin-bottom: 5px;
+    }
+    .build-name {
+      font-size: 14px;
+      font-weight: bold;
+      margin-bottom: 5px;
+      text-align: center;
+    }
+    .build-cost {
+      font-size: 14px;
     }
     .hidden {
       display: none !important;
     }
     .build-count-chip {
       position: absolute;
-      top: 5px;
-      right: 5px;
+      top: -10px;
+      right: -10px;
+      background-color: #2c2c2c;
+      color: white;
+      padding: 2px 10px;
+      border-radius: 10000px;
+      transition: all 0.3s ease;
+      font-size: 12px;
       display: flex;
       justify-content: center;
-      align-items: center;
-      min-width: 21px;
-      padding: 2px 6px;
-      border: 1px solid rgba(101, 228, 216, 0.36);
-      border-radius: 999px;
-      background: rgba(7, 21, 31, 0.9);
-      color: #e4f6f5;
-      font-size: 10px;
+      align-content: center;
+      border: 1px solid #444;
+    }
+    .build-button:not(:disabled):hover > .build-count-chip {
+      background-color: #3a3a3a;
+      border-color: #666;
+    }
+    .build-button:not(:disabled):active > .build-count-chip {
+      background-color: #4a4a4a;
+    }
+    .build-button:disabled > .build-count-chip {
+      background-color: #1a1a1a;
+      border-color: #333;
+      cursor: not-allowed;
     }
     .build-count {
-      font-weight: 850;
-      font-size: 10px;
+      font-weight: bold;
+      font-size: 14px;
     }
-    @media (max-width: 640px) {
+
+    @media (max-width: 768px) {
       .build-menu {
-        width: 94vw;
-        max-height: 88dvh;
-        padding: 9px;
-      }
-      .build-row {
-        grid-template-columns: repeat(2, minmax(0, 1fr));
-        gap: 6px;
-        margin-bottom: 6px;
+        padding: 10px;
+        max-height: 80vh;
+        width: 80vw;
       }
       .build-button {
-        min-height: 122px;
-        padding: 8px 5px 7px;
-        gap: 3px;
+        width: 140px;
+        height: 120px;
+        margin: 4px;
+        padding: 6px;
+        gap: 5px;
       }
-      .build-button img {
-        width: 29px;
-        height: 29px;
+      .build-icon {
+        font-size: 28px;
       }
       .build-name {
-        min-height: 2.2em;
+        font-size: 12px;
+        margin-bottom: 3px;
+      }
+      .build-cost {
         font-size: 11px;
       }
-      .build-description {
-        min-height: 2.2em;
+      .build-count {
+        font-weight: bold;
+        font-size: 10px;
+      }
+      .build-count-chip {
+        padding: 1px 5px;
+      }
+    }
+
+    @media (max-width: 480px) {
+      .build-menu {
+        padding: 8px;
+        max-height: 70vh;
+      }
+      .build-button {
+        width: calc(50% - 6px);
+        height: 100px;
+        margin: 3px;
+        padding: 4px;
+        border-width: 1px;
+      }
+      .build-icon {
+        font-size: 24px;
+      }
+      .build-name {
+        font-size: 10px;
+        margin-bottom: 2px;
+      }
+      .build-cost {
+        font-size: 9px;
+      }
+      .build-count {
+        font-weight: bold;
         font-size: 8px;
       }
-      .build-cost {
-        font-size: 11px;
+      .build-count-chip {
+        padding: 0 3px;
+      }
+      .build-button img {
+        width: 24px;
+        height: 24px;
       }
       .build-cost img {
-        width: 12px;
-        height: 12px;
-      }
-    }
-    @media (max-width: 360px) {
-      .build-menu {
-        width: 96vw;
-        padding: 7px;
-      }
-      .build-row {
-        gap: 4px;
-      }
-      .build-button {
-        min-height: 116px;
-        padding: 7px 3px 6px;
-      }
-      .build-name {
-        font-size: 10px;
-      }
-      .build-description {
-        font-size: 7.5px;
-      }
-      .build-cost {
-        font-size: 10px;
-      }
-    }
-    @media (prefers-reduced-motion: reduce) {
-      .build-button {
-        transition: none;
+        width: 10px;
+        height: 10px;
       }
     }
   `;
@@ -559,7 +488,6 @@ export class BuildMenu extends LitElement implements Controller {
   }
 
   private refresh() {
-    this._lastRefreshAt = Date.now();
     const refresh = this.game
       .myPlayer()
       ?.buildables(this.clickedTile, BuildMenus.types)

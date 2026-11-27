@@ -2,7 +2,7 @@ import { AllPlayersStats, ClientID } from "../Schemas";
 
 import { TileRef } from "./GameMap";
 import { GameUpdate, GameUpdateType } from "./GameUpdates";
-import { maps, type MapInfo } from "./Maps.gen";
+import { GameMapType, maps, type MapInfo } from "./Maps.gen";
 
 function isEnumValue<T extends Record<string, string | number>>(
   enumObj: T,
@@ -16,28 +16,6 @@ export type PlayerID = string;
 export type Tick = number;
 
 export type Gold = bigint;
-
-export enum FighterType {
-  Stealth = "SFighter",
-  Ground = "GFighter",
-  Air = "AFighter",
-}
-
-export type FighterState = {
-  state: "patrolling" | "returning" | "refueling" | "crashed";
-  fighterType: FighterType;
-  patrolTile: TileRef;
-  retreatAirbase?: TileRef;
-  refuelSourceUnitId?: number;
-  refuelStartTick?: number;
-  fuel: number;
-  aam: number;
-  bomb: number;
-  ammo: number;
-  flares: number;
-  isInCombat?: boolean;
-  lastCombatTick?: number;
-};
 
 export type WarshipState = {
   state: "patrolling" | "retreating" | "docked";
@@ -143,6 +121,18 @@ export {
 } from "./Maps.gen";
 
 /**
+ * The map of a game whose map files came with its start (a scenario's own
+ * terrain) rather than from resources/maps. It is not a stock map: it is not
+ * in `GameMapType` or `maps`, so nothing lists, picks or fetches it, and the
+ * engine accepts any files for it. A snapshot still refuses to restore onto
+ * files other than the ones it was taken on.
+ */
+export const CustomGameMap = "Custom" as const;
+
+/** A game's map: a stock map, or `CustomGameMap`. */
+export type GameMapId = GameMapType | typeof CustomGameMap;
+
+/**
  * The maps players can pick or be dealt: everything but `hidden` ones (the
  * tutorial map), which only code that names them starts.
  */
@@ -230,13 +220,6 @@ export enum UnitType {
   MIRVWarhead = "MIRV Warhead",
   Train = "Train",
   Factory = "Factory",
-  AircraftCarrier = "Aircraft Carrier",
-  Airport = "Airport",
-  CommercialAircraft = "Commercial Aircraft",
-  StealthFighter = "Stealth Fighter",
-  GroundAttacker = "Ground Attacker",
-  AirFighter = "Air Fighter",
-  AirMissile = "Air Missile",
 }
 
 export enum TrainType {
@@ -257,10 +240,6 @@ export const BuildableAttacks = unitTypeGroup([
   UnitType.HydrogenBomb,
   UnitType.MIRV,
   UnitType.Warship,
-  UnitType.AircraftCarrier,
-  UnitType.StealthFighter,
-  UnitType.GroundAttacker,
-  UnitType.AirFighter,
 ] as const);
 
 export const Structures = unitTypeGroup([
@@ -270,7 +249,6 @@ export const Structures = unitTypeGroup([
   UnitType.MissileSilo,
   UnitType.Port,
   UnitType.Factory,
-  UnitType.Airport,
 ] as const);
 
 export const BuildMenus = unitTypeGroup([
@@ -504,10 +482,8 @@ export enum MessageType {
   ALLIANCE_EXPIRED,
   DONATION_SENT,
   DONATION_RECEIVED,
-  RECEIVED_GOLD_FROM_TRADE,
   CHAT,
   RENEW_ALLIANCE,
-  BOMB_DROPPED,
 }
 
 // Message categories used for filtering events in the EventsDisplay
@@ -543,8 +519,6 @@ export const MESSAGE_TYPE_CATEGORIES: Record<MessageType, MessageCategory> = {
   [MessageType.DONATION_SENT]: MessageCategory.TRADE,
   [MessageType.DONATION_RECEIVED]: MessageCategory.TRADE,
   [MessageType.CHAT]: MessageCategory.CHAT,
-  [MessageType.BOMB_DROPPED]: MessageCategory.ATTACK,
-  [MessageType.RECEIVED_GOLD_FROM_TRADE]: MessageCategory.TRADE,
 } as const;
 
 /**

@@ -13,6 +13,8 @@ const fetchPlayerByIdMock = vi.hoisted(() =>
   vi.fn(async (): Promise<unknown> => null),
 );
 const reducedMotion = vi.hoisted(() => ({ value: false }));
+// The account the session's token belongs to (Auth.currentPublicId).
+const session = vi.hoisted(() => ({ publicId: "me" as string | null }));
 
 // Mocks as in AccountModalPrestige.test.ts, plus the progression reads.
 vi.mock("../../src/client/Api", () => ({
@@ -22,6 +24,12 @@ vi.mock("../../src/client/Api", () => ({
   fetchPlayerById: fetchPlayerByIdMock,
   setMarketingConsent: vi.fn(async () => true),
   getApiBase: vi.fn(() => ""),
+}));
+
+// The card save's PUT origin (the real one needs the bootstrap config).
+vi.mock("../../src/client/ApiBase", async (importOriginal) => ({
+  ...(await importOriginal<typeof import("../../src/client/ApiBase")>()),
+  getApiBase: () => "https://api.test",
 }));
 
 vi.mock("../../src/client/ProgressionApi", () => ({
@@ -39,6 +47,7 @@ vi.mock("../../src/client/Auth", () => ({
   reauthAfterPortalChange: vi.fn(async () => false),
   sendMagicLink: vi.fn(async () => true),
   getAuthHeader: vi.fn(async () => "Bearer test-token"),
+  currentPublicId: () => session.publicId,
 }));
 
 vi.mock("../../src/client/Utils", () => ({
@@ -62,6 +71,9 @@ vi.mock("../../src/client/CrazyGamesSDK", () => ({
 
 vi.mock("../../src/client/Cosmetics", () => ({
   fetchCosmetics: vi.fn(async () => null),
+  getPlayerCosmetics: vi.fn(async () => ({})),
+  // The refresh a card save broadcasts: failing here, as offline.
+  broadcastFreshUserMe: vi.fn(async () => false),
   translateCosmetic: vi.fn((v: unknown) => v),
 }));
 
@@ -226,6 +238,7 @@ describe("AccountModal — Progression tab", () => {
   beforeEach(async () => {
     vi.clearAllMocks();
     reducedMotion.value = false;
+    session.publicId = "me";
     me = userMe(OWN_PROGRESS);
     getUserMeMock.mockImplementation(async () => me);
     fetchPublicPlayerProgressMock.mockResolvedValue(PUBLIC);
@@ -277,6 +290,29 @@ describe("AccountModal — Progression tab", () => {
     );
     // Nothing read until the tab shows.
     expect(fetchPublicPlayerProgressMock).not.toHaveBeenCalled();
+  });
+
+  it("has no My Card tab: the card is edited in the Inventory", async () => {
+    modal.open();
+    await settle(() => {
+      expect(tabText()).toContain("account_modal.tab_stats");
+    });
+    expect(tabText()).not.toContain("account_modal.tab_my_card");
+    expect(modal.querySelector("my-card-tab")).toBeNull();
+  });
+
+  it("the card owner's XP line is translated", async () => {
+    me = {
+      ...me,
+      player: { ...me.player, flares: ["playerCard:standard"] },
+    } as unknown as UserMeResponse;
+    modal.open();
+    await settle(() => {
+      const header = modal.querySelector("[data-account-card-header]");
+      expect(header?.textContent).toContain("progression.xp_progress");
+      expect(header?.textContent).not.toMatch(/\bXP\b/);
+      expect(header?.querySelector("[data-account-provisional]")).toBeNull();
+    });
   });
 
   it("has no tab for a player without a level (progression off)", async () => {
@@ -551,6 +587,26 @@ describe("AccountModal — Progression tab", () => {
       expect(
         modal.querySelector<CardEl>("profile-card")!.progress.canPrestige,
       ).toBe(false);
+    });
+
+    it("a card owner's header shows the projected level too, marked provisional", async () => {
+      me = {
+        ...me,
+        player: { ...me.player, flares: ["playerCard:standard"] },
+      } as unknown as UserMeResponse;
+      await runCheck();
+      modal.open();
+      const header = () => modal.querySelector("[data-account-card-header]");
+      await settle(() => {
+        const card = header()?.querySelector("player-card") as
+          | (HTMLElement & { view: { badge: { level: number } | null } })
+          | null;
+        expect(card?.view.badge?.level).toBe(49);
+        expect(header()?.textContent).toContain("progression.level");
+        expect(
+          header()?.querySelector("[data-account-provisional]"),
+        ).not.toBeNull();
+      });
     });
 
     it('puts "You" on the projected level, with the levels past the confirmed one pending', async () => {
