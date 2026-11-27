@@ -12,7 +12,8 @@ const packageJson = JSON.parse(
 
 const tempDirectories: string[] = [];
 
-function runRenderStart(
+function runPackageScript(
+  scriptName: "start:render" | "start:server-dev",
   overrides: Partial<
     Record<
       | "GAME_ENV"
@@ -20,7 +21,8 @@ function runRenderStart(
       | "GIT_COMMIT"
       | "RENDER_GIT_COMMIT"
       | "API_ORIGIN"
-      | "RENDER",
+      | "RENDER"
+      | "RENDER_SERVICE_ID",
       string
     >
   > = {},
@@ -45,6 +47,7 @@ function runRenderStart(
     ...process.env,
     PATH: `${tempDirectory}:${process.env.PATH ?? ""}`,
     RENDER: overrides.RENDER ?? "true",
+    RENDER_SERVICE_ID: overrides.RENDER_SERVICE_ID ?? "",
     GAME_ENV: overrides.GAME_ENV ?? "",
     TURNSTILE_SITE_KEY: overrides.TURNSTILE_SITE_KEY ?? "",
     GIT_COMMIT: overrides.GIT_COMMIT ?? "",
@@ -52,7 +55,7 @@ function runRenderStart(
     RENDER_GIT_COMMIT: overrides.RENDER_GIT_COMMIT ?? "",
   };
 
-  return spawnSync("sh", ["-c", packageJson.scripts["start:render"]], {
+  return spawnSync("sh", ["-c", packageJson.scripts[scriptName]], {
     cwd: repositoryRoot,
     env,
     encoding: "utf8",
@@ -67,7 +70,7 @@ afterEach(() => {
 
 describe("Render start command", () => {
   test("defaults to production and preserves the real Turnstile key", () => {
-    const result = runRenderStart({
+    const result = runPackageScript("start:render", {
       TURNSTILE_SITE_KEY: "production-site-key",
       RENDER_GIT_COMMIT: "release-commit",
     });
@@ -79,14 +82,14 @@ describe("Render start command", () => {
   });
 
   test("rejects a missing production Turnstile key", () => {
-    const result = runRenderStart();
+    const result = runPackageScript("start:render");
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
   });
 
   test("does not allow a stale dev environment to run on Render", () => {
-    const result = runRenderStart({ GAME_ENV: "dev" });
+    const result = runPackageScript("start:render", { GAME_ENV: "dev" });
 
     expect(result.status).not.toBe(0);
     expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
@@ -99,5 +102,32 @@ describe("Render start command", () => {
     expect(result.stdout.trim()).toBe(
       "dev|1x00000000000000000000AA|OPENWAR|https://openwar-api-gateway.parsaoj.workers.dev",
     );
+  });
+
+  test("routes the legacy Render start command to production using the service ID", () => {
+    const result = runPackageScript("start:server-dev", {
+      RENDER: "false",
+      RENDER_SERVICE_ID: "srv-open-war-game",
+      GAME_ENV: "dev",
+      TURNSTILE_SITE_KEY: "production-site-key",
+      RENDER_GIT_COMMIT: "release-commit",
+    });
+
+    expect(result.status).toBe(0);
+    expect(result.stdout).toContain("Render detected; using start:render");
+    expect(result.stdout).toContain(
+      "prod|production-site-key|release-commit|https://openwar-api-gateway.parsaoj.workers.dev",
+    );
+  });
+
+  test("does not allow the legacy Render start command to bypass the production key", () => {
+    const result = runPackageScript("start:server-dev", {
+      RENDER: "false",
+      RENDER_SERVICE_ID: "srv-open-war-game",
+      GAME_ENV: "dev",
+    });
+
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
   });
 });
