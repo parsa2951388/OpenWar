@@ -21,6 +21,10 @@ vi.stubGlobal(
 
 import "../../../src/client/components/SteamWishlist";
 import type { SteamWishlist } from "../../../src/client/components/SteamWishlist";
+import {
+  OPEN_WAR_STEAM_APP_ID,
+  steamStoreUrl,
+} from "../../../src/client/components/SteamWishlist";
 import "../../../src/client/components/SteamWishlistButton";
 import { gamePortal } from "../../../src/client/GamePortal";
 
@@ -31,6 +35,10 @@ describe("steam-wishlist", () => {
     document.body.appendChild(el);
     try {
       await el.updateComplete;
+      expect(OPEN_WAR_STEAM_APP_ID).toBeNull();
+      expect(() => steamStoreUrl("test")).toThrow(
+        "Open War does not have a published Steam product yet.",
+      );
       expect(el.querySelector("iframe, .steam-wishlist-frame")).toBeNull();
     } finally {
       el.remove();
