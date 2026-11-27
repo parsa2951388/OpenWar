@@ -375,7 +375,9 @@ export class ServerEnv {
   static apiKey(): string {
     return process.env.API_KEY ?? "";
   }
-  static apiKeyHeaders(apiKey: string = ServerEnv.apiKey()): Record<string, string> {
+  static apiKeyHeaders(
+    apiKey: string = ServerEnv.apiKey(),
+  ): Record<string, string> {
     const key = apiKey.trim();
     return key ? { "x-api-key": key } : {};
   }
