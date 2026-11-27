@@ -12,6 +12,7 @@ function jsonResponse(body: unknown, status = 200) {
 describe("fetchMapWeights", () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+    vi.unstubAllEnvs();
   });
 
   it("returns the weights, sending the API key", async () => {
