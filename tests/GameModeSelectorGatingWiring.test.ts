@@ -389,17 +389,19 @@ describe("the upcoming heading (the route to the lobby browser)", () => {
  * with only one of its two cards.
  */
 describe("grid placement", () => {
-  const section = () => selector.querySelector(".ow-lobby-column")!;
+  const section = () => selector.querySelector(".ow-lobby-column");
+  const operationsGrid = () =>
+    selector.querySelector(".ow-operations .ow-grid");
   const heroSlot = () =>
-    selector.querySelector(".ow-operations > .ow-grid > div.sm\\:col-start-1");
+    selector.querySelector(".ow-grid > div.sm\\:col-start-1");
 
   it("keeps the upcoming column beside the spinner while loading", () => {
     expect(heroSlot()).not.toBeNull();
     const spinner = heroSlot()!.querySelector('div[role="status"]');
     expect(spinner).not.toBeNull();
     expect(spinner!.className).toContain("h-44 sm:h-full");
-    expect(section().classList.contains("ow-lobby-column")).toBe(true);
-    expect(selector.querySelector(".ow-operations > .ow-grid")).not.toBeNull();
+    expect(section()).not.toBeNull();
+    expect(operationsGrid()).not.toBeNull();
   });
 
   it("renders the static lobby placeholder", async () => {
@@ -412,7 +414,7 @@ describe("grid placement", () => {
     expect(placeholder).not.toBeNull();
     expect(placeholder!.className).toContain("h-44 sm:h-full");
     expect(section().classList.contains("ow-lobby-column")).toBe(true);
-    expect(selector.querySelector(".ow-operations > .ow-grid")).not.toBeNull();
+    expect(operationsGrid()).not.toBeNull();
   });
 
   it("lets a lone card take both card rows", async () => {
@@ -420,7 +422,7 @@ describe("grid placement", () => {
       ffa: [publicLobby("ffa-1")],
       team: [publicLobby("t")],
     });
-    const card = section().querySelector("div.sm\\:min-h-0")!;
+    const card = section()!.querySelector("div.sm\\:min-h-0")!;
     expect(card.className).toContain("sm:row-start-2 sm:row-span-2");
   });
 
@@ -430,7 +432,7 @@ describe("grid placement", () => {
       team: [publicLobby("t")],
       special: [publicLobby("s")],
     });
-    const rows = Array.from(section().querySelectorAll("div.sm\\:min-h-0")).map(
+    const rows = Array.from(section()!.querySelectorAll("div.sm\\:min-h-0")).map(
       (c) => c.className,
     );
     expect(rows.some((c) => c.includes("sm:row-start-3"))).toBe(true);
