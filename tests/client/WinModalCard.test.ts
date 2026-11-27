@@ -887,6 +887,7 @@ describe("WinModal: signed in is the session, not the profile read", () => {
     auth.real = true;
     // The local API base, as AuthRefreshFailure.test.ts sets it.
     vi.spyOn(ClientEnv, "jwtAudience").mockReturnValue("localhost");
+    vi.spyOn(ClientEnv, "apiOrigin").mockReturnValue(undefined);
     vi.spyOn(console, "log").mockImplementation(() => undefined);
     vi.spyOn(console, "warn").mockImplementation(() => undefined);
     vi.spyOn(console, "error").mockImplementation(() => undefined);
