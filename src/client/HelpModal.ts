@@ -184,9 +184,7 @@ export class HelpModal extends BaseModal {
                       id="tutorial-video-player"
                       class="absolute top-0 left-0 w-full h-full"
                       src="${DESKTOP_TUTORIAL_VIDEO_URL}"
-                      title="${translateText(
-                        "help_modal.video_tutorial_title",
-                      )}"
+                      title="Community gameplay guide by Lonely_Millennial"
                       controls
                       preload="metadata"
                     ></video>`
@@ -194,9 +192,7 @@ export class HelpModal extends BaseModal {
                       id="tutorial-video-iframe"
                       class="absolute top-0 left-0 w-full h-full"
                       src="${this.isModalOpen ? TUTORIAL_VIDEO_URL : ""}"
-                      title="${translateText(
-                        "help_modal.video_tutorial_title",
-                      )}"
+                      title="Community gameplay guide by Lonely_Millennial"
                       frameborder="0"
                       allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
                       allowfullscreen
@@ -204,6 +200,9 @@ export class HelpModal extends BaseModal {
               }
             </div>
           </section>
+          <p class="mb-8 -mt-5 text-xs leading-relaxed text-white/55">
+            ${translateText("help_modal.video_tutorial_credit")}
+          </p>
 
           <!-- Troubleshooting Section -->
           <div class="flex items-center gap-3 mb-3">
