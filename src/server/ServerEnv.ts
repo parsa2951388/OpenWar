@@ -109,7 +109,44 @@ export class ServerEnv {
   static cdnBase(): string {
     return process.env.CDN_BASE ?? "";
   }
+  // An explicit API origin lets a game server use the first-party
+  // Cloudflare gateway when direct egress to api.<DOMAIN> is unavailable.
+  // Keep the JWT audience (DOMAIN) separate: proxying transport must not
+  // change the issuer/audience contract used by signed player tokens.
+  static apiOrigin(): string | undefined {
+    const configured = process.env.API_ORIGIN?.trim();
+    if (!configured) return undefined;
+
+    let url: URL;
+    try {
+      url = new URL(configured);
+    } catch {
+      throw new Error(
+        "Invalid API_ORIGIN: expected an absolute HTTPS origin",
+      );
+    }
+
+    const localHttp =
+      url.protocol === "http:" &&
+      ["localhost", "127.0.0.1", "[::1]"].includes(url.hostname);
+    if (
+      (url.protocol !== "https:" && !localHttp) ||
+      url.username ||
+      url.password ||
+      url.pathname !== "/" ||
+      url.search ||
+      url.hash
+    ) {
+      throw new Error(
+        "Invalid API_ORIGIN: expected an HTTPS origin without path, credentials, query, or fragment",
+      );
+    }
+    return url.origin;
+  }
   static jwtIssuer(): string {
+    const configured = ServerEnv.apiOrigin();
+    if (configured) return configured;
+
     const audience = ServerEnv.jwtAudience();
     return audience === "localhost"
       ? "http://localhost:8787"
