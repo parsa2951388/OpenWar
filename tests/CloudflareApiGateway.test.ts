@@ -158,7 +158,9 @@ describe("Open War API gateway route allowlist", () => {
     );
   });
 
-  it("allows the Open War game page origin from the default allowlist", async () => {
+  it(
+    "allows the Open War game page origin from the default allowlist",
+    async () => {
     const fetchMock = vi.fn().mockResolvedValue(
       new Response(JSON.stringify({ ok: true }), {
         status: 200,
