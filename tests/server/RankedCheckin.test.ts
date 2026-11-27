@@ -104,7 +104,19 @@ describe("RankedCheckinGate", () => {
 });
 
 describe("ranked matchmaking retry backoff", () => {
+  beforeEach(() => {
+    vi.stubEnv("GAME_ENV", "prod");
+    vi.stubEnv("INSTANCE_LETTER", "a");
+    vi.stubEnv("NUM_WORKERS", "4");
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("SUBDOMAIN", "blue");
+    vi.stubEnv("API_KEY", "test-key");
+    vi.stubEnv("INSTANCE_ID", "abcd1234");
+    vi.stubEnv("GIT_COMMIT", "bfd5563a11111111111111111111111111111111");
+  });
+
   afterEach(() => {
+    vi.unstubAllEnvs();
     vi.useRealTimers();
   });
 
