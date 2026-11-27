@@ -103,6 +103,48 @@ describe("RankedCheckinGate", () => {
   });
 });
 
+describe("ranked matchmaking retry backoff", () => {
+  afterEach(() => {
+    vi.useRealTimers();
+  });
+
+  it("backs off a forbidden queue and retries automatically", async () => {
+    vi.useFakeTimers();
+    vi.setSystemTime(0);
+    const fetchFn = vi
+      .fn()
+      .mockResolvedValueOnce(new Response("", { status: 403 }))
+      .mockResolvedValueOnce(
+        new Response(JSON.stringify({ assignment: null }), { status: 200 }),
+      ) as unknown as typeof fetch;
+    const deps = makeDeps(() => true, fetchFn);
+    startRankedCheckinLoops(deps);
+    const task = vi.mocked(startPolling).mock.calls[0][0];
+
+    await task();
+    await task();
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+
+    await vi.advanceTimersByTimeAsync(60_000);
+    await task();
+    expect(fetchFn).toHaveBeenCalledTimes(2);
+  });
+
+  it("clears the request timeout when fetch fails", async () => {
+    vi.useFakeTimers();
+    const fetchFn = vi.fn(async () => {
+      throw new Error("network unavailable");
+    }) as unknown as typeof fetch;
+    const deps = makeDeps(() => true, fetchFn);
+    const gate = new RankedCheckinGate(deps.isActive, deps.log);
+
+    await rankedCheckinPass("1v1", gate, deps);
+
+    expect(deps.log.error).toHaveBeenCalled();
+    expect(vi.getTimerCount()).toBe(0);
+  });
+});
+
 describe("rankedCheckinPass", () => {
   beforeEach(() => {
     vi.stubEnv("GAME_ENV", "prod");
