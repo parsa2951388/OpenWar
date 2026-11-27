@@ -80,7 +80,9 @@ describe("Open War API gateway route allowlist", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const response = await gateway.fetch(
-      new Request("https://openwar-api-gateway.parsaoj.workers.dev/auth/admin"),
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/auth/admin",
+      ),
       { ALLOWED_ORIGINS: allowedOrigin },
       { waitUntil: () => undefined },
     );
@@ -95,9 +97,10 @@ describe("Open War API gateway route allowlist", () => {
     vi.stubGlobal("fetch", fetchMock);
 
     const response = await gateway.fetch(
-      new Request("https://openwar-api-gateway.parsaoj.workers.dev/auth/login/google", {
-        headers: { Origin: "https://attacker.example" },
-      }),
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/auth/login/google",
+        { headers: { Origin: "https://attacker.example" } },
+      ),
       { ALLOWED_ORIGINS: allowedOrigin },
       { waitUntil: () => undefined },
     );
