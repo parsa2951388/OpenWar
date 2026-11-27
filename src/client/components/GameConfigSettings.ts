@@ -620,9 +620,13 @@ export class GameConfigSettings extends LitElement {
                     </div>`
                   : nothing
               }
-              ${settings.basicMode ? nothing : settings.options.toggles.map((toggle) =>
-                this.renderOptionToggle(toggle),
-              )}
+              ${
+                settings.basicMode
+                  ? nothing
+                  : settings.options.toggles.map((toggle) =>
+                      this.renderOptionToggle(toggle),
+                    )
+              }
               ${settings.basicMode ? nothing : settings.options.inputCards}
             </div>
           `,
@@ -650,8 +654,11 @@ export class GameConfigSettings extends LitElement {
               )
             : nothing
         }
-        ${settings.basicMode ? nothing : renderSection(
-          ENABLES_ICON,
+        ${
+          settings.basicMode
+            ? nothing
+            : renderSection(
+                ENABLES_ICON,
           "text-teal-400",
           "bg-teal-500/20",
           settings.unitTypes.titleKey,
