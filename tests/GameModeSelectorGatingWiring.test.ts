@@ -390,8 +390,7 @@ describe("the upcoming heading (the route to the lobby browser)", () => {
  */
 describe("grid placement", () => {
   const section = () => selector.querySelector(".ow-lobby-column");
-  const operationsGrid = () =>
-    selector.querySelector(".ow-operations .ow-grid");
+  const operationsGrid = () => selector.querySelector(".ow-operations .ow-grid");
   const heroSlot = () =>
     selector.querySelector(".ow-grid > div.sm\\:col-start-1");
 
@@ -413,7 +412,7 @@ describe("grid placement", () => {
     );
     expect(placeholder).not.toBeNull();
     expect(placeholder!.className).toContain("h-44 sm:h-full");
-    expect(section().classList.contains("ow-lobby-column")).toBe(true);
+    expect(section()!.classList.contains("ow-lobby-column")).toBe(true);
     expect(operationsGrid()).not.toBeNull();
   });
 
@@ -432,9 +431,9 @@ describe("grid placement", () => {
       team: [publicLobby("t")],
       special: [publicLobby("s")],
     });
-    const rows = Array.from(section()!.querySelectorAll("div.sm\\:min-h-0")).map(
-      (c) => c.className,
-    );
+    const rows = Array.from(
+      section()!.querySelectorAll("div.sm\\:min-h-0"),
+    ).map((c) => c.className);
     expect(rows.some((c) => c.includes("sm:row-start-3"))).toBe(true);
     expect(rows.some((c) => c.includes("sm:row-span-2"))).toBe(false);
   });
