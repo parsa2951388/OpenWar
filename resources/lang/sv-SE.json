@@ -23,7 +23,8 @@
     "advertise": "Annonsera",
     "wiki": "Wiki",
     "privacy_policy": "Sekretesspolicy",
-    "terms_of_service": "Användarvillkor"
+    "terms_of_service": "Användarvillkor",
+    "copyright": "© OpenFront and Contributors · Open War community fork"
   },
   "news": {
     "full_changelog": "Se fullständig ändringslogg",
