@@ -45,6 +45,21 @@ describe("LangSelector applyTranslation", () => {
   });
 });
 
+describe("LangSelector applyTranslation", () => {
+  it("refreshes the language modal so its header does not keep a raw key", () => {
+    const modal = document.createElement("language-modal") as HTMLElement & {
+      requestUpdate: () => void;
+    };
+    modal.requestUpdate = vi.fn();
+    document.body.appendChild(modal);
+
+    const selector = makeSelector({ "main.title": "Open War" });
+    (selector as unknown as { applyTranslation(): void }).applyTranslation();
+
+    expect(modal.requestUpdate).toHaveBeenCalledOnce();
+  });
+});
+
 describe("LangSelector translateText", () => {
   it("warns and returns the key itself when it is not found", () => {
     const warn = vi.spyOn(console, "warn").mockImplementation(() => {});
