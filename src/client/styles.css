@@ -972,6 +972,97 @@ body:has(#page-play.ow-home-page) {
   gap: clamp(0.8rem, 1.35vw, 1.25rem);
 }
 
+.ow-mobile-topbar {
+  position: fixed;
+  top: var(--top-ad-height, 0px);
+  right: 0;
+  left: 0;
+  z-index: 40;
+  padding-top: env(safe-area-inset-top);
+  border-bottom: 1px solid rgba(41, 64, 77, 0.8);
+  background: rgba(7, 19, 30, 0.95);
+  backdrop-filter: blur(20px);
+}
+
+.ow-hamburger {
+  display: flex;
+  aspect-ratio: 4 / 3;
+  flex-shrink: 0;
+  align-items: center;
+  justify-content: center;
+  grid-column-start: 1;
+  justify-self: start;
+  height: 2.5rem;
+  border-radius: 0.375rem;
+  color: rgba(255, 255, 255, 0.9);
+  transition: color 150ms ease;
+}
+
+.ow-strip {
+  position: relative;
+  display: flex;
+  width: 100%;
+  flex-direction: column;
+  gap: 1rem;
+  padding-bottom: 1rem;
+}
+
+@media (min-width: 640px) {
+  .ow-strip {
+    width: calc(100% + 2rem);
+    margin-inline: -1rem;
+  }
+}
+
+@media (min-width: 1024px) {
+  .ow-strip {
+    display: grid;
+    width: 100%;
+    grid-template-columns: minmax(0, 1fr);
+    gap: 1rem;
+    margin-inline: 0;
+    padding-bottom: 0;
+  }
+
+  .ow-strip:has(.streaming-live) {
+    grid-template-columns: 2fr 1fr;
+  }
+}
+
+.ow-callsign-panel {
+  position: relative;
+  display: flex;
+  align-items: center;
+  overflow: visible;
+}
+
+@media (min-width: 640px) {
+  .ow-callsign-panel {
+    z-index: 20;
+    flex: 1;
+    border: 0;
+    border-radius: 0.75rem;
+  }
+}
+
+.ow-callsign-shell {
+  position: relative;
+  z-index: 10;
+  display: flex;
+  width: 100%;
+  min-width: 0;
+  flex-direction: column;
+  justify-content: center;
+  gap: 0.25rem;
+  padding: 0.5rem 0.75rem;
+  background: rgba(9, 23, 35, 0.88);
+}
+
+@media (min-width: 640px) {
+  .ow-callsign-shell {
+    border-radius: 0.75rem;
+  }
+}
 .ow-mobile-wordmark {
   max-width: min(42vw, 220px);
   height: 1.85rem;
