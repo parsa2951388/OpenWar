@@ -107,7 +107,9 @@ describe("Render start command", () => {
     );
   });
 
-  test("routes the legacy Render start command to production using the service ID", () => {
+  test(
+    "routes the legacy Render start command to production using the service ID",
+    () => {
     const result = runPackageScript("start:server-dev", {
       RENDER: "false",
       RENDER_SERVICE_ID: "srv-open-war-game",
@@ -123,7 +125,9 @@ describe("Render start command", () => {
     );
   });
 
-  test("does not allow the legacy Render start command to bypass the production key", () => {
+  test(
+    "does not allow the legacy Render start command to bypass the production key",
+    () => {
     const result = runPackageScript("start:server-dev", {
       RENDER: "false",
       RENDER_SERVICE_ID: "srv-open-war-game",
