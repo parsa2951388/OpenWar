@@ -28,7 +28,7 @@ export class SteamWishlistButton extends LitElement {
   }
 
   render() {
-    if (isDesktopShell() || gamePortal.name() === "poki") return nothing;
+    if (gamePortal.name() === "open-war-steam-disabled") return nothing;
 
     return html`
       <a
