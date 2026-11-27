@@ -1,8 +1,8 @@
-import { spawnSync } from "node:child_process";
-import fs from "node:fs";
-import { tmpdir } from "node:os";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
+import { spawnSync } from "child_process";
+import fs from "fs";
+import { tmpdir } from "os";
+import path from "path";
+import { fileURLToPath } from "url";
 import { afterEach, describe, expect, test } from "vitest";
 
 const repositoryRoot = fileURLToPath(new URL("../", import.meta.url));
