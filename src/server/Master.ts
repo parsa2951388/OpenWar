@@ -357,7 +357,7 @@ app.get("/api/health", (_req, res) => {
     log.warn("Readiness check failed", {
       instanceId,
       reason,
-      ...(readiness ?? {}),
+      readiness,
     });
     lastReadinessFailure = failureSignature;
   }
