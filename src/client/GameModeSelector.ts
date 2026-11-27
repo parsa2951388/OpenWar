@@ -41,6 +41,7 @@ import {
 } from "./ServerList";
 import type { SinglePlayerModal } from "./SinglePlayerModal";
 import { lastUserMeResponse } from "./UserMeBroadcast";
+import { OPEN_WAR_FEATURES } from "./OpenWarFeatureFlags";
 import { UsernameInput } from "./UsernameInput";
 import {
   calculateServerTimeOffset,
@@ -667,7 +668,9 @@ export class GameModeSelector extends LitElement {
   render() {
     const ffa = this.lobbies?.games?.["ffa"]?.[0];
     const teams = this.lobbies?.games?.["team"]?.[0];
-    const special = this.lobbies?.games?.["special"]?.[0];
+    const special = OPEN_WAR_FEATURES.specialPublicLobbyQueue
+      ? this.lobbies?.games?.["special"]?.[0]
+      : undefined;
     // A lone secondary card takes both of the column's card rows.
     const cardRows =
       teams && special
@@ -713,7 +716,7 @@ export class GameModeSelector extends LitElement {
           }
         </div>
         <div
-          class="grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-4"
+          class="grid grid-cols-2 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-4"
         >
           ${this.renderSmallActionCard(
             translateText("main.create"),
@@ -722,26 +725,30 @@ export class GameModeSelector extends LitElement {
             undefined,
             true,
           )}
-          ${this.renderSmallActionCard(
-            translateText("mode_selector.ranked_title"),
-            this.openRankedMenu,
-            SECONDARY_ACTION,
-            undefined,
-            true,
-            // Ranked admits trusted accounts only. A trusted viewer gets the
-            // green open lock; anyone else meets the red locks and the trust
-            // popup inside the ranked modal. Small, so it clears the label on
-            // narrow (mobile) buttons.
-            this.viewerTrusted
-              ? trustLockIcon(true, {
-                  tooltipTitle: translateText(
-                    "mode_selector.ranked_trust_tooltip_title",
-                  ),
-                  position: "top-1 right-1",
-                  small: true,
-                })
-              : nothing,
-          )}
+          ${
+            OPEN_WAR_FEATURES.rankedMatchmaking
+              ? this.renderSmallActionCard(
+                            translateText("mode_selector.ranked_title"),
+                            this.openRankedMenu,
+                            SECONDARY_ACTION,
+                            undefined,
+                            true,
+                            // Ranked admits trusted accounts only. A trusted viewer gets the
+                            // green open lock; anyone else meets the red locks and the trust
+                            // popup inside the ranked modal. Small, so it clears the label on
+                            // narrow (mobile) buttons.
+                            this.viewerTrusted
+                              ? trustLockIcon(true, {
+                                  tooltipTitle: translateText(
+                                    "mode_selector.ranked_trust_tooltip_title",
+                                  ),
+                                  position: "top-1 right-1",
+                                  small: true,
+                                })
+                              : nothing,
+                          )
+              : nothing
+          }
           ${this.renderSmallActionCard(
             translateText("main.join"),
             this.openJoinLobby,
@@ -860,6 +867,7 @@ export class GameModeSelector extends LitElement {
   }
 
   private openRankedMenu = () => {
+    if (!OPEN_WAR_FEATURES.rankedMatchmaking) return;
     if (this.blockedFromApiAction()) return;
     if (!this.validateUsername()) return;
     window.showPage?.("page-ranked");
@@ -958,7 +966,15 @@ export class GameModeSelector extends LitElement {
 
   /** Every lobby the browser lists, hosted included. */
   private advertisedLobbyCount(): number {
-    return Object.values(this.lobbies?.games ?? {}).flat().length;
+    const games = this.lobbies?.games;
+    return (
+      (games?.ffa?.length ?? 0) +
+      (games?.team?.length ?? 0) +
+      (games?.hosted?.length ?? 0) +
+      (OPEN_WAR_FEATURES.specialPublicLobbyQueue
+        ? (games?.special?.length ?? 0)
+        : 0)
+    );
   }
 
   private hostedLobbyCount(): number {
