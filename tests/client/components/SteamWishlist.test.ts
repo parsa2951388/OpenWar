@@ -19,11 +19,10 @@ vi.stubGlobal(
   },
 );
 
-import "../../../src/client/components/SteamWishlist";
-import type { SteamWishlist } from "../../../src/client/components/SteamWishlist";
 import {
   OPEN_WAR_STEAM_APP_ID,
   steamStoreUrl,
+  type SteamWishlist,
 } from "../../../src/client/components/SteamWishlist";
 import "../../../src/client/components/SteamWishlistButton";
 import { gamePortal } from "../../../src/client/GamePortal";
