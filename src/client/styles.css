@@ -1576,7 +1576,6 @@ body:has(#page-play.ow-home-page) {
   }
 }
 
-
 /* ─── Open War landing-page arrival and ambient motion ──────────────────────
    These effects are scoped to the home page. The game canvas, in-game HUD,
    lobby state, and gameplay controls do not inherit these animations. */
