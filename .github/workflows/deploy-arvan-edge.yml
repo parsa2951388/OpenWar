@@ -1,0 +1,58 @@
+name: Deploy Open War to Arvan Edge
+
+on:
+  workflow_dispatch:
+    inputs:
+      application_name:
+        description: Arvan Edge application name
+        required: true
+        default: openwar
+        type: string
+
+permissions:
+  contents: read
+
+concurrency:
+  group: arvan-edge-deploy
+  cancel-in-progress: false
+
+jobs:
+  deploy:
+    name: Deploy Edge worker
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+    env:
+      ARVAN_MACHINE_KEY: \${{ secrets.ARVAN_MACHINE_KEY }}
+      ARVAN_APP_NAME: \${{ inputs.application_name }}
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Validate deployment configuration
+        shell: bash
+        run: |
+          set -euo pipefail
+          if [[ -z "\${ARVAN_MACHINE_KEY}" ]]; then
+            echo "::error::Add the ARVAN_MACHINE_KEY repository secret before deploying."
+            exit 1
+          fi
+          if [[ ! "\${ARVAN_APP_NAME}" =~ ^[a-z0-9][a-z0-9-]{1,39}$ ]]; then
+            echo "::error::Application name must be 2-40 lowercase letters, digits, or hyphens, and must start with a letter or digit."
+            exit 1
+          fi
+
+      - name: Set up Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: "22"
+
+      - name: Install Arvan Edge CLI
+        run: npm install --global r1ec
+
+      - name: Authenticate with ArvanCloud
+        shell: bash
+        run: r1ec login -m "$ARVAN_MACHINE_KEY"
+
+      - name: Deploy Open War Edge worker
+        shell: bash
+        run: r1ec deploy "$ARVAN_APP_NAME" -f deploy/arvan-edge/worker.js
