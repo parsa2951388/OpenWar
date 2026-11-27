@@ -29,7 +29,11 @@ async function check(url, label) {
     redirect: "follow",
     signal: AbortSignal.timeout(20_000),
   });
-  assert.equal(response.status, 200, label + " returned HTTP " + response.status);
+  assert.equal(
+    response.status,
+    200,
+    label + " returned HTTP " + response.status,
+  );
   return response;
 }
 
@@ -37,18 +41,28 @@ try {
   const health = await check(new URL("/__edge/health", base), "Edge health");
   const healthBody = await health.json();
   assert.equal(healthBody.ok, true, "Edge health did not report ok=true");
-  assert.equal(healthBody.edge, true, "Edge health did not identify Edge runtime");
+  assert.equal(
+    healthBody.edge,
+    true,
+    "Edge health did not identify Edge runtime",
+  );
 
   const home = await check(base, "Open War homepage");
   const html = await home.text();
-  assert.match(html, /Open War/i, "The response does not look like the Open War HTML shell");
+  assert.match(
+    html,
+    /Open War/i,
+    "The response does not look like the Open War HTML shell",
+  );
   assert.equal(
     home.headers.get("x-openwar-edge"),
     "arvancloud",
     "The homepage did not pass through the Open War Arvan Edge worker",
   );
 
-  const assetMatch = html.match(/(?:src|href)=["']([^"']*\/assets\/[^"']+\.(?:js|css))["']/i);
+  const assetMatch = html.match(
+    /(?:src|href)=["']([^"']*\/assets\/[^"']+\.(?:js|css))["']/i,
+  );
   if (assetMatch && assetMatch[1]) {
     const assetUrl = new URL(assetMatch[1], base);
     const asset = await check(assetUrl, "Fingerprint asset");
@@ -59,13 +73,17 @@ try {
     );
     console.log("PASS asset: " + assetUrl.pathname);
   } else {
-    console.warn("WARN no /assets/*.js or /assets/*.css reference was found in the HTML shell");
+    console.warn(
+      "WARN no /assets/*.js or /assets/*.css reference was found in the HTML shell",
+    );
   }
 
   console.log("PASS Edge health endpoint");
   console.log("PASS Open War homepage: " + base.origin);
   console.log("Upstream: " + healthBody.upstream);
-  console.log("NOTE: login, multiplayer, WebSocket, and mobile behavior require browser testing.");
+  console.log(
+    "NOTE: login, multiplayer, WebSocket, and mobile behavior require browser testing.",
+  );
 } catch (error) {
   console.error("FAIL Arvan Edge smoke test:", error);
   process.exit(1);
