@@ -5,7 +5,6 @@ import "./CosmeticBackground";
 import "./NavAccountMenu";
 import "./NavUtilityIcons";
 import "./NewsBox";
-import "./SteamWishlist";
 import "./StreamingNow";
 
 @customElement("play-page")
@@ -18,14 +17,14 @@ export class PlayPage extends LitElement {
     return html`
       <div
         id="page-play"
-        class="flex flex-col gap-2 w-full px-0 lg:px-4 min-h-0"
+        class="ow-home-page flex flex-col gap-3 w-full px-0 lg:px-4 min-h-0"
       >
         <token-login class="absolute"></token-login>
         <rewards-modal class="absolute"></rewards-modal>
 
         <!-- Mobile: Fixed top bar -->
         <div
-          class="lg:hidden fixed left-0 right-0 top-[var(--top-ad-height,0px)] z-40 pt-[env(safe-area-inset-top)] bg-surface border-b border-white/10"
+          class="lg:hidden fixed left-0 right-0 top-[var(--top-ad-height,0px)] z-40 pt-[env(safe-area-inset-top)] bg-[#07131e]/95 backdrop-blur-xl border-b border-[#29404d]/80"
         >
           <div
             class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center h-14 px-2 gap-2"
@@ -59,9 +58,9 @@ export class PlayPage extends LitElement {
               class="col-start-2 flex items-center justify-center text-malibu-blue min-w-0"
             >
               <img
-                src=${assetUrl("images/OpenFrontLogo.svg")}
-                alt="OpenFront"
-                class="h-full w-auto"
+                src=${assetUrl("images/OpenWarLogo.svg")}
+                alt="Open War"
+                class="ow-mobile-wordmark h-full w-auto"
               />
             </div>
 
@@ -102,10 +101,11 @@ export class PlayPage extends LitElement {
                 class="absolute inset-0 z-0 overflow-hidden sm:rounded-xl pointer-events-none"
               ></cosmetic-background>
               <div
-                class="relative z-10 flex h-full w-full min-w-0 items-center bg-surface/80 p-1 sm:rounded-xl"
+                class="relative z-10 flex h-full w-full min-w-0 flex-col justify-center gap-1 bg-[#091723]/88 px-3 py-2 sm:rounded-xl"
               >
+                <span class="ow-field-label">COMMANDER CALLSIGN</span>
                 <username-input
-                  class="flex-1 min-w-0 h-10 sm:h-[50px] sm:compact:h-[38px]"
+                  class="flex-1 min-w-0 h-10 sm:h-[46px] sm:compact:h-[36px]"
                 ></username-input>
               </div>
             </div>
@@ -118,13 +118,41 @@ export class PlayPage extends LitElement {
           ></streaming-now>
         </div>
 
-        <game-mode-selector></game-mode-selector>
+        <section class="ow-hero" aria-labelledby="ow-hero-title">
+          <div class="ow-hero__copy">
+            <div class="ow-hero__eyebrow">
+              <span class="ow-signal-dot"></span>
+              OPEN WAR <span class="ow-hero__divider">/</span> STRATEGIC OPERATIONS
+            </div>
+            <h1 id="ow-hero-title">TAKE THE <span>FRONTLINE.</span></h1>
+            <p>Build your nation. Coordinate your forces. Turn every move into territory.</p>
+            <div class="ow-hero__data">
+              <span><b>01</b> CHOOSE YOUR THEATRE</span>
+              <span><b>02</b> DEPLOY YOUR STRATEGY</span>
+            </div>
+          </div>
+          <div class="ow-hero__visual" aria-hidden="true">
+            <div class="ow-hero__radar ow-hero__radar--outer"></div>
+            <div class="ow-hero__radar ow-hero__radar--inner"></div>
+            <svg class="ow-hero__map" viewBox="0 0 440 300" fill="none">
+              <path d="m62 105 29-39 46-18 22 15 37-3 24 22 39-5 23 18 44 1 29 31-12 23 23 31-23 27-40-8-24 21-31-10-17 20-35-7-12-29-34-8-25-32-36-5-17-28-31 1-14-18Z" fill="#183849" stroke="#6de3da" stroke-width="2"/>
+              <path d="m165 63 18 47-18 31 31 27-10 29m60-99-24 34 28 20-5 38m66-83-17 29 22 27m-157-26-32 10m78-74 33 2 28 26 38-7m-86 82 36-19 32 11" stroke="#7da7b5" stroke-width="1.2" stroke-dasharray="4 6" opacity=".7"/>
+              <path d="M34 150h372M220 18v264M70 48l300 204M75 250 370 45" stroke="#467889" stroke-width=".8" stroke-dasharray="2 9" opacity=".45"/>
+              <circle cx="220" cy="150" r="90" stroke="#6de3da" stroke-width="1.3" opacity=".45"/>
+              <circle cx="220" cy="150" r="55" stroke="#d6aa5c" stroke-width="1.2" stroke-dasharray="4 5" opacity=".65"/>
+              <circle cx="220" cy="150" r="7" fill="#f3cf8b"/>
+              <path d="M220 130v-16m0 72v-16m-20-20h-16m72 0h-16" stroke="#f3cf8b" stroke-width="2"/>
+              <circle cx="122" cy="104" r="5" fill="#f3cf8b"/>
+              <circle cx="317" cy="196" r="4" fill="#6de3da"/>
+              <circle cx="286" cy="83" r="3" fill="#f3cf8b"/>
+            </svg>
+            <div class="ow-hero__readout"><span>THEATRE STATUS</span><strong>READY FOR DEPLOYMENT</strong><i></i></div>
+            <div class="ow-hero__coordinates">35°41' N&nbsp;&nbsp; 51°25' E</div>
+          </div>
+          <div class="ow-hero__index">OW / 001 <span>GLOBAL CONFLICT NETWORK</span></div>
+        </section>
 
-        <!-- Desktop gets the compact footer button instead. -->
-        <steam-wishlist
-          campaign="home_mobile"
-          class="block px-2 pb-4 lg:hidden"
-        ></steam-wishlist>
+        <game-mode-selector></game-mode-selector>
       </div>
     `;
   }
