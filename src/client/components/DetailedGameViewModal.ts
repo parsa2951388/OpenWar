@@ -23,6 +23,7 @@ import { JoinLobbyEvent } from "../Main";
 import { lastUserMeResponse } from "../UserMeBroadcast";
 import { UsernameInput } from "../UsernameInput";
 import { UserSettings } from "../UserSettings";
+import { OPEN_WAR_FEATURES } from "../OpenWarFeatureFlags";
 import {
   calculateServerTimeOffset,
   getGameModeLabel,
@@ -62,7 +63,9 @@ import { modalHeader } from "./ui/ModalHeader";
 import { styledSelect } from "./ui/StyledSelect";
 
 /** The three scheduled buckets, in the order their panes are laid out. */
-const SCHEDULED_PANES = ["ffa", "team", "special"] as const;
+const SCHEDULED_PANES: readonly string[] = OPEN_WAR_FEATURES.specialPublicLobbyQueue
+  ? ["ffa", "team", "special"]
+  : ["ffa", "team"];
 
 /**
  * Slots a pane always renders, matching QUEUED_LOBBIES_PER_TYPE on the master:
@@ -335,7 +338,11 @@ export class DetailedGameViewModal extends BaseModal {
       return this.renderLoadingSpinner();
     }
 
-    const all = flattenLobbies(this.lobbies.games);
+    const all = flattenLobbies(this.lobbies.games).filter(
+      (lobby) =>
+        OPEN_WAR_FEATURES.specialPublicLobbyQueue ||
+        lobby.publicGameType !== "special",
+    );
     const shown = filterAndSortLobbies(all, this.filters);
     const ofType = (lobbies: PublicGameInfo[], type: string) =>
       lobbies.filter((lobby) => lobby.publicGameType === type);
@@ -360,7 +367,7 @@ export class DetailedGameViewModal extends BaseModal {
               ? html`
                   <!-- One pane per scheduled bucket, cards stacked within it. -->
                   <div
-                    class="grid grid-cols-1 sm:grid-cols-3 gap-4 items-start"
+                    class="grid grid-cols-1 ${OPEN_WAR_FEATURES.specialPublicLobbyQueue ? "sm:grid-cols-3" : "sm:grid-cols-2"} gap-4 items-start"
                   >
                     ${SCHEDULED_PANES.map((type) =>
                       this.renderPane(
