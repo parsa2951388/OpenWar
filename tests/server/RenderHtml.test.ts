@@ -279,6 +279,7 @@ describe("RenderHtml environment-only render", () => {
     vi.stubEnv("GIT_COMMIT", "abc");
     vi.stubEnv("STRIPE_PUBLISHABLE_KEY", "pk_test_abc");
     vi.stubEnv("FARO_COLLECTOR_URL", "https://faro.example/collect/k");
+    vi.stubEnv("API_ORIGIN", "https://gateway.example");
   });
 
   afterEach(() => {
@@ -312,6 +313,7 @@ describe("RenderHtml environment-only render", () => {
     ["gameEnv"],
     ["turnstileSiteKey"],
     ["jwtAudience"],
+    ["apiOrigin"],
     // Environment-scoped, so the static per-version page must carry it:
     // it is how a page served by the static Worker still gets a key.
     ["stripePublishableKey"],
@@ -345,6 +347,13 @@ describe("RenderHtml environment-only render", () => {
   // index-<short>.html replay shell is built from, so guarding those lines had
   // to leave it byte-for-byte identical — same order, same eight-space
   // indentation, same trailing commas.
+  it("omits apiOrigin when no gateway is configured", async () => {
+    vi.stubEnv("API_ORIGIN", "");
+    const html = await renderHtmlContent(REAL_TEMPLATE);
+    expect(html).not.toContain("apiOrigin:");
+    expect(bootstrapConfig(html)).not.toHaveProperty("apiOrigin");
+  });
+
   it("still emits every guarded line, in place, when the locals are supplied", async () => {
     const html = await renderHtmlContent(REAL_TEMPLATE);
 
@@ -359,6 +368,7 @@ describe("RenderHtml environment-only render", () => {
         '        instanceLetter: "a",',
         '        turnstileSiteKey: "test-key",',
         '        jwtAudience: "openfront.io",',
+        '        apiOrigin: "https://gateway.example",',
         '        stripePublishableKey: "pk_test_abc",',
         '        faroCollectorUrl: "https://faro.example/collect/k",',
         '        instanceId: "i-1",',
