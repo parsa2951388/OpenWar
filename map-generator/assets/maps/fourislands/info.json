@@ -3,29 +3,45 @@
   "id": "FourIslands",
   "name": "Four Islands",
   "translation_key": "map.fourislands",
-  "categories": ["fictional"],
+  "categories": [
+    "fictional"
+  ],
   "author": "FloPinguin",
-  "description": "Four islands, one in each corner, each holding exactly a quarter of the land. A classic nuke wars map. Probably the first completely fictional map in OpenFront.",
+  "description": "Four islands, one in each corner, each holding exactly a quarter of the land. A classic nuke wars map. Probably the first completely fictional map in Open War.",
   "special_team_count": 4,
-  "forced_modifiers": ["isWaterNukes:50"],
+  "forced_modifiers": [
+    "isWaterNukes:50"
+  ],
   "nations": [
     {
-      "coordinates": [403, 1296],
+      "coordinates": [
+        403,
+        1296
+      ],
       "flag": "",
       "name": "Korinthal"
     },
     {
-      "coordinates": [1152, 1251],
+      "coordinates": [
+        1152,
+        1251
+      ],
       "flag": "",
       "name": "Lunareth"
     },
     {
-      "coordinates": [1328, 322],
+      "coordinates": [
+        1328,
+        322
+      ],
       "flag": "",
       "name": "Sylvoria"
     },
     {
-      "coordinates": [114, 121],
+      "coordinates": [
+        114,
+        121
+      ],
       "flag": "",
       "name": "Myrkwind"
     }
