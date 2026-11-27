@@ -21,12 +21,28 @@ jobs:
       - name: Setup npm
         run: npm install --global --ignore-scripts npm@12.1.0
       - run: npm ci --no-audit --no-fund
-      - name: Apply semver-compatible security fixes only
-        run: npm audit fix
-      - name: Verify the resulting audit report
+      - name: Apply semver-compatible fixes
         run: |
+          npm audit fix || true
+          npm view vitest@4.1.12 version
+          npm view @vitest/coverage-v8@4.1.12 version
+          npm view @vitest/ui@4.1.12 version
+          npm pkg set 'devDependencies.vitest=^4.1.12'
+          npm pkg set 'devDependencies.@vitest/coverage-v8=^4.1.12'
+          npm pkg set 'devDependencies.@vitest/ui=^4.1.12'
+          npm install --package-lock-only --ignore-scripts --no-audit --no-fund
+      - name: Verify install and audit
+        run: |
+          npm ci --no-audit --no-fund
           npm audit --json > /tmp/audit.json || true
-          node -e 'const r=require("/tmp/audit.json"); console.log("AUDIT_SUMMARY", JSON.stringify(r.metadata?.vulnerabilities ?? {}));'
+          node <<'NODE'
+          const fs = require("node:fs");
+          const report = JSON.parse(fs.readFileSync("/tmp/audit.json", "utf8"));
+          console.log("AUDIT_SUMMARY", JSON.stringify(report.metadata?.vulnerabilities ?? {}));
+          for (const [name, item] of Object.entries(report.vulnerabilities ?? {})) {
+            console.log(JSON.stringify({name, severity:item.severity, range:item.range, fixAvailable:item.fixAvailable}));
+          }
+          NODE
       - uses: actions/upload-artifact@v7
         with:
           name: openwar-dependency-fix-candidate
