@@ -41,6 +41,7 @@ import {
   saveLobbyPreset,
 } from "./LobbyPresets";
 import { JoinLobbyEvent } from "./Main";
+import { OPEN_WAR_FEATURES } from "./OpenWarFeatureFlags";
 import { fallbackPlayerName, ResolvedPlayerName } from "./PlayerName";
 import { downloadSavedGame } from "./SavedGamesApi";
 import { lastUserMeResponse } from "./UserMeBroadcast";
@@ -558,6 +559,7 @@ export class SinglePlayerModal extends BaseModal {
             class="block"
             .sectionGapClass=${"space-y-6"}
             .settings=${{
+              basicMode: OPEN_WAR_FEATURES.basicSetup,
               map: {
                 selected: this.selectedMap,
                 useRandom: this.useRandomMap,
