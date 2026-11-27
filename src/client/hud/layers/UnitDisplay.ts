@@ -1,5 +1,6 @@
 import {
   BuildableUnit,
+  BuildMenus,
   Gold,
   PlayerBuildableUnitType,
   UnitType,
@@ -8,10 +9,14 @@ import { renderNumber } from "@openfront/engine-lib/Format";
 import { EventBus } from "@openfront/shared/EventBus";
 import { html, LitElement, nothing } from "lit";
 import { customElement } from "lit/decorators.js";
+import "../../components/OfIcon";
+import type { OfIconName } from "../../components/OfIcon";
 import { Controller } from "../../Controller";
 import {
+  ConfirmGhostStructureEvent,
   InputHandler,
   ToggleStructureEvent,
+  TouchGhostPlacementMoveEvent,
   TouchGhostPlacementSelectEvent,
   highlightTypesForUnit,
   isForwardedTouchClick,
@@ -22,39 +27,72 @@ import { UIState } from "../../UIState";
 import { UserSettings } from "../../UserSettings";
 import { resolveKeybindLabel, translateText } from "../../Utils";
 import { GameView } from "../../view";
-import {
-  atomBombIcon,
-  cityIcon,
-  defensePostIcon,
-  factoryIcon,
-  goldCoinIcon,
-  hydrogenBombIcon,
-  mirvIcon,
-  missileSiloIcon,
-  portIcon,
-  samLauncherIcon,
-  warshipIcon,
-} from "../HotbarIcons";
 import { TutorialHighlight, TutorialHighlightEvent } from "../Tutorial";
 
-/** Units rendered by the compact quick-build bar; aircraft use the radial menu. */
-export const QUICK_BUILD_TYPES: readonly PlayerBuildableUnitType[] = [
-  UnitType.City,
-  UnitType.Factory,
-  UnitType.Port,
-  UnitType.DefensePost,
-  UnitType.MissileSilo,
-  UnitType.SAMLauncher,
-  UnitType.Warship,
-  UnitType.AtomBomb,
-  UnitType.HydrogenBomb,
-  UnitType.MIRV,
-];
+/** Why a unit can or cannot be picked: no gold for it, or something it needs is missing. */
+type BuildState = "ready" | "poor" | "locked";
+
+/** What picking a unit depends on, read once per render. */
+interface BuildNeeds {
+  gold: Gold;
+  hasSilo: boolean;
+  hasPort: boolean;
+}
+
+// Look. Sizes, colours, radii and spacing of each part live here, so a
+// change of look is one edit. The templates below only hold structure.
+// The border is a real one: the tutorial highlight in styles.css recolours it.
+// From lg a tile is at least 44px wide, so the row does not shift when a
+// count goes from 9 to 10, and wider when its count needs it (1.19K), so the
+// count never spills over the tiles beside it.
+// The column's scroller gets 100dvh - 5.5rem and ten tiles need ten heights
+// plus nine 2px gaps (1.125rem), so on short screens the tiles shrink, down
+// to 36px, instead of scrolling. From 586px tall they stay 48px.
+const TILE =
+  "relative flex w-full items-center justify-center rounded-sm border text-white cursor-pointer transition-colors h-6.5 lg:min-w-11 max-lg:landscape:h-7.5 side-bar:h-[clamp(2.25rem,calc((100dvh-6.625rem)/10),3rem)] side-bar:min-w-6.5";
+// The armed unit (picked, waiting for a spot on the map) is filled blue.
+const TILE_SELECTION = {
+  idle: "border-white/15 pointer-fine:hover:bg-white/10 active:bg-white/15",
+  selected:
+    "border-aquarius bg-malibu-blue/25 pointer-fine:hover:bg-malibu-blue/35",
+} as const;
+// A unit you cannot build dims its icon and count but keeps its tile's edge,
+// so at the start of a game the bar does not look switched off.
+// A locked one (no silo for a bomb, no port for a warship) dims further.
+const ICON_STATE: Record<BuildState, string> = {
+  ready: "",
+  poor: "opacity-50",
+  locked: "opacity-30",
+};
+// In place of the count from lg; below lg, where no count is shown, a badge
+// in the tile's bottom end corner. The lock is narrower than it is tall, so
+// end-px leaves as much room beside it as below it.
+const LOCK = "absolute bottom-0.5 end-px text-white/60 lg:static lg:ms-0.5";
+const REASON_STATE: Record<Exclude<BuildState, "ready">, string> = {
+  poor: "text-red-400",
+  locked: "text-white/55",
+};
+// The price in the details turns red with the reason when you cannot afford
+// the unit.
+const DETAILS_PRICE: Record<BuildState, string> = {
+  ready: "text-cyber-yellow",
+  poor: "text-red-400",
+  locked: "text-cyber-yellow",
+};
+// In the corner, out of the tile's flow, so it does not push the icon aside.
+const HOTKEY =
+  "absolute top-0.5 start-0.5 max-w-full truncate text-[10px] leading-none text-white/45";
+const COUNT = "hidden lg:inline text-xs leading-none tabular-nums hud-caps";
+const COUNT_EMPTY = "text-white/45";
 
 /** How long a build button has to be held before it shows its details (cost etc.) */
 const PEEK_HOLD_MS = 450;
 /** How long the details stay up after the browser cancels the touch itself. */
 const PEEK_GRACE_MS = 1200;
+
+// A unit dragged from the bar sits this far above the finger (about 7mm on a
+// phone), so the finger doesn't hide where it will be built.
+const DRAG_GHOST_LIFT_PX = 44;
 
 @customElement("unit-display")
 export class UnitDisplay extends LitElement implements Controller {
@@ -101,15 +139,28 @@ export class UnitDisplay extends LitElement implements Controller {
   private peekPointerId: number | null = null;
   private peekTouchIdentifier: number | null = null;
   private activeTouchIdentifiers = new Set<number>();
-  // Where the tooltip is centred, in the bar's own coordinates.
+  // Where the tooltip is centred along the bar, in the bar's own coordinates:
+  // x for the bottom row, y for the side column. Kept for the clamp after the
+  // render, since the tooltip cannot be measured before it exists.
   private _tooltipCenter: number | null = null;
   private tutorialHighlight: PlayerBuildableUnitType | null = null;
   // Whether the build bar has actions hidden off either edge. The fade on that
-  // edge tells the player there is more to swipe to.
-  private moreActionsLeft = false;
-  private moreActionsRight = false;
+  // edge tells the player there is more to scroll to.
+  private moreActionsStart = false;
+  private moreActionsEnd = false;
   private observedScroller: HTMLElement | null = null;
   private windowListenersAttached = false;
+  /**
+   * A touch on a build button that may become a drag onto the map. It
+   * becomes active once the finger leaves the bar: the unit is picked and
+   * its ghost follows the finger. Letting go on the map builds there; letting
+   * go back over the bar cancels.
+   */
+  private placeDrag: {
+    pointerId: number;
+    unitType: PlayerBuildableUnitType;
+    active: boolean;
+  } | null = null;
 
   createRenderRoot() {
     return this;
@@ -126,7 +177,7 @@ export class UnitDisplay extends LitElement implements Controller {
     // the onboarding tutorial fires its atom bomb from here on every screen.
     if (this.tutorialMode) this.classList.remove("hidden");
 
-    this.enabledUnitCount = QUICK_BUILD_TYPES.filter((unitType) =>
+    this.enabledUnitCount = BuildMenus.types.filter((unitType) =>
       this.isUnitDisplayed(unitType),
     ).length;
     this.allDisabled = this.enabledUnitCount === 0;
@@ -161,6 +212,7 @@ export class UnitDisplay extends LitElement implements Controller {
       this.handleKeyboardDetected,
     );
     document.addEventListener("pointerdown", this.handleDocumentPointerDown);
+    document.addEventListener("pointermove", this.handleDocumentPointerMove);
     document.addEventListener("pointerup", this.handleDocumentPointerUp);
     document.addEventListener(
       "pointercancel",
@@ -180,6 +232,7 @@ export class UnitDisplay extends LitElement implements Controller {
       this.handleKeyboardDetected,
     );
     document.removeEventListener("pointerdown", this.handleDocumentPointerDown);
+    document.removeEventListener("pointermove", this.handleDocumentPointerMove);
     document.removeEventListener("pointerup", this.handleDocumentPointerUp);
     document.removeEventListener(
       "pointercancel",
@@ -193,6 +246,7 @@ export class UnitDisplay extends LitElement implements Controller {
       true,
     );
     this.dismissPeek();
+    this.placeDrag = null;
     this.activeTouchIdentifiers.clear();
     this.suppressNextClick = false;
     this.suppressReleaseClick = false;
@@ -271,8 +325,92 @@ export class UnitDisplay extends LitElement implements Controller {
     this.dismissPeek();
   };
 
+  private armPlaceDrag(event: PointerEvent, unitType: PlayerBuildableUnitType) {
+    if (event.pointerType !== "touch") return;
+    this.placeDrag = { pointerId: event.pointerId, unitType, active: false };
+  }
+
+  private isOverBar(x: number, y: number): boolean {
+    const bounds =
+      this.querySelector(".unit-display-root")?.getBoundingClientRect();
+    return (
+      bounds !== undefined &&
+      x >= bounds.left &&
+      x <= bounds.right &&
+      y >= bounds.top &&
+      y <= bounds.bottom
+    );
+  }
+
+  /**
+   * The touch keeps its button as target (implicit pointer capture), so its
+   * moves arrive here even over the map, and the map's input never sees it.
+   */
+  private handleDocumentPointerMove = (event: PointerEvent) => {
+    const drag = this.placeDrag;
+    if (drag === null || drag.pointerId !== event.pointerId) return;
+    if (!drag.active) {
+      if (this.isOverBar(event.clientX, event.clientY)) return;
+      if (!this.canBuild(drag.unitType)) {
+        this.placeDrag = null;
+        return;
+      }
+      drag.active = true;
+      // A drag is not a hold: no details, and no selection on release.
+      this.dismissPeek();
+      // Picking the unit that's already held would raise its upgrade
+      // multiplier, as a second click does.
+      if (this.uiState.ghostStructure !== drag.unitType) {
+        this.inputHandler.setGhostStructure(drag.unitType, "GUIclick");
+      }
+      this.eventBus?.emit(new TouchGhostPlacementSelectEvent());
+      this.eventBus?.emit(
+        new ToggleStructureEvent(highlightTypesForUnit(drag.unitType)),
+      );
+      this.requestUpdate();
+    }
+    this.eventBus?.emit(
+      new TouchGhostPlacementMoveEvent(
+        event.clientX,
+        event.clientY - DRAG_GHOST_LIFT_PX,
+      ),
+    );
+  };
+
+  /**
+   * Ends a drag from the bar: a release on the map builds where the ghost
+   * is, just above the finger. Either way the unit is dropped afterwards.
+   * Returns whether the pointer was dragging, so the hold logic skips it.
+   */
+  private finishPlaceDrag(event: PointerEvent): boolean {
+    const drag = this.placeDrag;
+    if (drag === null || drag.pointerId !== event.pointerId) return false;
+    this.placeDrag = null;
+    if (!drag.active) return false;
+    this.suppressReleaseClick = true;
+    if (
+      event.type === "pointerup" &&
+      !this.isOverBar(event.clientX, event.clientY)
+    ) {
+      this.eventBus?.emit(
+        new TouchGhostPlacementMoveEvent(
+          event.clientX,
+          event.clientY - DRAG_GHOST_LIFT_PX,
+        ),
+      );
+      // Letting go ends the placement: the unit is dropped whether it builds
+      // there or not, nukes included.
+      this.eventBus?.emit(new ConfirmGhostStructureEvent(true));
+    } else {
+      this.inputHandler.setGhostStructure(null, "GUIclick");
+    }
+    this.requestUpdate();
+    return true;
+  }
+
   /** Releasing anywhere ends the hold, wherever the finger ended up. */
   private handleDocumentPointerUp = (event: PointerEvent) => {
+    if (this.finishPlaceDrag(event)) return;
     if (this.peekPointerId !== event.pointerId) return;
     this.suppressReleaseClick = this.suppressNextClick;
     this.suppressNextClick = false;
@@ -285,6 +423,7 @@ export class UnitDisplay extends LitElement implements Controller {
 
   /** Pointer cancellation can precede touchend; the touch event ends the peek. */
   private handleDocumentPointerCancel = (event: PointerEvent) => {
+    if (this.finishPlaceDrag(event)) return;
     if (this.peekPointerId !== event.pointerId) return;
     this.cancelPeekTimer();
     if (
@@ -370,16 +509,31 @@ export class UnitDisplay extends LitElement implements Controller {
   };
 
   /**
-   * Track which edge of the build bar still hides actions, so the fade can
-   * point at it. The bar only scrolls where it does not fit, so on a wide
-   * screen neither side is marked.
+   * Below lg in portrait the bar is a column on the right edge of the
+   * screen, scrolling up and down; everywhere else it is a row in the bottom
+   * panel. Matches the `side-bar:` variant (styles.css) used by the bar and
+   * its host in index.html.
+   */
+  private isSideBar(): boolean {
+    return (
+      typeof window.matchMedia === "function" &&
+      window.matchMedia("(width < 64rem) and (orientation: portrait)").matches
+    );
+  }
+
+  /**
+   * Track which end of the build bar still hides actions, so the fade can
+   * point at it. The bar only scrolls where it does not fit, so on a big
+   * screen neither end is marked.
    */
   private measureScrollState() {
     const scroller = this.getScroller();
     if (!scroller) return;
-    this.moreActionsLeft = scroller.scrollLeft > 1;
-    this.moreActionsRight =
-      scroller.scrollLeft + scroller.clientWidth < scroller.scrollWidth - 1;
+    const [scrolled, visible, total] = this.isSideBar()
+      ? [scroller.scrollTop, scroller.clientHeight, scroller.scrollHeight]
+      : [scroller.scrollLeft, scroller.clientWidth, scroller.scrollWidth];
+    this.moreActionsStart = scrolled > 1;
+    this.moreActionsEnd = scrolled + visible < total - 1;
   }
 
   private getScroller(): HTMLElement | null {
@@ -401,8 +555,9 @@ export class UnitDisplay extends LitElement implements Controller {
   }
 
   /**
-   * Keep the tooltip on the mobile screen: next to the left or right edge it would
-   * otherwise hang off.
+   * Keep the tooltip on the mobile screen: next to an edge it would
+   * otherwise hang off. The bottom row clamps it sideways, the side column
+   * up and down.
    */
   private clampTooltipToViewport() {
     const tooltip = this.querySelector<HTMLElement>(".unit-display-tooltip");
@@ -411,6 +566,14 @@ export class UnitDisplay extends LitElement implements Controller {
     const rootBounds = root.getBoundingClientRect();
     const tooltipBounds = tooltip.getBoundingClientRect();
     const margin = 8;
+    if (this.isSideBar()) {
+      let top = rootBounds.top + this._tooltipCenter - tooltipBounds.height / 2;
+      const maxTop = window.innerHeight - margin - tooltipBounds.height;
+      if (top > maxTop) top = maxTop;
+      if (top < margin) top = margin;
+      tooltip.style.top = `${top - rootBounds.top + tooltipBounds.height / 2}px`;
+      return;
+    }
     // The tooltip is centred on the item, so its left edge sits half its
     // width to the left of that centre.
     let left = rootBounds.left + this._tooltipCenter - tooltipBounds.width / 2;
@@ -431,25 +594,48 @@ export class UnitDisplay extends LitElement implements Controller {
     return 0n;
   }
 
-  private canBuild(item: UnitType): boolean {
-    if (this.game?.config().isUnitDisabled(item)) return false;
+  // gold() makes a new BigInt and units() filters on every call, so a render
+  // reads them once here instead of once per tile.
+  private buildNeeds(): BuildNeeds {
     const player = this.game?.myPlayer();
+    return {
+      gold: player?.gold() ?? 0n,
+      hasSilo: (player?.units(UnitType.MissileSilo).length ?? 0) > 0,
+      hasPort: (player?.units(UnitType.Port).length ?? 0) > 0,
+    };
+  }
+
+  // A missing silo or port wins over missing gold: more gold would not help.
+  private buildState(item: UnitType, needs = this.buildNeeds()): BuildState {
+    if (this.game?.config().isUnitDisabled(item)) return "locked";
     switch (item) {
       case UnitType.AtomBomb:
       case UnitType.HydrogenBomb:
       case UnitType.MIRV:
-        return (
-          this.cost(item) <= (player?.gold() ?? 0n) &&
-          (player?.units(UnitType.MissileSilo).length ?? 0) > 0
-        );
+        if (!needs.hasSilo) return "locked";
+        break;
       case UnitType.Warship:
-        return (
-          this.cost(item) <= (player?.gold() ?? 0n) &&
-          (player?.units(UnitType.Port).length ?? 0) > 0
-        );
-      default:
-        return this.cost(item) <= (player?.gold() ?? 0n);
+        if (!needs.hasPort) return "locked";
+        break;
     }
+    return this.cost(item) <= needs.gold ? "ready" : "poor";
+  }
+
+  private canBuild(item: UnitType): boolean {
+    return this.buildState(item) === "ready";
+  }
+
+  /** Why a drawn unit cannot be picked. A unit the game disables has no tile. */
+  private unbuildableReason(
+    item: UnitType,
+    state: Exclude<BuildState, "ready">,
+  ): string {
+    if (state === "poor") return translateText("build_menu.not_enough_money");
+    return translateText("build_menu.requires", {
+      unit: translateText(
+        item === UnitType.Warship ? "unit_type.port" : "unit_type.missile_silo",
+      ),
+    });
   }
 
   private isUnitDisplayed(unitType: PlayerBuildableUnitType): boolean {
@@ -459,24 +645,15 @@ export class UnitDisplay extends LitElement implements Controller {
     );
   }
 
-  private _lastBuildablesRefreshAt = 0;
-  private _buildablesRefreshInFlight = false;
-  private static readonly BUILDABLES_REFRESH_INTERVAL_MS = 500;
-
   tick() {
     const player = this.game?.myPlayer();
-    if (!player || this._buildablesRefreshInFlight) return;
-
-    const now = Date.now();
-    if (
-      now - this._lastBuildablesRefreshAt <
-      UnitDisplay.BUILDABLES_REFRESH_INTERVAL_MS
-    ) {
-      return;
-    }
-    this._lastBuildablesRefreshAt = now;
-    this._buildablesRefreshInFlight = true;
-
+    if (!player) return;
+    player
+      .buildables(undefined, BuildMenus.types)
+      .then((buildables) => {
+        this.playerBuildables = buildables;
+      })
+      .catch((error) => console.warn("Failed to refresh unit costs", error));
     this._cities = player.totalUnitLevels(UnitType.City);
     this._missileSilo = player.totalUnitLevels(UnitType.MissileSilo);
     this._port = player.totalUnitLevels(UnitType.Port);
@@ -485,17 +662,6 @@ export class UnitDisplay extends LitElement implements Controller {
     this._factories = player.totalUnitLevels(UnitType.Factory);
     this._warships = player.totalUnitLevels(UnitType.Warship);
     this.requestUpdate();
-
-    void player
-      .buildables(undefined, QUICK_BUILD_TYPES)
-      .then((buildables) => {
-        this.playerBuildables = buildables;
-        this.requestUpdate();
-      })
-      .catch((error) => console.warn("Failed to refresh unit costs", error))
-      .finally(() => {
-        this._buildablesRefreshInFlight = false;
-      });
   }
 
   render() {
@@ -519,95 +685,109 @@ export class UnitDisplay extends LitElement implements Controller {
     ) {
       return null;
     }
+    const needs = this.buildNeeds();
+    // A row in the bottom panel: below the control panel from lg up, above
+    // it on landscape phones (index.html orders it), spread over the panel's
+    // width there. Below lg in portrait (side-bar) it is a column on the
+    // right edge of the screen, where index.html fixes the host.
     return html`
       <div
-        class="unit-display-root relative border-t border-white/10 p-0.5 w-full
-          ${this.moreActionsLeft ? "unit-display-more-left" : ""}
-          ${this.moreActionsRight ? "unit-display-more-right" : ""}"
+        class="unit-display-root relative p-1 w-full lg:px-2 lg:pb-2 lg:pt-0 side-bar:p-0.5 side-bar:w-auto side-bar:rounded-l-lg side-bar:hud-panel
+          ${this.moreActionsStart ? "unit-display-more-start" : ""}
+          ${this.moreActionsEnd ? "unit-display-more-end" : ""}"
         data-radial-click-through
         @contextmenu=${(event: Event) => event.preventDefault()}
       >
         <div
-          class="unit-display-scroll w-full overflow-x-auto overflow-y-hidden overscroll-x-contain touch-pan-x lg:overflow-visible"
+          class="unit-display-scroll overflow-x-auto overflow-y-hidden overscroll-x-contain touch-none lg:overflow-visible side-bar:overflow-x-hidden side-bar:overflow-y-auto side-bar:overscroll-y-contain side-bar:max-h-[calc(100dvh-5.5rem)]"
           @scroll=${this.onScroll}
         >
           <div
-            class="unit-display-grid grid grid-cols-[repeat(var(--unit-display-columns),minmax(0,1fr))] gap-0.5 w-full mx-auto lg:grid-rows-1 lg:grid-flow-col lg:grid-cols-none lg:auto-cols-max lg:w-fit max-lg:grid-rows-1 max-lg:grid-flow-col max-lg:grid-cols-none max-lg:auto-cols-[58px] max-lg:w-max"
-            style=${`--unit-display-columns: ${this.enabledUnitCount}`}
+            class="unit-display-grid grid gap-0.5 lg:gap-1 grid-rows-1 grid-flow-col auto-cols-fr lg:auto-cols-max lg:w-fit lg:mx-auto side-bar:grid-rows-none side-bar:grid-flow-row side-bar:grid-cols-1"
           >
             ${this.renderUnitItem(
-              cityIcon,
+              "city",
               this._cities,
               UnitType.City,
               "city",
               this.getHotkey("buildCity", "Digit1"),
+              needs,
             )}
             ${this.renderUnitItem(
-              factoryIcon,
+              "factory",
               this._factories,
               UnitType.Factory,
               "factory",
               this.getHotkey("buildFactory", "Digit2"),
+              needs,
             )}
             ${this.renderUnitItem(
-              portIcon,
+              "port",
               this._port,
               UnitType.Port,
               "port",
               this.getHotkey("buildPort", "Digit3"),
+              needs,
             )}
             ${this.renderUnitItem(
-              defensePostIcon,
+              "shield",
               this._defensePost,
               UnitType.DefensePost,
               "defense_post",
               this.getHotkey("buildDefensePost", "Digit4"),
+              needs,
             )}
             ${this.renderUnitItem(
-              missileSiloIcon,
+              "missile-silo",
               this._missileSilo,
               UnitType.MissileSilo,
               "missile_silo",
               this.getHotkey("buildMissileSilo", "Digit5"),
+              needs,
             )}
             ${this.renderUnitItem(
-              samLauncherIcon,
+              "sam-launcher",
               this._samLauncher,
               UnitType.SAMLauncher,
               "sam_launcher",
               this.getHotkey("buildSamLauncher", "Digit6"),
+              needs,
             )}
             ${this.renderUnitItem(
-              warshipIcon,
+              "warship",
               this._warships,
               UnitType.Warship,
               "warship",
               this.getHotkey("buildWarship", "Digit7"),
+              needs,
             )}
             ${this.renderUnitItem(
-              atomBombIcon,
+              "atom-bomb",
               null,
               UnitType.AtomBomb,
               "atom_bomb",
               this.getHotkey("buildAtomBomb", "Digit8"),
+              needs,
             )}
             ${this.renderUnitItem(
-              hydrogenBombIcon,
+              "hydrogen-bomb",
               null,
               UnitType.HydrogenBomb,
               "hydrogen_bomb",
               this.getHotkey("buildHydrogenBomb", "Digit9"),
+              needs,
             )}
             ${this.renderUnitItem(
-              mirvIcon,
+              "mirv",
               null,
               UnitType.MIRV,
               "mirv",
               this.getHotkey("buildMIRV", "Digit0"),
+              needs,
             )}
           </div>
         </div>
-        ${this.renderUnitTooltip()}
+        ${this.renderUnitTooltip(needs)}
       </div>
     `;
   }
@@ -624,19 +804,26 @@ export class UnitDisplay extends LitElement implements Controller {
   }
 
   private renderUnitItem(
-    icon: string,
+    icon: OfIconName,
     number: number | null,
     unitType: PlayerBuildableUnitType,
     structureKey: string,
     hotkey: string,
+    needs: BuildNeeds,
   ) {
     if (!this.isUnitDisplayed(unitType)) {
       return html``;
     }
     const selected = this.uiState.ghostStructure === unitType;
-    const availableCost = this.playerBuildables?.find(
-      (buildable) => buildable.type === unitType,
-    )?.cost;
+    const state = this.buildState(unitType, needs);
+    const name = translateText("unit_type." + structureKey);
+    const highlighted = this.tutorialHighlight === unitType;
+    // The label stands in for what the tile holds, so the count goes in it.
+    const label = [
+      name,
+      ...(number !== null && state !== "locked" ? [renderNumber(number)] : []),
+      ...(state === "ready" ? [] : [this.unbuildableReason(unitType, state)]),
+    ].join(", ");
     const displayHotkey = hotkey
       .replace("Digit", "")
       .replace("Key", "")
@@ -644,7 +831,8 @@ export class UnitDisplay extends LitElement implements Controller {
 
     return html`
       <div
-        class="flex flex-col items-center relative min-w-0"
+        class="flex flex-col items-center relative"
+        data-unit=${structureKey}
         @mouseenter=${(event: MouseEvent) => {
           const item = event.currentTarget as HTMLElement;
           this._hoveredUnitTooltip = {
@@ -659,120 +847,123 @@ export class UnitDisplay extends LitElement implements Controller {
           this._hoveredUnitTooltip = null;
           this.requestUpdate();
         }}
-        @pointerdown=${(event: PointerEvent) =>
-          this.startPeek(event, unitType, structureKey, hotkey)}
+        @pointerdown=${(event: PointerEvent) => {
+          this.startPeek(event, unitType, structureKey, hotkey);
+          this.armPlaceDrag(event, unitType);
+        }}
       >
         <div
-          class="${
-            this.canBuild(unitType) ? "" : "opacity-40"
-          } border border-slate-500 rounded-sm max-lg:min-h-[30px] max-lg:h-auto w-full px-1 py-0.5 flex items-center justify-center gap-0.5 cursor-pointer lg:px-0.5 lg:justify-start landscape:px-0.5
-             ${
-            selected
-              ? "pointer-fine:hover:bg-gray-400/10"
-              : "pointer-fine:hover:bg-gray-800"
-          }
-             rounded-sm text-white ${selected ? "bg-slate-400/20" : ""}
-             ${this.tutorialHighlight === unitType ? "tutorial-highlight" : ""}"
-          @click=${(event: Event) => {
-            const item = (event.currentTarget as HTMLElement).closest(
-              ".unit-display-grid > div",
-            );
-            const fromTouch = this.isTouchClick(event, item);
-            // A press that turned into a peek shows the details instead of
-            // selecting the unit
-            if (this.suppressNextClick || this.suppressReleaseClick) {
-              this.suppressNextClick = false;
-              this.suppressReleaseClick = false;
-              return;
-            }
-            if (selected) {
-              this.inputHandler.setGhostStructure(null, "GUIclick");
-            } else if (this.canBuild(unitType)) {
-              this.inputHandler.setGhostStructure(unitType, "GUIclick");
-              if (fromTouch) {
-                this.eventBus?.emit(new TouchGhostPlacementSelectEvent());
-                this.eventBus?.emit(
-                  new ToggleStructureEvent(highlightTypesForUnit(unitType)),
-                );
-              }
-            } else {
-              const selectedGhost = this.uiState.ghostStructure;
-              this.eventBus?.emit(
-                new ToggleStructureEvent(
-                  selectedGhost === null
-                    ? null
-                    : highlightTypesForUnit(selectedGhost),
-                ),
-              );
-            }
-            this.requestUpdate();
-          }}
-          @pointerenter=${(event: PointerEvent) => {
-            if (event.pointerType === "touch") return;
-            this.eventBus?.emit(
-              new ToggleStructureEvent(highlightTypesForUnit(unitType)),
-            );
-          }}
-          @pointerleave=${(event: PointerEvent) => {
-            if (event.pointerType === "touch") return;
-            const selectedGhost = this.uiState.ghostStructure;
-            this.eventBus?.emit(
-              new ToggleStructureEvent(
-                selectedGhost === null
-                  ? null
-                  : highlightTypesForUnit(selectedGhost),
-              ),
-            );
-          }}
+          class="${TILE} ${TILE_SELECTION[selected ? "selected" : "idle"]} ${
+            highlighted ? "tutorial-highlight" : ""
+          }"
+          role="button"
+          aria-label=${label}
+          aria-pressed=${selected}
+          aria-disabled=${!selected && state !== "ready"}
+          data-build-state=${state}
+          @click=${(event: Event) =>
+            this.onUnitClick(event, unitType, selected)}
+          @pointerenter=${(event: PointerEvent) =>
+            this.onUnitPointerEnter(event, unitType)}
+          @pointerleave=${(event: PointerEvent) =>
+            this.onUnitPointerLeave(event)}
         >
           ${
             hotkey
-              ? html`<div
-                  class="unit-display-hotkey ml-0.5 text-[10px] relative -top-1 text-gray-400"
-                >
+              ? html`<div class="unit-display-hotkey ${HOTKEY}">
                   ${displayHotkey}
                 </div>`
               : nothing
           }
-          <div
-            class="flex flex-col items-center gap-0 pt-0.5 lg:flex-row lg:gap-0.5 max-lg:landscape:flex-row max-lg:landscape:gap-0.5"
-          >
-            <img
-              src=${icon}
-              alt=${translateText("unit_type." + structureKey)}
-              class="align-middle size-6 lg:size-5 max-lg:landscape:size-5"
-            />
+          <div class="flex items-center gap-0.5 ${ICON_STATE[state]}">
+            <of-icon
+              name=${icon}
+              size="20"
+              class="side-bar:scale-120"
+            ></of-icon>
             ${
-              number !== null
-                ? html`<span class="hidden lg:inline text-xs leading-none"
+              number !== null && state !== "locked"
+                ? html`<span
+                    data-unit-count
+                    class="${COUNT} ${number === 0 ? COUNT_EMPTY : ""}"
                     >${renderNumber(number)}</span
                   >`
                 : null
             }
           </div>
-        </div>
-        <div
-          class="unit-display-entry-label flex w-full min-w-0 flex-col items-center px-0.5 pb-0.5 text-center leading-none"
-        >
-          <span
-            class="unit-display-name block w-full max-w-[58px] min-h-[18px] break-words whitespace-normal text-[8px] leading-[1.1] font-semibold text-slate-200 lg:max-w-[64px] lg:min-h-0 lg:truncate lg:whitespace-nowrap lg:text-[8px]"
-            title=${translateText("unit_type." + structureKey)}
-            >${translateText("unit_type." + structureKey)}</span
-          >
-          <span
-            class="unit-display-cost mt-0.5 flex min-h-[10px] items-center justify-center gap-0.5 whitespace-nowrap text-[8px] font-semibold text-amber-300 lg:text-[8px]"
-          >
-            <img src=${goldCoinIcon} width="9" height="9" alt="" />
-            <span
-              >${availableCost === undefined ? "—" : renderNumber(availableCost)}</span
-            >
-          </span>
+          ${
+            state === "locked"
+              ? html`<of-icon
+                  name="lock"
+                  size="10"
+                  data-unit-lock
+                  class=${LOCK}
+                ></of-icon>`
+              : nothing
+          }
         </div>
       </div>
     `;
   }
 
-  private renderUnitTooltip() {
+  private onUnitClick(
+    event: Event,
+    unitType: PlayerBuildableUnitType,
+    selected: boolean,
+  ) {
+    const item = (event.currentTarget as HTMLElement).closest(
+      ".unit-display-grid > div",
+    );
+    const fromTouch = this.isTouchClick(event, item);
+    // A press that turned into a peek shows the details instead of
+    // selecting the unit
+    if (this.suppressNextClick || this.suppressReleaseClick) {
+      this.suppressNextClick = false;
+      this.suppressReleaseClick = false;
+      return;
+    }
+    if (selected) {
+      this.inputHandler.setGhostStructure(null, "GUIclick");
+    } else if (this.canBuild(unitType)) {
+      this.inputHandler.setGhostStructure(unitType, "GUIclick");
+      if (fromTouch) {
+        this.eventBus?.emit(new TouchGhostPlacementSelectEvent());
+        this.eventBus?.emit(
+          new ToggleStructureEvent(highlightTypesForUnit(unitType)),
+        );
+      }
+    } else {
+      const selectedGhost = this.uiState.ghostStructure;
+      this.eventBus?.emit(
+        new ToggleStructureEvent(
+          selectedGhost === null ? null : highlightTypesForUnit(selectedGhost),
+        ),
+      );
+    }
+    this.requestUpdate();
+  }
+
+  private onUnitPointerEnter(
+    event: PointerEvent,
+    unitType: PlayerBuildableUnitType,
+  ) {
+    if (event.pointerType === "touch") return;
+    this.eventBus?.emit(
+      new ToggleStructureEvent(highlightTypesForUnit(unitType)),
+    );
+  }
+
+  private onUnitPointerLeave(event: PointerEvent) {
+    if (event.pointerType === "touch") return;
+    const selectedGhost = this.uiState.ghostStructure;
+    this.eventBus?.emit(
+      new ToggleStructureEvent(
+        selectedGhost === null ? null : highlightTypesForUnit(selectedGhost),
+      ),
+    );
+  }
+
+  private renderUnitTooltip(needs: BuildNeeds) {
     // A peek wins over a hover: it is the one the player asked for by
     // holding the button.
     const peek = this._peekedUnitTooltip;
@@ -780,6 +971,7 @@ export class UnitDisplay extends LitElement implements Controller {
     if (!tooltip) return nothing;
     // The item can go away (a unit gets disabled) while it is hovered.
     if (!tooltip.element.isConnected) return nothing;
+    const state = this.buildState(tooltip.unitType, needs);
     const displayHotkey = tooltip.hotkey
       .replace("Digit", "")
       .replace("Key", "")
@@ -789,19 +981,31 @@ export class UnitDisplay extends LitElement implements Controller {
     const root = this.querySelector<HTMLElement>(".unit-display-root");
     const itemBounds = tooltip.element.getBoundingClientRect();
     const rootBounds = root?.getBoundingClientRect();
-    const left =
-      itemBounds.left + itemBounds.width / 2 - (rootBounds?.left ?? 0);
-    const top = itemBounds.top - (rootBounds?.top ?? 0) - 4;
-    // Kept for the clamp after the render: the tooltip cannot be measured
-    // before it exists.
-    this._tooltipCenter = left;
+    const sideBar = this.isSideBar();
+    let left: number;
+    let top: number;
+    let placement: string;
+    if (sideBar) {
+      // Left of the item, centred on it, so it doesn't cover the bar.
+      left = itemBounds.left - (rootBounds?.left ?? 0) - 6;
+      top = itemBounds.top + itemBounds.height / 2 - (rootBounds?.top ?? 0);
+      placement =
+        "-translate-x-full -translate-y-1/2 max-w-[min(16rem,100vw_-_5rem)]";
+      this._tooltipCenter = top;
+    } else {
+      left = itemBounds.left + itemBounds.width / 2 - (rootBounds?.left ?? 0);
+      top = itemBounds.top - (rootBounds?.top ?? 0) - 4;
+      placement =
+        "-translate-x-1/2 -translate-y-full max-w-[min(100%_-_1rem,100vw_-_1rem)]";
+      this._tooltipCenter = left;
+    }
 
     return html`
       <div
-        class="unit-display-tooltip ${peek ? "block" : "hidden pointer-fine:block"} absolute -translate-x-1/2 -translate-y-full text-gray-200 text-center w-max max-w-[min(100%_-_1rem,100vw_-_1rem)] break-words text-xs bg-gray-800/90 backdrop-blur-xs rounded-sm p-1 z-[100] shadow-lg pointer-events-none"
+        class="unit-display-tooltip ${peek ? "block" : "hidden pointer-fine:block"} absolute ${placement} text-white/70 text-center w-max break-words text-xs hud-modal rounded-md p-2 z-[100] pointer-events-none"
         style=${`left: ${left}px; top: ${top}px;`}
       >
-        <div class="font-bold text-sm mb-1">
+        <div class="font-bold text-sm text-white mb-1">
           ${translateText("unit_type." + tooltip.structureKey)}${
             tooltip.hotkey ? ` [${displayHotkey}]` : ""
           }
@@ -818,9 +1022,16 @@ export class UnitDisplay extends LitElement implements Controller {
               </div>`
             : null
         }
+        ${
+          state === "ready"
+            ? nothing
+            : html`<div class="mb-0.5 ${REASON_STATE[state]}">
+                ${this.unbuildableReason(tooltip.unitType, state)}
+              </div>`
+        }
         <div class="flex items-center justify-center gap-1">
-          <img src=${goldCoinIcon} width="13" height="13" />
-          <span class="text-yellow-300"
+          <of-icon name="gold" size="13"></of-icon>
+          <span class=${DETAILS_PRICE[state]}
             >${renderNumber(this.cost(tooltip.unitType))}</span
           >
         </div>

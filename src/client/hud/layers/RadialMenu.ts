@@ -97,6 +97,9 @@ export class RadialMenu implements Controller {
   private tooltipStyleElement: HTMLStyleElement | null = null;
   private isVisible: boolean = false;
   private lastPointerType: string | null = null;
+  // Whether a press has started on the menu since it opened. See
+  // ignoreClicksFromBeforeShow.
+  private pressedSinceShown: boolean = false;
 
   private currentLevel: number = 0; // Current menu level (0 = main menu, 1 = submenu, etc.)
   private menuStack: MenuElement[][] = []; // Stack to track menu navigation history
@@ -203,7 +206,6 @@ export class RadialMenu implements Controller {
       .style("height", "100vh")
       .on("click", (event: MouseEvent) => {
         this.hideRadialMenu();
-        this.eventBus.emit(new CloseRadialMenuEvent());
         forwardClickToLayerBelow(event, this.lastPointerType);
         this.lastPointerType = null;
       })
@@ -216,8 +218,8 @@ export class RadialMenu implements Controller {
       .on("contextmenu", (e) => {
         e.preventDefault();
         this.hideRadialMenu();
-        this.eventBus.emit(new CloseRadialMenuEvent());
       });
+    this.ignoreClicksFromBeforeShow(this.menuElement.node()!);
 
     // Calculate the total svg size needed for all potential nested menus
     const totalSize =
@@ -287,6 +289,34 @@ export class RadialMenu implements Controller {
       .attr("x", -this.centerButtonIconSize / 2)
       .attr("y", -this.centerButtonIconSize / 2)
       .style("pointer-events", "none");
+  }
+
+  /**
+   * A touch tap on the map opens the menu on pointerup, once the async action
+   * lookup returns, but the browser sends that tap's click only afterwards.
+   * When the menu is up by then, the click lands on it: on the backdrop it
+   * closes the menu straight away, and on an item it picks it, such as
+   * opening the build menu. A click is only a tap on the menu if its press
+   * started there, so drop the others before any of the menu's own handlers
+   * see them.
+   */
+  private ignoreClicksFromBeforeShow(overlay: HTMLDivElement) {
+    overlay.addEventListener(
+      "pointerdown",
+      () => {
+        this.pressedSinceShown = true;
+      },
+      true,
+    );
+    overlay.addEventListener(
+      "click",
+      (event) => {
+        if (this.pressedSinceShown) return;
+        event.stopImmediatePropagation();
+        event.preventDefault();
+      },
+      true,
+    );
   }
 
   private createTooltipElement() {
@@ -696,86 +726,33 @@ export class RadialMenu implements Controller {
             .style("opacity", disabled ? 0.5 : 1)
             .text(d.data.text);
         } else {
-          const [cx, cy] = arc.centroid(d);
-          const measuredRadius = Math.hypot(cx, cy);
-          const radius = measuredRadius > 0 ? measuredRadius : 1;
-          const ux = cx / radius;
-          const uy = cy / radius;
-          const denseLabels = arcs.size() >= 10;
-          const captionFontSize = denseLabels ? "7px" : "9px";
-          const priceFontSize = denseLabels ? "6.5px" : "8px";
-          const labelTextLength = denseLabels ? "42" : "56";
-          const showBuildCaption = Boolean(d.data.caption ?? d.data.priceLabel);
-          const iconSize = showBuildCaption
-            ? Math.min(this.config.iconSize, 24)
-            : this.config.iconSize;
-          const iconCenterX = cx - (showBuildCaption ? ux * 10 : 0);
-          const iconCenterY = cy - (showBuildCaption ? uy * 10 : 0);
           const imgSel = content
             .append("image")
             .attr("xlink:href", d.data.icon!)
-            .attr("width", iconSize)
-            .attr("height", iconSize)
-            .attr("x", iconCenterX - iconSize / 2)
-            .attr("y", iconCenterY - iconSize / 2)
+            .attr("width", this.config.iconSize)
+            .attr("height", this.config.iconSize)
+            .attr("x", arc.centroid(d)[0] - this.config.iconSize / 2)
+            .attr("y", arc.centroid(d)[1] - this.config.iconSize / 2)
             .attr("opacity", disabled ? 0.5 : 1);
 
           void getSvgAspectRatio(d.data.icon!).then((aspect) => {
             if (!aspect || aspect === 1) return;
-            let width = iconSize;
-            let height = iconSize;
-            const biggerLength = Math.round(iconSize * aspect);
-            if (aspect > 1) width = biggerLength;
-            else height = biggerLength;
+
+            let width = this.config.iconSize;
+            let height = this.config.iconSize;
+            const biggerLength = Math.round(width * aspect);
+            if (aspect > 1) {
+              width = biggerLength;
+            } else {
+              height = biggerLength;
+            }
+
             imgSel
               .attr("width", width)
               .attr("height", height)
-              .attr("x", iconCenterX - width / 2)
-              .attr("y", iconCenterY - height / 2);
+              .attr("x", arc.centroid(d)[0] - width / 2)
+              .attr("y", arc.centroid(d)[1] - height / 2);
           });
-
-          if (d.data.caption) {
-            content
-              .append("text")
-              .attr("class", "menu-item-caption")
-              .attr("text-anchor", "middle")
-              .attr("dominant-baseline", "central")
-              .attr("x", ux * (radius + 9))
-              .attr("y", uy * (radius + 9))
-              .attr("fill", "#f4fbff")
-              .attr("font-size", captionFontSize)
-              .attr("font-family", "Arial, sans-serif")
-              .attr("font-weight", "700")
-              .attr("paint-order", "stroke")
-              .attr("stroke", "rgba(7, 21, 31, 0.95)")
-              .attr("stroke-width", "2px")
-              .attr("stroke-linejoin", "round")
-              .attr("textLength", labelTextLength)
-              .attr("lengthAdjust", "spacingAndGlyphs")
-              .style("opacity", disabled ? 0.5 : 1)
-              .text(d.data.caption);
-          }
-          if (d.data.priceLabel) {
-            content
-              .append("text")
-              .attr("class", "menu-item-price")
-              .attr("text-anchor", "middle")
-              .attr("dominant-baseline", "central")
-              .attr("x", ux * (radius + 20))
-              .attr("y", uy * (radius + 20))
-              .attr("fill", "#ffd08c")
-              .attr("font-size", priceFontSize)
-              .attr("font-family", "Arial, sans-serif")
-              .attr("font-weight", "800")
-              .attr("paint-order", "stroke")
-              .attr("stroke", "rgba(7, 21, 31, 0.95)")
-              .attr("stroke-width", "2px")
-              .attr("stroke-linejoin", "round")
-              .attr("textLength", labelTextLength)
-              .attr("lengthAdjust", "spacingAndGlyphs")
-              .style("opacity", disabled ? 0.5 : 1)
-              .text(d.data.priceLabel);
-          }
 
           if (this.params && d.data.cooldown?.(this.params)) {
             const cooldown = Math.ceil(d.data.cooldown?.(this.params));
@@ -1002,6 +979,7 @@ export class RadialMenu implements Controller {
     this.clampAndSetMenuPositionForLevel(this.currentLevel);
 
     this.isVisible = true;
+    this.pressedSinceShown = false;
 
     this.renderMenuItems(this.currentMenuItems, this.currentLevel);
     this.onCenterButtonHover(true);
@@ -1030,6 +1008,9 @@ export class RadialMenu implements Controller {
 
     this.lastHideTime = Date.now();
     window.removeEventListener("resize", this.handleResize);
+    // Every way the menu closes (an action, the backdrop, Escape) goes
+    // through here, so the player info panel opened with it closes too.
+    this.eventBus.emit(new CloseRadialMenuEvent());
   }
 
   private handleCenterButtonClick() {
@@ -1261,7 +1242,10 @@ export class RadialMenu implements Controller {
             this.refreshAllyExtendIcon(item, disabled, icon);
           } else {
             // Update text opacity
-            icon.selectAll("text").style("opacity", disabled ? 0.5 : 1);
+            const textElement = icon.select("text");
+            if (!textElement.empty()) {
+              textElement.style("opacity", disabled ? 0.5 : 1);
+            }
 
             // Update image opacity
             const imageElement = icon.select("image");

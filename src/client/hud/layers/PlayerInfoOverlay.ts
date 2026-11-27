@@ -9,10 +9,21 @@ import { AllianceView } from "@openfront/engine-api/game/GameUpdates";
 import { UnitLike } from "@openfront/engine-api/game/ReadViews";
 import { renderNumber, renderTroops } from "@openfront/engine-lib/Format";
 import { assetUrl } from "@openfront/shared/AssetUrls";
-import { EventBus } from "@openfront/shared/EventBus";
+import {
+  EventBus,
+  type EventConstructor,
+  type GameEvent,
+} from "@openfront/shared/EventBus";
 import { html, LitElement, TemplateResult } from "lit";
 import { customElement, property, state } from "lit/decorators.js";
+import { ifDefined } from "lit/directives/if-defined.js";
+import { CardCatalogueRequest } from "../../components/card/CardCatalogueRequest";
+import {
+  loadedCardBackgroundUrl,
+  stillBackdropLayers,
+} from "../../components/card/StillCardBackdrop";
 import { Controller } from "../../Controller";
+import { fetchCosmetics, getCachedCosmetics } from "../../Cosmetics";
 import {
   ContextMenuEvent,
   DoBoatAttackEvent,
@@ -45,6 +56,7 @@ import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
 import { CloseRadialMenuEvent } from "./RadialMenu";
 import "./RelationSmiley";
 import { SpawnBarVisibleEvent } from "./SpawnTimer";
+import { visiblePlayerCard } from "./VisiblePlayerCard";
 const soldierIconAquarius = assetUrl("images/SoldierIconAquarius.svg");
 const allianceIcon = assetUrl("images/AllianceIcon.svg");
 const traitorIcon = assetUrl("images/TraitorIcon.svg");
@@ -148,32 +160,73 @@ export class PlayerInfoOverlay extends LitElement implements Controller {
   }
 
   private lastMouseUpdate = 0;
+  private initGeneration = 0;
+  private eventUnsubscribers: Array<() => void> = [];
 
-  init() {
-    this.eventBus.on(MouseMoveEvent, (e: MouseMoveEvent) =>
-      this.onMouseEvent(e),
-    );
-    this.eventBus.on(ContextMenuEvent, (e: ContextMenuEvent) =>
+  private onBus<T extends GameEvent>(
+    eventType: EventConstructor<T>,
+    handler: (event: T) => void,
+  ): void {
+    const bus = this.eventBus;
+    bus?.on(eventType, handler);
+    this.eventUnsubscribers.push(() => bus?.off?.(eventType, handler));
+  }
+
+  private unsubscribeBus(): void {
+    for (const unsub of this.eventUnsubscribers) {
+      unsub();
+    }
+    this.eventUnsubscribers = [];
+  }
+
+  init(): () => void {
+    this.unsubscribeBus();
+    const gen = ++this.initGeneration;
+    this.onBus(MouseMoveEvent, (e: MouseMoveEvent) => this.onMouseEvent(e));
+    this.onBus(ContextMenuEvent, (e: ContextMenuEvent) =>
       this.maybeShow(e.x, e.y),
     );
-    this.eventBus.on(TouchEvent, (e: TouchEvent) => this.maybeShow(e.x, e.y));
-    this.eventBus.on(CloseRadialMenuEvent, () => this.hide());
-    this.eventBus.on(SpawnBarVisibleEvent, (e) => {
+    this.onBus(TouchEvent, (e: TouchEvent) => this.maybeShow(e.x, e.y));
+    this.onBus(CloseRadialMenuEvent, () => this.hide());
+    this.onBus(SpawnBarVisibleEvent, (e) => {
       this.spawnBarVisible = e.visible;
     });
-    this.eventBus.on(ImmunityBarVisibleEvent, (e) => {
+    this.onBus(ImmunityBarVisibleEvent, (e) => {
       this.immunityBarVisible = e.visible;
     });
-    this.eventBus.on(DoRequestAllianceEvent, (e) =>
+    this.onBus(DoRequestAllianceEvent, (e) =>
       this.markActionTaken(e.tile, "requestAlliance"),
     );
-    this.eventBus.on(DoBreakAllianceEvent, (e) =>
+    this.onBus(DoBreakAllianceEvent, (e) =>
       this.markActionTaken(e.tile, "breakAlliance"),
     );
-    this.eventBus.on(DoTargetPlayerEvent, (e) =>
+    this.onBus(DoTargetPlayerEvent, (e) =>
       this.markActionTaken(e.tile, "target"),
     );
     this._isActive = true;
+    return () => {
+      if (gen === this.initGeneration) {
+        this.dispose();
+      }
+    };
+  }
+
+  dispose(): void {
+    this.initGeneration++;
+    this.unsubscribeBus();
+    this.playerActionsVersion++;
+    this.playerActionsFor = null;
+    this.pointerOnPanel = false;
+    this.spawnBarVisible = false;
+    this.immunityBarVisible = false;
+    this.player = null;
+    this.tile = null;
+    this.playerActions = null;
+    this.playerProfile = null;
+    this.unit = null;
+    this._isInfoVisible = false;
+    this._isActive = false;
+    this.requestUpdate();
   }
 
   // Once I act on the shown player (button or keybind), drop that button
@@ -238,7 +291,9 @@ export class PlayerInfoOverlay extends LitElement implements Controller {
     if (owner && owner.isPlayer()) {
       this.player = owner as PlayerView;
       this.tile = tile;
-      void this.player.profile().then((p) => {
+      const targetPlayer = this.player;
+      void targetPlayer.profile().then((p) => {
+        if (!this._isActive || this.player !== targetPlayer) return;
         this.playerProfile = p;
       });
       this.refreshPlayerActions(this.player, tile);
@@ -619,9 +674,19 @@ export class PlayerInfoOverlay extends LitElement implements Controller {
     }
 
     const keybinds = this.userSettings.keybinds(Platform.isMac);
+    const backdrop = this.cardBackdropFor(player);
 
     return html`
-      <div class="flex items-start gap-1 lg:gap-2 p-1 lg:p-1.5">
+      <div
+        class="flex items-start gap-1 lg:gap-2 p-1 lg:p-1.5${
+          backdrop === undefined
+            ? ""
+            : " sm:[background-image:var(--card-backdrop)] bg-cover bg-center"
+        }"
+        style=${ifDefined(
+          backdrop === undefined ? undefined : `--card-backdrop: ${backdrop}`,
+        )}
+      >
         ${
           myPlayer && this.showShortcutButtons()
             ? html`<div class="flex flex-col gap-1 self-center shrink-0">
@@ -758,6 +823,43 @@ export class PlayerInfoOverlay extends LitElement implements Controller {
         }
       </div>
     `;
+  }
+
+  // A card owner's background as CSS layers (shade over the art) for the info
+  // row, or undefined. Shown only from 640px (the sm: class above), where the
+  // overlay is a fixed-width panel and the row crops the centre band of the
+  // 2800×400 art; a phone's full-width strip shows today's plain panel. Still
+  // only: no effect layers here, beside a running game.
+  private cardBackdropFor(player: PlayerView): string | undefined {
+    const visible = visiblePlayerCard(
+      this.game,
+      player,
+      this.userSettings.anonymousNames(),
+    );
+    if (visible?.card.background === undefined) return undefined;
+    const cosmetics = getCachedCosmetics();
+    if (cosmetics === null) {
+      // Not loaded yet: shown from the next render once it is.
+      this.requestCosmetics();
+      return undefined;
+    }
+    // Only once the image has loaded; a broken one leaves today's row.
+    const url = loadedCardBackgroundUrl(
+      visible.card.background,
+      cosmetics,
+      this.onArtLoaded,
+    );
+    return url === null ? undefined : stillBackdropLayers(url);
+  }
+
+  private readonly onArtLoaded = () => this.requestUpdate();
+  // A failed fetch is tried again by a later render.
+  private readonly catalogueRequest = new CardCatalogueRequest(
+    () => fetchCosmetics(),
+    () => this.requestUpdate(),
+  );
+  private requestCosmetics(): void {
+    this.catalogueRequest.request();
   }
 
   // Right side: what I can do to the player, each with its keybind. Request
@@ -922,12 +1024,12 @@ export class PlayerInfoOverlay extends LitElement implements Controller {
     return html`
       <div
         class="max-lg:fixed max-lg:top-0 max-lg:left-0 max-lg:right-0 sm:max-lg:left-1/2 sm:max-lg:right-auto sm:max-lg:-translate-x-1/2 max-lg:z-[1001]"
-        style="margin-top: ${this.barOffset}px;"
+        style="margin-top: calc(${this.barOffset}px + var(--game-health-offset, 0px));"
         @click=${() => this.hide()}
         @contextmenu=${(e: MouseEvent) => e.preventDefault()}
       >
         <div
-          class="bg-gray-800/92 backdrop-blur-sm shadow-xs min-[1200px]:rounded-lg sm:rounded-b-lg shadow-lg text-white text-lg lg:text-base w-full ${
+          class="hud-panel min-[1200px]:rounded-lg sm:rounded-b-lg text-white text-lg lg:text-base w-full ${
             this.showShortcutButtons() ? "sm:w-[598px]" : "sm:w-[500px]"
           } lg:max-w-full overflow-hidden ${containerClasses}"
           @mouseenter=${this.onPanelEnter}

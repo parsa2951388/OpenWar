@@ -170,5 +170,6 @@
       "name": "Hakkari"
     }
   ],
+  "themes": ["europe", "asia"],
   "translation_key": "map.turkiye"
 }

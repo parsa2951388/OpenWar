@@ -304,7 +304,6 @@ describe("Graphics tab: advanced options in the graphics panel", () => {
     flip(el, "naval-highlight-toggle");
     expect(overrides().mapOverlay?.navalHighlight).toBe(true);
 
-    // The full-fidelity OpenFront profile enables these visual effects by default.
     flip(el, "special-effects-toggle");
     flip(el, "fallout-toggle");
     expect(overrides().passEnabled).toMatchObject({

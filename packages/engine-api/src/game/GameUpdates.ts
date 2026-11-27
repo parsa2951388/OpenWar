@@ -2,7 +2,6 @@ import { AllPlayersStats, ClientID, Winner } from "../Schemas";
 import { TileRef } from "./GameMap";
 import {
   EmojiMessage,
-  FighterState,
   GameUpdates,
   Gold,
   MessageType,
@@ -208,7 +207,6 @@ export interface UnitUpdate {
   isActive: boolean;
   reachedTarget: boolean;
   warshipState?: WarshipState;
-  fighterState?: FighterState;
   transportShipState?: TransportShipState;
   nukeState?: NukeState;
   targetable: boolean;
@@ -290,6 +288,8 @@ export interface PlayerUpdate {
   betrayals?: number;
   lastDeleteUnitTick?: Tick;
   isLobbyCreator?: boolean;
+  /** Scenario nations: a human may be assigned this one. */
+  playable?: boolean;
 }
 
 export interface AllianceView {

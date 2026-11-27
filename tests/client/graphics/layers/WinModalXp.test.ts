@@ -14,6 +14,11 @@ vi.mock("../../../../src/client/Utils", () => ({
   getGamesPlayed: vi.fn(() => 10),
   isInIframe: vi.fn(() => false),
   homeHref: vi.fn(() => "/"),
+  exitGame: vi.fn(() => {
+    window.location.href = "/";
+  }),
+  renderDuration: (s: number) => `${s}s`,
+  formatPercentage: (v: number) => `${v * 100}%`,
   TUTORIAL_VIDEO_URL: "https://example.com/tutorial",
 }));
 
@@ -22,6 +27,11 @@ vi.mock("../../../../src/client/Api", () => ({ getUserMe, invalidateUserMe }));
 vi.mock("../../../../src/client/Auth", () => ({
   getAuthHeader: vi.fn(async () => "Bearer test-token"),
   isLoggedIn,
+  // The end screen's "Get the look" asks the session itself (userAuth)
+  // when /users/@me fails; it follows the same mocked session.
+  userAuth: vi.fn(async () =>
+    (await isLoggedIn()) ? { jwt: "test-token", claims: {} } : false,
+  ),
 }));
 
 vi.mock("../../../../src/client/ApiBase", () => ({
@@ -159,11 +169,16 @@ function makeGame(opts: {
     myPlayer: () => ({
       isAlive: () => opts.alive ?? true,
       hasSpawned: () => true,
+      numTilesOwned: () => 100,
       team: () => "Red",
       clientID: () => "me",
     }),
     inSpawnPhase: () => false,
     ticks: () => 6000,
+    elapsedGameSeconds: () => 600,
+    numLandTiles: () => 1000,
+    numTilesWithFallout: () => 0,
+    playerViews: () => [],
     updatesSinceLastTick: () => {
       if (!opts.ended || delivered) return {};
       delivered = true;

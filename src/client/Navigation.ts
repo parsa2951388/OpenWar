@@ -113,6 +113,13 @@ export function initNavigation() {
       const visibleModal = document.querySelector(
         ".page-content:not(.hidden)",
       ) as any;
+      // Its own nav item (the page already shown) changes nothing: no prompt,
+      // and no close and reopen either (closing the Inventory drops its
+      // unsaved card draft).
+      if (visibleModal?.id === pageId) {
+        closeMobileSidebar();
+        return;
+      }
       if (
         visibleModal &&
         typeof visibleModal.isOpen === "function" &&
@@ -146,6 +153,13 @@ export function initNavigation() {
           const isOnPageContent = target.classList.contains("page-content");
 
           if (isOnMain || isOnPageContent) {
+            if (
+              document.querySelector(
+                "[data-notifications-trigger][aria-expanded='true']",
+              ) !== null
+            ) {
+              return;
+            }
             // Find the open modal and call its close() method instead of showPage directly
             // This ensures proper cleanup (like websocket disconnection)
             const openModal = document.querySelector(

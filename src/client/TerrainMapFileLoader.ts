@@ -1,4 +1,8 @@
-import { GameMapSize, GameMapType } from "@openfront/engine-api/game/GameTypes";
+import {
+  CustomGameMap,
+  GameMapId,
+  GameMapSize,
+} from "@openfront/engine-api/game/GameTypes";
 import { MapManifest } from "@openfront/engine-api/game/MapManifest";
 import {
   loadTerrainMap,
@@ -13,12 +17,16 @@ export const terrainMapFileLoader = new FetchGameMapLoader((path) =>
 );
 
 const terrainMaps = new Map<string, TerrainMapData>();
-// Share an in-flight map build between callers (lobby preview, game start, replay).
-const terrainMapLoads = new Map<string, Promise<TerrainMapData>>();
-const manifests = new Map<GameMapType, Promise<MapManifest>>();
+const manifests = new Map<GameMapId, Promise<MapManifest>>();
 
-/** A map's manifest, fetched once. */
-export function loadCachedManifest(map: GameMapType): Promise<MapManifest> {
+/**
+ * A map's manifest, fetched once. The Custom map's is not kept: it is the
+ * loaded scenario's (FetchGameMapLoader.setCustomMap), which changes.
+ */
+export function loadCachedManifest(map: GameMapId): Promise<MapManifest> {
+  if (map === CustomGameMap) {
+    return terrainMapFileLoader.getMapData(map).manifest();
+  }
   let manifest = manifests.get(map);
   if (manifest === undefined) {
     manifest = terrainMapFileLoader.getMapData(map).manifest();
@@ -28,37 +36,25 @@ export function loadCachedManifest(map: GameMapType): Promise<MapManifest> {
   return manifest;
 }
 
-/** The maps the client draws on, built once per map and size. */
-export function loadCachedTerrainMap(
-  map: GameMapType,
+/**
+ * The maps the client draws on, built once per map and size, but each time
+ * for the Custom map, whose files change with the scenario.
+ */
+export async function loadCachedTerrainMap(
+  map: GameMapId,
   mapSize: GameMapSize,
 ): Promise<TerrainMapData> {
-  const key = `${map}:${mapSize}`;
-  const cached = terrainMaps.get(key);
-  if (cached !== undefined) return Promise.resolve(cached);
-
-  const inFlight = terrainMapLoads.get(key);
-  if (inFlight !== undefined) return inFlight;
-
-  const load = Promise.resolve().then(async () => {
-    const terrain = await loadTerrainMap(
+  if (map === CustomGameMap) {
+    return loadTerrainMap(
       await loadMapFiles(terrainMapFileLoader, map, mapSize),
     );
-    terrainMaps.set(key, terrain);
-    return terrain;
-  });
-  terrainMapLoads.set(key, load);
-
-  // Keep only completed terrain data; remove the in-flight entry on both
-  // success and failure. A failed fetch can then be retried by the next join.
-  void load.then(
-    () => {
-      if (terrainMapLoads.get(key) === load) terrainMapLoads.delete(key);
-    },
-    () => {
-      if (terrainMapLoads.get(key) === load) terrainMapLoads.delete(key);
-    },
+  }
+  const key = `${map}:${mapSize}`;
+  const cached = terrainMaps.get(key);
+  if (cached !== undefined) return cached;
+  const terrain = await loadTerrainMap(
+    await loadMapFiles(terrainMapFileLoader, map, mapSize),
   );
-
-  return load;
+  terrainMaps.set(key, terrain);
+  return terrain;
 }

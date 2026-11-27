@@ -25,7 +25,7 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
       "end": 1700000004200,
       "gameID": "golden00",
       "lobbyCreatedAt": 1700000000000,
-      "lobbyFillTime": 1000,
+      "lobbyFillTime": 2000,
       "num_turns": 21,
       "players": [
         {
@@ -71,7 +71,7 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
       "start": 1700000002000,
       "statsAgreed": true,
       "tribes": undefined,
-      "visibleAt": 1700000001000,
+      "visibleAt": undefined,
       "winner": [
         "player",
         "host0000",
@@ -329,7 +329,6 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
               "username": "ThirdOne",
             },
           ],
-          "visibleAt": 1700000001000,
         },
         "groupToken": "GoldenGroupTok01",
         "lobbyCreatedAt": 1700000000000,
@@ -720,7 +719,6 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
               "username": "ThirdOne",
             },
           ],
-          "visibleAt": 1700000001000,
         },
         "groupToken": "GoldenGroupTok01",
         "lobbyCreatedAt": 1700000000000,
@@ -1083,7 +1081,6 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
               "username": "ThirdOne",
             },
           ],
-          "visibleAt": 1700000001000,
         },
         "groupToken": "GoldenGroupTok01",
         "lobbyCreatedAt": 1700000000000,
@@ -1440,7 +1437,6 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
               "username": "ThirdOne",
             },
           ],
-          "visibleAt": 1700000001000,
         },
         "groupToken": "GoldenGroupTok01",
         "lobbyCreatedAt": 1700000000000,
@@ -1690,7 +1686,6 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
               "username": "ThirdOne",
             },
           ],
-          "visibleAt": 1700000001000,
         },
         "groupToken": "GoldenGroupTok01",
         "lobbyCreatedAt": 1700000000000,
@@ -1787,8 +1782,10 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
   "lobbyHttpView": {
     "accent": undefined,
     "autoStartAt": undefined,
+    "boostedBy": undefined,
     "clients": [
       {
+        "cardBackground": undefined,
         "clanTag": "HST",
         "clientID": "host0000",
         "friends": [
@@ -1801,6 +1798,7 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
         "verified": undefined,
       },
       {
+        "cardBackground": undefined,
         "clanTag": null,
         "clientID": "p2000000",
         "friends": undefined,
@@ -1811,6 +1809,7 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
         "verified": true,
       },
       {
+        "cardBackground": undefined,
         "clanTag": null,
         "clientID": "cast0000",
         "friends": undefined,
@@ -1821,6 +1820,7 @@ exports[`GameServer wire transcript > matches the golden transcript for a script
         "verified": undefined,
       },
       {
+        "cardBackground": undefined,
         "clanTag": "TRD",
         "clientID": "p3000000",
         "friends": undefined,

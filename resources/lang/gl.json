@@ -9,7 +9,7 @@
     "close": "Pechar"
   },
   "main": {
-    "title": "Open War (ALFA)",
+    "title": "OpenFront (ALFA)",
     "join_discord": "Únete ó Discord!",
     "login_discord": "Iniciar sesión con Discord",
     "checking_login": "Comprobando a sesión...",
@@ -580,8 +580,8 @@
       "cursor": "Cursor",
       "hand": "Man",
       "radiation": "Radiación",
-      "openfront_qr": "Código QR de Open War.io",
-      "openfront": "Open War",
+      "openfront_qr": "Código QR de OpenFront.io",
+      "openfront": "OpenFront",
       "t_rex": "Tiranosauro",
       "embelem": "Emblema",
       "contributor": "Contribuidor",

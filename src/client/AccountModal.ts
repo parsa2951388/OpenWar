@@ -5,14 +5,25 @@ import {
   UserMeResponse,
 } from "@openfront/shared/ApiSchemas";
 import { assetUrl } from "@openfront/shared/AssetUrls";
+import {
+  type Cosmetics,
+  ownsPlayerCard,
+} from "@openfront/shared/CosmeticSchemas";
 import { html, nothing, PropertyValues, TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
+import "./components/card/PlayerCard";
 import { ClientEnv } from "src/client/ClientEnv";
 import {
   hasLinkedIdentity,
   responseHasLinkedIdentity,
 } from "./AccountIdentity";
-import { fetchPlayerById, getUserMe, invalidateUserMe } from "./Api";
+import {
+  fetchFfaRankPosition,
+  fetchPlayerById,
+  getUserMe,
+  invalidateUserMe,
+} from "./Api";
+import { appleLogin, appleServicesId, linkApple } from "./AppleSignIn";
 import {
   discordLogin,
   googleLogin,
@@ -23,36 +34,43 @@ import {
   sendMagicLink,
   steamLogin,
 } from "./Auth";
+import type { PlayerGameHistoryCache } from "./components/baseComponents/stats/PlayerGameHistoryView";
+import { BaseModal } from "./components/BaseModal";
+import { EDIT_CARD_HASH } from "./components/card/CardLinks";
+import { buildPlayerCardView } from "./components/card/PlayerCardModel";
+import { xpBarTemplate } from "./components/card/ProfileIdentity";
+import type { CreatorChangedDetail } from "./components/CreatorCodePanel";
 import "./components/baseComponents/stats/DiscordUserHeader";
 import "./components/baseComponents/stats/PlayerGameHistoryView";
-import type { PlayerGameHistoryCache } from "./components/baseComponents/stats/PlayerGameHistoryView";
+import { ffaSummaryFromMe } from "./components/ffaRating/FfaRatingSummary";
 import "./components/baseComponents/stats/PlayerStatsTable";
 import "./components/baseComponents/stats/PlayerStatsTree";
 import "./components/baseComponents/stats/SteamUserHeader";
-import { BaseModal } from "./components/BaseModal";
+import type { PrestigeFlow } from "./components/PrestigeFlow";
 import "./components/CopyButton";
 import "./components/CreatorCodePanel";
-import type { CreatorChangedDetail } from "./components/CreatorCodePanel";
+import type { RewardsChangedDetail } from "./components/RewardsPanel";
 import "./components/CurrencyDisplay";
 import "./components/Difficulties";
-import { ffaSummaryFromMe } from "./components/ffaRating/FfaRatingSummary";
+import { appleButton, appleGlyph } from "./components/ui/AppleButton";
 import "./components/FriendsList";
-import type { PrestigeFlow } from "./components/PrestigeFlow";
+import { googleLinkButton } from "./components/ui/GoogleLinkButton";
 import "./components/ProfileCard";
 import "./components/ProfileProgression";
 import "./components/RewardsPanel";
-import type { RewardsChangedDetail } from "./components/RewardsPanel";
-import { googleLinkButton } from "./components/ui/GoogleLinkButton";
 import { modalHeader } from "./components/ui/ModalHeader";
 import { steamGlyph, steamLinkButton } from "./components/ui/SteamLinkButton";
-import { desktopLinkGate, isDesktopShell } from "./DesktopShell";
+import { xpProgressText } from "./components/XpBar";
+import { fetchCosmetics } from "./Cosmetics";
+import { desktopLinkGate, isSteamShell } from "./DesktopShell";
 import { gamePortal, type PortalUser } from "./GamePortal";
-import "./GameStatsModal";
 import { showInGameAlert } from "./InGameModal";
+import "./GameStatsModal";
 import { consumeLinkResult } from "./LinkResult";
 import { consumeLoginResult, LoginResult } from "./LoginResult";
-import "./PlayerProfileModal";
 import { loadPlayerProgress } from "./PlayerProgress";
+import "./PlayerProfileModal";
+import { levelFraction } from "./Progression";
 import {
   PROVISIONAL_PROGRESS_CHANGED,
   provisionalProgress,
@@ -126,8 +144,12 @@ export class AccountModal extends BaseModal {
   // from the `creatorCode=` router arg (a `/c/CODE` share-link visit).
   // Reassigned on every open, same as loginError above.
   @state() private prefillCreatorCode: string | undefined;
+  // Global FFA position, read from the rank-position call (not /users/@me).
+  @state() private ffaGlobalPosition: number | null = null;
 
-  private userMeResponse: UserMeResponse | null = null;
+  // State, so the page re-renders when a fresh profile arrives (a card
+  // saved in the Inventory, say).
+  @state() private userMeResponse: UserMeResponse | null = null;
   private statsTree: PlayerStatsTree | null = null;
   // The card's clan tag, from the player's own profile (displayClanTag).
   private displayClanTag: string | null = null;
@@ -338,39 +360,165 @@ export class AccountModal extends BaseModal {
     this.open({ tab: "friends" });
   }
 
+  // The card is edited (or bought) on the Inventory's Player card tab.
+  private editCard(): void {
+    window.location.hash = EDIT_CARD_HASH;
+  }
+
   private renderAccountTab(): TemplateResult {
     if (this.portalUser) {
       return this.renderPortalAccount(this.portalUser);
     }
     return html`
       <div class="flex flex-col gap-6">
-        ${this.renderProfileCard("compact")}
-        <div class="bg-white/5 rounded-xl border border-white/10 p-6">
-          <div class="flex flex-col items-center gap-4">
-            <div
-              class="text-xs text-white/40 uppercase tracking-widest font-bold border-b border-white/5 pb-2 px-8"
-            >
-              ${translateText("account_modal.connected_as")}
+        ${this.renderAccountHeader()}
+        <div
+          data-account-panels
+          class="grid gap-6 md:grid-cols-2 md:items-start"
+        >
+          <div class="flex flex-col gap-6">
+            <div class="bg-white/5 rounded-xl border border-white/10 p-6">
+              <div class="flex flex-col items-center gap-4">
+                <div
+                  class="text-xs text-white/40 uppercase tracking-widest font-bold border-b border-white/5 pb-2 px-8"
+                >
+                  ${translateText("account_modal.connected_as")}
+                </div>
+                <div class="flex items-center gap-8 justify-center flex-wrap">
+                  <discord-user-header
+                    .data=${this.userMeResponse?.user?.discord ?? null}
+                  ></discord-user-header>
+                  ${
+                    this.userMeResponse?.user?.steam
+                      ? html`<steam-user-header
+                          .data=${this.userMeResponse.user.steam}
+                        ></steam-user-header>`
+                      : null
+                  }
+                  ${this.renderLoggedInAs()}
+                </div>
+              </div>
             </div>
-            <div class="flex items-center gap-8 justify-center flex-wrap">
-              <discord-user-header
-                .data=${this.userMeResponse?.user?.discord ?? null}
-              ></discord-user-header>
-              ${
-                this.userMeResponse?.user?.steam
-                  ? html`<steam-user-header
-                      .data=${this.userMeResponse.user.steam}
-                    ></steam-user-header>`
-                  : null
-              }
-              ${this.renderLoggedInAs()}
-            </div>
+            ${this.renderRewardsPanel()} ${this.renderDesktopLinkGateAction()}
           </div>
+          ${this.renderCreatorCodePanel()}
         </div>
-        ${this.renderRewardsPanel()} ${this.renderCreatorCodePanel()}
-        ${this.renderDesktopLinkGateAction()}
       </div>
     `;
+  }
+
+  // The page reads as the player's profile: their card for a card owner, with
+  // the XP bar under it and "Edit card"; otherwise the profile card as before,
+  // with a way to the card.
+  // The catalogue the card header resolves the equipped items from: read
+  // once, or once per opening until a read succeeds (the store's cache makes
+  // it cheap).
+  private cardCosmetics: Cosmetics | null = null;
+  private cardCosmeticsRequested = false;
+  private headerCosmetics(): Cosmetics | null {
+    if (!this.cardCosmeticsRequested) {
+      this.cardCosmeticsRequested = true;
+      void fetchCosmetics()
+        .then((c) => {
+          this.cardCosmetics = c;
+          this.requestUpdate();
+        })
+        .catch(() => {});
+    }
+    return this.cardCosmetics;
+  }
+
+  private renderAccountHeader(): TemplateResult | typeof nothing {
+    const player = this.userMeResponse?.player;
+    if (!player || !ownsPlayerCard(player.flares ?? [])) {
+      return html`<div class="flex flex-col gap-1.5">
+        ${this.renderProfileCard("compact")}
+        <button
+          type="button"
+          data-account-get-card
+          class="self-end text-xs font-bold text-sky-300 hover:underline"
+          @click=${() => this.editCard()}
+        >
+          ${translateText("account_modal.get_card")}
+        </button>
+      </div>`;
+    }
+    // With any XP still waiting to be scored, provisionally, as the profile
+    // card shows it.
+    const provisional =
+      player.progress && player.publicId
+        ? provisionalProgress(player.publicId, player.progress)
+        : null;
+    const progress = provisional?.progress ?? player.progress;
+    const view = buildPlayerCardView(
+      {
+        username: player.username ?? player.publicId ?? "",
+        clanTag: this.displayClanTag,
+        badge: progress
+          ? {
+              level: progress.level,
+              prestige: progress.prestige,
+              legend: progress.legend,
+            }
+          : null,
+        card: player.card ?? null,
+      },
+      this.headerCosmetics(),
+    );
+    // At level 100 with ranks left, Prestige in the XP bar's place, as on
+    // the compact profile card (never on provisional XP: only the confirmed
+    // level can prestige).
+    const prestige =
+      progress?.canPrestige === true && !provisional?.provisional
+        ? html`<button
+            type="button"
+            data-account-prestige
+            class="self-end rounded-xl border border-yellow-300/70 bg-gradient-to-b from-yellow-300 to-amber-500 px-6 py-2.5 text-sm font-black uppercase tracking-widest text-zinc-900 transition-transform hover:-translate-y-0.5"
+            @click=${this.handlePrestigeRequest}
+          >
+            ${translateText("prestige.button")}
+          </button>`
+        : null;
+    const bar =
+      prestige ??
+      (progress?.xpInLevel !== undefined && progress.xpForNext !== undefined
+        ? html`<div class="flex items-center gap-3 text-xs font-bold">
+            <span class="shrink-0 uppercase text-white/60"
+              >${translateText("progression.level", {
+                level: progress.level,
+              })}</span
+            >
+            ${xpBarTemplate(
+              progress.legend
+                ? 1
+                : levelFraction(progress.xpInLevel, progress.xpForNext),
+              true,
+            )}
+            <span class="shrink-0 tabular-nums text-white/60"
+              >${xpProgressText(progress.xpInLevel, progress.xpForNext)}</span
+            >
+          </div>`
+        : nothing);
+    const provisionalLabel = provisional?.provisional
+      ? html`<div
+          data-account-provisional
+          class="text-xs font-semibold text-amber-200/80"
+        >
+          ${translateText("progression.provisional_label")}
+        </div>`
+      : nothing;
+    return html`<div data-account-card-header class="flex flex-col gap-2">
+      <button
+        type="button"
+        data-account-edit-card
+        class="self-end text-xs font-bold text-sky-300 hover:underline"
+        @click=${() => this.editCard()}
+      >
+        ${translateText("account_modal.edit_card")}
+      </button>
+      <player-card size="account" animated .view=${view}></player-card>
+      ${bar} ${provisionalLabel}
+    </div>`;
   }
 
   // Re-entry to the desktop shell's account-linking gate shown at first
@@ -661,7 +809,11 @@ export class AccountModal extends BaseModal {
     variant: "full" | "compact",
   ): TemplateResult | typeof nothing {
     const player = this.userMeResponse?.player;
-    const ffaRating = ffaSummaryFromMe(player?.leaderboard?.ffa);
+    const meRating = ffaSummaryFromMe(player?.leaderboard?.ffa);
+    const ffaRating =
+      meRating?.kind === "rated"
+        ? { ...meRating, globalPosition: this.ffaGlobalPosition }
+        : meRating;
     // No level to show (progression off): the full tab still shows the rating.
     if (player?.publicId && !player.progress) {
       return variant === "full" && ffaRating !== null
@@ -791,7 +943,7 @@ export class AccountModal extends BaseModal {
       return html`
         <div class="flex flex-col items-center gap-3 w-full">
           ${this.renderCurrency()} ${this.renderGoogleLink()}
-          ${this.renderSteamLink()}
+          ${this.renderAppleLink()} ${this.renderSteamLink()}
         </div>
       `;
     } else if (me?.google) {
@@ -802,7 +954,8 @@ export class AccountModal extends BaseModal {
               account_name: me.google.email,
             })}
           </div>
-          ${this.renderCurrency()} ${this.renderSteamLink()}
+          ${this.renderCurrency()} ${this.renderAppleLink()}
+          ${this.renderSteamLink()}
         </div>
       `;
     } else if (me?.email) {
@@ -812,6 +965,19 @@ export class AccountModal extends BaseModal {
             ${translateText("account_modal.linked_account", {
               account_name: me.email,
             })}
+          </div>
+          ${this.renderCurrency()} ${this.renderGoogleLink()}
+          ${this.renderAppleLink()} ${this.renderSteamLink()}
+        </div>
+      `;
+    } else if (me?.apple) {
+      // Apple-primary: a player with only an Apple identity. The address is
+      // often Apple's private relay, which means nothing to the player, so it
+      // is not shown.
+      return html`
+        <div class="flex flex-col items-center gap-3 w-full">
+          <div class="text-white text-lg font-medium">
+            ${translateText("account_modal.signed_in_with_apple")}
           </div>
           ${this.renderCurrency()} ${this.renderGoogleLink()}
           ${this.renderSteamLink()}
@@ -862,10 +1028,25 @@ export class AccountModal extends BaseModal {
       this.handleLinkGoogle,
       // The shell sends the player to the website for this (see linkGoogle
       // in Auth.ts); the caption has to say so.
-      isDesktopShell()
+      isSteamShell()
         ? "account_modal.link_google_on_web"
         : "account_modal.link_google",
     );
+  }
+
+  // Apple link state: a confirmation line when Apple is linked, otherwise the
+  // button to link it, on the website only (see appleServicesId).
+  private renderAppleLink(): TemplateResult {
+    if (this.userMeResponse?.user?.apple) {
+      return html`
+        <div class="flex items-center gap-2 text-white/70 text-sm">
+          ${appleGlyph("w-4 h-4")}
+          <span>${translateText("account_modal.linked_to_apple")}</span>
+        </div>
+      `;
+    }
+    if (appleServicesId() === null) return html``;
+    return appleButton(this.handleLinkApple, "account_modal.link_apple");
   }
 
   // Steam link state (OPE-115): the linked account when there is one,
@@ -880,7 +1061,7 @@ export class AccountModal extends BaseModal {
   // Not shown inside the desktop shell: a shell player already holds this
   // identity through the native Steam ticket.
   private renderSteamLink(): TemplateResult {
-    if (isDesktopShell()) return html``;
+    if (isSteamShell()) return html``;
     const steam = this.userMeResponse?.user?.steam;
     if (steam) {
       // The attached account is NAMED, not merely reported as linked: a wrong
@@ -1012,14 +1193,15 @@ export class AccountModal extends BaseModal {
   }
 
   private renderLoginOptions() {
-    // On the desktop shell both provider buttons open the shell's browser
+    // In the Steam shell both provider buttons open the shell's browser
     // link flow rather than an in-place OAuth redirect (see discordLogin /
     // googleLogin in Auth.ts), and the captions say so. Keyed on the shell
     // itself, not on the link-flow bridge: Auth.ts never builds the redirect
-    // on ANY desktop shell (a shell too old to expose showLinkGate gets an
+    // on ANY Steam shell (a shell too old to expose showLinkGate gets an
     // update prompt instead), so the web caption would be wrong on every one
-    // of them.
-    const viaBrowser = isDesktopShell();
+    // of them. The Android shell keeps the web captions: Google signs in
+    // there in place, through the shell's native sheet.
+    const viaBrowser = isSteamShell();
     return html`
       <div class="flex items-center justify-center p-6 min-h-full">
         <div
@@ -1099,6 +1281,17 @@ export class AccountModal extends BaseModal {
                 }</span
               >
             </button>
+
+            <!-- Sign in with Apple: on the website only (appleServicesId). -->
+            ${
+              appleServicesId() === null
+                ? nothing
+                : appleButton(
+                    this.handleAppleLogin,
+                    "main.login_apple",
+                    "large",
+                  )
+            }
 
             <!-- Sign in through Steam. Hidden inside the desktop shell: the
                  player is already signed in there through the native Steam
@@ -1196,12 +1389,22 @@ export class AccountModal extends BaseModal {
   }
 
   private handleGoogleLogin() {
-    googleLogin();
+    void googleLogin();
   }
 
   private handleSteamLogin() {
     steamLogin();
   }
+
+  private handleAppleLogin() {
+    void appleLogin();
+  }
+
+  private handleLinkApple = async (): Promise<void> => {
+    if (!(await linkApple())) {
+      await showInGameAlert(translateText("account_modal.link_apple_error"));
+    }
+  };
 
   private handleLinkGoogle = async (): Promise<void> => {
     // On success linkGoogle navigates to Google; the result comes back as a
@@ -1247,6 +1450,9 @@ export class AccountModal extends BaseModal {
     // no two openings share a key.
     const opening = (this.openCount = ++accountOpenings);
     this.dropProgression();
+    // A catalogue read that failed (or is still missing) is tried again at
+    // this opening; a good one stays cached.
+    if (this.cardCosmetics === null) this.cardCosmeticsRequested = false;
     this.isLoadingUser = true;
     this.requestedTab = typeof args?.tab === "string" ? args.tab : null;
     consumeLinkResult(args);
@@ -1262,6 +1468,7 @@ export class AccountModal extends BaseModal {
           this.prefetchPrestigeFlow();
           if (this.userMeResponse?.player?.publicId) {
             void this.loadPlayerProfile(this.userMeResponse.player.publicId);
+            void this.loadFfaGlobalPosition(this.userMeResponse);
           }
         }
         this.finishLoadingUser(opening);
@@ -1271,6 +1478,20 @@ export class AccountModal extends BaseModal {
         this.finishLoadingUser(opening);
       });
     this.requestUpdate();
+  }
+
+  // Global position only comes from the rank-position endpoint, and only a
+  // rated player has one.
+  private async loadFfaGlobalPosition(userMe: UserMeResponse): Promise<void> {
+    this.ffaGlobalPosition = null;
+    if (ffaSummaryFromMe(userMe.player.leaderboard?.ffa)?.kind !== "rated") {
+      return;
+    }
+    const result = await fetchFfaRankPosition();
+    if (this.userMeResponse?.player?.publicId !== userMe.player.publicId) {
+      return;
+    }
+    this.ffaGlobalPosition = result?.globalPosition ?? null;
   }
 
   protected onClose(): void {

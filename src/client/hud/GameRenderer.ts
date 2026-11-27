@@ -3,7 +3,6 @@ import { Controller } from "../Controller";
 import { AmbienceController } from "../controllers/AmbienceController";
 import { AttackingTroopsController } from "../controllers/AttackingTroopsController";
 import { BuildPreviewController } from "../controllers/BuildPreviewController";
-import { FighterSelectionController } from "../controllers/FighterSelectionController";
 import { HoverHighlightController } from "../controllers/HoverHighlightController";
 import { LiveStatsController } from "../controllers/LiveStatsController";
 import { MapLayerController } from "../controllers/MapLayerController";
@@ -50,7 +49,7 @@ import { SpawnTimer } from "./layers/SpawnTimer";
 import { TutorialPanel } from "./layers/TutorialPanel";
 import { UnitDisplay } from "./layers/UnitDisplay";
 import { WinModal } from "./layers/WinModal";
-import { clearColoredSpriteCache, loadAllSprites } from "./SpriteLoader";
+import { loadAllSprites } from "./SpriteLoader";
 
 export function createRenderer(
   inputEl: HTMLElement,
@@ -59,6 +58,7 @@ export function createRenderer(
   playerRole: string | null,
   view: MapRenderer,
   mapLayerController?: MapLayerController,
+  visibleAt?: number,
 ): GameRenderer {
   const transformHandler = new TransformHandler(game, eventBus, inputEl);
   const userSettings = new UserSettings();
@@ -200,6 +200,7 @@ export function createRenderer(
   settingsModal.gameConfig = game.config().gameConfig();
   settingsModal.mapNationCount = game.mapNationCount();
   settingsModal.game = game;
+  settingsModal.visibleAt = visibleAt;
 
   // The in-game settings instance needs the bus so the Audio sliders reach
   // SoundManager, which caches its volumes at construction, and UIState so the
@@ -335,9 +336,6 @@ export function createRenderer(
   onboardingOverlay.uiState = uiState;
 
   const layers: Controller[] = [
-    // Aircraft input gets first refusal so a selected plane and a selected
-    // warship cannot both receive the same destination click.
-    new FighterSelectionController(game, eventBus, transformHandler, view),
     new WarshipSelectionController(game, eventBus, transformHandler, view),
     new BuildPreviewController(
       game,
@@ -390,24 +388,55 @@ export function createRenderer(
     performanceOverlay,
   ];
 
+  const singletonLayers = new Set<Controller>([
+    eventsDisplay,
+    actionableEvents,
+    attacksDisplay,
+    chatDisplay,
+    buildMenu,
+    spawnTimer,
+    immunityTimer,
+    gameLeftSidebar,
+    unitDisplay,
+    gameRightSidebar,
+    controlPanel,
+    playerInfo,
+    winModal,
+    newLobbyPrompt,
+    replayPanel,
+    settingsModal,
+    playerPanel,
+    headsUpMessage,
+    multiTabModal,
+    inGamePromo,
+    tutorialPanel,
+    onboardingOverlay,
+    alertFrame,
+    performanceOverlay,
+  ]);
+
   return new GameRenderer(
     transformHandler,
     uiState,
     layers,
     performanceOverlay,
+    singletonLayers,
   );
 }
 
 export class GameRenderer {
   private layerTickState = new Map<Controller, { lastTickAtMs: number }>();
-  private disposed = false;
+  private layerDisposers = new Map<Controller, () => void>();
 
   constructor(
     public transformHandler: TransformHandler,
     public uiState: UIState,
     private layers: Controller[],
     private performanceOverlay: PerformanceOverlay,
+    private singletonLayers: ReadonlySet<Controller> = new Set(),
   ) {}
+
+  private canvasSizeObserver: ResizeObserver | null = null;
 
   private onResize = () => {
     this.transformHandler.updateCanvasBoundingRect();
@@ -418,26 +447,40 @@ export class GameRenderer {
       console.warn("Failed to preload sprites:", err),
     );
 
-    this.layers.forEach((l) => l.init?.());
+    this.layerDisposers.clear();
+    for (const l of this.layers) {
+      const disposer = l.init?.();
+      if (typeof disposer === "function") {
+        this.layerDisposers.set(l, disposer);
+      }
+    }
 
     window.addEventListener("resize", this.onResize);
+    this.canvasSizeObserver = this.transformHandler.observeCanvasSize();
 
     //show whole map on startup
     this.transformHandler.centerAll(0.9);
   }
 
   dispose() {
-    if (this.disposed) return;
-    this.disposed = true;
     window.removeEventListener("resize", this.onResize);
-
-    // Controllers subscribe to the page-wide EventBus. Release them when a
-    // match ends so an old game cannot keep reacting to the next game's input.
-    for (let i = this.layers.length - 1; i >= 0; i--) {
-      this.layers[i].dispose?.();
+    this.canvasSizeObserver?.disconnect();
+    this.canvasSizeObserver = null;
+    for (const layer of this.layers) {
+      try {
+        if (this.layerDisposers.has(layer)) {
+          const disposer = this.layerDisposers.get(layer)!;
+          this.layerDisposers.delete(layer);
+          disposer();
+        } else if (this.singletonLayers.has(layer)) {
+          continue;
+        } else {
+          layer.dispose?.();
+        }
+      } catch (e) {
+        console.error("Failed to dispose HUD layer:", e);
+      }
     }
-    this.layerTickState.clear();
-    clearColoredSpriteCache();
   }
 
   tick() {

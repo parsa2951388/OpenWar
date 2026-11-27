@@ -5,7 +5,6 @@ import { html, LitElement, nothing, type TemplateResult } from "lit";
 import { customElement, state } from "lit/decorators.js";
 import { ClientEnv } from "src/client/ClientEnv";
 import { getDesktopSessionState } from "./Auth";
-import "./components/IOSAddToHomeScreenBanner";
 import {
   canJoinTrustedLobby,
   lobbyCard,
@@ -18,6 +17,7 @@ import {
 import {
   getDesktopUpdateState,
   isDesktopShell,
+  isSteamShell,
   multiplayerAllowed,
   multiplayerAllowedForSession,
   type DesktopSessionState,
@@ -29,7 +29,7 @@ import { showInGameAlert } from "./InGameModal";
 import type { JoinLobbyModal } from "./JoinLobbyModal";
 import { whenModalLoaded } from "./LazyModals";
 import { PublicLobbySocket } from "./LobbySocket";
-import { JoinLobbyEvent } from "./Main";
+import type { JoinLobbyEvent } from "./Main";
 import {
   backendUnreachableConfirmed,
   isPinnedToAVersion,
@@ -121,19 +121,6 @@ const TUTORIAL_CARD_MAX_GAMES = 5;
  */
 export function multiplayerAllowedForBackend(backendOutage: boolean): boolean {
   return !backendOutage;
-}
-
-/**
- * A static site shell needs the server-list API to discover where to create
- * a lobby. A page rendered by a game server already has that server's host,
- * worker map and instance letter injected, so it can use the same-origin
- * fallback while the separate account/cluster API is unavailable.
- */
-export function backendOutageBlocksMultiplayer(
-  backendOutage: boolean,
-  servedByGameServer: boolean,
-): boolean {
-  return backendOutage && !servedByGameServer;
 }
 
 /**
@@ -326,7 +313,8 @@ export class GameModeSelector extends LitElement {
   // loading into) a lobby. This socket is NOT scoped to the homepage — Main.ts
   // only stops it when a game actually starts (prestart/join), so it is still
   // listening during the whole lobby wait.
-  private inLobby = false;
+  @state() inLobby = false;
+  @state() joiningLobbyId: string | null = null;
   // Whether Main wants the feed open at all (false from game start until the
   // player is back at the menu). Kept apart from the socket's own state so a
   // session change can close and reopen the feed without forgetting that.
@@ -418,15 +406,13 @@ export class GameModeSelector extends LitElement {
     // play-page renders this after Main may already have broadcast.
     const last = lastUserMeResponse();
     if (last !== null) this.applyUserMe(last.response);
-    if (isDesktopShell()) {
-      // Seed BOTH from their current values. This element is rendered by
-      // <play-page> on a Lit microtask, so it cannot exist yet when the status
-      // bar dispatches the update bridge's synchronous replay -- without the
-      // seed the update half of the gate stays null and silently never
-      // applies (OPE-396).
-      this.desktopUpdateState = getDesktopUpdateState();
-      this.desktopSessionState = getDesktopSessionState();
-    }
+    // Seed BOTH from their current values. This element is rendered by
+    // <play-page> on a Lit microtask, so it cannot exist yet when the status
+    // bar dispatches the update bridge's synchronous replay -- without the
+    // seed the update half of the gate stays null and silently never applies
+    // (OPE-396). The session is the Steam sign-in, so only Steam seeds it.
+    if (isDesktopShell()) this.desktopUpdateState = getDesktopUpdateState();
+    if (isSteamShell()) this.desktopSessionState = getDesktopSessionState();
     // After the session seed above: a shell that already knows it has no
     // session must not open a feed it will close on the next tick.
     this.start();
@@ -438,16 +424,14 @@ export class GameModeSelector extends LitElement {
     // unreachable on the web, and the heartbeat's first attempts often settle
     // before this element exists (it is started in Main's initialize, we are
     // rendered by <play-page> later), so the event alone would miss them.
-    this.backendOutage = backendOutageBlocksMultiplayer(
-      backendUnreachableConfirmed(),
-      ClientEnv.servedByGameServer(),
-    );
+    this.backendOutage = backendUnreachableConfirmed();
     document.addEventListener(
       "backend-reachability",
       this.onBackendReachability,
     );
     document.addEventListener("join-lobby", this.onJoinLobby);
     document.addEventListener("leave-lobby", this.onLeaveLobby);
+    document.addEventListener("menu-restored", this.onLeaveLobby);
     // Pick up the current value in case username-input validated before us.
     const usernameInput = document.querySelector(
       "username-input",
@@ -459,6 +443,8 @@ export class GameModeSelector extends LitElement {
 
   disconnectedCallback() {
     this.stop();
+    this.inLobby = false;
+    this.joiningLobbyId = null;
     window.clearTimeout(this.retryCooldownTimer);
     this.retryCoolingDown = false;
     window.removeEventListener(
@@ -480,15 +466,38 @@ export class GameModeSelector extends LitElement {
     );
     document.removeEventListener("join-lobby", this.onJoinLobby);
     document.removeEventListener("leave-lobby", this.onLeaveLobby);
+    document.removeEventListener("menu-restored", this.onLeaveLobby);
     super.disconnectedCallback();
   }
 
-  private onJoinLobby = () => {
+  public resetJoinState(): void {
+    this.inLobby = false;
+    this.joiningLobbyId = null;
+  }
+
+  public releaseRefusedJoin(gameID?: string): void {
+    if (
+      gameID === undefined ||
+      this.joiningLobbyId === gameID ||
+      this.joiningLobbyId === null
+    ) {
+      this.inLobby = false;
+      this.joiningLobbyId = null;
+    }
+  }
+
+  private onJoinLobby = (e?: Event) => {
+    if (e?.defaultPrevented) return;
     this.inLobby = true;
+    const detail = (e as CustomEvent<JoinLobbyEvent>)?.detail;
+    if (detail?.gameID) {
+      this.joiningLobbyId = detail.gameID;
+    }
   };
 
   private onLeaveLobby = () => {
     this.inLobby = false;
+    this.joiningLobbyId = null;
     if (this.updateDeferred) {
       this.updateDeferred = false;
       this.handleUpdateAvailable();
@@ -534,10 +543,9 @@ export class GameModeSelector extends LitElement {
   };
 
   private onBackendReachability = (e: Event) => {
-    this.backendOutage = backendOutageBlocksMultiplayer(
-      (e as CustomEvent<BackendReachabilityDetail>).detail.confirmed,
-      ClientEnv.servedByGameServer(),
-    );
+    this.backendOutage = (
+      e as CustomEvent<BackendReachabilityDetail>
+    ).detail.confirmed;
   };
 
   public stop() {
@@ -567,6 +575,8 @@ export class GameModeSelector extends LitElement {
    * snapshot and re-primes the list from the server.
    */
   public start() {
+    this.inLobby = false;
+    this.joiningLobbyId = null;
     this.openLobbyFeed();
   }
 
@@ -664,6 +674,11 @@ export class GameModeSelector extends LitElement {
     }
   }
 
+  public setLobbiesForTest(lobbies: PublicGames | null): void {
+    this.lobbies = lobbies;
+    this.requestUpdate();
+  }
+
   render() {
     const ffa = this.lobbies?.games?.["ffa"]?.[0];
     const teams = this.lobbies?.games?.["team"]?.[0];
@@ -681,17 +696,12 @@ export class GameModeSelector extends LitElement {
     // reading-flow keeps focus order following the rows (Chromium only).
     // On compact screens (styles.css) Solo/Tutorial sit under the hero card only,
     // and the lobby column runs down beside them, so its two cards get that height.
-    // There the grid also pulls up over the gap after the banner's row when it's empty.
     return html`
       <div
-        class="flex flex-col gap-4 sm:compact:gap-3 sm:compact:has-[>ios-add-to-home-screen-banner:empty]:-mt-3 w-full px-4 pb-4 mx-auto sm:px-0 sm:pb-0 sm:grid sm:grid-cols-[2fr_1fr] sm:grid-rows-[auto_min(24rem,40vh)_auto_auto] sm:compact:grid-rows-[auto_minmax(min(24rem,40vh),auto)_3.5rem_auto] desktop:sm:grid-rows-[auto_40vh_auto_auto] sm:[reading-flow:grid-rows]"
+        class="flex flex-col gap-4 sm:compact:gap-3 w-full px-4 pb-4 mx-auto sm:px-0 sm:pb-0 sm:grid sm:grid-cols-[2fr_1fr] sm:grid-rows-[min(24rem,40vh)_auto_auto] sm:compact:grid-rows-[minmax(min(24rem,40vh),auto)_3.5rem_auto] desktop:sm:grid-rows-[40vh_auto_auto] sm:[reading-flow:grid-rows]"
       >
-        <ios-add-to-home-screen-banner
-          class="no-game-portal [&:empty]:hidden sm:col-span-2 sm:row-start-1"
-        ></ios-add-to-home-screen-banner>
-
         <div
-          class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-3 sm:compact:col-span-1!"
+          class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
         >
           <div class="flex-[2]">
             ${this.renderSmallActionCard(
@@ -713,7 +723,7 @@ export class GameModeSelector extends LitElement {
           }
         </div>
         <div
-          class="grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-4"
+          class="grid grid-cols-3 gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-3"
         >
           ${this.renderSmallActionCard(
             translateText("main.create"),
@@ -751,7 +761,7 @@ export class GameModeSelector extends LitElement {
           )}
         </div>
 
-        <div class="min-w-0 sm:col-start-1 sm:row-start-2">
+        <div class="min-w-0 sm:col-start-1 sm:row-start-1">
           ${
             ffa?.gameConfig
               ? this.renderLobbyCard(ffa, getGameModeLabel(ffa.gameConfig))
@@ -775,7 +785,7 @@ export class GameModeSelector extends LitElement {
 
         <!-- Always rendered: the heading is the only way into the lobby browser. -->
         <section
-          class="flex flex-col gap-4 sm:compact:gap-3 min-w-0 sm:grid sm:grid-rows-[auto_1fr_1fr] sm:row-start-2 sm:min-h-0 sm:[reading-flow:grid-rows] sm:col-start-2 sm:compact:row-end-4 sm:compact:grid-rows-[auto_minmax(7.5rem,1fr)_minmax(7.5rem,1fr)]"
+          class="flex flex-col gap-4 sm:compact:gap-3 min-w-0 sm:grid sm:grid-rows-[auto_1fr_1fr] sm:row-start-1 sm:min-h-0 sm:[reading-flow:grid-rows] sm:col-start-2 sm:compact:row-end-3 sm:compact:grid-rows-[auto_minmax(7.5rem,1fr)_minmax(7.5rem,1fr)]"
         >
           ${
             teams
@@ -860,45 +870,54 @@ export class GameModeSelector extends LitElement {
   }
 
   private openRankedMenu = () => {
+    if (this.inLobby) return;
     if (this.blockedFromApiAction()) return;
     if (!this.validateUsername()) return;
     window.showPage?.("page-ranked");
   };
 
   private openDetailedView = () => {
+    if (this.inLobby) return;
     if (!this.validateUsername()) return;
     window.showPage?.("page-detailed-view");
   };
 
   private openSinglePlayerModal = () => {
+    if (this.inLobby) return;
     if (!this.validateUsername()) return;
-    whenModalLoaded("single-player-modal", () =>
+    whenModalLoaded("single-player-modal", () => {
+      if (this.inLobby) return;
       (
         document.querySelector("single-player-modal") as SinglePlayerModal
-      )?.open(),
-    );
+      )?.open();
+    });
   };
 
   // Handled in Main, which also serves the help page's tutorial button.
   private startTutorial = () => {
+    if (this.inLobby) return;
     if (!this.validateUsername()) return;
     document.dispatchEvent(new CustomEvent("start-tutorial"));
   };
 
   private openHostLobby = () => {
+    if (this.inLobby) return;
     if (this.blockedFromApiAction()) return;
     if (!this.validateUsername()) return;
-    whenModalLoaded("host-lobby-modal", () =>
-      (document.querySelector("host-lobby-modal") as HostLobbyModal)?.open(),
-    );
+    whenModalLoaded("host-lobby-modal", () => {
+      if (this.inLobby) return;
+      (document.querySelector("host-lobby-modal") as HostLobbyModal)?.open();
+    });
   };
 
   private openJoinLobby = () => {
+    if (this.inLobby) return;
     if (this.blockedFromApiAction()) return;
     if (!this.validateUsername()) return;
-    whenModalLoaded("join-lobby-modal", () =>
-      (document.querySelector("join-lobby-modal") as JoinLobbyModal)?.open(),
-    );
+    whenModalLoaded("join-lobby-modal", () => {
+      if (this.inLobby) return;
+      (document.querySelector("join-lobby-modal") as JoinLobbyModal)?.open();
+    });
   };
 
   // Number of open hosted lobbies waiting in the browser; shown as a chip
@@ -916,13 +935,14 @@ export class GameModeSelector extends LitElement {
   /** Heading over the upcoming column; also the link to the lobby browser. */
   private renderUpcomingHeading() {
     const count = this.advertisedLobbyCount();
+    const disabled = !this.inputValid || this.inLobby;
     return html`
       <h2 class="min-w-0 sm:row-start-1">
         <button
           @click=${this.openDetailedView}
-          ?disabled=${!this.inputValid}
+          ?disabled=${disabled}
           class="group/upcoming flex w-full items-center justify-between gap-2 rounded-lg border border-white/10 bg-white/[0.04] py-1.5 pl-2.5 pr-1.5 transition-colors hover:border-malibu-blue/50 hover:bg-malibu-blue/15 ${
-            this.inputValid ? "" : DISABLED
+            disabled ? DISABLED : ""
           }"
         >
           <span
@@ -983,17 +1003,14 @@ export class GameModeSelector extends LitElement {
         this.desktopSessionState,
         this.backendOutage,
       );
+    const disabled = !this.inputValid || this.inLobby;
     return html`
       <button
         @click=${onClick}
-        ?disabled=${!this.inputValid}
-        aria-disabled=${blocked}
+        ?disabled=${disabled}
+        aria-disabled=${blocked || this.inLobby}
         class="relative flex items-center justify-center w-full h-full rounded-lg ${bgClass} transition-all duration-200 text-sm lg:text-base font-medium text-white uppercase tracking-wider text-center ${
-          !this.inputValid
-            ? DISABLED
-            : blocked
-              ? "opacity-50 cursor-not-allowed"
-              : ""
+          disabled ? DISABLED : blocked ? "opacity-50 cursor-not-allowed" : ""
         }"
       >
         ${title}
@@ -1010,24 +1027,46 @@ export class GameModeSelector extends LitElement {
     `;
   }
 
+  private isJoining(lobby: PublicGameInfo): boolean {
+    if (!this.inLobby) return false;
+    if (this.joiningLobbyId) {
+      return this.joiningLobbyId === lobby.gameID;
+    }
+    const ffa = this.lobbies?.games?.["ffa"]?.[0];
+    return lobby.gameID === ffa?.gameID;
+  }
+
+  private getLobbyTimeDisplay(
+    lobby: PublicGameInfo,
+    isJoining: boolean,
+  ): { text: string; uppercase: boolean } {
+    if (isJoining) {
+      return {
+        text: translateText("public_lobby.connecting"),
+        uppercase: true,
+      };
+    }
+    const timeRemaining = lobby.startsAt
+      ? getSecondsUntilServerTimestamp(lobby.startsAt, this.serverTimeOffset)
+      : undefined;
+    if (timeRemaining === undefined) {
+      return { text: renderDuration(this.defaultLobbyTime), uppercase: false };
+    }
+    if (timeRemaining > 0) {
+      return { text: renderDuration(timeRemaining), uppercase: false };
+    }
+    return {
+      text: translateText("public_lobby.starting_game"),
+      uppercase: true,
+    };
+  }
+
   private renderLobbyCard(
     lobby: PublicGameInfo,
     titleContent: string | TemplateResult,
   ) {
-    const timeRemaining = lobby.startsAt
-      ? getSecondsUntilServerTimestamp(lobby.startsAt, this.serverTimeOffset)
-      : undefined;
-
-    let timeDisplay: string;
-    let timeDisplayUppercase = false;
-    if (timeRemaining === undefined) {
-      timeDisplay = renderDuration(this.defaultLobbyTime);
-    } else if (timeRemaining > 0) {
-      timeDisplay = renderDuration(timeRemaining);
-    } else {
-      timeDisplay = translateText("public_lobby.starting_game");
-      timeDisplayUppercase = true;
-    }
+    const isJoiningThis = this.isJoining(lobby);
+    const time = this.getLobbyTimeDisplay(lobby, isJoiningThis);
 
     // Gated, not disabled: `disabled` (which the option below sets, together
     // with pointer-events-none) swallows the click, and the click is what
@@ -1037,12 +1076,12 @@ export class GameModeSelector extends LitElement {
     // Socket-sourced, so a list-API outage neither dims this nor refuses it:
     // the same predicate validateAndJoin uses, for the reason in the rule at
     // the top of this file.
-    return lobbyCard({
+    const card = lobbyCard({
       lobby,
       subtitle: titleContent,
-      timeDisplay,
-      timeDisplayUppercase,
-      disabled: !this.inputValid,
+      timeDisplay: time.text,
+      timeDisplayUppercase: time.uppercase,
+      disabled: !this.inputValid || this.inLobby,
       blocked: shouldBlockSocketSourcedAction(
         this.desktopUpdateState,
         this.desktopSessionState,
@@ -1050,9 +1089,29 @@ export class GameModeSelector extends LitElement {
       viewerTrusted: this.viewerTrusted,
       onClick: () => this.validateAndJoin(lobby),
     });
+
+    if (!isJoiningThis) return card;
+    return html`
+      <div class="relative w-full h-44 sm:h-full">
+        ${card}
+        <div
+          class="absolute inset-0 z-10 flex flex-col items-center justify-center gap-2 rounded-2xl bg-black/60 backdrop-blur-[2px] pointer-events-none ring-2 ring-malibu-blue"
+          role="status"
+          aria-live="polite"
+        >
+          <span
+            class="size-8 rounded-full border-[3px] border-white/20 border-t-white animate-spin"
+          ></span>
+          <span class="text-xs font-bold uppercase tracking-widest text-white">
+            ${translateText("public_lobby.connecting")}
+          </span>
+        </div>
+      </div>
+    `;
   }
 
   private validateAndJoin(lobby: PublicGameInfo) {
+    if (this.inLobby) return;
     if (this.blockedFromLobbyJoin()) return;
     if (!this.validateUsername()) return;
     if (!canJoinTrustedLobby(lobby, this.viewerTrusted)) {
@@ -1060,16 +1119,29 @@ export class GameModeSelector extends LitElement {
       return;
     }
 
-    this.dispatchEvent(
-      new CustomEvent("join-lobby", {
-        detail: {
-          gameID: lobby.gameID,
-          source: "public",
-          publicLobbyInfo: lobby,
-        } as JoinLobbyEvent,
-        bubbles: true,
-        composed: true,
-      }),
-    );
+    this.inLobby = true;
+    this.joiningLobbyId = lobby.gameID;
+
+    try {
+      const dispatched = this.dispatchEvent(
+        new CustomEvent("join-lobby", {
+          detail: {
+            gameID: lobby.gameID,
+            source: "public",
+            publicLobbyInfo: lobby,
+          } as JoinLobbyEvent,
+          bubbles: true,
+          composed: true,
+          cancelable: true,
+        }),
+      );
+      if (!dispatched) {
+        this.inLobby = false;
+        this.joiningLobbyId = null;
+      }
+    } catch {
+      this.inLobby = false;
+      this.joiningLobbyId = null;
+    }
   }
 }

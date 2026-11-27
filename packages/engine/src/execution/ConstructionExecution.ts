@@ -1,6 +1,6 @@
 import { TileRef } from "@openfront/engine-api/game/GameMap";
 import {
-  FighterType,
+  MAX_UPGRADE_AMOUNT,
   Tick,
   UnitType,
 } from "@openfront/engine-api/game/GameTypes";
@@ -18,17 +18,39 @@ import type {
   SnapshotReader,
   SnapshotWriter,
 } from "../snapshot/SnapshotContext";
-import { AirportExecution } from "./AirportExecution";
 import { CityExecution } from "./CityExecution";
 import { DefensePostExecution } from "./DefensePostExecution";
 import { FactoryExecution } from "./FactoryExecution";
-import { FighterExecution } from "./FighterExecution";
 import { MirvExecution } from "./MIRVExecution";
 import { MissileSiloExecution } from "./MissileSiloExecution";
 import { NukeExecution } from "./NukeExecution";
 import { PortExecution } from "./PortExecution";
 import { SAMLauncherExecution } from "./SAMLauncherExecution";
 import { WarshipExecution } from "./WarshipExecution";
+
+/**
+ * The execution that runs a finished structure: what construction adds when
+ * it completes, and what the scenario editor's finalize gives the structures
+ * it placed.
+ */
+export function structureExecution(structure: Unit): Execution {
+  switch (structure.type()) {
+    case UnitType.Port:
+      return new PortExecution(structure);
+    case UnitType.MissileSilo:
+      return new MissileSiloExecution(structure);
+    case UnitType.DefensePost:
+      return new DefensePostExecution(structure);
+    case UnitType.SAMLauncher:
+      return new SAMLauncherExecution(structure.owner(), null, structure);
+    case UnitType.City:
+      return new CityExecution(structure);
+    case UnitType.Factory:
+      return new FactoryExecution(structure);
+    default:
+      throw new Error(`${structure.type()} is not a structure`);
+  }
+}
 
 export class ConstructionExecution implements Execution {
   private structure: Unit | null = null;
@@ -150,64 +172,13 @@ export class ConstructionExecution implements Execution {
           new WarshipExecution({ owner: player, patrolTile: this.tile }),
         );
         break;
-      case UnitType.AircraftCarrier:
-        this.mg.addExecution(
-          new WarshipExecution({
-            owner: player,
-            patrolTile: this.tile,
-            unitType: UnitType.AircraftCarrier,
-          }),
-        );
-        break;
       case UnitType.Port:
-        this.mg.addExecution(new PortExecution(this.structure!));
-        break;
-      case UnitType.Airport:
-        this.mg.addExecution(new AirportExecution(this.structure!));
-        break;
-      case UnitType.StealthFighter:
-        this.mg.addExecution(
-          new FighterExecution({
-            owner: player,
-            patrolTile: this.tile,
-            fighterType: FighterType.Stealth,
-          }),
-        );
-        break;
-      case UnitType.GroundAttacker:
-        this.mg.addExecution(
-          new FighterExecution({
-            owner: player,
-            patrolTile: this.tile,
-            fighterType: FighterType.Ground,
-          }),
-        );
-        break;
-      case UnitType.AirFighter:
-        this.mg.addExecution(
-          new FighterExecution({
-            owner: player,
-            patrolTile: this.tile,
-            fighterType: FighterType.Air,
-          }),
-        );
-        break;
       case UnitType.MissileSilo:
-        this.mg.addExecution(new MissileSiloExecution(this.structure!));
-        break;
       case UnitType.DefensePost:
-        this.mg.addExecution(new DefensePostExecution(this.structure!));
-        break;
       case UnitType.SAMLauncher:
-        this.mg.addExecution(
-          new SAMLauncherExecution(player, null, this.structure!),
-        );
-        break;
       case UnitType.City:
-        this.mg.addExecution(new CityExecution(this.structure!));
-        break;
       case UnitType.Factory:
-        this.mg.addExecution(new FactoryExecution(this.structure!));
+        this.mg.addExecution(structureExecution(this.structure!));
         break;
       default:
         console.warn(
@@ -220,7 +191,6 @@ export class ConstructionExecution implements Execution {
   private isStructure(type: UnitType): boolean {
     switch (type) {
       case UnitType.Port:
-      case UnitType.Airport:
       case UnitType.MissileSilo:
       case UnitType.DefensePost:
       case UnitType.SAMLauncher:
@@ -275,7 +245,8 @@ const ConstructionStateSchema = z.object({
   // Validated in init, so a pending execution may hold any number.
   tile: zInt(),
   rocketDirectionUp: z.boolean().optional(),
-  amount: zInt().optional(),
+  // As BuildUnitIntentSchema bounds it: a bomb build launches this many.
+  amount: zInt().min(1).max(MAX_UPGRADE_AMOUNT).optional(),
   structure: zRef().nullable(),
   // Unset until a structure with a build time is placed.
   ticksUntilComplete: zInt().optional(),

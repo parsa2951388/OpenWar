@@ -1,7 +1,13 @@
 import { GameMap, TileRef } from "@openfront/engine-api/game/GameMap";
 import { Cell, TerrainType } from "@openfront/engine-api/game/GameTypes";
 import { z } from "zod";
-import { snapshotType, zBytes, zInt, zTiles } from "../snapshot/SnapshotType";
+import {
+  SnapshotError,
+  snapshotType,
+  zBytes,
+  zInt,
+  zTiles,
+} from "../snapshot/SnapshotType";
 import { TileSet } from "./TileSet";
 
 export class GameMapImpl implements GameMap {
@@ -160,18 +166,46 @@ export class GameMapImpl implements GameMap {
   // Original terrain byte of every tile whose terrain changed (water nukes),
   // in first-edit order. Lets a snapshot store terrain as a diff against the
   // map file and verify the file it will be restored onto is the same one.
-  private pristineTerrain: Map<TileRef, number> | null = null;
+  //
+  // Kept in typed arrays rather than a Map: a Map holds at most 2^24 entries,
+  // fewer than the largest maps have tiles, and a long water-nuke game there
+  // edits more tiles than that.
+  private editedMask: Uint8Array | null = null; // one bit per tile
+  private editTiles: Uint32Array = new Uint32Array(0);
+  private editOriginal: Uint8Array = new Uint8Array(0);
+  private editCount = 0;
 
-  /** Tiles whose terrain may differ from the map file's. */
-  editedTerrainTiles(): TileRef[] {
-    return [...(this.pristineTerrain?.keys() ?? [])];
+  /** Tiles whose terrain may differ from the map file's, in first-edit order. */
+  editedTerrainTiles(): Uint32Array {
+    return this.editTiles.slice(0, this.editCount);
+  }
+
+  /** Whether the tile's terrain may differ from the map file's. */
+  isTerrainEdited(ref: TileRef): boolean {
+    const mask = this.editedMask;
+    return mask !== null && (mask[ref >>> 3] & (1 << (ref & 7))) !== 0;
   }
 
   private noteTerrainEdit(ref: TileRef): void {
-    this.pristineTerrain ??= new Map();
-    if (!this.pristineTerrain.has(ref)) {
-      this.pristineTerrain.set(ref, this.terrain[ref]);
+    const mask = (this.editedMask ??= new Uint8Array(
+      (this.terrain.length + 7) >>> 3,
+    ));
+    const bit = 1 << (ref & 7);
+    if ((mask[ref >>> 3] & bit) !== 0) return;
+    mask[ref >>> 3] |= bit;
+    const n = this.editCount;
+    if (n === this.editTiles.length) {
+      const capacity = Math.min(Math.max(1024, n * 2), this.terrain.length);
+      const tiles = new Uint32Array(capacity);
+      tiles.set(this.editTiles);
+      this.editTiles = tiles;
+      const original = new Uint8Array(capacity);
+      original.set(this.editOriginal);
+      this.editOriginal = original;
     }
+    this.editTiles[n] = ref;
+    this.editOriginal[n] = this.terrain[ref];
+    this.editCount = n + 1;
   }
 
   setWater(ref: TileRef): void {
@@ -202,6 +236,20 @@ export class GameMapImpl implements GameMap {
     this.terrain[ref] =
       (this.terrain[ref] & ~GameMapImpl.MAGNITUDE_MASK) |
       (value & GameMapImpl.MAGNITUDE_MASK);
+  }
+
+  setTerrainByte(ref: TileRef, value: number): void {
+    const old = this.terrain[ref];
+    if (old === value) return;
+    this.noteTerrainEdit(ref);
+    this.terrain[ref] = value;
+    const landBit = 1 << GameMapImpl.IS_LAND_BIT;
+    if (((old ^ value) & landBit) !== 0) this.waterVersion_++;
+    // The map files count passable land only.
+    const passable = (b: number) =>
+      (b & landBit) !== 0 &&
+      (b & GameMapImpl.MAGNITUDE_MASK) !== GameMapImpl.IMPASSABLE_MAGNITUDE;
+    this.numLandTiles_ += Number(passable(value)) - Number(passable(old));
   }
 
   // State getters and setters (mutable)
@@ -298,7 +346,7 @@ export class GameMapImpl implements GameMap {
   }
 
   // if updating these magnitude values, also update
-  // `../../../map-generator/map_generator.go` `getThumbnailColor`
+  // `mapgen/Thumbnail.ts` `thumbnailPixels`
   terrainType(ref: TileRef): TerrainType {
     if (this.isLand(ref)) {
       const magnitude = this.magnitude(ref);
@@ -536,17 +584,9 @@ export class GameMapImpl implements GameMap {
 
     // Update terrain if the packed value includes a terrain byte that differs
     const terrainChanged = this.terrain[tile] !== terrainByte;
-    if (terrainChanged) {
-      const wasLand = this.isLand(tile);
-      this.noteTerrainEdit(tile);
-      this.terrain[tile] = terrainByte;
-      const isNowLand = Boolean(terrainByte & (1 << GameMapImpl.IS_LAND_BIT));
-      // Water-derived caches key on waterVersion(): a packed update that flips
-      // land/water must invalidate them just like setWater() does.
-      if (wasLand !== isNowLand) this.waterVersion_++;
-      if (wasLand && !isNowLand) this.numLandTiles_--;
-      else if (!wasLand && isNowLand) this.numLandTiles_++;
-    }
+    // Bumps waterVersion() on a land/water flip, as setWater() does, and
+    // keeps the land count the worker's: passable land only.
+    if (terrainChanged) this.setTerrainByte(tile, terrainByte);
     return terrainChanged;
   }
 
@@ -569,10 +609,9 @@ export class GameMapImpl implements GameMap {
     let h = 0;
     const terrain = this.terrain;
     for (let i = 0; i < terrain.length; i++) h = (h + mix(i, terrain[i])) | 0;
-    if (this.pristineTerrain !== null) {
-      for (const [ref, orig] of this.pristineTerrain) {
-        h = (h - mix(ref, terrain[ref]) + mix(ref, orig)) | 0;
-      }
+    for (let i = 0; i < this.editCount; i++) {
+      const ref = this.editTiles[i];
+      h = (h - mix(ref, terrain[ref]) + mix(ref, this.editOriginal[i])) | 0;
     }
     return h >>> 0;
   }
@@ -583,7 +622,11 @@ export class GameMapImpl implements GameMap {
    * who owns what, and restore writes them from there.
    */
   snapshot(): GameMapState {
-    const edits = [...(this.pristineTerrain ?? new Map<TileRef, number>())];
+    const editTiles = this.editedTerrainTiles();
+    const editCurrent = new Uint8Array(editTiles.length);
+    for (let i = 0; i < editTiles.length; i++) {
+      editCurrent[i] = this.terrain[editTiles[i]];
+    }
     const fallout: TileRef[] = [];
     const defense: TileRef[] = [];
     const falloutMask = 1 << GameMapImpl.FALLOUT_BIT;
@@ -598,9 +641,9 @@ export class GameMapImpl implements GameMap {
       width: this.width_,
       height: this.height_,
       pristineHash: this.pristineHash(),
-      editTiles: Uint32Array.from(edits, ([ref]) => ref),
-      editOriginal: Uint8Array.from(edits, ([, orig]) => orig),
-      editCurrent: Uint8Array.from(edits, ([ref]) => this.terrain[ref]),
+      editTiles,
+      editOriginal: this.editOriginal.slice(0, this.editCount),
+      editCurrent,
       fallout: Uint32Array.from(fallout),
       defense: Uint32Array.from(defense),
       numLandTiles: this.numLandTiles_,
@@ -616,7 +659,7 @@ export class GameMapImpl implements GameMap {
         `snapshot map is ${s.width}x${s.height}, loaded map is ${this.width_}x${this.height_}`,
       );
     }
-    if (this.pristineTerrain !== null || this.state.some((v) => v !== 0)) {
+    if (this.editedMask !== null || this.state.some((v) => v !== 0)) {
       throw new Error("snapshot must be restored onto a freshly loaded map");
     }
     if (this.pristineHash() !== s.pristineHash) {
@@ -624,13 +667,43 @@ export class GameMapImpl implements GameMap {
         "map file differs from the one the snapshot was taken on",
       );
     }
+    const n = this.terrain.length;
+    if (
+      s.editOriginal.length !== s.editTiles.length ||
+      s.editCurrent.length !== s.editTiles.length
+    ) {
+      throw new SnapshotError("terrain edit lists differ in length");
+    }
+    for (const list of [s.editTiles, s.fallout, s.defense]) {
+      if (list.some((ref) => ref >= n)) {
+        throw new SnapshotError("snapshot tile is off the map");
+      }
+    }
+    if (
+      s.numTilesWithFallout !== s.fallout.length ||
+      new Set(s.fallout).size !== s.fallout.length
+    ) {
+      throw new SnapshotError("fallout count differs from the fallout tiles");
+    }
+    // Every edit that changes passability moves the land count with it
+    // (setWater, setTerrainByte), so the stored count is exact.
+    const passable = (b: number) =>
+      (b & (1 << GameMapImpl.IS_LAND_BIT)) !== 0 &&
+      (b & GameMapImpl.MAGNITUDE_MASK) !== GameMapImpl.IMPASSABLE_MAGNITUDE;
+    let numLandTiles = this.numLandTiles_;
     s.editTiles.forEach((ref, i) => {
       if (this.terrain[ref] !== s.editOriginal[i]) {
         throw new Error(`terrain of tile ${ref} differs from the snapshot`);
       }
+      numLandTiles +=
+        Number(passable(s.editCurrent[i])) -
+        Number(passable(this.terrain[ref]));
       this.noteTerrainEdit(ref);
       this.terrain[ref] = s.editCurrent[i];
     });
+    if (s.numLandTiles !== numLandTiles) {
+      throw new SnapshotError("land tile count differs from the terrain");
+    }
     for (const ref of s.fallout)
       this.state[ref] |= 1 << GameMapImpl.FALLOUT_BIT;
     for (const ref of s.defense) {

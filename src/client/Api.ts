@@ -1,4 +1,8 @@
-import type { NewsItem, StreamsFeed } from "@openfront/shared/ApiSchemas";
+import type {
+  NewsItem,
+  StorePlacement,
+  StreamsFeed,
+} from "@openfront/shared/ApiSchemas";
 import {
   ClaimAllRewardsResponse,
   ClaimAllRewardsResponseSchema,
@@ -7,6 +11,7 @@ import {
   ClaimRewardResponseSchema,
   GetMyTribeNamesResponse,
   GetMyTribeNamesResponseSchema,
+  GoogleFinalizeResponseSchema,
   IdentityTokenAudiencesResponseSchema,
   IdentityTokenResponse,
   IdentityTokenResponseSchema,
@@ -35,6 +40,8 @@ import {
   PutUsernameResponseSchema,
   FfaRankLeaderboardResponse,
   FfaRankLeaderboardResponseSchema,
+  FfaAllRanksLeaderboardResponse,
+  FfaAllRanksLeaderboardResponseSchema,
   FfaRankPositionResponseSchema,
   RankedLeaderboardResponse,
   RankedLeaderboardResponseSchema,
@@ -61,12 +68,14 @@ import { getApiBase, getAudience } from "./ApiBase";
 import {
   getAuthHeader,
   getPlayToken,
+  isOtherSession,
   isSessionActive,
   logOut,
   rememberPublicId,
   userAuth,
 } from "./Auth";
 import { ClientEnv } from "./ClientEnv";
+import type { CardItemType } from "./components/card/CardItems";
 import { ensureServerList } from "./ServerList";
 import { UserSettings } from "./UserSettings";
 
@@ -219,17 +228,27 @@ function isAbortError(e: unknown): boolean {
  *
  * `aborted` distinguishes the one failure that concluded nothing about the
  * account (a deadline we imposed ourselves) from every other falsy answer,
- * which is a conclusion. Only getUserMe acts on it; see the un-caching rule
+ * which is a conclusion. `sessionGone` says the session whose token it was
+ * fetched with isn't the current one by the time it landed: whatever it says
+ * is about the old account. `sub` is the session it was fetched for (none
+ * when signed out). Only getUserMe acts on these; see the un-caching rule
  * there.
  */
-async function requestUserMe(): Promise<{
+async function requestUserMe(onSub?: (sub: string) => void): Promise<{
   profile: UserMeResponse | false;
   aborted: boolean;
+  sessionGone?: boolean;
+  sub?: string;
 }> {
+  // Known once the token is read, so a failure after that (a body that
+  // can't be read) still says whether its session has gone.
+  let sub: string | undefined;
   try {
     const userAuthResult = await userAuth();
     if (!userAuthResult) return { profile: false, aborted: false };
     const { jwt, claims } = userAuthResult;
+    sub = claims.sub;
+    onSub?.(sub);
 
     // Get the user object. Bounded like the other auth calls (see
     // Auth.ts doSteamLogin) because getUserMe memoises the promise around
@@ -259,16 +278,20 @@ async function requestUserMe(): Promise<{
       // transient failure the `false` below also represents.
       if (isSessionActive(claims.sub)) {
         await logOut();
+        return { profile: false, aborted: false, sub };
       }
-      return { profile: false, aborted: false };
+      return { profile: false, aborted: false, sessionGone: true, sub };
     }
-    if (response.status !== 200) return { profile: false, aborted: false };
+    const sessionGone = !isSessionActive(claims.sub);
+    if (response.status !== 200) {
+      return { profile: false, aborted: false, sessionGone, sub };
+    }
     const body = await response.json();
     const result = UserMeResponseSchema.safeParse(body);
     if (!result.success) {
       const error = z.prettifyError(result.error);
       console.error("Invalid response", error);
-      return { profile: false, aborted: false };
+      return { profile: false, aborted: false, sessionGone, sub };
     }
     // Activate this player's cosmetic selections (and adopt any made while
     // logged out) before the profile is handed to callers — but not if the
@@ -278,14 +301,37 @@ async function requestUserMe(): Promise<{
       const publicId = result.data.player.publicId;
       rememberPublicId(claims.sub, publicId);
       UserSettings.setPlayerId(publicId);
+      return { profile: result.data, aborted: false, sub };
     }
-    return { profile: result.data, aborted: false };
+    return { profile: result.data, aborted: false, sessionGone: true, sub };
   } catch (e) {
-    return { profile: false, aborted: isAbortError(e) };
+    // A body that couldn't be read (or a network error) after the session
+    // went is the old session's answer too.
+    const sessionGone = sub !== undefined && !isSessionActive(sub);
+    return { profile: false, aborted: isAbortError(e), sessionGone, sub };
   }
 }
 
+// The session the cached /users/@me is for (none: signed out, or its token
+// not read yet), recorded as soon as its token is in hand, so a request
+// still in flight is checked too. A token refresh can install another
+// account without a session event, so a hit is checked against it.
+let __userMeSub: string | undefined;
+
 export async function getUserMe(): Promise<UserMeResponse | false> {
+  // Cached for a session that isn't the current one any more (a silent
+  // refresh into another account): that account's profile, not this one's.
+  // No session for now (a refresh that failed) isn't another account: the
+  // profile stays, rather than being swapped for a "signed out" that would
+  // then stay cached past the recovery.
+  if (
+    __userMe !== null &&
+    __userMeSub !== undefined &&
+    isOtherSession(__userMeSub)
+  ) {
+    __userMe = null;
+    __userMeSub = undefined;
+  }
   if (__userMe !== null) {
     return __userMe;
   }
@@ -294,7 +340,12 @@ export async function getUserMe(): Promise<UserMeResponse | false> {
   // always before any await inside can resume.
   const attempt: { request?: Promise<UserMeResponse | false> } = {};
   attempt.request = (async () => {
-    const { profile, aborted } = await requestUserMe();
+    const { profile, aborted, sessionGone, sub } = await requestUserMe(
+      (sub) => {
+        if (__userMe === attempt.request) __userMeSub = sub;
+      },
+    );
+    if (__userMe === attempt.request) __userMeSub = sub;
     // Un-cache a timeout, and ONLY a timeout. Every other falsy answer is
     // a conclusion about the account — signed out, a 401, a rejected token
     // — and stays remembered; re-deriving those would put an /auth/refresh
@@ -311,12 +362,18 @@ export async function getUserMe(): Promise<UserMeResponse | false> {
     // before the promise resolves, so a caller awaiting it cannot observe
     // the timed-out answer still cached. attempt.request is always set by
     // now — this line can only be reached after an await.
-    if (aborted && __userMe === attempt.request) {
+    //
+    // Likewise one fetched for a session that's gone by the time it landed
+    // (signed out, or a portal switch to another account while it was in
+    // flight): it's the old account's answer, and cached it would be the
+    // next session's getUserMe(). Its own caller still gets it.
+    if ((aborted || sessionGone) && __userMe === attempt.request) {
       __userMe = null;
     }
     return profile;
   })();
   __userMe = attempt.request;
+  __userMeSub = undefined;
   return attempt.request;
 }
 
@@ -1312,32 +1369,95 @@ export type PurchaseWithCurrencyResult =
   // and refetch. Nothing charged. No payload: unlike the pack's 409 the body
   // carries no item list, only {error, message}.
   | { ok: false; code: "already_owned" }
+  // 409 price_changed: the server would charge more than `expectedAmount`,
+  // the price the store showed (a stale catalog, or a store experiment that
+  // stopped since). Nothing charged. `amount` is the price now, when given.
+  | { ok: false; code: "price_changed"; amount?: number }
+  // `stillWanted` said no: the account changed, so nothing was sent (or a
+  // 401 came back for a token that's no longer the session's).
+  | { ok: false; code: "cancelled" }
   | { ok: false; code: "failed" };
+
+/**
+ * What a purchase tells the server about the price it showed: the server
+ * refuses with 409 price_changed rather than charge more than
+ * `expectedAmount`. `platform` is the storefront (store experiments never
+ * apply on Steam).
+ */
+export interface PurchasePriceCheck {
+  expectedAmount?: number;
+  platform?: "web" | "crazygames" | "steam";
+}
+
+function priceCheckFields(check: PurchasePriceCheck | undefined): object {
+  if (check === undefined) return {};
+  return {
+    ...(check.expectedAmount !== undefined &&
+    Number.isSafeInteger(check.expectedAmount) &&
+    check.expectedAmount >= 0
+      ? { expectedAmount: check.expectedAmount }
+      : {}),
+    ...(check.platform !== undefined ? { platform: check.platform } : {}),
+  };
+}
+
+/**
+ * A 409 body's price_changed refusal, or null for any other 409. Only the
+ * two fields are read, and nothing of the body is logged.
+ */
+function priceChangedRefusal(
+  body: unknown,
+): { ok: false; code: "price_changed"; amount?: number } | null {
+  const fields = (body ?? {}) as { reason?: unknown; amount?: unknown };
+  if (fields.reason !== "price_changed") return null;
+  const raw = fields.amount;
+  const amount = Number(raw);
+  return {
+    ok: false,
+    code: "price_changed",
+    ...((typeof raw === "string" || typeof raw === "number") &&
+    Number.isFinite(amount)
+      ? { amount }
+      : {}),
+  };
+}
 
 // POST /shop/purchase — buy a single cosmetic for hard or soft currency. The
 // only spend path that takes soft currency. Any error means no debit and no
 // grant. Callers invalidate the cached /users/@me on success.
 export async function purchaseWithCurrency(
-  cosmeticType: "pattern" | "skin" | "flag" | "crown" | "effect",
+  cosmeticType: "pattern" | "skin" | "flag" | "crown" | "effect" | CardItemType,
   cosmeticName: string,
   currencyType: "hard" | "soft",
   colorPaletteName?: string,
+  placement?: StorePlacement,
+  priceCheck?: PurchasePriceCheck,
+  stillWanted: () => boolean = () => true,
 ): Promise<PurchaseWithCurrencyResult> {
   try {
+    // Asked once the token is in hand, as saveCardLoadout does: reading it
+    // can refresh the JWT, and the refresh can pick up another tab's sign-in.
+    const authorization = await getAuthHeader();
+    if (!stillWanted()) return { ok: false, code: "cancelled" };
     const response = await fetch(`${getApiBase()}/shop/purchase`, {
       method: "POST",
       headers: {
         "Content-Type": "application/json",
-        Authorization: await getAuthHeader(),
+        Authorization: authorization,
       },
       body: JSON.stringify({
         cosmeticType,
         cosmeticName,
         currencyType,
         colorPaletteName,
+        ...(placement ? { placement } : {}),
+        ...priceCheckFields(priceCheck),
       }),
     });
     if (response.status === 401) {
+      // A 401 for a token that's no longer the session's says nothing about
+      // the session now, so it mustn't end it.
+      if (!stillWanted()) return { ok: false, code: "cancelled" };
       await logOut();
       return { ok: false, code: "failed" };
     }
@@ -1355,10 +1475,14 @@ export async function purchaseWithCurrency(
       return { ok: false, code: "failed" };
     }
     if (response.status === 409) {
-      // The body is deliberately not read: it carries no item list, so there
-      // is nothing to extract, and not touching it is the cheapest way to
-      // keep a server body away from a log line.
-      return { ok: false, code: "already_owned" };
+      // Read only for the price-change refusal; the "Already owned" body
+      // carries no item list, and nothing of either reaches a log line.
+      return (
+        priceChangedRefusal(await response.json().catch(() => null)) ?? {
+          ok: false,
+          code: "already_owned",
+        }
+      );
     }
     if (!response.ok) {
       console.error(
@@ -1400,6 +1524,8 @@ export type PurchaseCosmeticPackResult =
   // which). Also what a retry after a timed-out success returns — treat it as
   // "already bought" and refetch /users/@me. Nothing charged.
   | { ok: false; code: "already_owned"; ownedFlareNames: string[] }
+  // 409 price_changed: see PurchaseWithCurrencyResult. Nothing charged.
+  | { ok: false; code: "price_changed"; amount?: number }
   | { ok: false; code: "failed" };
 
 const PACK_UNAVAILABLE_REASONS = [
@@ -1416,6 +1542,8 @@ const PACK_UNAVAILABLE_REASONS = [
 // Any error means no debit and no grants.
 export async function purchaseCosmeticPack(
   packName: string,
+  placement?: StorePlacement,
+  priceCheck?: PurchasePriceCheck,
 ): Promise<PurchaseCosmeticPackResult> {
   try {
     const response = await fetch(`${getApiBase()}/shop/purchase/pack`, {
@@ -1424,7 +1552,11 @@ export async function purchaseCosmeticPack(
         "Content-Type": "application/json",
         Authorization: await getAuthHeader(),
       },
-      body: JSON.stringify({ packName }),
+      body: JSON.stringify({
+        packName,
+        ...(placement ? { placement } : {}),
+        ...priceCheckFields(priceCheck),
+      }),
     });
     if (response.status === 401) {
       await logOut();
@@ -1450,6 +1582,8 @@ export async function purchaseCosmeticPack(
     }
     if (response.status === 409) {
       const body = await response.json().catch(() => null);
+      const priceChanged = priceChangedRefusal(body);
+      if (priceChanged !== null) return priceChanged;
       const owned: unknown = body?.ownedFlareNames;
       return {
         ok: false,
@@ -1587,7 +1721,11 @@ export type PaymentsCheckoutRequest = (
   | { kind: "currency_pack"; packName: string }
   | { kind: "custom_currency"; hardAmount: number }
   | { kind: "subscription_tier"; tierName: string }
-) & { provider: PaymentsProvider; handoffs?: PaymentsHandoff[] };
+) & {
+  provider: PaymentsProvider;
+  handoffs?: PaymentsHandoff[];
+  placement?: StorePlacement;
+};
 
 export type PaymentsCheckoutResult =
   | { ok: true; data: PaymentsCheckoutResponse }
@@ -1926,6 +2064,78 @@ export async function finalizeSteamOrder(
   }
 }
 
+export type FinalizeGooglePurchaseResult =
+  // "settled": credited. "pending": Play has not taken the money yet; the
+  // server credits it when the purchase completes.
+  | { ok: true; status: "settled" | "pending" }
+  // 409: the server will never credit this purchase. `reason` is the server's.
+  | { ok: false; code: "refused"; reason: string }
+  | { ok: false; code: "rate_limited" }
+  | { ok: false; code: "unauthorized" }
+  // The server could not decide (5xx, Google unreachable, network error, an
+  // unreadable answer). Nothing was lost: the purchase stays unconsumed and
+  // posting it again is the retry.
+  | { ok: false; code: "retry_later" }
+  // 400 / 403 and any other answer.
+  | { ok: false; code: "failed" };
+
+// POST /payments/google/finalize — credits a Google Play purchase. The server
+// consumes the purchase once it is credited, so posting the same token again
+// is always safe. Never log the token.
+export async function finalizeGooglePurchase(
+  purchaseToken: string,
+): Promise<FinalizeGooglePurchaseResult> {
+  try {
+    const response = await fetch(`${getApiBase()}/payments/google/finalize`, {
+      method: "POST",
+      headers: {
+        "Content-Type": "application/json",
+        Authorization: await getAuthHeader(),
+      },
+      body: JSON.stringify({ purchaseToken }),
+    });
+    if (response.status === 401) {
+      await logOut();
+      return { ok: false, code: "unauthorized" };
+    }
+    if (response.status === 409) {
+      const body: unknown = await response.json().catch(() => null);
+      const reason =
+        typeof body === "object" &&
+        body !== null &&
+        "reason" in body &&
+        typeof body.reason === "string"
+          ? body.reason
+          : "unknown";
+      return { ok: false, code: "refused", reason };
+    }
+    if (response.status === 429) {
+      return { ok: false, code: "rate_limited" };
+    }
+    if (!response.ok) {
+      console.error("finalizeGooglePurchase: request failed", response.status);
+      return {
+        ok: false,
+        code: response.status >= 500 ? "retry_later" : "failed",
+      };
+    }
+    const parsed = GoogleFinalizeResponseSchema.safeParse(
+      await response.json(),
+    );
+    if (!parsed.success) {
+      console.error(
+        "finalizeGooglePurchase: Zod validation failed",
+        z.prettifyError(parsed.error),
+      );
+      return { ok: false, code: "retry_later" };
+    }
+    return { ok: true, status: parsed.data.status };
+  } catch (e) {
+    console.error("finalizeGooglePurchase: request failed", e);
+    return { ok: false, code: "retry_later" };
+  }
+}
+
 export async function cancelSubscription(): Promise<boolean> {
   try {
     const response = await fetch(`${getApiBase()}/subscriptions/@me/cancel`, {
@@ -2159,6 +2369,32 @@ export async function queueLobby(
     return { ok: false, error: body?.error };
   } catch (e) {
     console.error("queueLobby: request failed", e);
+    return { ok: false };
+  }
+}
+
+// POST /api/game/:id/boost on the game server — a player in a scheduled
+// public lobby pays plutonium to move it to the front of its queue. The
+// worker charges through the API with the player's token. On failure,
+// `status` is the HTTP status (402 = can't afford it, 409 = the lobby can no
+// longer be boosted).
+export async function boostLobby(
+  gameID: string,
+): Promise<{ ok: true } | { ok: false; status?: number }> {
+  try {
+    await ensureServerList();
+    const token = await getPlayToken();
+    const response = await fetch(
+      `${ClientEnv.gameHttpBase(gameID)}/${ClientEnv.gameWorkerPath(gameID)}/api/game/${gameID}/boost`,
+      {
+        method: "POST",
+        headers: { Authorization: `Bearer ${token}` },
+      },
+    );
+    if (response.ok) return { ok: true };
+    return { ok: false, status: response.status };
+  } catch (e) {
+    console.error("boostLobby: request failed", e);
     return { ok: false };
   }
 }
@@ -2408,8 +2644,38 @@ export async function fetchFfaRankLeaderboard(
   }
 }
 
-/** The signed-in player's position in their rank, or null if there's none to show. */
-export async function fetchFfaRankPosition(): Promise<number | null> {
+/** One page of the globally ordered FFA Top 250 (five pages maximum). */
+export async function fetchFfaAllRanksLeaderboard(
+  page: number,
+): Promise<FfaAllRanksLeaderboardResponse | "reached_limit" | false> {
+  try {
+    const url = new URL(`${getApiBase()}/leaderboard/ranked/ffa/all`);
+    url.searchParams.set("page", String(page));
+    const res = await fetch(url.toString(), {
+      headers: { Accept: "application/json" },
+    });
+    if (!res.ok) {
+      if (res.status === 400) {
+        const body = await res.json().catch(() => null);
+        if (isPageBoundsMessage(body)) return "reached_limit";
+      }
+      return false;
+    }
+    const parsed = FfaAllRanksLeaderboardResponseSchema.safeParse(
+      await res.json(),
+    );
+    return parsed.success ? parsed.data : false;
+  } catch (err) {
+    console.warn("fetchFfaAllRanksLeaderboard: request failed", err);
+    return false;
+  }
+}
+
+/** The signed-in player's rank position and global position; null if the request fails. */
+export async function fetchFfaRankPosition(): Promise<{
+  position: number | null;
+  globalPosition: number | null;
+} | null> {
   try {
     const res = await fetch(`${getApiBase()}/users/@me/ffa_rank_position`, {
       headers: {
@@ -2419,7 +2685,11 @@ export async function fetchFfaRankPosition(): Promise<number | null> {
     });
     if (!res.ok) return null;
     const parsed = FfaRankPositionResponseSchema.safeParse(await res.json());
-    return parsed.success ? parsed.data.position : null;
+    if (!parsed.success) return null;
+    return {
+      position: parsed.data.position,
+      globalPosition: parsed.data.globalPosition ?? null,
+    };
   } catch (err) {
     console.warn("fetchFfaRankPosition: request failed", err);
     return null;

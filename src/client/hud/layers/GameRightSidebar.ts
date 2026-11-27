@@ -14,7 +14,7 @@ import { showInGameAlert, showInGameConfirm } from "../../InGameModal";
 import { TogglePauseIntentEvent } from "../../InputHandler";
 import { PauseGameIntentEvent, SendWinnerEvent } from "../../Transport";
 import { shareGame } from "../../utilities/ShareGame";
-import { homeHref, showToast, translateText } from "../../Utils";
+import { exitGame, showToast, translateText } from "../../Utils";
 import { GameView } from "../../view";
 import { ImmunityBarVisibleEvent } from "./ImmunityTimer";
 import { ShowReplayPanelEvent } from "./ReplayPanel";
@@ -207,7 +207,7 @@ export class GameRightSidebar extends LitElement implements Controller {
       (this.spawnBarVisible ? 7 : 0) + (this.immunityBarVisible ? 7 : 0);
     const parent = this.parentElement as HTMLElement;
     if (parent) {
-      parent.style.marginTop = `${offset}px`;
+      parent.style.marginTop = `calc(${offset}px + var(--game-health-offset, 0px))`;
     }
   }
 
@@ -281,7 +281,7 @@ export class GameRightSidebar extends LitElement implements Controller {
     await gamePortal.requestMidgameAd();
     await gamePortal.gameplayStop();
     // redirect to the home page
-    window.location.href = homeHref();
+    exitGame();
   }
 
   private onSettingsButtonClick() {
@@ -394,7 +394,7 @@ export class GameRightSidebar extends LitElement implements Controller {
         }
       </style>
       <aside
-        class=${`w-fit flex flex-row items-center gap-2 sm:gap-3 py-2 px-2 sm:px-3 bg-gray-800/92 backdrop-blur-sm shadow-xs rounded-bl-lg transition-transform duration-300 ease-out transform text-white ${shouldFlashSidebar ? "game-end-timer-sidebar-flash" : ""} ${
+        class=${`w-fit flex flex-row items-center gap-2 sm:gap-3 py-2 px-2 sm:px-3 hud-panel rounded-bl-lg transition-transform duration-300 ease-out transform text-white ${shouldFlashSidebar ? "game-end-timer-sidebar-flash" : ""} ${
           this._isVisible ? "translate-x-0" : "translate-x-full"
         }`}
         @contextmenu=${(e: Event) => e.preventDefault()}

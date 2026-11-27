@@ -55,6 +55,8 @@ export class OModal extends LitElement {
   @state() private showScrollTopButton = false;
   private scrollingToTop = false;
   private lastScrollTop = 0;
+  private backdropMouseDown = false;
+  private backdropMouseUp: boolean | null = null;
 
   public onClose?: () => void;
 
@@ -71,8 +73,33 @@ export class OModal extends LitElement {
     this.showScrollTopButton = this.showScrollToTop && scrollTop > 200;
   }
 
+  private handleBackdropMouseDown = (e: MouseEvent): void => {
+    this.backdropMouseDown = e.target === e.currentTarget;
+    this.backdropMouseUp = null;
+  };
+
+  private handleBackdropMouseUp = (e: MouseEvent): void => {
+    this.backdropMouseUp = e.target === e.currentTarget;
+  };
+
+  private handleBackdropClick = (e: MouseEvent): void => {
+    const startedOnBackdrop = this.backdropMouseDown;
+    const endedOnBackdrop = this.backdropMouseUp;
+    this.backdropMouseDown = false;
+    this.backdropMouseUp = null;
+    if (
+      startedOnBackdrop &&
+      endedOnBackdrop !== false &&
+      e.target === e.currentTarget
+    ) {
+      this.close();
+    }
+  };
+
   public open() {
     if (!this.isModalOpen) {
+      this.backdropMouseDown = false;
+      this.backdropMouseUp = null;
       if (!this.inline) {
         OModal.openCount = OModal.openCount + 1;
         if (OModal.openCount === 1) document.body.style.overflow = "hidden";
@@ -247,12 +274,19 @@ export class OModal extends LitElement {
       ? "graphics-panel-surface relative flex-1 min-h-0 flex flex-col text-white rounded-lg border overflow-hidden"
       : `relative flex-1 min-h-0 flex flex-col text-white bg-black/70 backdrop-blur-xl lg:rounded-2xl lg:border border-white/10 overflow-hidden ${
           this.inline ? "compact:rounded-none! compact:border-0!" : ""
-        } ${this.fitContent ? "rounded-2xl border" : ""}`;
+        } ${this.fitContent ? "rounded-2xl border" : ""} ${
+          // On compact screens body.page-open drops its bottom padding so the
+          // page reaches the bottom of the screen; keep the content above the
+          // home indicator.
+          this.inline ? "compact:pb-[env(safe-area-inset-bottom)]" : ""
+        }`;
 
     return html`
       <aside
         class="${backdropClass}"
-        @click=${this.inline ? null : () => this.close()}
+        @mousedown=${this.inline ? null : this.handleBackdropMouseDown}
+        @mouseup=${this.inline ? null : this.handleBackdropMouseUp}
+        @click=${this.inline ? null : this.handleBackdropClick}
       >
         <div
           @click=${(e: Event) => e.stopPropagation()}
@@ -297,7 +331,11 @@ export class OModal extends LitElement {
                 ? html`<button
                     type="button"
                     aria-label=${translateText("common.scroll_to_top")}
-                    class="absolute bottom-4 right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/80 border border-white/20 text-white shadow-lg backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 cursor-pointer"
+                    class="absolute bottom-4 ${
+                      this.inline
+                        ? "compact:bottom-[calc(1rem+env(safe-area-inset-bottom))]"
+                        : ""
+                    } right-4 z-20 flex h-10 w-10 items-center justify-center rounded-full bg-black/80 border border-white/20 text-white shadow-lg backdrop-blur-md transition-all hover:bg-white/20 active:scale-95 cursor-pointer"
                     @click=${this.scrollToTop}
                   >
                     <svg

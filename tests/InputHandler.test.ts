@@ -564,7 +564,7 @@ describe("InputHandler AutoUpgrade", () => {
       expect(emittedTypes).not.toContain("ContextMenuEvent");
     });
 
-    test("should emit the map click before the radial menu when no ghost structure is active", () => {
+    test("should still emit ContextMenuEvent on left click release when no ghost structure is active", () => {
       const mockEmit = vi.spyOn(eventBus, "emit");
 
       inputHandler["userSettings"].leftClickOpensMenu = () => true;
@@ -583,11 +583,8 @@ describe("InputHandler AutoUpgrade", () => {
       const emittedTypes = mockEmit.mock.calls.map(
         (call) => call[0].constructor.name,
       );
-      expect(emittedTypes).toContain("MouseUpEvent");
       expect(emittedTypes).toContain("ContextMenuEvent");
-      expect(emittedTypes.indexOf("MouseUpEvent")).toBeLessThan(
-        emittedTypes.indexOf("ContextMenuEvent"),
-      );
+      expect(emittedTypes).not.toContain("MouseUpEvent");
     });
   });
 
@@ -3867,6 +3864,19 @@ describe("GhostStructure Hotkeys tapping/Scrolling", () => {
     mockGameView.isPaused = () => true;
     window.dispatchEvent(new KeyboardEvent("keyup", { code: "F14" }));
     expect(inputHandler["uiState"].upgradeMultiplier).toBe(5);
+  });
+
+  test("repeated hotkey taps do not cycle multiplier when disabled", () => {
+    vi.spyOn(
+      inputHandler["userSettings"],
+      "buildMultiplierCycle",
+    ).mockReturnValue(false);
+    window.dispatchEvent(new KeyboardEvent("keyup", { code: "F14" }));
+    expect(inputHandler["uiState"].ghostStructure).toBe(UnitType.AtomBomb);
+    window.dispatchEvent(new KeyboardEvent("keyup", { code: "F14" }));
+    expect(inputHandler["uiState"].upgradeMultiplier).toBe(1);
+    inputHandler.setGhostStructure(UnitType.AtomBomb, "GUIclick");
+    expect(inputHandler["uiState"].upgradeMultiplier).toBe(1);
   });
 
   test("wheel scroll up increases upgrade multiplier", () => {

@@ -29,28 +29,75 @@ const __dirname = path.dirname(__filename);
 
 const clientForksTests = [
   "tests/client/ApexNavigation.test.ts",
+  "tests/client/AppleSignIn.test.ts",
   "tests/client/Auth.desktopLogin.test.ts",
   "tests/client/Auth.steamOpenId.test.ts",
   "tests/client/ClientEnvStatic.test.ts",
   "tests/client/ClientGameRunnerMessages.test.ts",
   "tests/client/CosmeticPackPurchase.test.ts",
   "tests/client/CosmeticPurchaseDebt.test.ts",
+  "tests/client/CosmeticPurchaseInPlace.test.ts",
   "tests/client/CreatorCodePanel.test.ts",
   "tests/client/HashedEmail.test.ts",
   "tests/client/InlineCheckout.test.ts",
   "tests/client/MainInitialize.test.ts",
   "tests/client/Matchmaking.test.ts",
   "tests/client/Platform.test.ts",
+  // Mocks Utils (translateText) for <purchase-button>, which other client
+  // files load too: in a vmThreads worker it could get a PurchaseButton
+  // another file evaluated with the real translateText.
+  "tests/client/PurchaseButtonEndScreen.test.ts",
   "tests/client/ServerList.test.ts",
   "tests/client/ShareLinks.test.ts",
   "tests/client/TransportConnectionRefused.test.ts",
   "tests/client/TransportPoolRedirect.test.ts",
   "tests/client/TransportReconnect.test.ts",
+  "tests/client/TransportTurnstileFallback.test.ts",
   "tests/client/UsernameBareClaim.test.ts",
   "tests/client/UsernameClaimPrefill.test.ts",
   "tests/client/graphics/layers/WinModal.test.ts",
   "tests/client/poki/PokiSDK.test.ts",
 ];
+
+// Percent of en.json's strings each language file translates, keyed by
+// language code. The modal can't measure this itself: it only fetches the
+// language the player picks.
+function langCoverage(langDir: string): Record<string, number> {
+  const flatten = (
+    obj: object,
+    prefix = "",
+    out = new Map<string, unknown>(),
+  ) => {
+    for (const [key, value] of Object.entries(obj)) {
+      const full = prefix ? `${prefix}.${key}` : key;
+      if (value !== null && typeof value === "object")
+        flatten(value, full, out);
+      else out.set(full, value);
+    }
+    return out;
+  };
+  const read = (file: string) =>
+    flatten(JSON.parse(fs.readFileSync(path.join(langDir, file), "utf8")));
+  const englishKeys = [...read("en.json").keys()];
+  const coverage: Record<string, number> = {};
+  for (const file of fs.readdirSync(langDir)) {
+    if (
+      !file.endsWith(".json") ||
+      file === "en.json" ||
+      file === "metadata.json"
+    )
+      continue;
+    const lang = read(file);
+    const translated = englishKeys.filter((key) => {
+      const value = lang.get(key);
+      return typeof value === "string" && value !== "";
+    }).length;
+    coverage[file.slice(0, -".json".length)] = Math.floor(
+      (100 * translated) / englishKeys.length,
+    );
+  }
+  return coverage;
+}
 
 // Dev-only: resources/public/ is served at the site root, as the build copies
 // it into static/. Vite's publicDir (resources/) would put it under /public/.
@@ -255,6 +302,11 @@ export default defineConfig(({ mode }) => {
     instanceId: JSON.stringify(env.INSTANCE_ID ?? "DEV_ID"),
     manifestHref: buildAssetUrl("manifest.json", assetManifest, cdnBase),
     faviconHref: buildAssetUrl("images/Favicon.svg", assetManifest, cdnBase),
+    appleTouchIconHref: buildAssetUrl(
+      "icons/icon512_maskable.png",
+      assetManifest,
+      cdnBase,
+    ),
     gameplayScreenshotUrl: buildAssetUrl(
       "images/KeyArt.jpg",
       assetManifest,
@@ -465,6 +517,9 @@ export default defineConfig(({ mode }) => {
 
     define: {
       __ASSET_MANIFEST__: JSON.stringify(assetManifest),
+      __LANG_COVERAGE__: JSON.stringify(
+        langCoverage(path.join(resourcesDir, "lang")),
+      ),
       "process.env.WEBSOCKET_URL": JSON.stringify(
         isProduction ? "" : "localhost:3000",
       ),
