@@ -55,6 +55,7 @@ import {
   saveLobbyPreset,
 } from "./LobbyPresets";
 import { JoinLobbyEvent } from "./Main";
+import { OPEN_WAR_FEATURES } from "./OpenWarFeatureFlags";
 import { terrainMapFileLoader } from "./TerrainMapFileLoader";
 import { UserSettings } from "./UserSettings";
 import {
@@ -322,7 +323,7 @@ export class HostLobbyModal extends BaseModal {
         // join modal gets this free from its own !currentLobbyId early return.
         const invite = this.lobbyId ? inviteFriendsButton() : undefined;
         return html`<div class="flex flex-wrap items-center gap-2">
-          ${presets}${copy}${invite}
+          ${OPEN_WAR_FEATURES.lobbyPresets ? presets : nothing}${copy}${invite}
         </div>`;
       })(),
     });
@@ -702,6 +703,7 @@ export class HostLobbyModal extends BaseModal {
             ?inert=${this.publiclyListed}
             .sectionGapClass=${"space-y-10"}
             .settings=${{
+              basicMode: OPEN_WAR_FEATURES.basicSetup,
               map: {
                 selected: this.selectedMap,
                 useRandom: this.useRandomMap,
