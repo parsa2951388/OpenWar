@@ -69,7 +69,7 @@ describe("Render start command", () => {
   });
 
   test(
-    "fails closed instead of using a development Turnstile key in production",
+    "rejects a missing production Turnstile key",
     () => {
       const result = runRenderStart();
 
