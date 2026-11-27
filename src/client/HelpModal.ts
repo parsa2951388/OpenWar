@@ -200,7 +200,7 @@ export class HelpModal extends BaseModal {
               }
             </div>
           </section>
-          <p class="mb-8 -mt-5 text-xs leading-relaxed text-white/55">
+          <p id="help-video-tutorial-credit" class="mb-8 -mt-5 text-xs leading-relaxed text-white/55">
             ${translateText("help_modal.video_tutorial_credit")}
           </p>
 
