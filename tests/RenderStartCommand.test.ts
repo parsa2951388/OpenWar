@@ -15,7 +15,7 @@ const tempDirectories: string[] = [];
 function runRenderStart(
   overrides: Partial<
     Record<
-      "GAME_ENV" | "TURNSTILE_SITE_KEY" | "GIT_COMMIT" | "RENDER_GIT_COMMIT",
+      "GAME_ENV" | "TURNSTILE_SITE_KEY" | "GIT_COMMIT" | "RENDER_GIT_COMMIT" | "API_ORIGIN",
       string
     >
   > = {},
@@ -28,7 +28,7 @@ function runRenderStart(
   const fakeTsx = path.join(tempDirectory, "tsx");
   fs.writeFileSync(
     fakeTsx,
-    ["#!/bin/sh", 'echo "$GAME_ENV|$TURNSTILE_SITE_KEY|$GIT_COMMIT"', ""].join(
+    ["#!/bin/sh", 'echo "$GAME_ENV|$TURNSTILE_SITE_KEY|$GIT_COMMIT|$API_ORIGIN"', ""].join(
       "\n",
     ),
   );
@@ -41,6 +41,7 @@ function runRenderStart(
     GAME_ENV: overrides.GAME_ENV ?? "",
     TURNSTILE_SITE_KEY: overrides.TURNSTILE_SITE_KEY ?? "",
     GIT_COMMIT: overrides.GIT_COMMIT ?? "",
+    API_ORIGIN: overrides.API_ORIGIN ?? "",
     RENDER_GIT_COMMIT: overrides.RENDER_GIT_COMMIT ?? "",
   };
 
@@ -66,7 +67,7 @@ describe("Render start command", () => {
 
     expect(result.status).toBe(0);
     expect(result.stdout.trim()).toBe(
-      "prod|production-site-key|release-commit",
+      "prod|production-site-key|release-commit|https://openwar-api-gateway.parsaoj.workers.dev",
     );
   });
 
@@ -81,6 +82,6 @@ describe("Render start command", () => {
     const result = runRenderStart({ GAME_ENV: "dev" });
 
     expect(result.status).toBe(0);
-    expect(result.stdout.trim()).toBe("dev|1x00000000000000000000AA|OPENWAR");
+    expect(result.stdout.trim()).toBe("dev|1x00000000000000000000AA|OPENWAR|https://openwar-api-gateway.parsaoj.workers.dev");
   });
 });
