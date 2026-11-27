@@ -28,7 +28,7 @@ export const MAP_WEIGHTS_POLL_MS = 60_000;
 export async function fetchMapWeights(): Promise<MapWeights> {
   const response = await fetch(`${ServerEnv.jwtIssuer()}/map_weights`, {
     signal: AbortSignal.timeout(5000),
-    headers: { "x-api-key": ServerEnv.apiKey() },
+    headers: ServerEnv.apiKeyHeaders(),
   });
   if (!response.ok) {
     throw new Error(`map_weights returned ${response.status}`);
