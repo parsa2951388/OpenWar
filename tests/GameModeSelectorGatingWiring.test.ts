@@ -389,11 +389,17 @@ describe("the upcoming heading (the route to the lobby browser)", () => {
  * with only one of its two cards.
  */
 describe("grid placement", () => {
-  const section = () => selector.querySelector(".ow-lobby-column");
-  const operationsGrid = () =>
-    selector.querySelector(".ow-operations .ow-grid");
-  const heroSlot = () =>
-    selector.querySelector(".ow-grid > div.sm\\:col-start-1");
+  function section() {
+    return selector.querySelector(".ow-lobby-column");
+  }
+
+  function operationsGrid() {
+    return selector.querySelector(".ow-operations .ow-grid");
+  }
+
+  function heroSlot() {
+    return selector.querySelector(".ow-grid > div.sm\\:col-start-1");
+  }
 
   it("keeps the upcoming column beside the spinner while loading", () => {
     expect(heroSlot()).not.toBeNull();
@@ -432,9 +438,10 @@ describe("grid placement", () => {
       team: [publicLobby("t")],
       special: [publicLobby("s")],
     });
-    const rows = Array.from(
+    const cards = Array.from(
       section()!.querySelectorAll("div.sm\\:min-h-0"),
-    ).map((c) => c.className);
+    );
+    const rows = cards.map((card) => card.className);
     expect(rows.some((c) => c.includes("sm:row-start-3"))).toBe(true);
     expect(rows.some((c) => c.includes("sm:row-span-2"))).toBe(false);
   });
