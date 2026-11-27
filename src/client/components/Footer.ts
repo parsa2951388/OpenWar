@@ -83,6 +83,17 @@ export class Footer extends LitElement {
               class="hover:text-white transition-colors"
             ></a>
             <span data-i18n="main.copyright"></span>
+            <span aria-label="Upstream copyright attribution">
+              © OpenFront and Contributors
+            </span>
+            <a
+              href="https://github.com/parsa2951388/OpenWar/blob/main/LICENSE"
+              target="_blank"
+              rel="noopener noreferrer"
+              class="hover:text-white transition-colors"
+            >
+              AGPL-3.0 License
+            </a>
             <a
               href="/privacy-policy.html"
               data-i18n="main.privacy_policy"
