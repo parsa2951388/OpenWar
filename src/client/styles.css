@@ -1275,12 +1275,12 @@ body:has(#page-play.ow-home-page) {
   white-space: nowrap;
 }
 
-.ow-mode-grid {
+.ow-operations > div {
   padding-inline: 0 !important;
   padding-bottom: 0 !important;
 }
 
-.ow-mode-grid .ow-action-card {
+.ow-operations button {
   min-height: 3.7rem;
   border: 1px solid rgba(109, 227, 218, 0.2);
   border-radius: 0.8rem;
@@ -1297,32 +1297,32 @@ body:has(#page-play.ow-home-page) {
     filter 180ms ease;
 }
 
-.ow-mode-grid > div:first-child .ow-action-card {
+.ow-operations > div > div:first-child button {
   border-color: rgba(230, 189, 116, 0.55);
   background: linear-gradient(120deg, #76542a, #263544 78%) !important;
   color: #fff5e4;
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 8px 24px rgba(0, 0, 0, 0.16);
 }
 
-.ow-mode-grid .ow-action-card:hover:not(:disabled) {
+.ow-operations button:hover:not(:disabled) {
   transform: translateY(-2px);
   border-color: var(--ow-mint);
   box-shadow: 0 0 0 1px rgba(109, 227, 218, 0.22), 0 10px 26px rgba(0, 0, 0, 0.24);
   filter: brightness(1.1);
 }
 
-.ow-mode-grid .ow-action-card:focus-visible {
+.ow-operations button:focus-visible {
   outline: 3px solid var(--ow-gold);
   outline-offset: 3px;
 }
 
-.ow-mode-grid .ow-lobby-card {
+.ow-operations .ow-lobby-card {
   border: 1px solid rgba(109, 227, 218, 0.32);
   border-radius: 1rem;
   box-shadow: 0 10px 28px rgba(0, 0, 0, 0.25);
 }
 
-.ow-mode-grid .ow-lobby-card:hover {
+.ow-operations .ow-lobby-card:hover {
   border-color: var(--ow-gold);
   box-shadow: 0 0 0 1px rgba(230, 189, 116, 0.45), 0 14px 36px rgba(0, 0, 0, 0.3);
 }
@@ -1389,11 +1389,11 @@ body:has(#page-play.ow-home-page) {
     display: none;
   }
 
-  .ow-mode-grid {
+  .ow-operations > div {
     gap: 0.75rem;
   }
 
-  .ow-mode-grid .ow-action-card {
+  .ow-operations button {
     min-height: 3.25rem;
     font-size: 0.68rem;
     letter-spacing: 0.06em;
@@ -1401,7 +1401,7 @@ body:has(#page-play.ow-home-page) {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .ow-mode-grid .ow-action-card {
+  .ow-operations button {
     transition: none;
   }
 }
