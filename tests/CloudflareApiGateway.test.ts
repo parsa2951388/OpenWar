@@ -185,13 +185,10 @@ describe("Open War API gateway route allowlist", () => {
   it("allows CORS preflight from the Open War game page origin", async () => {
     const gameOrigin = "https://open-war-game.onrender.com";
     const response = await gateway.fetch(
-      new Request(
-        "https://openwar-api-gateway.parsaoj.workers.dev/users/@me",
-        {
-          method: "OPTIONS",
-          headers: { Origin: gameOrigin },
-        },
-      ),
+      new Request("https://openwar-api-gateway.parsaoj.workers.dev/users/@me", {
+        method: "OPTIONS",
+        headers: { Origin: gameOrigin },
+      }),
       env,
       context,
     );
@@ -207,5 +204,4 @@ describe("Open War API gateway route allowlist", () => {
       "GET, DELETE, OPTIONS",
     );
   });
-
 });
