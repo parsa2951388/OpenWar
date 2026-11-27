@@ -1376,6 +1376,23 @@ body:has(#page-play.ow-home-page) {
   white-space: nowrap;
 }
 
+
+.ow-lobby-column {
+  display: flex;
+  min-width: 0;
+  flex-direction: column;
+  gap: 1rem;
+}
+
+@media (min-width: 640px) {
+  .ow-lobby-column {
+    display: grid;
+    grid-row-start: 1;
+    grid-column-start: 2;
+    grid-template-rows: auto minmax(0, 1fr) minmax(0, 1fr);
+    min-height: 0;
+  }
+}
 .ow-grid {
   display: flex;
   flex-direction: column;
