@@ -707,9 +707,7 @@ export class GameModeSelector extends LitElement {
           </div>
           <span class="ow-operations__serial">OW / COMMAND 01</span>
         </header>
-        <div
-          class="flex flex-col gap-4 sm:compact:gap-3 w-full px-4 pb-4 mx-auto sm:px-0 sm:pb-0 sm:grid sm:grid-cols-[2fr_1fr] sm:grid-rows-[min(24rem,40vh)_auto_auto] sm:compact:grid-rows-[minmax(min(24rem,40vh),auto)_3.5rem_auto] desktop:sm:grid-rows-[40vh_auto_auto] sm:[reading-flow:grid-rows]"
-        >
+        <div class="ow-grid">
         <div
           class="flex gap-4 sm:compact:gap-3 h-14 sm:col-span-2 sm:row-start-2 sm:compact:col-span-1!"
           >
