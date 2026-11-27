@@ -173,6 +173,18 @@ describe("ServerEnv.jwtIssuer", () => {
   });
 });
 
+describe("ServerEnv.apiKeyHeaders", () => {
+  test.each(["", "   "])("omits an empty API key (%j)", (apiKey) => {
+    expect(ServerEnv.apiKeyHeaders(apiKey)).toEqual({});
+  });
+
+  test("trims a configured API key", () => {
+    expect(ServerEnv.apiKeyHeaders("  test-api-key  ")).toEqual({
+      "x-api-key": "test-api-key",
+    });
+  });
+});
+
 describe("ServerEnv.allowedFlares", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
