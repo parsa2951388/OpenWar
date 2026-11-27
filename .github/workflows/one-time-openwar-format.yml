@@ -8,6 +8,10 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: openwar-format-${{ github.ref }}
+  cancel-in-progress: false
+
 jobs:
   format:
     if: ${{ !contains(github.event.head_commit.message, '[skip-format-helper]') }}
@@ -30,7 +34,7 @@ jobs:
       - name: Commit formatted homepage files
         shell: bash
         run: |
-          git add -- index.html resources/public/press/index.html src/client/components/PlayPage.ts src/client/styles.css src/server/RenderHtml.ts tests/client/GameModeSelectorLock.test.ts tests/client/PlayPageTopBar.test.ts
+          git add -u -- .
           if git diff --cached --quiet; then
             echo "No formatting changes were needed."
             exit 0
