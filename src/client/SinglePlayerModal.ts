@@ -375,16 +375,20 @@ export class SinglePlayerModal extends BaseModal {
       onBack: () => this.close(),
       ariaLabel: translateText("common.back"),
       rightContent: html`<div class="flex flex-wrap items-center gap-2">
-          ${OPEN_WAR_FEATURES.lobbyPresets ? html`
-            <lobby-preset-controls
-              .presets=${this.lobbyPresets}
-              .selectedName=${this.selectedPresetName}
-              @preset-select=${this.handlePresetSelect}
-              @preset-load=${this.handlePresetLoad}
-              @preset-save=${this.handlePresetSave}
-              @preset-delete=${this.handlePresetDelete}
-            ></lobby-preset-controls>
-          ` : nothing}
+          ${
+            OPEN_WAR_FEATURES.lobbyPresets
+              ? html`
+                  <lobby-preset-controls
+                    .presets=${this.lobbyPresets}
+                    .selectedName=${this.selectedPresetName}
+                    @preset-select=${this.handlePresetSelect}
+                    @preset-load=${this.handlePresetLoad}
+                    @preset-save=${this.handlePresetSave}
+                    @preset-delete=${this.handlePresetDelete}
+                  ></lobby-preset-controls>
+                `
+              : nothing
+          }
           ${
             signedIn
               ? html`<button
