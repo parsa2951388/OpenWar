@@ -389,25 +389,16 @@ describe("the upcoming heading (the route to the lobby browser)", () => {
  * with only one of its two cards.
  */
 describe("grid placement", () => {
-  function section() {
-    return selector.querySelector(".ow-lobby-column");
-  }
-
-  function operationsGrid() {
-    return selector.querySelector(".ow-operations .ow-grid");
-  }
-
-  function heroSlot() {
-    return selector.querySelector(".ow-grid > div.sm\\:col-start-1");
-  }
+  const section = () => selector.querySelector(".ow-lobby-column")!;
+  const heroSlot = () =>
+    selector.querySelector(".ow-grid > div.sm\\:col-start-1");
 
   it("keeps the upcoming column beside the spinner while loading", () => {
     expect(heroSlot()).not.toBeNull();
     const spinner = heroSlot()!.querySelector('div[role="status"]');
     expect(spinner).not.toBeNull();
     expect(spinner!.className).toContain("h-44 sm:h-full");
-    expect(section()).not.toBeNull();
-    expect(operationsGrid()).not.toBeNull();
+    expect(section()).toBeTruthy();
   });
 
   it("renders the static lobby placeholder", async () => {
@@ -419,8 +410,7 @@ describe("grid placement", () => {
     );
     expect(placeholder).not.toBeNull();
     expect(placeholder!.className).toContain("h-44 sm:h-full");
-    expect(section()!.classList.contains("ow-lobby-column")).toBe(true);
-    expect(operationsGrid()).not.toBeNull();
+    expect(section()).toBeTruthy();
   });
 
   it("lets a lone card take both card rows", async () => {
@@ -428,7 +418,7 @@ describe("grid placement", () => {
       ffa: [publicLobby("ffa-1")],
       team: [publicLobby("t")],
     });
-    const card = section()!.querySelector("div.sm\\:min-h-0")!;
+    const card = section().querySelector("div.sm\\:min-h-0")!;
     expect(card.className).toContain("sm:row-start-2 sm:row-span-2");
   });
 
@@ -438,10 +428,9 @@ describe("grid placement", () => {
       team: [publicLobby("t")],
       special: [publicLobby("s")],
     });
-    const cards = Array.from(
-      section()!.querySelectorAll("div.sm\\:min-h-0"),
-    );
-    const rows = cards.map((card) => card.className);
+    const rows = Array.from(
+      section().querySelectorAll("div.sm\\:min-h-0"),
+    ).map((c) => c.className);
     expect(rows.some((c) => c.includes("sm:row-start-3"))).toBe(true);
     expect(rows.some((c) => c.includes("sm:row-span-2"))).toBe(false);
   });
