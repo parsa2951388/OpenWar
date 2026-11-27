@@ -103,6 +103,18 @@ export class ServerEnv {
   static hostname(): string {
     return process.env.HOSTNAME ?? "";
   }
+  // Render supplies PORT (10000 by default). Local development keeps the
+  // historical 3000 port when no PORT is configured.
+  static httpPort(): number {
+    const raw = process.env.PORT;
+    if (raw === undefined || raw.trim() === "") return 3000;
+
+    const port = Number(raw);
+    if (!Number.isInteger(port) || port < 1 || port > 65535) {
+      throw new Error(`Invalid PORT: ${JSON.stringify(raw)}`);
+    }
+    return port;
+  }
   static host(): string {
     return process.env.HOST ?? "";
   }
