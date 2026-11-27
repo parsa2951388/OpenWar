@@ -46,7 +46,8 @@
     "gen-maps": "npm run gen-map-schema && tsx scripts/gen-maps/main.ts",
     "gen-map-schema": "tsx scripts/genMapInfoSchema.ts && npx --no-install oxfmt --write map-generator/info.schema.json",
     "inst": "npm ci --ignore-scripts",
-    "build:cosmetic-preview": "tsx scripts/buildCosmeticPreview.ts"
+    "build:cosmetic-preview": "tsx scripts/buildCosmeticPreview.ts",
+    "start:render": "cross-env GAME_ENV=dev TURNSTILE_SITE_KEY=1x00000000000000000000AA API_KEY=WARNING_DEV_API_KEY_DO_NOT_USE_IN_PRODUCTION ADMIN_BOT_API_KEY=WARNING_DEV_ADMIN_BOT_KEY_DO_NOT_USE_IN_PRODUCTION GIT_COMMIT=OPENWAR tsx src/server/Server.ts"
   },
   "lint-staged": {
     "**/*.{js,mjs,cjs,ts,jsx,tsx}": [
