@@ -71,9 +71,9 @@ describe("Render start command", () => {
   test(
     "fails closed instead of using a development Turnstile key in production",
     () => {
-    const result = runRenderStart();
+      const result = runRenderStart();
 
-    expect(result.status).not.toBe(0);
+      expect(result.status).not.toBe(0);
       expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
     },
   );
