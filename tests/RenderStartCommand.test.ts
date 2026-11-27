@@ -38,7 +38,7 @@ function runRenderStart(
 
   const env = {
     ...process.env,
-    PATH: `${tempDirectory}:${process.env.PATH ?? ""}` ,
+    PATH: `${tempDirectory}:${process.env.PATH ?? ""}`,
     RENDER: "true",
     GAME_ENV: overrides.GAME_ENV ?? "",
     TURNSTILE_SITE_KEY: overrides.TURNSTILE_SITE_KEY ?? "",
