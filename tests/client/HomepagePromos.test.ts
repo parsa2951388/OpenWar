@@ -204,7 +204,7 @@ describe("HomepagePromos bottom rail after its destroy", () => {
       bidId: "",
       advertiserDomain: "",
       destroyUnits: "resolved",
-      removedBy: "openfront",
+      removedBy: "open-war",
       outcome: "removed",
     });
   });
