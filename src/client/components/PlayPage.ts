@@ -1,6 +1,7 @@
 import { assetUrl } from "@openfront/shared/AssetUrls";
 import { LitElement, html } from "lit";
 import { customElement } from "lit/decorators.js";
+import { translateText } from "../Translate";
 import "./CosmeticBackground";
 import "./NavAccountMenu";
 import "./NavUtilityIcons";
@@ -103,7 +104,7 @@ export class PlayPage extends LitElement {
               <div
                 class="ow-callsign-shell"
               >
-                <span class="ow-field-label">COMMANDER CALLSIGN</span>
+                <span class="ow-field-label">${translateText("open_war.commander_callsign")}</span>
                 <username-input
                   class="flex-1 min-w-0 h-10 sm:h-[46px] sm:compact:h-[36px]"
                 ></username-input>
@@ -122,16 +123,16 @@ export class PlayPage extends LitElement {
           <div class="ow-hero__copy">
             <div class="ow-hero__eyebrow">
               <span class="ow-signal-dot"></span>
-              OPEN WAR <span class="ow-hero__divider">/</span> STRATEGIC OPERATIONS
+              OPEN WAR <span class="ow-hero__divider">/</span> ${translateText("open_war.hero_eyebrow")}
             </div>
-            <h1 id="ow-hero-title">TAKE THE <span>FRONTLINE.</span></h1>
-            <p>
-              Build your nation. Coordinate your forces. Turn every move into
-              territory.
-            </p>
+            <h1 id="ow-hero-title" aria-label=${translateText("open_war.hero_title")}>
+              ${translateText("open_war.hero_title_prefix")}
+              <span>${translateText("open_war.hero_title_focus")}</span>
+            </h1>
+            <p>${translateText("open_war.hero_description")}</p>
             <div class="ow-hero__data">
-              <span><b>01</b> CHOOSE YOUR THEATRE</span>
-              <span><b>02</b> DEPLOY YOUR STRATEGY</span>
+              <span><b>01</b> ${translateText("open_war.choose_theatre")}</span>
+              <span><b>02</b> ${translateText("open_war.deploy_strategy")}</span>
             </div>
           </div>
           <div class="ow-hero__visual" aria-hidden="true">
@@ -186,13 +187,13 @@ export class PlayPage extends LitElement {
               <circle cx="286" cy="83" r="3" fill="#f3cf8b" />
             </svg>
             <div class="ow-hero__readout">
-              <span>THEATRE STATUS</span>
-              <strong>READY FOR DEPLOYMENT</strong>
+              <span>${translateText("open_war.theatre_status")}</span>
+              <strong>${translateText("open_war.ready_for_deployment")}</strong>
               <i></i>
             </div>
-            <div class="ow-hero__coordinates">35°41' N&nbsp;&nbsp; 51°25' E</div>
+            <div class="ow-hero__coordinates">GRID 09:24&nbsp;&nbsp; / &nbsp;&nbsp;SECTOR A</div>
           </div>
-          <div class="ow-hero__index">OW / 001 <span>GLOBAL CONFLICT NETWORK</span></div>
+          <div class="ow-hero__index">OW / 001 <span>${translateText("open_war.global_conflict_network")}</span></div>
         </section>
 
         <game-mode-selector></game-mode-selector>
