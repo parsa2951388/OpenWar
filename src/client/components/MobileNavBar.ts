@@ -86,9 +86,9 @@ export class MobileNavBar extends LitElement {
         >
           <div class="flex flex-col items-center gap-1">
             <img
-              src=${assetUrl("images/OpenFrontLogo.svg")}
-              alt="OpenFront"
-              class="w-auto h-auto max-w-[220px] max-h-[4.5rem]"
+              src=${assetUrl("images/OpenWarLogo.svg")}
+              alt="Open War"
+              class="w-auto h-auto max-w-[240px] max-h-[4.5rem]"
             />
             <div
               id="game-version"
