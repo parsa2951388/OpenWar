@@ -399,9 +399,7 @@ describe("grid placement", () => {
     expect(spinner).not.toBeNull();
     expect(spinner!.className).toContain("h-44 sm:h-full");
     expect(section().classList.contains("ow-lobby-column")).toBe(true);
-    expect(
-      selector.querySelector(".ow-operations > .ow-grid"),
-    ).not.toBeNull();
+    expect(selector.querySelector(".ow-operations > .ow-grid")).not.toBeNull();
   });
 
   it("renders the static lobby placeholder", async () => {
@@ -414,9 +412,7 @@ describe("grid placement", () => {
     expect(placeholder).not.toBeNull();
     expect(placeholder!.className).toContain("h-44 sm:h-full");
     expect(section().classList.contains("ow-lobby-column")).toBe(true);
-    expect(
-      selector.querySelector(".ow-operations > .ow-grid"),
-    ).not.toBeNull();
+    expect(selector.querySelector(".ow-operations > .ow-grid")).not.toBeNull();
   });
 
   it("lets a lone card take both card rows", async () => {
