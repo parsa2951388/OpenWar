@@ -391,7 +391,9 @@ describe("the upcoming heading (the route to the lobby browser)", () => {
 describe("grid placement", () => {
   const section = () => selector.querySelector(".ow-lobby-column")!;
   const heroSlot = () =>
-    selector.querySelector(".ow-operations > .ow-grid > div.sm\\:col-start-1");
+    selector.querySelector(
+      ".ow-operations > .ow-grid > div.sm\\:col-start-1",
+    );
 
   it("keeps the upcoming column beside the spinner while loading", () => {
     expect(heroSlot()).not.toBeNull();
@@ -404,7 +406,9 @@ describe("grid placement", () => {
     ).not.toBeNull();
   });
 
-  it("renders a static placeholder without role=status when loaded without an FFA lobby", async () => {
+  it(
+    "renders a static placeholder without role=status when loaded without an FFA lobby",
+    async () => {
     await pushLobbies({ team: [publicLobby("team-1")] });
     expect(heroSlot()).not.toBeNull();
     expect(heroSlot()!.querySelector('div[role="status"]')).toBeNull();
@@ -415,7 +419,8 @@ describe("grid placement", () => {
     expect(
       selector.querySelector(".ow-operations > .ow-grid"),
     ).not.toBeNull();
-  });
+    },
+  );
 
   it("lets a lone card take both card rows", async () => {
     await pushLobbies({
