@@ -16,7 +16,8 @@
     "single_player": "لاعب فردي",
     "instructions": "التعليمات",
     "how_to_play": "كيفية اللعب",
-    "wiki": "الويكي"
+    "wiki": "الويكي",
+    "copyright": "© OpenFront and Contributors · Open War community fork"
   },
   "help_modal": {
     "hotkeys": "اختصارات",
