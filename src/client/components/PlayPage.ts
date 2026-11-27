@@ -176,7 +176,7 @@ export class PlayPage extends LitElement {
                 stroke-dasharray="4 5"
                 opacity=".65"
               />
-                            <circle cx="220" cy="150" r="7" fill="#f3cf8b" />
+              <circle cx="220" cy="150" r="7" fill="#f3cf8b" />
               <path
                 d="M220 130v-16m0 72v-16m-20-20h-16m72 0h-16"
                 stroke="#f3cf8b"
