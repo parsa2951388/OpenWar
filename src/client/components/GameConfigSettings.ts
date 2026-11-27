@@ -659,16 +659,17 @@ export class GameConfigSettings extends LitElement {
             ? nothing
             : renderSection(
                 ENABLES_ICON,
-          "text-teal-400",
-          "bg-teal-500/20",
-          settings.unitTypes.titleKey,
-          html`
-            <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
-              ${this.renderUnitTypeOptions(settings.unitTypes.disabledUnits)}
-            </div>
-          `,
-          "space-y-6 pb-6",
-        )}
+                "text-teal-400",
+                "bg-teal-500/20",
+                settings.unitTypes.titleKey,
+                html`
+                  <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-4">
+                    ${this.renderUnitTypeOptions(settings.unitTypes.disabledUnits)}
+                  </div>
+                `,
+                "space-y-6 pb-6",
+              )
+        }
       </div>
     `;
   }
