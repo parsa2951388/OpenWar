@@ -49,7 +49,7 @@ function steamUrl(
   const path = kind === "widget" ? `widget/${appId}/` : `app/${appId}/`;
   const params = new URLSearchParams({
     utm_source: "openwar",
-    utm_medium: medium,
+    utm_medium: kind === "widget" ? "widget" : "link",
     utm_campaign: campaign,
   });
   return `https://store.steampowered.com/${path}?${params}`;
