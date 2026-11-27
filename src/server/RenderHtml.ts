@@ -104,7 +104,7 @@ export async function renderHtmlContent(
     manifestHref: buildAssetUrl("manifest.json", assetManifest, cdnBase),
     faviconHref: buildAssetUrl("images/Favicon.svg", assetManifest, cdnBase),
     appleTouchIconHref: buildAssetUrl(
-      "icons/open-war-mark.svg",
+      "icons/open-war-touch.png",
       assetManifest,
       cdnBase,
     ),
