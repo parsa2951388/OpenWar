@@ -159,7 +159,7 @@ export class PlayPage extends LitElement {
                 stroke-dasharray="2 9"
                 opacity=".45"
               />
-                            <circle
+              <circle
                 cx="220"
                 cy="150"
                 r="90"
