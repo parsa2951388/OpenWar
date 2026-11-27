@@ -68,15 +68,12 @@ describe("Render start command", () => {
     );
   });
 
-  test(
-    "rejects a missing production Turnstile key",
-    () => {
-      const result = runRenderStart();
+  test("rejects a missing production Turnstile key", () => {
+    const result = runRenderStart();
 
-      expect(result.status).not.toBe(0);
-      expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
-    },
-  );
+    expect(result.status).not.toBe(0);
+    expect(result.stderr).toContain("TURNSTILE_SITE_KEY");
+  });
 
   test("keeps the explicit local development mode available", () => {
     const result = runRenderStart({ GAME_ENV: "dev" });
