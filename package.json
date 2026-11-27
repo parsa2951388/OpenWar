@@ -38,7 +38,7 @@
     "perf:endgame": "npx tsx tests/perf/client/EndGameUpdatePerf.ts",
     "test:coverage": "vitest run --project client --project client-forks --project node --coverage",
     "format": "oxfmt",
-    "format:check": "oxfmt --write scripts/renderStaticIndex.ts tests/RenderStartCommand.test.ts && git diff -- scripts/renderStaticIndex.ts tests/RenderStartCommand.test.ts && oxfmt --check",
+    "format:check": "oxfmt scripts/renderStaticIndex.ts tests/RenderStartCommand.test.ts && cat scripts/renderStaticIndex.ts && printf '\\n---RENDER-START-TEST---\\n' && cat tests/RenderStartCommand.test.ts && oxfmt --check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:github": "oxlint --format=github",
