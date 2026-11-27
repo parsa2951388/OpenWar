@@ -131,9 +131,13 @@ describe("GameModeSelector Click-Lock & In-Lobby State", () => {
     expect(
       selector!.querySelectorAll(".ow-grid button").length,
     ).toBeGreaterThanOrEqual(4);
-    expect(selector!.querySelectorAll(".ow-grid > .ow-action-row")).toHaveLength(2);
     expect(
-      selector!.querySelector(".ow-lobby-column h2 button")?.closest(".ow-action-row"),
+      selector!.querySelectorAll(".ow-grid > .ow-action-row"),
+    ).toHaveLength(2);
+    expect(
+      selector!
+        .querySelector(".ow-lobby-column h2 button")
+        ?.closest(".ow-action-row"),
     ).toBeNull();
     expect(selector!.querySelector("button.ow-lobby-card")).not.toBeNull();
   });
