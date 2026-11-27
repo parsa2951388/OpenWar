@@ -78,6 +78,30 @@ describe("ServerEnv identity", () => {
   });
 });
 
+describe("ServerEnv.httpPort", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  test("defaults to the local development port when unset", () => {
+    vi.stubEnv("PORT", "");
+    expect(ServerEnv.httpPort()).toBe(3000);
+  });
+
+  test("uses the hosting platform port", () => {
+    vi.stubEnv("PORT", "10000");
+    expect(ServerEnv.httpPort()).toBe(10000);
+  });
+
+  test.each(["0", "-1", "65536", "1.5", "not-a-port"])(
+    "rejects invalid PORT %j",
+    (port) => {
+      vi.stubEnv("PORT", port);
+      expect(() => ServerEnv.httpPort()).toThrow(/Invalid PORT/);
+    },
+  );
+});
+
 describe("ServerEnv game id minting", () => {
   afterEach(() => {
     vi.unstubAllEnvs();
