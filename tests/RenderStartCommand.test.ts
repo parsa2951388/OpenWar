@@ -43,6 +43,24 @@ function runPackageScript(
   );
   fs.chmodSync(fakeTsx, 0o755);
 
+  const fakeStartRender = path.join(tempDirectory, "start-render.sh");
+  fs.writeFileSync(fakeStartRender, packageJson.scripts["start:render"]);
+
+  const fakeNpm = path.join(tempDirectory, "npm");
+  fs.writeFileSync(
+    fakeNpm,
+    [
+      "#!/bin/sh",
+      'if [ "$1" = "run" ] && [ "$2" = "start:render" ]; then',
+      '  exec sh "$OPENWAR_FAKE_START_RENDER"',
+      "fi",
+      'echo "Unexpected npm call: $*" >&2',
+      "exit 1",
+      "",
+    ].join("\n"),
+  );
+  fs.chmodSync(fakeNpm, 0o755);
+
   const env = {
     ...process.env,
     PATH: `${tempDirectory}:${process.env.PATH ?? ""}`,
@@ -53,6 +71,7 @@ function runPackageScript(
     GIT_COMMIT: overrides.GIT_COMMIT ?? "",
     API_ORIGIN: overrides.API_ORIGIN ?? "",
     RENDER_GIT_COMMIT: overrides.RENDER_GIT_COMMIT ?? "",
+    OPENWAR_FAKE_START_RENDER: fakeStartRender,
   };
 
   return spawnSync("sh", ["-c", packageJson.scripts[scriptName]], {
