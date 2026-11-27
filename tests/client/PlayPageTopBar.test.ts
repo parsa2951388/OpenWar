@@ -16,8 +16,8 @@ vi.mock("@openfront/shared/AssetUrls", () => ({
   assetUrl: (path: string) => path,
 }));
 
-// Rendering play-page mounts its children too (steam-wishlist, cosmetic
-// background, …), and some reach for browser APIs jsdom doesn't ship.
+// Rendering play-page mounts its children too (cosmetic background, news,
+// account controls, …), and some reach for browser APIs jsdom does not ship.
 vi.stubGlobal(
   "ResizeObserver",
   class {
@@ -57,6 +57,15 @@ describe("play-page mobile top bar", () => {
 
     it("puts the bell/help icons beside the profile menu", () => {
       expect(rightSlot()).toEqual(["nav-utility-icons", "nav-account-menu"]);
+    });
+
+    it("renders the Open War command identity and preserves the play entry point", () => {
+      expect(el.querySelector("#page-play")?.classList.contains("ow-home-page")).toBe(true);
+      expect(el.querySelector("#ow-hero-title")?.textContent).toContain("TAKE THE FRONTLINE.");
+      expect(el.querySelector('img[alt="Open War"]')?.getAttribute("src")).toBe("images/OpenWarLogo.svg");
+      expect(el.querySelector(".ow-field-label")?.textContent).toBe("COMMANDER CALLSIGN");
+      expect(el.querySelector("game-mode-selector")).not.toBeNull();
+      expect(el.querySelector("steam-wishlist")).toBeNull();
     });
   });
 
