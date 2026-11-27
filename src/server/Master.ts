@@ -325,14 +325,32 @@ export async function startMaster() {
 }
 
 app.get("/api/health", (_req, res) => {
-  const ready = lobbyService?.isHealthy() ?? false;
+  const readiness = lobbyService?.healthStatus() ?? null;
+  const ready = readiness?.ready ?? false;
   // instanceId is diagnostics: it tells the machines behind an apex apart.
   const instanceId = ServerEnv.instanceId();
-  if (ready) {
-    res.json({ status: "ok", instanceId });
-  } else {
-    res.status(503).json({ status: "unavailable", instanceId });
+  if (ready && readiness !== null) {
+    res.json({ status: "ok", instanceId, readiness });
+    return;
   }
+
+  const reason =
+    readiness === null
+      ? "lobby_service_initializing"
+      : !readiness.started
+        ? "workers_initializing"
+        : "insufficient_ready_workers";
+  log.warn("Readiness check failed", {
+    instanceId,
+    reason,
+    ...(readiness ?? {}),
+  });
+  res.status(503).json({
+    status: "unavailable",
+    instanceId,
+    reason,
+    readiness,
+  });
 });
 
 // SPA fallback route
