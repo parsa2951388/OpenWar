@@ -123,7 +123,11 @@ export async function renderHtmlContent(
       assetManifest,
       cdnBase,
     ),
-    mobileLogoImageUrl: buildAssetUrl("images/OpenWarLogo.svg", assetManifest, cdnBase),
+    mobileLogoImageUrl: buildAssetUrl(
+      "images/OpenWarLogo.svg",
+      assetManifest,
+      cdnBase,
+    ),
   });
 }
 

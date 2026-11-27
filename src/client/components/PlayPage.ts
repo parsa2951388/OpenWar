@@ -24,9 +24,7 @@ export class PlayPage extends LitElement {
         <rewards-modal class="absolute"></rewards-modal>
 
         <!-- Mobile: Fixed top bar -->
-        <div
-          class="ow-mobile-topbar lg:hidden"
-        >
+        <div class="ow-mobile-topbar lg:hidden">
           <div
             class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center h-14 px-2 gap-2"
           >
@@ -80,9 +78,7 @@ export class PlayPage extends LitElement {
         <!-- Top strip: news + identity on the left, Streaming Now on the right. The 2fr/1fr
              split only exists while the panel is live (.streaming-live via has-[]) —
              otherwise the left column takes the full row. -->
-        <div
-          class="group/strip ow-strip"
-        >
+        <div class="group/strip ow-strip">
           <!-- Mobile: spacer for fixed top bar -->
           <div
             class="lg:hidden h-[calc(env(safe-area-inset-top)+56px)] -mb-4"
@@ -101,10 +97,10 @@ export class PlayPage extends LitElement {
               <cosmetic-background
                 class="absolute inset-0 z-0 overflow-hidden sm:rounded-xl pointer-events-none"
               ></cosmetic-background>
-              <div
-                class="ow-callsign-shell"
-              >
-                <span class="ow-field-label">${translateText("open_war.commander_callsign")}</span>
+              <div class="ow-callsign-shell">
+                <span class="ow-field-label"
+                  >${translateText("open_war.commander_callsign")}</span
+                >
                 <username-input
                   class="flex-1 min-w-0 h-10 sm:h-[46px] sm:compact:h-[36px]"
                 ></username-input>
@@ -123,16 +119,23 @@ export class PlayPage extends LitElement {
           <div class="ow-hero__copy">
             <div class="ow-hero__eyebrow">
               <span class="ow-signal-dot"></span>
-              OPEN WAR <span class="ow-hero__divider">/</span> ${translateText("open_war.hero_eyebrow")}
+              OPEN WAR
+              <span class="ow-hero__divider">/</span>
+              ${translateText("open_war.hero_eyebrow")}
             </div>
-            <h1 id="ow-hero-title" aria-label=${translateText("open_war.hero_title")}>
+            <h1
+              id="ow-hero-title"
+              aria-label=${translateText("open_war.hero_title")}
+            >
               ${translateText("open_war.hero_title_prefix")}
               <span>${translateText("open_war.hero_title_focus")}</span>
             </h1>
             <p>${translateText("open_war.hero_description")}</p>
             <div class="ow-hero__data">
               <span><b>01</b> ${translateText("open_war.choose_theatre")}</span>
-              <span><b>02</b> ${translateText("open_war.deploy_strategy")}</span>
+              <span
+                ><b>02</b> ${translateText("open_war.deploy_strategy")}</span
+              >
             </div>
           </div>
           <div class="ow-hero__visual" aria-hidden="true">
@@ -191,9 +194,14 @@ export class PlayPage extends LitElement {
               <strong>${translateText("open_war.ready_for_deployment")}</strong>
               <i></i>
             </div>
-            <div class="ow-hero__coordinates">GRID 09:24&nbsp;&nbsp; / &nbsp;&nbsp;SECTOR A</div>
+            <div class="ow-hero__coordinates">
+              GRID 09:24&nbsp;&nbsp; / &nbsp;&nbsp;SECTOR A
+            </div>
           </div>
-          <div class="ow-hero__index">OW / 001 <span>${translateText("open_war.global_conflict_network")}</span></div>
+          <div class="ow-hero__index">
+            OW / 001
+            <span>${translateText("open_war.global_conflict_network")}</span>
+          </div>
         </section>
 
         <game-mode-selector></game-mode-selector>

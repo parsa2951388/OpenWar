@@ -125,9 +125,9 @@ describe("GameModeSelector Click-Lock & In-Lobby State", () => {
 
   it("renders the Open War operations board and entry cards", () => {
     expect(selector!.querySelector("section.ow-operations")).not.toBeNull();
-    expect(
-      selector!.querySelector("#ow-operations-title")?.textContent,
-    ).toBe("Choose your operation");
+    expect(selector!.querySelector("#ow-operations-title")?.textContent).toBe(
+      "Choose your operation",
+    );
     expect(
       selector!.querySelectorAll(".ow-grid button").length,
     ).toBeGreaterThanOrEqual(4);

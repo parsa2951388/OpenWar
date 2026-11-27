@@ -93,9 +93,9 @@ describe("play-page mobile top bar", () => {
       expect(
         el.querySelector("#ow-hero-title")?.getAttribute("aria-label"),
       ).toBe("TAKE THE FRONTLINE.");
-      expect(
-        el.querySelector('img[alt="Open War"]')?.getAttribute("src"),
-      ).toBe("images/OpenWarLogo.svg");
+      expect(el.querySelector('img[alt="Open War"]')?.getAttribute("src")).toBe(
+        "images/OpenWarLogo.svg",
+      );
       expect(el.querySelector(".ow-field-label")?.textContent).toBe(
         "COMMANDER CALLSIGN",
       );

@@ -960,8 +960,16 @@ unit-display .tutorial-highlight::after {
 
 body:has(#page-play.ow-home-page) {
   background:
-    radial-gradient(ellipse at 8% 18%, rgba(37, 168, 183, 0.09), transparent 34rem),
-    radial-gradient(ellipse at 88% 6%, rgba(230, 189, 116, 0.055), transparent 28rem),
+    radial-gradient(
+      ellipse at 8% 18%,
+      rgba(37, 168, 183, 0.09),
+      transparent 34rem
+    ),
+    radial-gradient(
+      ellipse at 88% 6%,
+      rgba(230, 189, 116, 0.055),
+      transparent 28rem
+    ),
     #07131e;
 }
 
@@ -1099,13 +1107,12 @@ body:has(#page-play.ow-home-page) {
   padding: clamp(1.25rem, 3vw, 2.4rem);
   border: 1px solid rgba(109, 227, 218, 0.24);
   border-radius: 1.35rem;
-  background:
-    linear-gradient(
-      110deg,
-      rgba(7, 19, 30, 0.98) 0%,
-      rgba(10, 31, 44, 0.96) 52%,
-      rgba(12, 36, 48, 0.88) 100%
-    );
+  background: linear-gradient(
+    110deg,
+    rgba(7, 19, 30, 0.98) 0%,
+    rgba(10, 31, 44, 0.96) 52%,
+    rgba(12, 36, 48, 0.88) 100%
+  );
   box-shadow:
     inset 0 1px 0 rgba(255, 255, 255, 0.04),
     0 18px 48px rgba(0, 0, 0, 0.25);
@@ -1120,7 +1127,12 @@ body:has(#page-play.ow-home-page) {
     linear-gradient(rgba(109, 227, 218, 0.045) 1px, transparent 1px),
     linear-gradient(90deg, rgba(109, 227, 218, 0.045) 1px, transparent 1px);
   background-size: 34px 34px;
-  mask-image: linear-gradient(90deg, #000 0%, rgba(0, 0, 0, 0.55) 58%, transparent 100%);
+  mask-image: linear-gradient(
+    90deg,
+    #000 0%,
+    rgba(0, 0, 0, 0.55) 58%,
+    transparent 100%
+  );
 }
 
 .ow-hero::after {
@@ -1132,7 +1144,12 @@ body:has(#page-play.ow-home-page) {
   height: 185%;
   content: "";
   transform: rotate(24deg);
-  background: linear-gradient(90deg, transparent, rgba(109, 227, 218, 0.055), transparent);
+  background: linear-gradient(
+    90deg,
+    transparent,
+    rgba(109, 227, 218, 0.055),
+    transparent
+  );
   pointer-events: none;
 }
 
@@ -1255,7 +1272,9 @@ body:has(#page-play.ow-home-page) {
 
 .ow-hero__radar--outer {
   width: 88%;
-  box-shadow: 0 0 0 1.6rem rgba(109, 227, 218, 0.018), 0 0 0 3.2rem rgba(109, 227, 218, 0.012);
+  box-shadow:
+    0 0 0 1.6rem rgba(109, 227, 218, 0.018),
+    0 0 0 3.2rem rgba(109, 227, 218, 0.012);
 }
 
 .ow-hero__radar--inner {
@@ -1297,7 +1316,11 @@ body:has(#page-play.ow-home-page) {
   width: 100%;
   height: 2px;
   margin-top: 0.18rem;
-  background: linear-gradient(90deg, var(--ow-mint) 0 78%, rgba(109, 227, 218, 0.12) 78%);
+  background: linear-gradient(
+    90deg,
+    var(--ow-mint) 0 78%,
+    rgba(109, 227, 218, 0.12) 78%
+  );
 }
 
 .ow-hero__coordinates {
@@ -1331,7 +1354,11 @@ body:has(#page-play.ow-home-page) {
   padding: clamp(0.9rem, 2vw, 1.45rem);
   border: 1px solid rgba(109, 227, 218, 0.14);
   border-radius: 1.3rem;
-  background: linear-gradient(145deg, rgba(11, 27, 41, 0.94), rgba(7, 19, 30, 0.96));
+  background: linear-gradient(
+    145deg,
+    rgba(11, 27, 41, 0.94),
+    rgba(7, 19, 30, 0.96)
+  );
   box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.025);
 }
 
@@ -1375,7 +1402,6 @@ body:has(#page-play.ow-home-page) {
   letter-spacing: 0.12em;
   white-space: nowrap;
 }
-
 
 .ow-lobby-column {
   display: flex;
@@ -1439,13 +1465,17 @@ body:has(#page-play.ow-home-page) {
   border-color: rgba(230, 189, 116, 0.55);
   background: linear-gradient(120deg, #76542a, #263544 78%) !important;
   color: #fff5e4;
-  box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.09), 0 8px 24px rgba(0, 0, 0, 0.16);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.09),
+    0 8px 24px rgba(0, 0, 0, 0.16);
 }
 
 .ow-grid button:not(.ow-lobby-card):hover:not(:disabled) {
   transform: translateY(-2px);
   border-color: var(--ow-mint);
-  box-shadow: 0 0 0 1px rgba(109, 227, 218, 0.22), 0 10px 26px rgba(0, 0, 0, 0.24);
+  box-shadow:
+    0 0 0 1px rgba(109, 227, 218, 0.22),
+    0 10px 26px rgba(0, 0, 0, 0.24);
   filter: brightness(1.1);
 }
 
@@ -1462,7 +1492,9 @@ body:has(#page-play.ow-home-page) {
 
 .ow-operations .ow-lobby-card:hover {
   border-color: var(--ow-gold);
-  box-shadow: 0 0 0 1px rgba(230, 189, 116, 0.45), 0 14px 36px rgba(0, 0, 0, 0.3);
+  box-shadow:
+    0 0 0 1px rgba(230, 189, 116, 0.45),
+    0 14px 36px rgba(0, 0, 0, 0.3);
 }
 
 .ow-home-page .text-malibu-blue {

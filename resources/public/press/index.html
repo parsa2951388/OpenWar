@@ -12,7 +12,10 @@
       property="og:description"
       content="Project information and original brand assets for Open War, a community-maintained strategy game."
     />
-    <meta property="og:url" content="https://open-war-live.onrender.com/press/" />
+    <meta
+      property="og:url"
+      content="https://open-war-live.onrender.com/press/"
+    />
     <meta
       property="og:image"
       content="https://open-war-live.onrender.com/press/images/open-war-social-card.svg"
@@ -33,40 +36,87 @@
         --muted: #9ab1bc;
         --white: #f4f7f8;
       }
-      * { box-sizing: border-box; }
+      * {
+        box-sizing: border-box;
+      }
       body {
         min-height: 100vh;
         margin: 0;
         color: var(--white);
         background:
-          radial-gradient(circle at 12% 8%, rgba(37,168,183,.16), transparent 30rem),
-          radial-gradient(circle at 90% 20%, rgba(230,189,116,.08), transparent 24rem),
+          radial-gradient(
+            circle at 12% 8%,
+            rgba(37, 168, 183, 0.16),
+            transparent 30rem
+          ),
+          radial-gradient(
+            circle at 90% 20%,
+            rgba(230, 189, 116, 0.08),
+            transparent 24rem
+          ),
           var(--ink);
-        font: 16px/1.65 Inter, ui-sans-serif, system-ui, -apple-system, sans-serif;
+        font:
+          16px/1.65 Inter,
+          ui-sans-serif,
+          system-ui,
+          -apple-system,
+          sans-serif;
       }
-      a { color: var(--mint); text-decoration: none; }
-      a:hover { color: var(--gold); text-decoration: underline; }
-      .wrap { width: min(920px, calc(100% - 32px)); margin: 0 auto; }
-      .topline { height: 4px; background: linear-gradient(90deg, var(--mint), var(--gold)); }
-      header { padding: 52px 0 30px; text-align: center; }
-      .logo { width: min(420px, 86%); height: auto; margin: 0 auto 22px; }
+      a {
+        color: var(--mint);
+        text-decoration: none;
+      }
+      a:hover {
+        color: var(--gold);
+        text-decoration: underline;
+      }
+      .wrap {
+        width: min(920px, calc(100% - 32px));
+        margin: 0 auto;
+      }
+      .topline {
+        height: 4px;
+        background: linear-gradient(90deg, var(--mint), var(--gold));
+      }
+      header {
+        padding: 52px 0 30px;
+        text-align: center;
+      }
+      .logo {
+        width: min(420px, 86%);
+        height: auto;
+        margin: 0 auto 22px;
+      }
       .eyebrow {
         color: var(--mint);
-        font-size: .68rem;
+        font-size: 0.68rem;
         font-weight: 800;
-        letter-spacing: .2em;
+        letter-spacing: 0.2em;
         text-transform: uppercase;
       }
       h1 {
         margin: 12px 0 8px;
         font-size: clamp(2rem, 6vw, 3.5rem);
-        letter-spacing: -.045em;
+        letter-spacing: -0.045em;
         line-height: 1.05;
       }
-      h1 span { color: var(--gold); }
-      .lead { max-width: 650px; margin: 16px auto 0; color: #bfd0d7; }
-      nav { display: flex; flex-wrap: wrap; justify-content: center; gap: 12px; margin-top: 26px; }
-      nav a, .download {
+      h1 span {
+        color: var(--gold);
+      }
+      .lead {
+        max-width: 650px;
+        margin: 16px auto 0;
+        color: #bfd0d7;
+      }
+      nav {
+        display: flex;
+        flex-wrap: wrap;
+        justify-content: center;
+        gap: 12px;
+        margin-top: 26px;
+      }
+      nav a,
+      .download {
         display: inline-flex;
         min-height: 42px;
         align-items: center;
@@ -76,21 +126,32 @@
         border-radius: 9px;
         background: #102838;
         color: var(--white);
-        font-size: .86rem;
+        font-size: 0.86rem;
         font-weight: 800;
-        letter-spacing: .04em;
+        letter-spacing: 0.04em;
       }
-      nav a.primary { border-color: rgba(230,189,116,.55); background: #624923; }
-      main { padding-bottom: 50px; }
+      nav a.primary {
+        border-color: rgba(230, 189, 116, 0.55);
+        background: #624923;
+      }
+      main {
+        padding-bottom: 50px;
+      }
       section {
         margin: 18px 0;
         padding: 26px;
         border: 1px solid var(--line);
         border-radius: 16px;
-        background: rgba(11,27,41,.88);
+        background: rgba(11, 27, 41, 0.88);
       }
-      h2 { margin: 0 0 12px; font-size: 1.22rem; }
-      p { color: #bdcbd1; margin: 8px 0 0; }
+      h2 {
+        margin: 0 0 12px;
+        font-size: 1.22rem;
+      }
+      p {
+        color: #bdcbd1;
+        margin: 8px 0 0;
+      }
       .preview {
         display: block;
         width: 100%;
@@ -99,7 +160,12 @@
         border: 1px solid var(--line);
         border-radius: 10px;
       }
-      .assets { display: grid; grid-template-columns: repeat(auto-fit,minmax(240px,1fr)); gap: 14px; margin-top: 18px; }
+      .assets {
+        display: grid;
+        grid-template-columns: repeat(auto-fit, minmax(240px, 1fr));
+        gap: 14px;
+        margin-top: 18px;
+      }
       .asset {
         min-width: 0;
         padding: 16px;
@@ -107,14 +173,38 @@
         border-radius: 12px;
         background: #081823;
       }
-      .asset img { display: block; width: 100%; max-height: 140px; object-fit: contain; }
-      .asset h3 { margin: 14px 0 10px; font-size: .95rem; }
-      .download { min-height: 36px; padding: 7px 11px; font-size: .75rem; }
-      .note { border-left: 3px solid var(--gold); padding-left: 14px; }
-      footer { padding: 22px 0 44px; color: var(--muted); text-align: center; font-size: .78rem; }
+      .asset img {
+        display: block;
+        width: 100%;
+        max-height: 140px;
+        object-fit: contain;
+      }
+      .asset h3 {
+        margin: 14px 0 10px;
+        font-size: 0.95rem;
+      }
+      .download {
+        min-height: 36px;
+        padding: 7px 11px;
+        font-size: 0.75rem;
+      }
+      .note {
+        border-left: 3px solid var(--gold);
+        padding-left: 14px;
+      }
+      footer {
+        padding: 22px 0 44px;
+        color: var(--muted);
+        text-align: center;
+        font-size: 0.78rem;
+      }
       @media (max-width: 600px) {
-        header { padding-top: 34px; }
-        section { padding: 19px; }
+        header {
+          padding-top: 34px;
+        }
+        section {
+          padding: 19px;
+        }
       }
     </style>
   </head>
@@ -122,17 +212,28 @@
     <div class="topline"></div>
     <div class="wrap">
       <header>
-        <img class="logo" src="/press/images/open-war-logo.svg" alt="Open War" />
+        <img
+          class="logo"
+          src="/press/images/open-war-logo.svg"
+          alt="Open War"
+        />
         <div class="eyebrow">Project press kit</div>
         <h1>OPEN <span>WAR</span></h1>
         <p class="lead">
           A community-maintained browser strategy game about building nations,
-          coordinating forces, and competing for territory on a shared world map.
+          coordinating forces, and competing for territory on a shared world
+          map.
         </p>
         <nav aria-label="Open War project links">
-          <a class="primary" href="https://open-war-live.onrender.com/">Play Open War</a>
-          <a href="https://github.com/parsa2951388/OpenWar">Source repository</a>
-          <a href="https://github.com/parsa2951388/OpenWar/issues">Report an issue</a>
+          <a class="primary" href="https://open-war-live.onrender.com/"
+            >Play Open War</a
+          >
+          <a href="https://github.com/parsa2951388/OpenWar"
+            >Source repository</a
+          >
+          <a href="https://github.com/parsa2951388/OpenWar/issues"
+            >Report an issue</a
+          >
         </nav>
       </header>
 
@@ -161,14 +262,30 @@
           </p>
           <div class="assets">
             <div class="asset">
-              <img src="/press/images/open-war-logo.svg" alt="Open War wordmark" />
+              <img
+                src="/press/images/open-war-logo.svg"
+                alt="Open War wordmark"
+              />
               <h3>Open War wordmark</h3>
-              <a class="download" href="/press/images/open-war-logo.svg" download>Download SVG</a>
+              <a
+                class="download"
+                href="/press/images/open-war-logo.svg"
+                download
+                >Download SVG</a
+              >
             </div>
             <div class="asset">
-              <img src="/press/images/open-war-social-card.svg" alt="Open War social preview artwork" />
+              <img
+                src="/press/images/open-war-social-card.svg"
+                alt="Open War social preview artwork"
+              />
               <h3>Social preview artwork</h3>
-              <a class="download" href="/press/images/open-war-social-card.svg" download>Download SVG</a>
+              <a
+                class="download"
+                href="/press/images/open-war-social-card.svg"
+                download
+                >Download SVG</a
+              >
             </div>
           </div>
         </section>
@@ -178,16 +295,21 @@
           <p>
             Current source, release notes, contribution guidance, and licensing
             details are maintained in the
-            <a href="https://github.com/parsa2951388/OpenWar">Open War repository</a>.
-            Community feedback and bug reports can be submitted through
-            <a href="https://github.com/parsa2951388/OpenWar/issues">GitHub Issues</a>.
+            <a href="https://github.com/parsa2951388/OpenWar"
+              >Open War repository</a
+            >. Community feedback and bug reports can be submitted through
+            <a href="https://github.com/parsa2951388/OpenWar/issues"
+              >GitHub Issues</a
+            >.
           </p>
         </section>
       </main>
 
       <footer>
         Open War · Community-maintained strategy project<br />
-        <a href="https://github.com/parsa2951388/OpenWar">Source and project information</a>
+        <a href="https://github.com/parsa2951388/OpenWar"
+          >Source and project information</a
+        >
       </footer>
     </div>
   </body>
