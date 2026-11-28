@@ -1,4 +1,24 @@
+import { ServerListSchema } from "@openfront/shared/ServerList";
 import { routeMethods } from "../../infra/cloudflare/openwar-api-gateway.js";
+
+export function createLocalPreviewServerList(
+  host: string,
+  letter: string,
+  numWorkers: number,
+  version: string,
+) {
+  return ServerListSchema.parse({
+    latest: version,
+    servers: {
+      [letter]: {
+        host,
+        numWorkers,
+        version,
+        state: "open",
+      },
+    },
+  });
+}
 
 export interface OpenWarApiProxyRequest {
   method: string;
