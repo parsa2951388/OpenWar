@@ -211,7 +211,9 @@ describe("registerClusterIdentity", () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  test("skips upstream registration for an explicitly local Render preview", async () => {
+  test(
+    "skips upstream registration for an explicitly local Render preview",
+    async () => {
     vi.stubEnv("OPENWAR_LOCAL_PREVIEW", "true");
     vi.stubEnv("GAME_HOST", "open-war-v2-solo-test.onrender.com");
     vi.stubEnv("SITE_HOST", "open-war-v2-solo-test.onrender.com");
