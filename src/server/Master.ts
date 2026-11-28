@@ -282,7 +282,9 @@ export async function startMaster() {
   const localPreview = process.env.OPENWAR_LOCAL_PREVIEW === "true";
   const registered = localPreview ? false : await registerClusterIdentity();
   if (localPreview) {
-    log.info("Local preview enabled; using the Render instance as its own server registry");
+    log.info(
+      "Local preview enabled; using the Render instance as its own server registry",
+    );
   }
   if (registered) {
     log.info(
