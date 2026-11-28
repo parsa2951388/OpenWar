@@ -4,6 +4,7 @@ import crypto from "crypto";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import http from "http";
+import { Readable } from "node:stream";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
@@ -21,6 +22,7 @@ import {
 } from "./LobbyCoordinatorClient";
 import { logger } from "./Logger";
 import { MapPlaylist } from "./MapPlaylist";
+import { forwardOpenWarApiRequest } from "./OpenWarApiProxy";
 import { fetchMapWeights, MAP_WEIGHTS_POLL_MS } from "./MapWeights";
 import { MasterLobbyService } from "./MasterLobbyService";
 import { setNoStoreHeaders } from "./NoStoreHeaders";
@@ -45,6 +47,81 @@ const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
 app.use(express.json());
+
+// The solo-test Render instance can expose the allowlisted account API on its
+// own hostname. Enable this only when API_ORIGIN is explicitly set to this
+// server's public hostname; production deployments that use the Cloudflare
+// gateway continue to use that gateway directly.
+app.use(async (req, res, next) => {
+  const host = ServerEnv.publicHost() ?? ServerEnv.siteHost();
+  if (host === undefined || ServerEnv.apiOrigin() !== `https://${host}`) {
+    next();
+    return;
+  }
+
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (typeof value === "string") {
+      headers.set(name, value);
+    } else if (Array.isArray(value)) {
+      headers.set(name, value.join(", "));
+    }
+  }
+
+  try {
+    const incoming = new URL(req.originalUrl, `https://${host}`);
+    const response = await forwardOpenWarApiRequest({
+      method: req.method,
+      pathname: incoming.pathname,
+      search: incoming.search,
+      host,
+      origin: req.get("origin"),
+      headers,
+      body: req.body,
+    });
+
+    if (response === null) {
+      next();
+      return;
+    }
+
+    res.status(response.status);
+    const hopByHopHeaders = new Set([
+      "connection",
+      "keep-alive",
+      "proxy-authenticate",
+      "proxy-authorization",
+      "te",
+      "trailer",
+      "transfer-encoding",
+      "upgrade",
+    ]);
+    for (const [name, value] of response.headers) {
+      if (!hopByHopHeaders.has(name.toLowerCase()) && name.toLowerCase() !== "set-cookie") {
+        res.setHeader(name, value);
+      }
+    }
+    const setCookies = response.headers.getSetCookie();
+    if (setCookies.length > 0) {
+      res.setHeader("Set-Cookie", setCookies);
+    }
+
+    if (response.body === null) {
+      res.end();
+      return;
+    }
+    Readable.fromWeb(
+      response.body as import("node:stream/web").ReadableStream<Uint8Array>,
+    ).pipe(res);
+  } catch (error) {
+    log.error("Same-origin Open War API proxy failed:", error);
+    if (!res.headersSent) {
+      res.status(502).json({ error: "upstream_unavailable" });
+    } else {
+      res.destroy(error instanceof Error ? error : undefined);
+    }
+  }
+});
 
 // Serve the shared app shell for the root document.
 app.use(async (req, res, next) => {
