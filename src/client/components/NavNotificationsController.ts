@@ -271,11 +271,7 @@ class NavNotificationsStore {
   }
 
   showHelpDot(): boolean {
-    return (
-      getGamesPlayed() < 10 &&
-      !this._helpSeen &&
-      !this.showBellDot()
-    );
+    return getGamesPlayed() < 10 && !this._helpSeen && !this.showBellDot();
   }
 
   markVersionSeen(): void {
