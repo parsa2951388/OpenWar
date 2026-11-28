@@ -34,6 +34,7 @@ import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
 import { ServerEnv } from "./ServerEnv";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
+import { createMapAssetCompressionMiddleware } from "./MapAssetCompression";
 
 const playlist = new MapPlaylist();
 let lobbyService: MasterLobbyService;
@@ -459,6 +460,11 @@ app.get("/desktop/release.json", async (_req, res) => {
     res.status(500).json({ error: "unavailable" });
   }
 });
+
+// Large hashed map binaries are the heaviest first-load asset. Compress them
+// at the HTTP edge so low-bandwidth mobile clients do not time out while the
+// browser transparently decodes the original bytes.
+app.use(createMapAssetCompressionMiddleware());
 
 app.use(
   express.static(path.join(__dirname, "../../static"), {
