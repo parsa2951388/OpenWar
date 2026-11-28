@@ -133,7 +133,9 @@ export class ServerEnv {
           process.env.GAME_HOST?.trim(),
           process.env.SITE_HOST?.trim(),
           process.env.RENDER_EXTERNAL_HOSTNAME?.trim(),
-        ].find((value): value is string => value !== undefined && value.length > 0);
+        ].find(
+          (value): value is string => value !== undefined && value.length > 0,
+        );
         return host ? `https://${host}` : undefined;
       }
       return undefined;
