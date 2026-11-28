@@ -156,6 +156,11 @@ export function routeGroup(pathname) {
   return routeFor(pathname)?.group ?? null;
 }
 
+export function routeMethods(pathname) {
+  const route = routeFor(pathname);
+  return route === null ? null : [...route.methods];
+}
+
 function allowedOrigins(env) {
   const configured = (env.ALLOWED_ORIGINS ?? "")
     .split(",")
