@@ -19,5 +19,6 @@ declare const gateway: {
 };
 
 export function routeGroup(pathname: string): string | null;
+export function routeMethods(pathname: string): string[] | null;
 
 export default gateway;
