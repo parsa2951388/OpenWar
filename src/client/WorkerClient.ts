@@ -36,9 +36,60 @@ import { terrainMapFileLoader } from "./TerrainMapFileLoader";
 // the worker bundle is served from the CDN. The dynamic import keeps the
 // ~700 KB base64 payload in its own chunk, fetched when a game starts,
 // instead of inside the main bundle.
+const GAME_WORKER_MODULE_TIMEOUT_MS = 30_000;
+type GameWorkerModule = typeof import(
+  "@openfront/engine/worker/Worker.worker?worker&inline"
+);
+let gameWorkerModulePromise: Promise<GameWorkerModule> | null = null;
+
+function loadGameWorkerModule(): Promise<GameWorkerModule> {
+  if (gameWorkerModulePromise === null) {
+    const attempt = import(
+      "@openfront/engine/worker/Worker.worker?worker&inline"
+    );
+    gameWorkerModulePromise ??= attempt;
+    void attempt.catch(() => {
+      if (gameWorkerModulePromise === attempt) {
+        gameWorkerModulePromise = null;
+      }
+    });
+  }
+  return gameWorkerModulePromise;
+}
+
+function loadGameWorkerModuleWithTimeout(): Promise<GameWorkerModule> {
+  const modulePromise = loadGameWorkerModule();
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  return Promise.race([
+    modulePromise,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        // Drop a stalled import from the cache so a later game can retry.
+        if (gameWorkerModulePromise === modulePromise) {
+          gameWorkerModulePromise = null;
+        }
+        reject(
+          new Error(
+            `Timed out loading game worker after ${GAME_WORKER_MODULE_TIMEOUT_MS} ms`,
+          ),
+        );
+      }, GAME_WORKER_MODULE_TIMEOUT_MS);
+    }),
+  ]).finally(() => {
+    if (timer !== null) clearTimeout(timer);
+  });
+}
+
+/**
+ * Fetch and compile the worker bundle while the player is still in the lobby,
+ * so the large inline worker chunk does not add to the visible start delay.
+ */
+export function preloadGameWorker(): Promise<void> {
+  return loadGameWorkerModuleWithTimeout().then(() => undefined);
+}
+
 export async function createGameWorker(): Promise<Worker> {
-  const { default: GameWorker } =
-    await import("@openfront/engine/worker/Worker.worker?worker&inline");
+  const { default: GameWorker } = await loadGameWorkerModuleWithTimeout();
   return new GameWorker();
 }
 
@@ -167,12 +218,41 @@ export class WorkerClient {
 
     return new Promise((resolve, reject) => {
       const messageId = generateID();
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        worker.removeEventListener("error", onWorkerError);
+        this.cleanup();
+        reject(new Error("Worker initialization timeout"));
+      }, 60_000);
+      const finish = (): void => {
+        clearTimeout(timer);
+        worker.removeEventListener("error", onWorkerError);
+      };
+      const onWorkerError = (event: ErrorEvent): void => {
+        if (settled) return;
+        settled = true;
+        finish();
+        this.cleanup();
+        reject(
+          new Error(
+            event.message || "Game worker failed during initialization",
+          ),
+        );
+      };
+      worker.addEventListener("error", onWorkerError, { once: true });
 
       this.messageHandlers.set(messageId, (message) => {
+        if (settled) return;
         if (message.type === "initialized") {
+          settled = true;
+          finish();
           this.isInitialized = true;
           resolve();
         } else if (message.type === "init_error") {
+          settled = true;
+          finish();
           // No game will own this client, so nothing would stop the worker.
           this.cleanup();
           reject(new Error(message.error));
@@ -188,14 +268,15 @@ export class WorkerClient {
         snapshot: this.snapshotToRestore,
         editor: this.editorMap !== undefined,
       };
-      worker.postMessage(init, mapFilesTransfer(map));
-
-      setTimeout(() => {
-        if (!this.isInitialized) {
-          this.cleanup();
-          reject(new Error("Worker initialization timeout"));
-        }
-      }, 60000);
+      try {
+        worker.postMessage(init, mapFilesTransfer(map));
+      } catch (error) {
+        if (settled) return;
+        settled = true;
+        finish();
+        this.cleanup();
+        reject(error instanceof Error ? error : new Error(String(error)));
+      }
     });
   }
 

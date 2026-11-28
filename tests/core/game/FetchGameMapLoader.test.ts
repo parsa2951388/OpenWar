@@ -56,6 +56,34 @@ describe("FetchGameMapLoader", () => {
     expect(fetchMock).toHaveBeenLastCalledWith("/maps/china/label.4x.webp");
   });
 
+  test("aborts a stalled map request and reports a useful timeout", async () => {
+    const timeoutSpy = vi
+      .spyOn(AbortSignal, "timeout")
+      .mockImplementation(() => {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 0);
+        return controller.signal;
+      });
+    const fetchMock = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted", "AbortError")),
+            { once: true },
+          );
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const loader = new FetchGameMapLoader("/maps");
+    await expect(
+      loader.getMapData(GameMapType.BritanniaClassic).manifest(),
+    ).rejects.toThrow("Timed out loading game asset");
+    expect(timeoutSpy).toHaveBeenCalledWith(45_000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
   test("never fetches a Custom map: it has none until a scenario is set", () => {
     const fetchMock = vi.fn();
     vi.stubGlobal("fetch", fetchMock);
