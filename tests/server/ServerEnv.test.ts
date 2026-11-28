@@ -198,7 +198,10 @@ describe("ServerEnv local preview hostname", () => {
     vi.stubEnv("GAME_HOST", "");
     vi.stubEnv("SITE_HOST", "");
     vi.stubEnv("SUBDOMAIN", "");
-    vi.stubEnv("RENDER_EXTERNAL_HOSTNAME", "open-war-v2-solo-test.onrender.com");
+    vi.stubEnv(
+      "RENDER_EXTERNAL_HOSTNAME",
+      "open-war-v2-solo-test.onrender.com",
+    );
 
     expect(ServerEnv.publicHost()).toBeUndefined();
     expect(ServerEnv.siteHost()).toBeUndefined();
