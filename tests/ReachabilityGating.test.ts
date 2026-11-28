@@ -295,12 +295,10 @@ describe("local and registry actions while the backend is unreachable", () => {
     expect(messages).toContain("common.backend_unreachable");
   });
 
-  it("keeps private actions available while the registry recovers", async () => {
+  it("keeps private actions available when the registry recovers without a site registration", async () => {
     selector = await mountSelector();
     await announce(false, true);
-    clickAction("ranked");
-    document.dispatchEvent(new CustomEvent("leave-lobby"));
-
+    await ensureServerList();
     await announce(true);
 
     expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
@@ -358,6 +356,8 @@ describe("local and registry actions while the backend is unreachable", () => {
     expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
     expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
     expect(actionButton("ranked").getAttribute("aria-disabled")).toBe("true");
+    clickAction("ranked");
+    expect(messages).toContain("mode_selector.no_compatible_server");
   });
 });
 
