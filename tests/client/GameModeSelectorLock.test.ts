@@ -82,6 +82,8 @@ describe("GameModeSelector Click-Lock & In-Lobby State", () => {
       window as unknown as { BOOTSTRAP_CONFIG?: Record<string, unknown> }
     ).BOOTSTRAP_CONFIG = {
       gameEnv: "dev",
+      cluster: { a: { host: "game.test", numWorkers: 1 } },
+      instanceLetter: "a",
       turnstileSiteKey: "test",
       jwtAudience: "localhost",
       gitCommit: "test",
