@@ -22,6 +22,7 @@ import {
   LobbyCoordinatorClient,
 } from "./LobbyCoordinatorClient";
 import { logger } from "./Logger";
+import { createMapAssetCompressionMiddleware } from "./MapAssetCompression";
 import { MapPlaylist } from "./MapPlaylist";
 import { fetchMapWeights, MAP_WEIGHTS_POLL_MS } from "./MapWeights";
 import { MasterLobbyService } from "./MasterLobbyService";
@@ -34,7 +35,6 @@ import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
 import { ServerEnv } from "./ServerEnv";
 import { applyStaticAssetCacheControl } from "./StaticAssetCache";
-import { createMapAssetCompressionMiddleware } from "./MapAssetCompression";
 
 const playlist = new MapPlaylist();
 let lobbyService: MasterLobbyService;
