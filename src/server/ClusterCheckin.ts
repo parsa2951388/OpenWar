@@ -181,8 +181,10 @@ export async function registerClusterIdentity(
 
     if (response.status >= 400 && response.status < 500) {
       const detail = await response.text().catch(() => "");
+      const detailSuffix = detail ? `: ${detail.slice(0, 300)}` : "";
       throw new Error(
-        `Cluster registration refused ${host} on ${site} (HTTP ${response.status})${detail ? `: ${detail.slice(0, 300)}` : ""}`,
+        `Cluster registration refused ${host} on ${site} ` +
+          `(HTTP ${response.status})${detailSuffix}`,
       );
     }
 
@@ -203,7 +205,8 @@ export async function registerClusterIdentity(
     );
     if (!parsed.success) {
       throw new Error(
-        "Cluster registration returned an invalid identity; expected a lowercase letter and a positive worker count",
+        "Cluster registration returned an invalid identity. " +
+          "Expected a lowercase letter and a positive worker count.",
       );
     }
 
@@ -217,7 +220,8 @@ export async function registerClusterIdentity(
   }
 
   throw new Error(
-    `Could not register ${host} with the cluster API after ${REGISTER_ATTEMPTS} attempts: ${lastError.message}`,
+    `Could not register ${host} after ${REGISTER_ATTEMPTS} attempts: ` +
+      lastError.message,
   );
 }
 
