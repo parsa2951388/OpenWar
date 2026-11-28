@@ -1,6 +1,7 @@
 import { beforeEach, describe, expect, it } from "vitest";
 
 import "../../src/client/components/DesktopNavBar";
+import "../../src/client/components/MobileNavBar";
 import "../../src/client/components/NavUtilityIcons";
 import "../../src/client/components/PlayPage";
 import { initNavigation } from "../../src/client/Navigation";
@@ -121,5 +122,31 @@ describe("the nav bars that host the cluster", () => {
     expect(cluster.nextElementSibling?.tagName.toLowerCase()).toBe(
       "nav-account-menu",
     );
+  });
+
+  it("keeps Store and Inventory out of the desktop home navigation", async () => {
+    const bar = await mount("desktop-nav-bar");
+    expect(
+      bar.querySelector('.nav-menu-item[data-page="page-item-store"]'),
+    ).toBeNull();
+    expect(
+      bar.querySelector('.nav-menu-item[data-page="page-inventory"]'),
+    ).toBeNull();
+    expect(
+      bar.querySelector('.nav-menu-item[data-page="page-play"]'),
+    ).not.toBeNull();
+  });
+
+  it("keeps Store and Inventory out of the mobile home navigation", async () => {
+    const bar = await mount("mobile-nav-bar");
+    expect(
+      bar.querySelector('.nav-menu-item[data-page="page-item-store"]'),
+    ).toBeNull();
+    expect(
+      bar.querySelector('.nav-menu-item[data-page="page-inventory"]'),
+    ).toBeNull();
+    expect(
+      bar.querySelector('.nav-menu-item[data-page="page-play"]'),
+    ).not.toBeNull();
   });
 });
