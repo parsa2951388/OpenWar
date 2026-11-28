@@ -2403,6 +2403,7 @@
   },
   "mode_selector": {
     "lobbies_unreachable": "Can't reach the public lobbies right now",
+    "no_compatible_server": "This Open War server is not registered for compatible matchmaking yet.",
     "offline_lobbies": "Public lobbies aren't available while you're offline",
     "ranked_1v1_title": "1v1",
     "ranked_2v2_title": "2v2",
