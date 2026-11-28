@@ -37,12 +37,36 @@ import { terrainMapFileLoader } from "./TerrainMapFileLoader";
 // ~700 KB base64 payload in its own chunk, fetched when a game starts,
 // instead of inside the main bundle.
 const GAME_WORKER_MODULE_TIMEOUT_MS = 30_000;
+type GameWorkerModule = typeof import(
+  "@openfront/engine/worker/Worker.worker?worker&inline"
+);
+let gameWorkerModulePromise: Promise<GameWorkerModule> | null = null;
+
+function loadGameWorkerModule(): Promise<GameWorkerModule> {
+  if (gameWorkerModulePromise === null) {
+    gameWorkerModulePromise = import(
+      "@openfront/engine/worker/Worker.worker?worker&inline"
+    ).catch((error: unknown) => {
+      gameWorkerModulePromise = null;
+      throw error;
+    });
+  }
+  return gameWorkerModulePromise;
+}
+
+/**
+ * Fetch and compile the worker bundle while the player is still in the lobby,
+ * so the large inline worker chunk does not add to the visible start delay.
+ */
+export function preloadGameWorker(): Promise<void> {
+  return loadGameWorkerModule().then(() => undefined);
+}
 
 export async function createGameWorker(): Promise<Worker> {
   let timer: ReturnType<typeof setTimeout> | null = null;
   try {
     const { default: GameWorker } = await Promise.race([
-      import("@openfront/engine/worker/Worker.worker?worker&inline"),
+      loadGameWorkerModule(),
       new Promise<never>((_, reject) => {
         timer = setTimeout(
           () =>
