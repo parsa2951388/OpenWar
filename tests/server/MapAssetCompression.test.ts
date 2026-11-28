@@ -73,16 +73,23 @@ describe("map asset compression", () => {
     expect(gunzipSync(response.body)).toEqual(payload);
   });
 
-  it("compresses only map binary routes", async () => {
+  it("compresses maps and text while leaving unrelated binary routes alone", async () => {
     const app = express();
     app.use(createMapAssetCompressionMiddleware());
+    const textPayload = "Open War static text asset ".repeat(512);
     app.get("/assets/other.bin", (_request, response) => {
       response.type("application/octet-stream").send(Buffer.alloc(4096, 0x41));
     });
+    app.get("/assets/guide.txt", (_request, response) => {
+      response.type("text/plain").send(textPayload);
+    });
 
     const port = await start(app);
-    const response = await get(port, "/assets/other.bin");
+    const binaryResponse = await get(port, "/assets/other.bin");
+    const textResponse = await get(port, "/assets/guide.txt");
 
-    expect(response.headers["content-encoding"]).toBeUndefined();
+    expect(binaryResponse.headers["content-encoding"]).toBeUndefined();
+    expect(textResponse.headers["content-encoding"]).toBe("gzip");
+    expect(gunzipSync(textResponse.body).toString()).toBe(textPayload);
   });
 });
