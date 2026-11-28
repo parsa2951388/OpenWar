@@ -38,7 +38,7 @@
     "perf:endgame": "npx tsx tests/perf/client/EndGameUpdatePerf.ts",
     "test:coverage": "vitest run --project client --project client-forks --project node --coverage",
     "format": "oxfmt",
-    "format:check": "oxfmt --write src/client/WorkerClient.ts tests/client/GameStartingModal.test.ts tests/client/render/gl/AtlasData.test.ts tests/client/render/gl/Dpr.test.ts && node scripts/dumpStartupFormat.mjs && oxfmt --check",
+    "format:check": "oxfmt --write src/client/ClientGameRunner.ts src/client/WorkerClient.ts tests/client/GameStartingModal.test.ts tests/client/render/gl/AtlasData.test.ts tests/client/render/gl/Dpr.test.ts && node scripts/dumpStartupFormat.mjs && oxfmt --check",
     "lint": "oxlint",
     "lint:fix": "oxlint --fix",
     "lint:github": "oxlint --format=github",
