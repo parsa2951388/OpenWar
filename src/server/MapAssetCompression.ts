@@ -10,12 +10,8 @@ import compression from "compression";
 export function createMapAssetCompressionMiddleware() {
   return compression({
     threshold: 1024,
-    filter: (request, response) => {
-      const isFullMapBinary =
-        request.method === "GET" &&
-        /^\\/_assets\\/maps\\/[^/]+\\/map\\.[a-f0-9]{12}\\.bin$/.test(request.path);
-
-      return isFullMapBinary || compression.filter(request, response);
-    },
+    filter: (request) =>
+      request.method === "GET" &&
+      /^\\/_assets\\/maps\\/[^/]+\\/map\\.[a-f0-9]{12}\\.bin$/.test(request.path),
   });
 }
