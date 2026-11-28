@@ -1,8 +1,45 @@
 import { describe, expect, it, vi } from "vitest";
-import { forwardOpenWarApiRequest } from "../../src/server/OpenWarApiProxy";
+import {
+  createLocalPreviewServerList,
+  forwardOpenWarApiRequest,
+} from "../../src/server/OpenWarApiProxy";
 
 const host = "open-war-v2-solo-test.onrender.com";
 const origin = `https://${host}`;
+
+describe("local preview server registry", () => {
+  it("returns a schema-valid list for the Render instance", () => {
+    expect(
+      createLocalPreviewServerList(
+        "open-war-v2-solo-test.onrender.com",
+        "a",
+        1,
+        "bfd5563a11111111111111111111111111111111",
+      ),
+    ).toEqual({
+      latest: "bfd5563a11111111111111111111111111111111",
+      servers: {
+        a: {
+          host: "open-war-v2-solo-test.onrender.com",
+          numWorkers: 1,
+          version: "bfd5563a11111111111111111111111111111111",
+          state: "open",
+        },
+      },
+    });
+  });
+
+  it("rejects a non-commit build version rather than publishing a malformed list", () => {
+    expect(() =>
+      createLocalPreviewServerList(
+        "open-war-v2-solo-test.onrender.com",
+        "a",
+        1,
+        "DEV",
+      ),
+    ).toThrow();
+  });
+});
 
 describe("same-origin Open War API proxy", () => {
   it("forwards the server registry request to the OpenFront API", async () => {
