@@ -12,6 +12,7 @@ import {
   CHECKIN_INTERVAL_MS,
   checkinBody,
   isRefusal,
+  registerClusterIdentity,
   registeredSite,
   sendCheckin,
 } from "./ClusterCheckin";
@@ -245,6 +246,12 @@ export async function startMaster() {
   }
 
   log.info(`Primary ${process.pid} is running`);
+  const registered = await registerClusterIdentity();
+  if (registered) {
+    log.info(
+      `Registered ${ServerEnv.publicHost()} as letter ${ServerEnv.instanceLetter()} with ${ServerEnv.numWorkers()} workers`,
+    );
+  }
   log.info(`Setting up ${ServerEnv.numWorkers()} workers...`);
 
   // A server that registers schedules nothing until the API calls it open: a
