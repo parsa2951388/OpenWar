@@ -11,7 +11,7 @@ describe("GameStartingModal", () => {
       requestUpdate,
     } as unknown as GameStartingModal;
 
-    modal.show();
+    GameStartingModal.prototype.show.call(modal);
 
     expect(remove).toHaveBeenCalledWith("hidden");
     expect(modal.isVisible).toBe(true);
@@ -25,7 +25,7 @@ describe("GameStartingModal", () => {
       requestUpdate,
     } as unknown as GameStartingModal;
 
-    modal.hide();
+    GameStartingModal.prototype.hide.call(modal);
 
     expect(modal.isVisible).toBe(false);
     expect(requestUpdate).toHaveBeenCalledOnce();
