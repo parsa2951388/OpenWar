@@ -150,7 +150,6 @@ export function shouldBlockMultiplayerAction(
   return false;
 }
 
-
 /**
  * Local Create/Join need a server that rendered this page, not the global
  * registry. That server can answer its own worker routes while the registry
@@ -936,14 +935,9 @@ export class GameModeSelector extends LitElement {
       !this.backendOutage &&
       !desktopBlocked &&
       this.registryHasCompatibleServer() === false;
-    reportMultiplayerRefusal(
-      requirement === "registry" && this.backendOutage,
-    );
+    reportMultiplayerRefusal(requirement === "registry" && this.backendOutage);
     if (registryUnavailable) {
-      showToast(
-        translateText("mode_selector.no_compatible_server"),
-        "red",
-      );
+      showToast(translateText("mode_selector.no_compatible_server"), "red");
     }
     return true;
   }

@@ -436,7 +436,6 @@ describe("grid placement", () => {
   });
 });
 
-
 describe("server-served page actions when the registry is unavailable", () => {
   it("allows local create and join while keeping Ranked unavailable", async () => {
     const bootstrap = window.BOOTSTRAP_CONFIG as any;

@@ -333,21 +333,20 @@ describe("shouldBlockSocketSourcedAction", () => {
   });
 });
 
-
 describe("server selection requirements", () => {
   const healthyUpdate = { status: "current", bytes: 0, total: 0 } as const;
   const signedIn = { status: "signed-in" } as const;
 
   it("allows create and join on the page's own server during a registry outage", () => {
-    expect(
-      shouldBlockLocalServerAction(healthyUpdate, signedIn, true),
-    ).toBe(false);
+    expect(shouldBlockLocalServerAction(healthyUpdate, signedIn, true)).toBe(
+      false,
+    );
   });
 
   it("blocks local-server actions when the page does not identify a game server", () => {
-    expect(
-      shouldBlockLocalServerAction(healthyUpdate, signedIn, false),
-    ).toBe(true);
+    expect(shouldBlockLocalServerAction(healthyUpdate, signedIn, false)).toBe(
+      true,
+    );
   });
 
   it("still blocks local-server actions for a pending update or signed-out shell", () => {
@@ -383,9 +382,9 @@ describe("server selection requirements", () => {
   });
 
   it("still blocks Ranked during a confirmed outage when availability is unknown", () => {
-    expect(
-      shouldBlockRegistryAction(healthyUpdate, signedIn, true, null),
-    ).toBe(true);
+    expect(shouldBlockRegistryAction(healthyUpdate, signedIn, true, null)).toBe(
+      true,
+    );
   });
 
   it("allows registry-dependent actions only when a compatible server is selected", () => {
