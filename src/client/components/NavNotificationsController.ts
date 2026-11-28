@@ -2,7 +2,6 @@ import type { FriendEntry, UserMeResponse } from "@openfront/shared/ApiSchemas";
 import { ReactiveController, ReactiveControllerHost } from "lit";
 import version from "resources/version.txt?raw";
 import { responseHasLinkedIdentity } from "../AccountIdentity";
-import { getCosmeticsHash } from "../Cosmetics";
 import { crazyGamesSDK } from "../CrazyGamesSDK";
 import {
   fetchFriendRequests,
@@ -15,7 +14,6 @@ import { latestUserMeResponse } from "../NavAccountButton";
 import { getGamesPlayed } from "../Utils";
 
 const HELP_SEEN_KEY = "helpSeen";
-const STORE_SEEN_HASH_KEY = "storeSeenHash";
 const NEWS_SEEN_VERSION_KEY = "newsSeenVersion";
 const FRIEND_REQUEST_POLL_MS = 60_000;
 
@@ -29,15 +27,14 @@ function normalizedVersion(): string {
  *
  * One store, not one per component: desktop and mobile can both render the
  * utility cluster, but only one poller should fetch friend requests. The dots
- * are also prioritised against each other (bell > store > help), so dismissing
- * one notification must update every component before revealing the next.
+ * are also prioritised against each other (bell > help), so dismissing one
+ * notification must update every component before revealing the next.
  */
 class NavNotificationsStore {
   private hosts = new Set<ReactiveControllerHost>();
   private loaded = false;
 
   private _helpSeen = false;
-  private _hasNewCosmetics = false;
   private _hasNewVersion = false;
   private _friendRequests: FriendEntry[] = [];
 
@@ -76,14 +73,6 @@ class NavNotificationsStore {
       document.body.classList.contains("in-game");
 
     this._helpSeen = localStorage.getItem(HELP_SEEN_KEY) === "true";
-
-    getCosmeticsHash()
-      .then((hash: string | null) => {
-        const seenHash = localStorage.getItem(STORE_SEEN_HASH_KEY);
-        this._hasNewCosmetics = hash !== null && hash !== seenHash;
-        this.notify();
-      })
-      .catch(() => {});
 
     const currentVersion = normalizedVersion();
     const seenVersion = localStorage.getItem(NEWS_SEEN_VERSION_KEY);
@@ -281,16 +270,11 @@ class NavNotificationsStore {
     return this._hasNewVersion || this._friendRequests.length > 0;
   }
 
-  showStoreDot(): boolean {
-    return this._hasNewCosmetics && !this.showBellDot();
-  }
-
   showHelpDot(): boolean {
     return (
       getGamesPlayed() < 10 &&
       !this._helpSeen &&
-      !this.showBellDot() &&
-      !this.showStoreDot()
+      !this.showBellDot()
     );
   }
 
@@ -299,18 +283,6 @@ class NavNotificationsStore {
     localStorage.setItem(NEWS_SEEN_VERSION_KEY, normalizedVersion());
     this.notify();
   }
-
-  onStoreClick = (): void => {
-    this._hasNewCosmetics = false;
-    getCosmeticsHash()
-      .then((hash: string | null) => {
-        if (hash !== null) {
-          localStorage.setItem(STORE_SEEN_HASH_KEY, hash);
-        }
-      })
-      .catch(() => {});
-    this.notify();
-  };
 
   onHelpClick = (): void => {
     localStorage.setItem(HELP_SEEN_KEY, "true");
@@ -339,7 +311,6 @@ class NavNotificationsStore {
     this.hosts.clear();
     this.loaded = false;
     this._helpSeen = false;
-    this._hasNewCosmetics = false;
     this._hasNewVersion = false;
     this._friendRequests = [];
     this.friendRequestsEnabled = false;
@@ -388,10 +359,6 @@ export class NavNotificationsController implements ReactiveController {
     return navNotifications.showBellDot();
   }
 
-  showStoreDot(): boolean {
-    return navNotifications.showStoreDot();
-  }
-
   showHelpDot(): boolean {
     return navNotifications.showHelpDot();
   }
@@ -400,6 +367,5 @@ export class NavNotificationsController implements ReactiveController {
     navNotifications.markVersionSeen();
   }
 
-  onStoreClick = (): void => navNotifications.onStoreClick();
   onHelpClick = (): void => navNotifications.onHelpClick();
 }
