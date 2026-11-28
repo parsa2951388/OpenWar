@@ -35,12 +35,8 @@ describe("Inventory navigation", () => {
   it("keeps Inventory out of desktop and mobile home navigation", async () => {
     const desktop = await mount(new DesktopNavBar());
     const mobile = await mount(new MobileNavBar());
-    expect(
-      desktop.querySelector('[data-page="page-inventory"]'),
-    ).toBeNull();
-    expect(
-      mobile.querySelector('[data-page="page-inventory"]'),
-    ).toBeNull();
+    expect(desktop.querySelector('[data-page="page-inventory"]')).toBeNull();
+    expect(mobile.querySelector('[data-page="page-inventory"]')).toBeNull();
     expect(desktop.querySelector('[data-page="page-play"]')).toBeTruthy();
     expect(mobile.querySelector('[data-page="page-play"]')).toBeTruthy();
   });
