@@ -1,6 +1,7 @@
 import { readFileSync } from "node:fs";
 
 const files = [
+  "src/client/ClientGameRunner.ts",
   "src/client/WorkerClient.ts",
   "tests/client/GameStartingModal.test.ts",
   "tests/client/render/gl/AtlasData.test.ts",
