@@ -30,6 +30,7 @@ describe("FetchGameMapLoader", () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/_assets/maps/britanniaclassic/manifest.json.hashed",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
 
@@ -50,10 +51,16 @@ describe("FetchGameMapLoader", () => {
     const mapData = loader.getMapData(GameMapType.China);
 
     await expect(mapData.layerImage("label", false)).resolves.toBe(bitmap);
-    expect(fetchMock).toHaveBeenLastCalledWith("/maps/china/label.webp");
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/maps/china/label.webp",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
 
     await expect(mapData.layerImage("label", true)).resolves.toBe(bitmap);
-    expect(fetchMock).toHaveBeenLastCalledWith("/maps/china/label.4x.webp");
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/maps/china/label.4x.webp",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
   });
 
   test("aborts a stalled map request and reports a useful timeout", async () => {
