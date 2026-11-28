@@ -1,3 +1,4 @@
+import { availableParallelism } from "node:os";
 import { z } from "zod";
 import { ServerEnv } from "./ServerEnv";
 
@@ -10,6 +11,8 @@ import { ServerEnv } from "./ServerEnv";
 
 export const CHECKIN_INTERVAL_MS = 10_000;
 const CHECKIN_TIMEOUT_MS = 8_000;
+const REGISTER_ATTEMPTS = 3;
+const REGISTER_RETRY_DELAY_MS = 2_000;
 
 // The states the API assigns (infra #700), the same vocabulary the client
 // reads from GET /cluster.json:
@@ -65,6 +68,10 @@ export interface CheckinBody {
 }
 
 const CheckinReplySchema = z.object({ state: ServerStateSchema });
+const RegisterReplySchema = z.object({
+  letter: z.string().regex(/^[a-z]$/),
+  numWorkers: z.number().int().positive(),
+});
 const RefusalBodySchema = z.object({
   reason: z.string().optional(),
   host: z.string().optional(),
@@ -103,6 +110,115 @@ export function checkinBody(liveGames: number): CheckinBody | null {
     // assertion here and every future reader wonder which it is.
     ...(machine !== undefined ? { machine } : {}),
   };
+}
+
+/**
+ * Register a new page/game host before it starts checking in. The registry
+ * assigns the permanent letter and, when not explicitly configured, the
+ * worker count. Without this step a new site has no record and
+ * GET /cluster.json returns "Unknown site".
+ *
+ * Production deployments that already carry both values from deploy.sh do
+ * not register again. Standalone Render/test deployments with a public host
+ * register once at startup and preserve any explicitly configured value.
+ */
+export async function registerClusterIdentity(
+  fetchFn: typeof fetch = fetch,
+  cpus: number = availableParallelism(),
+): Promise<boolean> {
+  const host = ServerEnv.publicHost();
+  if (host === undefined) return false;
+
+  const site = registeredSite() ?? host;
+  const hasInstanceLetter = Boolean(process.env.INSTANCE_LETTER?.trim());
+  const hasNumWorkers = Boolean(process.env.NUM_WORKERS?.trim());
+  if (hasInstanceLetter && hasNumWorkers) return false;
+
+  if (!Number.isInteger(cpus) || cpus < 1) {
+    throw new Error(`Invalid CPU count for cluster registration: ${cpus}`);
+  }
+
+  // A same-origin API_ORIGIN is the Render-side browser proxy. At master
+  // startup the HTTP listener is not up yet, so registration must go straight
+  // to the real API host instead of calling back into this process.
+  const apiOrigin = ServerEnv.apiOrigin();
+  const ownHosts = [ServerEnv.publicHost(), ServerEnv.siteHost()].filter(
+    (value): value is string => value !== undefined,
+  );
+  const isSameOriginProxy = ownHosts.some(
+    (ownHost) => apiOrigin === `https://${ownHost}`,
+  );
+  const issuer = isSameOriginProxy
+    ? `https://api.${ServerEnv.jwtAudience()}`
+    : ServerEnv.jwtIssuer();
+  const url = `${issuer}/cluster/register`;
+  const body = JSON.stringify({ site, host, cpus });
+  let lastError: Error = new Error("No registration attempt completed");
+
+  for (let attempt = 1; attempt <= REGISTER_ATTEMPTS; attempt += 1) {
+    let response: Response;
+    try {
+      response = await fetchFn(url, {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+          ...ServerEnv.apiKeyHeaders(),
+        },
+        body,
+        signal: AbortSignal.timeout(CHECKIN_TIMEOUT_MS),
+      });
+    } catch (error) {
+      lastError =
+        error instanceof Error ? error : new Error(String(error));
+      if (attempt < REGISTER_ATTEMPTS) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, REGISTER_RETRY_DELAY_MS),
+        );
+        continue;
+      }
+      break;
+    }
+
+    if (response.status >= 400 && response.status < 500) {
+      const detail = await response.text().catch(() => "");
+      throw new Error(
+        `Cluster registration refused ${host} on ${site} (HTTP ${response.status})${detail ? `: ${detail.slice(0, 300)}` : ""}`,
+      );
+    }
+
+    if (!response.ok) {
+      lastError = new Error(
+        `Cluster registration returned HTTP ${response.status}`,
+      );
+      if (attempt < REGISTER_ATTEMPTS) {
+        await new Promise((resolve) =>
+          setTimeout(resolve, REGISTER_RETRY_DELAY_MS),
+        );
+      }
+      continue;
+    }
+
+    const parsed = RegisterReplySchema.safeParse(
+      await response.json().catch(() => null),
+    );
+    if (!parsed.success) {
+      throw new Error(
+        "Cluster registration returned an invalid identity; expected a lowercase letter and a positive worker count",
+      );
+    }
+
+    if (!hasInstanceLetter) {
+      process.env.INSTANCE_LETTER = parsed.data.letter;
+    }
+    if (!hasNumWorkers) {
+      process.env.NUM_WORKERS = String(parsed.data.numWorkers);
+    }
+    return true;
+  }
+
+  throw new Error(
+    `Could not register ${host} with the cluster API after ${REGISTER_ATTEMPTS} attempts: ${lastError.message}`,
+  );
 }
 
 /**
