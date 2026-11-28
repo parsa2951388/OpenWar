@@ -68,6 +68,12 @@ app.use(async (req, res, next) => {
       headers.set(name, value.join(", "));
     }
   }
+  // The account API key belongs to the server, not the browser. Always use
+  // the configured server key so allowlisted API requests can authenticate
+  // without exposing the secret to client code.
+  for (const [name, value] of Object.entries(ServerEnv.apiKeyHeaders())) {
+    headers.set(name, value);
+  }
 
   try {
     const incoming = new URL(req.originalUrl, `https://${host}`);
