@@ -6,6 +6,8 @@ import {
 import { MapFiles } from "@openfront/engine-api/game/MapFiles";
 import { GameMapLoader, MapData } from "./GameMapLoader";
 
+const MAP_ASSET_TIMEOUT_MS = 45_000;
+
 export class FetchGameMapLoader implements GameMapLoader {
   private maps: Map<GameMapId, MapData>;
   private custom: MapData | null = null;
@@ -85,15 +87,33 @@ export class FetchGameMapLoader implements GameMapLoader {
     return this.resolveUrl(`${map}/${path}`);
   }
 
+  private async fetchAsset<T>(
+    url: string,
+    consume: (response: Response) => Promise<T>,
+  ): Promise<T> {
+    const signal = AbortSignal.timeout(MAP_ASSET_TIMEOUT_MS);
+    try {
+      const response = await fetch(url, { signal });
+      if (!response.ok) {
+        throw new Error(`Failed to load ${url}: ${response.statusText}`);
+      }
+      // Keep the timeout active while the response body is being consumed too.
+      return await consume(response);
+    } catch (error) {
+      if (signal.aborted) {
+        throw new Error(
+          `Timed out loading game asset after ${MAP_ASSET_TIMEOUT_MS} ms: ${url}`,
+        );
+      }
+      throw error;
+    }
+  }
+
   private async loadBinaryFromUrl(url: string) {
     const startTime = performance.now();
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Failed to load ${url}: ${response.statusText}`);
-    }
-
-    const data = await response.arrayBuffer();
+    const data = await this.fetchAsset(url, async (response) =>
+      response.arrayBuffer(),
+    );
     console.log(
       `[MapLoader] ${url}: ${(performance.now() - startTime).toFixed(0)}ms`,
     );
@@ -101,22 +121,12 @@ export class FetchGameMapLoader implements GameMapLoader {
   }
 
   private async loadJsonFromUrl(url: string) {
-    const response = await fetch(url);
-
-    if (!response.ok) {
-      throw new Error(`Failed to load ${url}: ${response.statusText}`);
-    }
-
-    return response.json();
+    return this.fetchAsset(url, (response) => response.json());
   }
 
   private async loadImageBitmap(url: string): Promise<ImageBitmap> {
     const startTime = performance.now();
-    const response = await fetch(url);
-    if (!response.ok) {
-      throw new Error(`Failed to load ${url}: ${response.statusText}`);
-    }
-    const blob = await response.blob();
+    const blob = await this.fetchAsset(url, (response) => response.blob());
     const bitmap = await createImageBitmap(blob);
     console.log(
       `[MapLoader] ${url}: ${(performance.now() - startTime).toFixed(0)}ms`,

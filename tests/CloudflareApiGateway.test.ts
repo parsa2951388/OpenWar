@@ -204,4 +204,52 @@ describe("Open War API gateway route allowlist", () => {
       "GET, DELETE, OPTIONS",
     );
   });
+
+  it("allows the solo-test Render origin through the default CORS allowlist", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ ok: true }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const gameOrigin = "https://solo-test.onrender.com";
+    const response = await gateway.fetch(
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/cluster.json",
+        {
+          headers: { Origin: gameOrigin },
+        },
+      ),
+      env,
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      gameOrigin,
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows CORS preflight from solo-test.onrender.com", async () => {
+    const gameOrigin = "https://solo-test.onrender.com";
+    const response = await gateway.fetch(
+      new Request("https://openwar-api-gateway.parsaoj.workers.dev/users/@me", {
+        method: "OPTIONS",
+        headers: { Origin: gameOrigin },
+      }),
+      env,
+      context,
+    );
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      gameOrigin,
+    );
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true",
+    );
+  });
 });

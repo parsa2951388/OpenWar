@@ -22,11 +22,16 @@ interface RawMsdfAtlas {
 
 // Fetched at game-load time rather than statically imported — the JSON is
 // ~320 KB minified and would otherwise sit in the main bundle.
+const ATLAS_FETCH_TIMEOUT_MS = 30_000;
 let atlasData: RawMsdfAtlas | null = null;
 let atlasDataPromise: Promise<void> | null = null;
 
 export function preloadAtlasData(): Promise<void> {
-  atlasDataPromise ??= fetch(assetUrl("atlases/msdf-atlas.json"))
+  if (atlasDataPromise !== null) return atlasDataPromise;
+
+  const signal = AbortSignal.timeout(ATLAS_FETCH_TIMEOUT_MS);
+  let attempt: Promise<void>;
+  attempt = fetch(assetUrl("atlases/msdf-atlas.json"), { signal })
     .then((response) => {
       if (!response.ok) {
         throw new Error(`Failed to fetch msdf-atlas.json: ${response.status}`);
@@ -35,8 +40,20 @@ export function preloadAtlasData(): Promise<void> {
     })
     .then((json) => {
       atlasData = json as RawMsdfAtlas;
+    })
+    .catch((error: unknown) => {
+      // A rejected promise must not poison all future game starts in this tab.
+      if (atlasDataPromise === attempt) atlasDataPromise = null;
+      if (signal.aborted) {
+        throw new Error(
+          `Timed out loading msdf-atlas.json after ${ATLAS_FETCH_TIMEOUT_MS} ms`,
+        );
+      }
+      throw error;
     });
-  return atlasDataPromise;
+
+  atlasDataPromise = attempt;
+  return attempt;
 }
 
 export function parseAtlasData(): ParsedAtlas {
