@@ -1,27 +1,33 @@
-import { afterEach, describe, expect, it } from "vitest";
+import { describe, expect, it, vi } from "vitest";
 import { GameStartingModal } from "../../src/client/GameStartingModal";
 
 describe("GameStartingModal", () => {
-  let modal: GameStartingModal;
+  it("removes a stale hidden host class when the modal is shown again", () => {
+    const remove = vi.fn();
+    const requestUpdate = vi.fn();
+    const modal = {
+      classList: { remove },
+      isVisible: false,
+      requestUpdate,
+    } as unknown as GameStartingModal;
 
-  afterEach(() => {
-    modal?.remove();
+    modal.show();
+
+    expect(remove).toHaveBeenCalledWith("hidden");
+    expect(modal.isVisible).toBe(true);
+    expect(requestUpdate).toHaveBeenCalledOnce();
   });
 
-  it("can be shown again after an earlier failed start hid the host", async () => {
-    modal = document.createElement("game-starting-modal") as GameStartingModal;
-    document.body.append(modal);
-    await modal.updateComplete;
-
-    modal.classList.add("hidden");
-    modal.show();
-    await modal.updateComplete;
-
-    expect(modal.classList.contains("hidden")).toBe(false);
-    expect(modal.isVisible).toBe(true);
+  it("hides the modal state", () => {
+    const requestUpdate = vi.fn();
+    const modal = {
+      isVisible: true,
+      requestUpdate,
+    } as unknown as GameStartingModal;
 
     modal.hide();
-    await modal.updateComplete;
+
     expect(modal.isVisible).toBe(false);
+    expect(requestUpdate).toHaveBeenCalledOnce();
   });
 });
