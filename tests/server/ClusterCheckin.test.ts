@@ -214,20 +214,21 @@ describe("registerClusterIdentity", () => {
   test(
     "skips upstream registration for an explicitly local Render preview",
     async () => {
-    vi.stubEnv("OPENWAR_LOCAL_PREVIEW", "true");
-    vi.stubEnv("GAME_HOST", "open-war-v2-solo-test.onrender.com");
-    vi.stubEnv("SITE_HOST", "open-war-v2-solo-test.onrender.com");
-    vi.stubEnv("INSTANCE_LETTER", "");
-    const fetchFn = vi.fn();
+      vi.stubEnv("OPENWAR_LOCAL_PREVIEW", "true");
+      vi.stubEnv("GAME_HOST", "open-war-v2-solo-test.onrender.com");
+      vi.stubEnv("SITE_HOST", "open-war-v2-solo-test.onrender.com");
+      vi.stubEnv("INSTANCE_LETTER", "");
+      const fetchFn = vi.fn();
 
-    await registerClusterIdentity(
-      fetchFn as unknown as typeof fetch,
-      1,
-    );
+      await registerClusterIdentity(
+        fetchFn as unknown as typeof fetch,
+        1,
+      );
 
-    expect(fetchFn).not.toHaveBeenCalled();
-    expect(process.env.INSTANCE_LETTER).toBe("");
-  });
+      expect(fetchFn).not.toHaveBeenCalled();
+      expect(process.env.INSTANCE_LETTER).toBe("");
+    },
+  );
 
   test("does not register local development without a public host", async () => {
     vi.stubEnv("DOMAIN", "localhost");
