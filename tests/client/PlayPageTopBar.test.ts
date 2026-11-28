@@ -118,6 +118,25 @@ describe("play-page mobile top bar", () => {
     });
   });
 
+  describe("compact header geometry", () => {
+    beforeEach(mount);
+
+    it("uses a shrink-safe center column and a content-sized action column", () => {
+      const row = el.querySelector(".ow-mobile-topbar__inner");
+      const brand = el.querySelector(".ow-mobile-topbar__brand");
+      const actions = el.querySelector(".ow-mobile-topbar__actions");
+
+      expect(row).not.toBeNull();
+      expect(row?.className).toContain("minmax(0,1fr)");
+      expect(brand).not.toBeNull();
+      expect(brand?.className).toContain("min-w-0");
+      expect(actions).not.toBeNull();
+      expect(actions?.className).toContain("shrink-0");
+      expect(actions?.querySelectorAll("nav-utility-icons")).toHaveLength(1);
+      expect(actions?.querySelectorAll("nav-account-menu")).toHaveLength(1);
+    });
+  });
+
   describe("top strip layout", () => {
     beforeEach(mount);
 
