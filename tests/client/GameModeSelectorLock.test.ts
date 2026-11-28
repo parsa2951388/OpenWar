@@ -30,6 +30,7 @@ vi.mock("../../src/client/LobbySocket", () => ({
 }));
 
 vi.mock("../../src/client/ServerList", () => ({
+  backendReachable: () => null,
   backendUnreachableConfirmed: () => false,
   isPinnedToAVersion: () => false,
   refreshServerList: vi.fn(),
