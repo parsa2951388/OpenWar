@@ -54,35 +54,40 @@ function loadGameWorkerModule(): Promise<GameWorkerModule> {
   return gameWorkerModulePromise;
 }
 
+function loadGameWorkerModuleWithTimeout(): Promise<GameWorkerModule> {
+  const modulePromise = loadGameWorkerModule();
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  return Promise.race([
+    modulePromise,
+    new Promise<never>((_, reject) => {
+      timer = setTimeout(() => {
+        // Drop a stalled import from the cache so a later game can retry.
+        if (gameWorkerModulePromise === modulePromise) {
+          gameWorkerModulePromise = null;
+        }
+        reject(
+          new Error(
+            `Timed out loading game worker after ${GAME_WORKER_MODULE_TIMEOUT_MS} ms`,
+          ),
+        );
+      }, GAME_WORKER_MODULE_TIMEOUT_MS);
+    }),
+  ]).finally(() => {
+    if (timer !== null) clearTimeout(timer);
+  });
+}
+
 /**
  * Fetch and compile the worker bundle while the player is still in the lobby,
  * so the large inline worker chunk does not add to the visible start delay.
  */
 export function preloadGameWorker(): Promise<void> {
-  return loadGameWorkerModule().then(() => undefined);
+  return loadGameWorkerModuleWithTimeout().then(() => undefined);
 }
 
 export async function createGameWorker(): Promise<Worker> {
-  let timer: ReturnType<typeof setTimeout> | null = null;
-  try {
-    const { default: GameWorker } = await Promise.race([
-      loadGameWorkerModule(),
-      new Promise<never>((_, reject) => {
-        timer = setTimeout(
-          () =>
-            reject(
-              new Error(
-                `Timed out loading game worker after ${GAME_WORKER_MODULE_TIMEOUT_MS} ms`,
-              ),
-            ),
-          GAME_WORKER_MODULE_TIMEOUT_MS,
-        );
-      }),
-    ]);
-    return new GameWorker();
-  } finally {
-    if (timer !== null) clearTimeout(timer);
-  }
+  const { default: GameWorker } = await loadGameWorkerModuleWithTimeout();
+  return new GameWorker();
 }
 
 // A header is one decode of a few MB; far past that, the worker is stuck.
