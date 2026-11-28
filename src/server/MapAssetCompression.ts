@@ -12,6 +12,6 @@ export function createMapAssetCompressionMiddleware() {
     threshold: 1024,
     filter: (request) =>
       request.method === "GET" &&
-      /^\\/_assets\\/maps\\/[^/]+\\/map\\.[a-f0-9]{12}\\.bin$/.test(request.path),
+      /^\/_assets\/maps\/[^/]+\/map\.[a-f0-9]{12}\.bin$/.test(request.path),
   });
 }
