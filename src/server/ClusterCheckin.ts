@@ -168,8 +168,7 @@ export async function registerClusterIdentity(
         signal: AbortSignal.timeout(CHECKIN_TIMEOUT_MS),
       });
     } catch (error) {
-      lastError =
-        error instanceof Error ? error : new Error(String(error));
+      lastError = error instanceof Error ? error : new Error(String(error));
       if (attempt < REGISTER_ATTEMPTS) {
         await new Promise((resolve) =>
           setTimeout(resolve, REGISTER_RETRY_DELAY_MS),

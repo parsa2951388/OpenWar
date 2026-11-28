@@ -164,18 +164,13 @@ describe("registerClusterIdentity", () => {
     vi.stubEnv("API_KEY", "registration-secret");
     vi.stubEnv("SITE_HOST", "open-war-v2-solo-test.onrender.com");
     vi.stubEnv("GAME_HOST", "open-war-v2-solo-test.onrender.com");
-    vi.stubEnv(
-      "API_ORIGIN",
-      "https://open-war-v2-solo-test.onrender.com",
-    );
+    vi.stubEnv("API_ORIGIN", "https://open-war-v2-solo-test.onrender.com");
     vi.stubEnv("INSTANCE_LETTER", "");
     vi.stubEnv("NUM_WORKERS", "1");
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  test(
-    "registers a new site through the upstream API and uses its assigned identity",
-    async () => {
+  test("registers a new site through the upstream API and uses its assigned identity", async () => {
     const fetchFn = vi.fn(
       async (_url: RequestInfo | URL, _init?: RequestInit) =>
         new Response(JSON.stringify({ letter: "c", numWorkers: 4 }), {
@@ -184,10 +179,7 @@ describe("registerClusterIdentity", () => {
         }),
     );
 
-    await registerClusterIdentity(
-      fetchFn as unknown as typeof fetch,
-      4,
-    );
+    await registerClusterIdentity(fetchFn as unknown as typeof fetch, 4);
 
     expect(fetchFn).toHaveBeenCalledTimes(1);
     const [url, init] = vi.mocked(fetchFn).mock.calls[0] as unknown as [
@@ -209,24 +201,17 @@ describe("registerClusterIdentity", () => {
     expect(process.env.NUM_WORKERS).toBe("1");
   });
 
-  test(
-    "does not register again when both identity values are supplied",
-    async () => {
+  test("does not register again when both identity values are supplied", async () => {
     vi.stubEnv("INSTANCE_LETTER", "b");
     vi.stubEnv("NUM_WORKERS", "2");
     const fetchFn = vi.fn();
 
-    await registerClusterIdentity(
-      fetchFn as unknown as typeof fetch,
-      2,
-    );
+    await registerClusterIdentity(fetchFn as unknown as typeof fetch, 2);
 
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  test(
-    "does not register local development without a public host",
-    async () => {
+  test("does not register local development without a public host", async () => {
     vi.stubEnv("DOMAIN", "localhost");
     vi.stubEnv("SITE_HOST", "");
     vi.stubEnv("GAME_HOST", "");
@@ -235,10 +220,7 @@ describe("registerClusterIdentity", () => {
     vi.stubEnv("NUM_WORKERS", "");
     const fetchFn = vi.fn();
 
-    await registerClusterIdentity(
-      fetchFn as unknown as typeof fetch,
-      2,
-    );
+    await registerClusterIdentity(fetchFn as unknown as typeof fetch, 2);
 
     expect(fetchFn).not.toHaveBeenCalled();
   });
@@ -253,10 +235,7 @@ describe("registerClusterIdentity", () => {
     );
 
     await expect(
-      registerClusterIdentity(
-        fetchFn as unknown as typeof fetch,
-        4,
-      ),
+      registerClusterIdentity(fetchFn as unknown as typeof fetch, 4),
     ).rejects.toThrow("HTTP 403");
     expect(fetchFn).toHaveBeenCalledTimes(1);
   });
