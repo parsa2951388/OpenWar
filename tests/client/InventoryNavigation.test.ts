@@ -62,7 +62,7 @@ describe("Inventory navigation", () => {
     expect(source).not.toContain("<flag-input-modal");
   });
 
-  it("keeps Inventory deep links routable without a home navigation entry", async () => {
+  it("keeps Inventory deep links without a home navigation entry", async () => {
     history.replaceState(null, "", "/");
     const play = document.createElement("div");
     play.id = "page-play";
