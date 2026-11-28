@@ -2,7 +2,10 @@ import { afterEach, describe, expect, it } from "vitest";
 import { renderDpr } from "../../../../src/client/render/gl/utils/Dpr";
 
 const originalDpr = Object.getOwnPropertyDescriptor(window, "devicePixelRatio");
-const originalMatchMedia = Object.getOwnPropertyDescriptor(window, "matchMedia");
+const originalMatchMedia = Object.getOwnPropertyDescriptor(
+  window,
+  "matchMedia",
+);
 const originalTouchPoints = Object.getOwnPropertyDescriptor(
   navigator,
   "maxTouchPoints",

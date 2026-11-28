@@ -236,7 +236,9 @@ export class WorkerClient {
         finish();
         this.cleanup();
         reject(
-          new Error(event.message || "Game worker failed during initialization"),
+          new Error(
+            event.message || "Game worker failed during initialization",
+          ),
         );
       };
       worker.addEventListener("error", onWorkerError, { once: true });

@@ -216,9 +216,12 @@ describe("Open War API gateway route allowlist", () => {
 
     const gameOrigin = "https://solo-test.onrender.com";
     const response = await gateway.fetch(
-      new Request("https://openwar-api-gateway.parsaoj.workers.dev/cluster.json", {
-        headers: { Origin: gameOrigin },
-      }),
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/cluster.json",
+        {
+          headers: { Origin: gameOrigin },
+        },
+      ),
       env,
       context,
     );
