@@ -129,10 +129,11 @@ export class ServerEnv {
     const configured = process.env.API_ORIGIN?.trim();
     if (!configured) {
       if (process.env.OPENWAR_LOCAL_PREVIEW === "true") {
-        const host =
-          process.env.GAME_HOST?.trim() ||
-          process.env.SITE_HOST?.trim() ||
-          process.env.RENDER_EXTERNAL_HOSTNAME?.trim();
+        const host = [
+          process.env.GAME_HOST?.trim(),
+          process.env.SITE_HOST?.trim(),
+          process.env.RENDER_EXTERNAL_HOSTNAME?.trim(),
+        ].find((value): value is string => value !== undefined && value.length > 0);
         return host ? `https://${host}` : undefined;
       }
       return undefined;
