@@ -926,9 +926,25 @@ export class GameModeSelector extends LitElement {
             this.registryHasCompatibleServer(),
           );
     if (!blocked) return false;
+    const desktopBlocked =
+      (this.desktopUpdateState !== null &&
+        !multiplayerAllowed(this.desktopUpdateState)) ||
+      (this.desktopSessionState !== null &&
+        !multiplayerAllowedForSession(this.desktopSessionState));
+    const registryUnavailable =
+      requirement === "registry" &&
+      !this.backendOutage &&
+      !desktopBlocked &&
+      this.registryHasCompatibleServer() === false;
     reportMultiplayerRefusal(
       requirement === "registry" && this.backendOutage,
     );
+    if (registryUnavailable) {
+      showToast(
+        translateText("mode_selector.no_compatible_server"),
+        "red",
+      );
+    }
     return true;
   }
 
