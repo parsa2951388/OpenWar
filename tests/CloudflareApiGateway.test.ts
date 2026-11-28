@@ -204,4 +204,56 @@ describe("Open War API gateway route allowlist", () => {
       "GET, DELETE, OPTIONS",
     );
   });
+
+  it("allows the solo-test preview origin to read the server list", async () => {
+    const fetchMock = vi.fn().mockResolvedValue(
+      new Response(JSON.stringify({ servers: {} }), {
+        status: 200,
+        headers: { "Content-Type": "application/json" },
+      }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const previewOrigin = "https://solo-test.onrender.com";
+    const response = await gateway.fetch(
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/cluster.json?site=solo-test.onrender.com",
+        { headers: { Origin: previewOrigin } },
+      ),
+      env,
+      context,
+    );
+
+    expect(response.status).toBe(200);
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      previewOrigin,
+    );
+    expect(fetchMock).toHaveBeenCalledTimes(1);
+  });
+
+  it("allows CORS preflight for the server list from the solo-test preview", async () => {
+    const previewOrigin = "https://solo-test.onrender.com";
+    const response = await gateway.fetch(
+      new Request(
+        "https://openwar-api-gateway.parsaoj.workers.dev/cluster.json?site=solo-test.onrender.com",
+        {
+          method: "OPTIONS",
+          headers: { Origin: previewOrigin },
+        },
+      ),
+      env,
+      context,
+    );
+
+    expect(response.status).toBe(204);
+    expect(response.headers.get("access-control-allow-origin")).toBe(
+      previewOrigin,
+    );
+    expect(response.headers.get("access-control-allow-credentials")).toBe(
+      "true",
+    );
+    expect(response.headers.get("access-control-allow-methods")).toBe(
+      "GET, OPTIONS",
+    );
+  });
 });
