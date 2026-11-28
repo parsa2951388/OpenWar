@@ -326,11 +326,9 @@ describe("local and registry actions while the backend is unreachable", () => {
     expect(soloOpen).toHaveBeenCalled();
   });
 
-  it("keeps local actions available when a selector mounts during a confirmed outage", async () => {
-    // The seed half. No "backend-reachability" event is dispatched anywhere
-    // below: the only ones this document will ever see fired while nothing
-    // was listening, so the accessor is the sole path by which the selector
-    // can know. This is OPE-396's bug, on a new signal.
+  it("keeps private actions available and socket-sourced lobbies joinable when a selector mounts during a confirmed outage", async () => {
+    // No "backend-reachability" event is dispatched after the selector mounts:
+    // it must seed the confirmed outage from the ServerList accessor itself.
     await confirmOutage();
 
     selector = await mountSelector();
@@ -338,10 +336,13 @@ describe("local and registry actions while the backend is unreachable", () => {
     expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
     expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
     expect(actionButton("ranked").getAttribute("aria-disabled")).toBe("true");
+
     clickAction("ranked");
     expect(messages).toContain("common.backend_unreachable");
-    // ...and the card that came over the socket still joins, from the same
-    // seed.
+
+    // A public card already delivered over the live game-server socket remains
+    // joinable even while the separate global registry is unavailable.
+    lobbyCardButton()!.click();
     expect(joinLobby).toHaveBeenCalled();
   });
 
@@ -457,10 +458,13 @@ describe("a refused multiplayer click on the web", () => {
     await vi.waitFor(() => expect(backendUnreachableConfirmed()).toBe(false));
     await selector.updateComplete;
 
-    expect(
-      selector.querySelectorAll('button[aria-disabled="true"]').length,
-    ).toBe(0);
-    expect(clickEveryButton()).toBeGreaterThan(0);
+    // The 404 is a reachable API response, but this host has no compatible
+    // registry entry. Local create/join are available; Ranked stays disabled.
+    expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("ranked").getAttribute("aria-disabled")).toBe("true");
+    clickAction("create");
+    clickAction("join");
     expect(hostOpen).toHaveBeenCalled();
     expect(joinOpen).toHaveBeenCalled();
   });
