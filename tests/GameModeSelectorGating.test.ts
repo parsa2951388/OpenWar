@@ -376,7 +376,19 @@ describe("server selection requirements", () => {
     ).toBe(true);
   });
 
-  it("allows registry-dependent actions only when the registry list is usable", () => {
+  it("does not block Ranked while registry availability is still unknown", () => {
+    expect(
+      shouldBlockRegistryAction(healthyUpdate, signedIn, false, null),
+    ).toBe(false);
+  });
+
+  it("still blocks Ranked during a confirmed outage when availability is unknown", () => {
+    expect(
+      shouldBlockRegistryAction(healthyUpdate, signedIn, true, null),
+    ).toBe(true);
+  });
+
+  it("allows registry-dependent actions only when a compatible server is selected", () => {
     expect(
       shouldBlockRegistryAction(healthyUpdate, signedIn, false, true),
     ).toBe(false);
