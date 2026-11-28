@@ -26,7 +26,10 @@ import { MapPlaylist } from "./MapPlaylist";
 import { fetchMapWeights, MAP_WEIGHTS_POLL_MS } from "./MapWeights";
 import { MasterLobbyService } from "./MasterLobbyService";
 import { setNoStoreHeaders } from "./NoStoreHeaders";
-import { forwardOpenWarApiRequest } from "./OpenWarApiProxy";
+import {
+  createLocalPreviewServerList,
+  forwardOpenWarApiRequest,
+} from "./OpenWarApiProxy";
 import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
 import { ServerEnv } from "./ServerEnv";
@@ -77,6 +80,30 @@ app.use(async (req, res, next) => {
 
   try {
     const incoming = new URL(req.originalUrl, `https://${host}`);
+    if (
+      process.env.OPENWAR_LOCAL_PREVIEW === "true" &&
+      incoming.pathname === "/cluster.json"
+    ) {
+      if (incoming.searchParams.get("site") !== host) {
+        res.status(404).json({ error: "unknown_site" });
+        return;
+      }
+      try {
+        res.setHeader("Cache-Control", "no-store");
+        res.json(
+          createLocalPreviewServerList(
+            host,
+            ServerEnv.instanceLetter(),
+            ServerEnv.numWorkers(),
+            ServerEnv.gitCommit(),
+          ),
+        );
+      } catch (error) {
+        log.error("Failed to build local preview server list:", error);
+        res.status(503).json({ error: "local_server_unavailable" });
+      }
+      return;
+    }
     const response = await forwardOpenWarApiRequest({
       method: req.method,
       pathname: incoming.pathname,
@@ -252,7 +279,11 @@ export async function startMaster() {
   }
 
   log.info(`Primary ${process.pid} is running`);
-  const registered = await registerClusterIdentity();
+  const localPreview = process.env.OPENWAR_LOCAL_PREVIEW === "true";
+  const registered = localPreview ? false : await registerClusterIdentity();
+  if (localPreview) {
+    log.info("Local preview enabled; using the Render instance as its own server registry");
+  }
   if (registered) {
     log.info(
       `Registered ${ServerEnv.publicHost()} as letter ${ServerEnv.instanceLetter()} with ${ServerEnv.numWorkers()} workers`,
@@ -262,7 +293,7 @@ export async function startMaster() {
 
   // A server that registers schedules nothing until the API calls it open: a
   // mistyped letter must not mint lobbies under a letter routed elsewhere.
-  const registers = checkinBody(0) !== null;
+  const registers = !localPreview && checkinBody(0) !== null;
   lobbyService = new MasterLobbyService(playlist, log, registers);
 
   const INSTANCE_ID =
@@ -279,7 +310,7 @@ export async function startMaster() {
   // workers fork so the first roster normally lands before scheduling
   // begins; until it does, and whenever it stops, the master schedules its
   // own lobbies exactly as it does without a coordinator.
-  const hello = checkinBody(0);
+  const hello = localPreview ? null : checkinBody(0);
   const coordinator = coordinatorUrl(registeredSite());
   if (coordinator !== null && hello !== null) {
     log.info(`Joining lobby coordinator at ${coordinator}`);
