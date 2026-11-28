@@ -73,7 +73,7 @@ describe("map asset compression", () => {
     expect(gunzipSync(response.body)).toEqual(payload);
   });
 
-  it("does not force-compress unrelated binary routes", async () => {
+  it("compresses only map binary routes", async () => {
     const app = express();
     app.use(createMapAssetCompressionMiddleware());
     app.get("/assets/other.bin", (_request, response) => {
