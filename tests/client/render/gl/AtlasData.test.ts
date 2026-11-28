@@ -25,9 +25,8 @@ describe("font atlas preload", () => {
       );
     vi.stubGlobal("fetch", fetchMock);
 
-    const { preloadAtlasData } = await import(
-      "../../../../src/client/render/gl/passes/name-pass/AtlasData"
-    );
+    const { preloadAtlasData } =
+      await import("../../../../src/client/render/gl/passes/name-pass/AtlasData");
 
     await expect(preloadAtlasData()).rejects.toThrow(
       "temporary network failure",

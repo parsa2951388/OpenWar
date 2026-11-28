@@ -8,12 +8,8 @@ describe("GameStartingModal", () => {
     modal?.remove();
   });
 
-  it(
-    "can be shown again after an earlier failed start hid the host",
-    async () => {
-    modal = document.createElement(
-      "game-starting-modal",
-    ) as GameStartingModal;
+  it("can be shown again after an earlier failed start hid the host", async () => {
+    modal = document.createElement("game-starting-modal") as GameStartingModal;
     document.body.append(modal);
     await modal.updateComplete;
 
@@ -27,6 +23,5 @@ describe("GameStartingModal", () => {
     modal.hide();
     await modal.updateComplete;
     expect(modal.isVisible).toBe(false);
-    },
-  );
+  });
 });

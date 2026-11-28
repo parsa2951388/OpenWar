@@ -1,6 +1,6 @@
-import { afterEach, describe, expect, it, vi } from "vitest";
 import { GameMapType } from "@openfront/engine-api/game/GameTypes";
 import { FetchGameMapLoader } from "@openfront/shared/FetchGameMapLoader";
+import { afterEach, describe, expect, it, vi } from "vitest";
 
 afterEach(() => {
   vi.restoreAllMocks();
