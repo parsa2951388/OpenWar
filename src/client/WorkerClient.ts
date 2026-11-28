@@ -44,11 +44,14 @@ let gameWorkerModulePromise: Promise<GameWorkerModule> | null = null;
 
 function loadGameWorkerModule(): Promise<GameWorkerModule> {
   if (gameWorkerModulePromise === null) {
-    gameWorkerModulePromise = import(
+    const attempt = import(
       "@openfront/engine/worker/Worker.worker?worker&inline"
-    ).catch((error: unknown) => {
-      gameWorkerModulePromise = null;
-      throw error;
+    );
+    gameWorkerModulePromise ??= attempt;
+    void attempt.catch(() => {
+      if (gameWorkerModulePromise === attempt) {
+        gameWorkerModulePromise = null;
+      }
     });
   }
   return gameWorkerModulePromise;

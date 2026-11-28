@@ -103,7 +103,6 @@ export class FetchGameMapLoader implements GameMapLoader {
       if (signal.aborted) {
         throw new Error(
           `Timed out loading game asset after ${MAP_ASSET_TIMEOUT_MS} ms: ${url}`,
-          { cause: error },
         );
       }
       throw error;

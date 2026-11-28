@@ -47,7 +47,6 @@ export function preloadAtlasData(): Promise<void> {
       if (signal.aborted) {
         throw new Error(
           `Timed out loading msdf-atlas.json after ${ATLAS_FETCH_TIMEOUT_MS} ms`,
-          { cause: error },
         );
       }
       throw error;
