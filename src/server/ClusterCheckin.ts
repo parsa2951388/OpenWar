@@ -126,6 +126,8 @@ export async function registerClusterIdentity(
   fetchFn: typeof fetch = fetch,
   cpus: number = availableParallelism(),
 ): Promise<boolean> {
+  if (process.env.OPENWAR_LOCAL_PREVIEW === "true") return false;
+
   const host = ServerEnv.publicHost();
   if (host === undefined) return false;
 
