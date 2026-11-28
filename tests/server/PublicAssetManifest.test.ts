@@ -118,6 +118,24 @@ describe("PublicAssetManifest", () => {
     }
   });
 
+  test("emits the full world map binary at its hashed public URL", async () => {
+    const { resourcesDir, outDir } = await createTempResources();
+    const worldMapDir = path.join(resourcesDir, "maps", "world");
+    await fs.mkdir(worldMapDir, { recursive: true });
+    const mapBytes = Buffer.from([0, 1, 2, 3, 0, 0, 7, 8, 9, 255]);
+    await fs.writeFile(path.join(worldMapDir, "map.bin"), mapBytes);
+
+    const assetManifest = buildPublicAssetManifest([resourcesDir]);
+    const mapUrl = assetManifest["maps/world/map.bin"];
+    expect(mapUrl).toMatch(/^\/_assets\/maps\/world\/map\.[0-9a-f]{12}\.bin$/);
+
+    createHashedPublicAssetFiles([resourcesDir], outDir, assetManifest);
+
+    await expect(
+      fs.readFile(path.join(outDir, normalizeAssetPath(mapUrl))),
+    ).resolves.toEqual(mapBytes);
+  });
+
   test("hashes manifest.json from its rewritten content", async () => {
     const { resourcesDir, outDir } = await createTempResources();
 

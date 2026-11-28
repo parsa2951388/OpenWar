@@ -60,6 +60,9 @@ const IGNORED_UNUSED_KEY_PATTERNS: RegExp[] = [
   // out of resources/lang/*.json and emits per-language files next to that
   // page. They live here so Crowdin picks them up like any other string.
   /^desktop_gate\./,
+  // Inventory remains a supported deep-linked modal, but its label is no
+  // longer shown in the home navigation and therefore has no source call.
+  /^main\.inventory$/,
   // The clan map page. It's served by the API (infra repo) inside a frame,
   // so there is no translateText() call here either: ClanMapView sends every
   // clan_map.* template to the frame (translationTemplates), which formats

@@ -819,14 +819,6 @@ class Client {
 
     this.storeModal = document.getElementById("page-item-store") as StoreModal;
 
-    window.addEventListener("showPage", (e: any) => {
-      if (typeof e?.detail === "string" && e.detail === "page-play") {
-        setTimeout(() => {
-          this.refreshStore();
-        }, 50);
-      }
-    });
-
     this.tokenLoginModal = document.querySelector(
       "token-login",
     ) as TokenLoginModal;

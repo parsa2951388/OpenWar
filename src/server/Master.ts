@@ -22,6 +22,7 @@ import {
   LobbyCoordinatorClient,
 } from "./LobbyCoordinatorClient";
 import { logger } from "./Logger";
+import { createMapAssetCompressionMiddleware } from "./MapAssetCompression";
 import { MapPlaylist } from "./MapPlaylist";
 import { fetchMapWeights, MAP_WEIGHTS_POLL_MS } from "./MapWeights";
 import { MasterLobbyService } from "./MasterLobbyService";
@@ -459,6 +460,11 @@ app.get("/desktop/release.json", async (_req, res) => {
     res.status(500).json({ error: "unavailable" });
   }
 });
+
+// Large hashed map binaries are the heaviest first-load asset. Compress them
+// at the HTTP edge so low-bandwidth mobile clients do not time out while the
+// browser transparently decodes the original bytes.
+app.use(createMapAssetCompressionMiddleware());
 
 app.use(
   express.static(path.join(__dirname, "../../static"), {

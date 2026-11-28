@@ -2,7 +2,6 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 
 const {
   fetchFriendRequests,
-  getCosmeticsHash,
   getGamesPlayed,
   getUserProfile,
   isOnCrazyGames,
@@ -12,7 +11,6 @@ const {
   let seq = 0;
   return {
     fetchFriendRequests: vi.fn(),
-    getCosmeticsHash: vi.fn(async () => "hash-2"),
     getGamesPlayed: vi.fn(() => 0),
     getUserProfile: vi.fn(async () => null),
     isOnCrazyGames: vi.fn(() => false),
@@ -21,7 +19,6 @@ const {
   };
 });
 
-vi.mock("../../src/client/Cosmetics", () => ({ getCosmeticsHash }));
 vi.mock("../../src/client/Utils", () => ({ getGamesPlayed }));
 vi.mock("../../src/client/CrazyGamesSDK", () => ({
   crazyGamesSDK: { getUserProfile, isOnCrazyGames },
@@ -84,10 +81,8 @@ describe("nav notifications", () => {
     localStorage.clear();
     latestUserMeResponse.mockReturnValue(false);
     fetchFriendRequests.mockResolvedValue({ incoming: [], outgoing: [] });
-    // Seen an older version and an older cosmetics hash: news and store both
-    // have something new.
+    // The local version marker is older, so the release-notes bell is active.
     localStorage.setItem("newsSeenVersion", "v9.9.8");
-    localStorage.setItem("storeSeenHash", "hash-1");
   });
 
   afterEach(() => {
@@ -97,19 +92,18 @@ describe("nav notifications", () => {
     localStorage.clear();
   });
 
-  it("shares state across components, so reading the release reveals the store dot", async () => {
+  it("shares release-notification state across components", async () => {
     const bell = host();
     const navBar = host();
     await flush();
 
-    // Bell notifications outrank store, so only the bell shows a dot.
     expect(bell.controller.showBellDot()).toBe(true);
-    expect(navBar.controller.showStoreDot()).toBe(false);
+    expect(navBar.controller.showHelpDot()).toBe(false);
 
     bell.controller.markVersionSeen();
 
     expect(bell.controller.showBellDot()).toBe(false);
-    expect(navBar.controller.showStoreDot()).toBe(true);
+    expect(navBar.controller.showHelpDot()).toBe(true);
     // Both components re-render off the shared state.
     expect(navBar.requestUpdate).toHaveBeenCalled();
   });
@@ -351,14 +345,12 @@ describe("nav notifications", () => {
     expect(bell.controller.friendRequests()).toEqual([]);
   });
 
-  it("keeps help last in the priority chain", async () => {
+  it("shows help once the release notification is dismissed", async () => {
     const bell = host();
     await flush();
 
     expect(bell.controller.showHelpDot()).toBe(false);
     bell.controller.markVersionSeen();
-    expect(bell.controller.showHelpDot()).toBe(false); // store still pending
-    bell.controller.onStoreClick();
     expect(bell.controller.showHelpDot()).toBe(true);
   });
 });
