@@ -31,6 +31,7 @@ import { whenModalLoaded } from "./LazyModals";
 import { PublicLobbySocket } from "./LobbySocket";
 import type { JoinLobbyEvent } from "./Main";
 import {
+  backendReachable,
   backendUnreachableConfirmed,
   isPinnedToAVersion,
   MANUAL_RETRY_COOLDOWN_MS,
@@ -174,11 +175,13 @@ export function shouldBlockRegistryAction(
   update: DesktopUpdateState | null,
   session: DesktopSessionState | null,
   backendOutage: boolean,
-  registryServerAvailable: boolean,
+  registryServerAvailable: boolean | null,
 ): boolean {
   if (update !== null && !multiplayerAllowed(update)) return true;
   if (session !== null && !multiplayerAllowedForSession(session)) return true;
-  return backendOutage || !registryServerAvailable;
+  // null means the registry has not answered yet, or only one transient
+  // request failed. Do not turn "unknown" into "unavailable".
+  return backendOutage || registryServerAvailable === false;
 }
 
 /**
@@ -893,12 +896,17 @@ export class GameModeSelector extends LitElement {
     }
   }
 
-  private registryHasCompatibleServer(): boolean {
+  private registryHasCompatibleServer(): boolean | null {
     try {
-      return ClientEnv.hasRegistrySelectedServer();
+      if (ClientEnv.hasRegistrySelectedServer()) return true;
     } catch {
-      return false;
+      return null;
     }
+    // A reachable response without a selected build-compatible server means
+    // this site is unknown or has no compatible deployment. One missed
+    // request is inconclusive; the confirmed-outage gate handles repeated
+    // failures separately.
+    return backendReachable() === true ? false : null;
   }
 
   private blockedFromApiAction(
