@@ -1,11 +1,11 @@
 import compression from "compression";
 
 /**
- * Compress full-resolution map binaries. They are packed terrain data and are
- * served as application/octet-stream, which the default compression filter
- * intentionally excludes. Browsers advertise gzip and transparently decode
- * the response before fetch().arrayBuffer(), so the game wire format is
- * unchanged while slow mobile connections transfer substantially fewer bytes.
+ * Explicitly compress hashed full-resolution map binaries served as
+ * application/octet-stream. Browsers transparently decode gzip before
+ * fetch().arrayBuffer(), preserving the exact map bytes while reducing
+ * transfer size on slow connections. Other opaque binaries stay uncompressed,
+ * while normal text assets retain the default compression behavior.
  */
 export function createMapAssetCompressionMiddleware() {
   return compression({
