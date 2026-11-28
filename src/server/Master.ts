@@ -50,7 +50,240 @@ let lastReadinessFailure: string | null = null;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// The Docker deployment routes /wN requests through nginx. Render's native
+// Node service runs this master directly, without nginx, so the public port
+// must forward worker HTTP and WebSocket traffic itself.
+const BALANCED_WORKER_ROUTES = new Set([
+  "/api/create_game",
+  "/api/adminbot/create_game",
+  "/api/adminbot/create_pool",
+]);
+
+interface WorkerRouteTarget {
+  workerId: number;
+  path: string;
+}
+
+function resolveWorkerRouteTarget(
+  rawUrl: string,
+  balanceCreateRoutes = true,
+): WorkerRouteTarget | null {
+  const incoming = new URL(rawUrl, "http://localhost");
+  const match = incoming.pathname.match(/^\/w(\d+)(\/.*)?$/);
+  if (match) {
+    return {
+      workerId: Number(match[1]),
+      path: (match[2] ?? "/") + incoming.search,
+    };
+  }
+
+  if (balanceCreateRoutes && BALANCED_WORKER_ROUTES.has(incoming.pathname)) {
+    const workerCount = ServerEnv.numWorkers();
+    return {
+      workerId: Math.floor(Math.random() * workerCount),
+      path: incoming.pathname + incoming.search,
+    };
+  }
+
+  return null;
+}
+
+function isValidWorkerId(workerId: number): boolean {
+  return (
+    Number.isInteger(workerId) &&
+    workerId >= 0 &&
+    workerId < ServerEnv.numWorkers()
+  );
+}
+
+function workerForwardHeaders(
+  request: http.IncomingMessage,
+  workerPort: number,
+): http.OutgoingHttpHeaders {
+  const headers: http.OutgoingHttpHeaders = { ...request.headers };
+  headers.host = request.headers.host ?? "127.0.0.1:" + workerPort;
+  headers.connection = "close";
+  headers["x-forwarded-host"] = request.headers.host ?? "";
+  headers["x-forwarded-proto"] =
+    request.headers["x-forwarded-proto"] ?? "https";
+
+  const existingForwardedFor = request.headers["x-forwarded-for"];
+  const forwardedFor = [
+    ...(Array.isArray(existingForwardedFor)
+      ? existingForwardedFor
+      : existingForwardedFor
+        ? [existingForwardedFor]
+        : []),
+    request.socket.remoteAddress,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(", ");
+  if (forwardedFor) headers["x-forwarded-for"] = forwardedFor;
+
+  return headers;
+}
+
+function proxyWorkerHttp(
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
+  target: WorkerRouteTarget,
+): void {
+  const workerPort = ServerEnv.workerPortByIndex(target.workerId);
+  const upstream = http.request(
+    {
+      hostname: "127.0.0.1",
+      port: workerPort,
+      method: request.method,
+      path: target.path,
+      headers: workerForwardHeaders(request, workerPort),
+    },
+    (upstreamResponse) => {
+      response.writeHead(
+        upstreamResponse.statusCode ?? 502,
+        upstreamResponse.headers,
+      );
+      upstreamResponse.pipe(response);
+    },
+  );
+
+  upstream.setTimeout(30_000, () => {
+    upstream.destroy(new Error("worker HTTP request timed out"));
+  });
+  upstream.on("error", (error) => {
+    log.warn("Worker HTTP proxy failed", {
+      workerId: target.workerId,
+      path: target.path,
+      error: error.message,
+    });
+    if (!response.headersSent) {
+      response.writeHead(502, {
+        "Cache-Control": "no-store",
+        "Content-Type": "application/json; charset=utf-8",
+      });
+      response.end(JSON.stringify({ error: "worker_unavailable" }));
+    } else {
+      response.destroy(error);
+    }
+  });
+
+  request.on("aborted", () => upstream.destroy());
+  response.on("close", () => {
+    if (!response.writableEnded) upstream.destroy();
+  });
+  request.pipe(upstream);
+}
+
+// Forward worker HTTP routes before express.json() consumes their request
+// bodies. This also covers create-game endpoints normally load-balanced by
+// nginx in the Docker deployment.
+app.use((request, response, next) => {
+  const target = resolveWorkerRouteTarget(request.url ?? "/");
+  if (target === null) {
+    next();
+    return;
+  }
+  if (!isValidWorkerId(target.workerId)) {
+    response.status(404).json({ error: "worker_not_found" });
+    return;
+  }
+  proxyWorkerHttp(request, response, target);
+});
+
 app.use(express.json());
+
+// WebSocket upgrades bypass Express middleware. Proxy /wN/lobbies and /wN
+// game sockets to the same worker that handles their HTTP routes.
+server.on("upgrade", (request, socket, head) => {
+  const target = resolveWorkerRouteTarget(request.url ?? "/", false);
+  if (target === null || !isValidWorkerId(target.workerId)) {
+    socket.end(
+      "HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
+    );
+    return;
+  }
+
+  const workerPort = ServerEnv.workerPortByIndex(target.workerId);
+  const headers = workerForwardHeaders(request, workerPort);
+  headers.connection = "Upgrade";
+  headers.upgrade = request.headers.upgrade ?? "websocket";
+
+  const upstream = http.request({
+    hostname: "127.0.0.1",
+    port: workerPort,
+    method: request.method,
+    path: target.path,
+    headers,
+  });
+
+  upstream.setTimeout(10_000, () => {
+    upstream.destroy(new Error("worker WebSocket handshake timed out"));
+  });
+
+  upstream.on("upgrade", (upstreamResponse, upstreamSocket, upstreamHead) => {
+    const responseLines = [
+      "HTTP/" +
+        upstreamResponse.httpVersion +
+        " " +
+        (upstreamResponse.statusCode ?? 101) +
+        " " +
+        (upstreamResponse.statusMessage ?? ""),
+    ];
+    for (let i = 0; i < upstreamResponse.rawHeaders.length; i += 2) {
+      responseLines.push(
+        upstreamResponse.rawHeaders[i] +
+          ": " +
+          upstreamResponse.rawHeaders[i + 1],
+      );
+    }
+    socket.write(responseLines.join("\r\n") + "\r\n\r\n");
+    if (upstreamHead.length > 0) socket.write(upstreamHead);
+    if (head.length > 0) upstreamSocket.write(head);
+
+    socket.on("error", () => upstreamSocket.destroy());
+    upstreamSocket.on("error", () => socket.destroy());
+    socket.on("close", () => upstreamSocket.destroy());
+    upstreamSocket.on("close", () => socket.destroy());
+
+    socket.pipe(upstreamSocket);
+    upstreamSocket.pipe(socket);
+  });
+
+  upstream.on("response", (upstreamResponse) => {
+    const responseLines = [
+      "HTTP/" +
+        upstreamResponse.httpVersion +
+        " " +
+        (upstreamResponse.statusCode ?? 502) +
+        " " +
+        (upstreamResponse.statusMessage ?? ""),
+    ];
+    for (let i = 0; i < upstreamResponse.rawHeaders.length; i += 2) {
+      responseLines.push(
+        upstreamResponse.rawHeaders[i] +
+          ": " +
+          upstreamResponse.rawHeaders[i + 1],
+      );
+    }
+    socket.write(responseLines.join("\r\n") + "\r\n\r\n");
+    upstreamResponse.pipe(socket);
+  });
+
+  upstream.on("error", (error) => {
+    log.warn("Worker WebSocket proxy failed", {
+      workerId: target.workerId,
+      path: target.path,
+      error: error.message,
+    });
+    if (!socket.destroyed) {
+      socket.end(
+        "HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
+      );
+    }
+  });
+
+  socket.on("error", () => upstream.destroy());
+  upstream.end();
+});
 
 // The solo-test Render instance can expose the allowlisted account API on its
 // own hostname. Enable this only when API_ORIGIN is explicitly set to this
