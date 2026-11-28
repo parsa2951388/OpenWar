@@ -37,16 +37,14 @@ import { terrainMapFileLoader } from "./TerrainMapFileLoader";
 // ~700 KB base64 payload in its own chunk, fetched when a game starts,
 // instead of inside the main bundle.
 const GAME_WORKER_MODULE_TIMEOUT_MS = 30_000;
-type GameWorkerModule = typeof import(
-  "@openfront/engine/worker/Worker.worker?worker&inline"
-);
+type GameWorkerModule =
+  typeof import("@openfront/engine/worker/Worker.worker?worker&inline");
 let gameWorkerModulePromise: Promise<GameWorkerModule> | null = null;
 
 function loadGameWorkerModule(): Promise<GameWorkerModule> {
   if (gameWorkerModulePromise === null) {
-    const attempt = import(
-      "@openfront/engine/worker/Worker.worker?worker&inline"
-    );
+    const attempt =
+      import("@openfront/engine/worker/Worker.worker?worker&inline");
     gameWorkerModulePromise ??= attempt;
     void attempt.catch(() => {
       if (gameWorkerModulePromise === attempt) {

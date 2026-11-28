@@ -12,14 +12,11 @@ describe("font atlas preload", () => {
     const fetchMock = vi
       .fn()
       .mockRejectedValueOnce(new Error("temporary network failure"))
-      .mockResolvedValueOnce(
-        new Response(JSON.stringify({}), { status: 200 }),
-      );
+      .mockResolvedValueOnce(new Response(JSON.stringify({}), { status: 200 }));
     vi.stubGlobal("fetch", fetchMock);
 
-    const { preloadAtlasData } = await import(
-      "../../../../src/client/render/gl/passes/name-pass/AtlasData"
-    );
+    const { preloadAtlasData } =
+      await import("../../../../src/client/render/gl/passes/name-pass/AtlasData");
 
     await expect(preloadAtlasData()).rejects.toThrow(
       "temporary network failure",

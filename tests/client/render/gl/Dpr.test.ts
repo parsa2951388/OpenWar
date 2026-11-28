@@ -1,10 +1,7 @@
 import { afterEach, describe, expect, it } from "vitest";
 import { renderDpr } from "../../../../src/client/render/gl/utils/Dpr";
 
-const originalDpr = Object.getOwnPropertyDescriptor(
-  window,
-  "devicePixelRatio",
-);
+const originalDpr = Object.getOwnPropertyDescriptor(window, "devicePixelRatio");
 const originalMatchMedia = Object.getOwnPropertyDescriptor(
   window,
   "matchMedia",

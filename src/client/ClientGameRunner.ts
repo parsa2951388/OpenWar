@@ -169,10 +169,16 @@ export function joinLobby(
   // Start loading the large worker and font bundles while the lobby and
   // WebSocket handshake are still in progress.
   void preloadGameWorker().catch((error) => {
-    console.warn("lobby: worker preload failed; will retry at game start", error);
+    console.warn(
+      "lobby: worker preload failed; will retry at game start",
+      error,
+    );
   });
   void preloadAtlasData().catch((error) => {
-    console.warn("lobby: font atlas preload failed; will retry at game start", error);
+    console.warn(
+      "lobby: font atlas preload failed; will retry at game start",
+      error,
+    );
   });
   // Mutable clientID state — assigned by server (multiplayer) or derived from gameStartInfo (singleplayer)
   let clientID: ClientID | undefined;

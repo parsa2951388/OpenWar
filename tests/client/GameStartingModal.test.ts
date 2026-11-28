@@ -9,9 +9,7 @@ describe("GameStartingModal", () => {
   });
 
   it("can be shown again after an earlier failed start hid the host", async () => {
-    modal = document.createElement(
-      "game-starting-modal",
-    ) as GameStartingModal;
+    modal = document.createElement("game-starting-modal") as GameStartingModal;
     document.body.append(modal);
     await modal.updateComplete;
 
