@@ -51,6 +51,7 @@ export class GameStartingModal extends LitElement {
   }
 
   show() {
+    this.classList.remove("hidden");
     this.isVisible = true;
     this.requestUpdate();
   }

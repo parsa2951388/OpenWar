@@ -200,6 +200,7 @@ vi.mock("../../src/client/view", () => ({
   PlayerView: class {},
 }));
 vi.mock("../../src/client/WorkerClient", () => ({
+  preloadGameWorker: vi.fn(async () => {}),
   WorkerClient: class {
     async initialize(): Promise<void> {}
     cleanup(): void {}

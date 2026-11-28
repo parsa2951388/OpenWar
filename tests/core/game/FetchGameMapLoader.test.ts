@@ -30,6 +30,7 @@ describe("FetchGameMapLoader", () => {
 
     expect(fetchMock).toHaveBeenCalledWith(
       "/_assets/maps/britanniaclassic/manifest.json.hashed",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
     );
   });
 
@@ -50,10 +51,44 @@ describe("FetchGameMapLoader", () => {
     const mapData = loader.getMapData(GameMapType.China);
 
     await expect(mapData.layerImage("label", false)).resolves.toBe(bitmap);
-    expect(fetchMock).toHaveBeenLastCalledWith("/maps/china/label.webp");
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/maps/china/label.webp",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
 
     await expect(mapData.layerImage("label", true)).resolves.toBe(bitmap);
-    expect(fetchMock).toHaveBeenLastCalledWith("/maps/china/label.4x.webp");
+    expect(fetchMock).toHaveBeenLastCalledWith(
+      "/maps/china/label.4x.webp",
+      expect.objectContaining({ signal: expect.any(AbortSignal) }),
+    );
+  });
+
+  test("aborts a stalled map request and reports a useful timeout", async () => {
+    const timeoutSpy = vi
+      .spyOn(AbortSignal, "timeout")
+      .mockImplementation(() => {
+        const controller = new AbortController();
+        setTimeout(() => controller.abort(), 0);
+        return controller.signal;
+      });
+    const fetchMock = vi.fn(
+      (_url: string, init?: RequestInit) =>
+        new Promise<Response>((_resolve, reject) => {
+          init?.signal?.addEventListener(
+            "abort",
+            () => reject(new DOMException("Aborted", "AbortError")),
+            { once: true },
+          );
+        }),
+    );
+    vi.stubGlobal("fetch", fetchMock);
+
+    const loader = new FetchGameMapLoader("/maps");
+    await expect(
+      loader.getMapData(GameMapType.BritanniaClassic).manifest(),
+    ).rejects.toThrow("Timed out loading game asset");
+    expect(timeoutSpy).toHaveBeenCalledWith(45_000);
+    expect(fetchMock).toHaveBeenCalledTimes(1);
   });
 
   test("never fetches a Custom map: it has none until a scenario is set", () => {
