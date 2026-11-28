@@ -168,12 +168,17 @@ describe("ServerEnv local preview hostname", () => {
     vi.unstubAllEnvs();
   });
 
-  test("uses Render's public hostname when explicit host variables are absent", () => {
+  test(
+    "uses Render's public hostname when explicit host variables are absent",
+    () => {
     vi.stubEnv("OPENWAR_LOCAL_PREVIEW", "true");
     vi.stubEnv("GAME_HOST", "");
     vi.stubEnv("SITE_HOST", "");
     vi.stubEnv("SUBDOMAIN", "");
-    vi.stubEnv("RENDER_EXTERNAL_HOSTNAME", "open-war-v2-solo-test.onrender.com");
+    vi.stubEnv(
+      "RENDER_EXTERNAL_HOSTNAME",
+      "open-war-v2-solo-test.onrender.com",
+    );
 
     expect(ServerEnv.publicHost()).toBe(
       "open-war-v2-solo-test.onrender.com",
@@ -186,7 +191,9 @@ describe("ServerEnv local preview hostname", () => {
     );
   });
 
-  test("does not use Render hostname fallback outside local preview", () => {
+  test(
+    "does not use Render hostname fallback outside local preview",
+    () => {
     vi.stubEnv("OPENWAR_LOCAL_PREVIEW", "");
     vi.stubEnv("GAME_HOST", "");
     vi.stubEnv("SITE_HOST", "");
