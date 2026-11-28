@@ -51,6 +51,8 @@ export class GameStartingModal extends LitElement {
   }
 
   show() {
+    // An earlier failed start may have hidden the host element.
+    this.classList.remove("hidden");
     this.isVisible = true;
     this.requestUpdate();
   }

@@ -36,10 +36,29 @@ import { terrainMapFileLoader } from "./TerrainMapFileLoader";
 // the worker bundle is served from the CDN. The dynamic import keeps the
 // ~700 KB base64 payload in its own chunk, fetched when a game starts,
 // instead of inside the main bundle.
+const GAME_WORKER_MODULE_TIMEOUT_MS = 30_000;
+
 export async function createGameWorker(): Promise<Worker> {
-  const { default: GameWorker } =
-    await import("@openfront/engine/worker/Worker.worker?worker&inline");
-  return new GameWorker();
+  let timer: ReturnType<typeof setTimeout> | null = null;
+  try {
+    const { default: GameWorker } = await Promise.race([
+      import("@openfront/engine/worker/Worker.worker?worker&inline"),
+      new Promise<never>((_, reject) => {
+        timer = setTimeout(
+          () =>
+            reject(
+              new Error(
+                `Timed out loading game worker after ${GAME_WORKER_MODULE_TIMEOUT_MS} ms`,
+              ),
+            ),
+          GAME_WORKER_MODULE_TIMEOUT_MS,
+        );
+      }),
+    ]);
+    return new GameWorker();
+  } finally {
+    if (timer !== null) clearTimeout(timer);
+  }
 }
 
 // A header is one decode of a few MB; far past that, the worker is stuck.
@@ -167,12 +186,39 @@ export class WorkerClient {
 
     return new Promise((resolve, reject) => {
       const messageId = generateID();
+      let settled = false;
+      const timer = setTimeout(() => {
+        if (settled) return;
+        settled = true;
+        worker.removeEventListener("error", onWorkerError);
+        this.cleanup();
+        reject(new Error("Worker initialization timeout"));
+      }, 60_000);
+      const finish = (): void => {
+        clearTimeout(timer);
+        worker.removeEventListener("error", onWorkerError);
+      };
+      const onWorkerError = (event: ErrorEvent): void => {
+        if (settled) return;
+        settled = true;
+        finish();
+        this.cleanup();
+        reject(
+          new Error(event.message || "Game worker failed during initialization"),
+        );
+      };
+      worker.addEventListener("error", onWorkerError, { once: true });
 
       this.messageHandlers.set(messageId, (message) => {
+        if (settled) return;
         if (message.type === "initialized") {
+          settled = true;
+          finish();
           this.isInitialized = true;
           resolve();
         } else if (message.type === "init_error") {
+          settled = true;
+          finish();
           // No game will own this client, so nothing would stop the worker.
           this.cleanup();
           reject(new Error(message.error));
@@ -188,14 +234,17 @@ export class WorkerClient {
         snapshot: this.snapshotToRestore,
         editor: this.editorMap !== undefined,
       };
-      worker.postMessage(init, mapFilesTransfer(map));
-
-      setTimeout(() => {
-        if (!this.isInitialized) {
-          this.cleanup();
-          reject(new Error("Worker initialization timeout"));
-        }
-      }, 60000);
+      try {
+        worker.postMessage(init, mapFilesTransfer(map));
+      } catch (error) {
+        if (settled) return;
+        settled = true;
+        finish();
+        this.cleanup();
+        reject(
+          error instanceof Error ? error : new Error(String(error)),
+        );
+      }
     });
   }
 

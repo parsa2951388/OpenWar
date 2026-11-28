@@ -147,6 +147,19 @@ export interface JoinLobbyResult {
   join: Promise<void>;
 }
 
+const START_MESSAGE_TIMEOUT_MS = 60_000;
+
+function hideGameStartingModal(): void {
+  const modal = document.querySelector("game-starting-modal") as
+    | (HTMLElement & { hide?: () => void })
+    | null;
+  if (modal?.hide) {
+    modal.hide();
+  } else {
+    modal?.classList.add("hidden");
+  }
+}
+
 export function joinLobby(
   eventBus: EventBus,
   lobbyConfig: LobbyConfig,
@@ -177,6 +190,13 @@ export function joinLobby(
   // tab flash from that point, so a handle that never got here has nothing to
   // release (e.g. a join that was superseded while it waited for its token).
   let prestarted = false;
+  let startMessageTimeout: ReturnType<typeof setTimeout> | null = null;
+  const clearStartMessageTimeout = (): void => {
+    if (startMessageTimeout !== null) {
+      clearTimeout(startMessageTimeout);
+      startMessageTimeout = null;
+    }
+  };
   let turnstileTokenAdmittedNotified = false;
   const notifyTurnstileTokenAdmitted = () => {
     if (
@@ -312,9 +332,36 @@ export function joinLobby(
       );
       void requestTerrainLoad(message.gameMap, message.gameMapSize);
       prestarted = true;
+      clearStartMessageTimeout();
+      startMessageTimeout = setTimeout(() => {
+        startMessageTimeout = null;
+        if (lobbyStopped) return;
+        console.error(
+          `Timed out waiting for game start message for ${lobbyConfig.gameID}`,
+        );
+        hideGameStartingModal();
+        tabAttention.release();
+        window.dispatchEvent(
+          new CustomEvent("show-message", {
+            detail: {
+              message: translateText("error_modal.connection_lost"),
+              color: "red",
+              duration: 8000,
+            },
+          }),
+        );
+        document.dispatchEvent(
+          new CustomEvent("leave-lobby", {
+            detail: { lobby: lobbyConfig.gameID, cause: "start-timeout" },
+            bubbles: true,
+            composed: true,
+          }),
+        );
+      }, START_MESSAGE_TIMEOUT_MS);
       resolvePrestart();
     }
     if (message.type === "start") {
+      clearStartMessageTimeout();
       // Trigger prestart for singleplayer games
       prestarted = true;
       resolvePrestart();
@@ -356,6 +403,8 @@ export function joinLobby(
           if (!r) return;
           currentGameRunner = r;
           r.start();
+          // Dismiss the overlay only after the renderer and game worker start.
+          hideGameStartingModal();
         })
         .catch((e) => {
           if (lobbyStopped) return;
@@ -366,12 +415,7 @@ export function joinLobby(
           // the lobby was already left and the flash may be a newer lobby's.
           if (!lobbyStopped) tabAttention.release();
 
-          const startingModal = document.querySelector(
-            "game-starting-modal",
-          ) as HTMLElement;
-          if (startingModal) {
-            startingModal.classList.add("hidden");
-          }
+          hideGameStartingModal();
           // No GPU-accelerated WebGL2: gate with an actionable message rather
           // than the generic crash modal (the game would crawl at ~1fps).
           if (e instanceof GLUnavailableError) {
@@ -390,6 +434,7 @@ export function joinLobby(
         });
     }
     if (message.type === "error") {
+      clearStartMessageTimeout();
       if (message.error === "full-lobby" || message.error === "game-started") {
         document.dispatchEvent(
           new CustomEvent("leave-lobby", {
@@ -503,6 +548,7 @@ export function joinLobby(
         return false;
       }
       console.log("leaving game");
+      clearStartMessageTimeout();
       lobbyStopped = true;
       if (currentGameRunner) {
         currentGameRunner.stop();
