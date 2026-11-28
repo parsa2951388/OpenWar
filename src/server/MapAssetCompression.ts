@@ -24,6 +24,6 @@ export function createMapAssetCompressionMiddleware() {
       if (contentType.startsWith("application/octet-stream")) return false;
 
       return compression.filter(request, response);
-    }
+    },
   });
 }
