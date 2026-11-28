@@ -1691,6 +1691,7 @@
   },
   "mode_selector": {
     "lobbies_unreachable": "در حال حاضر امکان دسترسی به لابی‌های عمومی وجود ندارد",
+    "no_compatible_server": "این سرور Open War هنوز برای رقابت رتبه‌بندی در سامانه ثبت نشده است.",
     "offline_lobbies": "لابی‌های عمومی در حالت آفلاین در دسترس نیستند",
     "ranked_1v1_title": "یک به یک",
     "ranked_2v2_title": "دو به دو",
