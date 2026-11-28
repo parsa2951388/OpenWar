@@ -880,18 +880,14 @@ describe("resizing", () => {
     expectEngineHolds(await rebuilt(cropped), cropped);
   });
 
-  test(
-    "growing adds water and keeps everything",
-    async () => {
-      const doc = built();
-      const grown = resizeScenarioDocument(doc, 240, 200);
-      expectSameTiles(doc, grown);
-      expect(grown.structures).toHaveLength(doc.structures.length);
-      expect(grown.warships).toHaveLength(doc.warships.length);
-      expectEngineHolds(await rebuilt(grown), grown);
-    },
-    15_000,
-  );
+  test("growing adds water and keeps everything", async () => {
+    const doc = built();
+    const grown = resizeScenarioDocument(doc, 240, 200);
+    expectSameTiles(doc, grown);
+    expect(grown.structures).toHaveLength(doc.structures.length);
+    expect(grown.warships).toHaveLength(doc.warships.length);
+    expectEngineHolds(await rebuilt(grown), grown);
+  }, 15_000);
 
   test("only to a size a scenario can have", () => {
     const doc = built();
