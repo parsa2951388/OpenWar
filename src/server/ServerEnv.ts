@@ -127,7 +127,16 @@ export class ServerEnv {
   // change the issuer/audience contract used by signed player tokens.
   static apiOrigin(): string | undefined {
     const configured = process.env.API_ORIGIN?.trim();
-    if (!configured) return undefined;
+    if (!configured) {
+      if (process.env.OPENWAR_LOCAL_PREVIEW === "true") {
+        const host =
+          process.env.GAME_HOST?.trim() ||
+          process.env.SITE_HOST?.trim() ||
+          process.env.RENDER_EXTERNAL_HOSTNAME?.trim();
+        return host ? `https://${host}` : undefined;
+      }
+      return undefined;
+    }
 
     let url: URL;
     try {
@@ -269,8 +278,12 @@ export class ServerEnv {
   // SUBDOMAIN and GAME_DOMAIN alone. The derivation below is the standalone
   // shape and stays for env files written by hand.
   static publicHost(): string | undefined {
-    const explicit = process.env.GAME_HOST;
-    if (explicit && explicit.length > 0) return explicit;
+    const explicit = process.env.GAME_HOST?.trim();
+    if (explicit) return explicit;
+    if (process.env.OPENWAR_LOCAL_PREVIEW === "true") {
+      const renderHost = process.env.RENDER_EXTERNAL_HOSTNAME?.trim();
+      if (renderHost) return renderHost;
+    }
     const subdomain = ServerEnv.subdomain();
     const domain = ServerEnv.gameDomain() ?? ServerEnv.domain();
     if (!subdomain || !domain) return undefined;
@@ -321,8 +334,13 @@ export class ServerEnv {
   // local dev, where the page host and the game host coincide and publicHost
   // is both.
   static siteHost(): string | undefined {
-    const v = process.env.SITE_HOST;
-    return v && v.length > 0 ? v : undefined;
+    const v = process.env.SITE_HOST?.trim();
+    if (v) return v;
+    if (process.env.OPENWAR_LOCAL_PREVIEW === "true") {
+      const renderHost = process.env.RENDER_EXTERNAL_HOSTNAME?.trim();
+      if (renderHost) return renderHost;
+    }
+    return undefined;
   }
   // Whether the master joins its site's shared public-lobby roster
   // (LobbyCoordinatorClient.ts, infra docs/lobby-coordinator.md). "api"
