@@ -6,7 +6,7 @@ const origin = `https://${host}`;
 
 describe("same-origin Open War API proxy", () => {
   it("forwards the server registry request to the OpenFront API", async () => {
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       new Response(JSON.stringify({ a: { host, numWorkers: 1 } }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
@@ -54,7 +54,7 @@ describe("same-origin Open War API proxy", () => {
       numWorkers: 1,
       liveGames: 0,
     };
-    const fetchMock = vi.fn(async () =>
+    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
       new Response(JSON.stringify({ state: "open" }), {
         status: 200,
         headers: { "Content-Type": "application/json" },
