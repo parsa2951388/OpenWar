@@ -13,9 +13,7 @@ export function createMapAssetCompressionMiddleware() {
     filter: (request, response) => {
       const isFullMapBinary =
         request.method === "GET" &&
-        /^\/_assets\/maps\/[^/]+\/map\.[a-f0-9]{12}\.bin$/.test(
-          request.path,
-        );
+        /^\\/_assets\\/maps\\/[^/]+\\/map\\.[a-f0-9]{12}\\.bin$/.test(request.path);
 
       return isFullMapBinary || compression.filter(request, response);
     },
