@@ -6,11 +6,12 @@ const origin = `https://${host}`;
 
 describe("same-origin Open War API proxy", () => {
   it("forwards the server registry request to the OpenFront API", async () => {
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      new Response(JSON.stringify({ a: { host, numWorkers: 1 } }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+    const fetchMock = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        new Response(JSON.stringify({ a: { host, numWorkers: 1 } }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
     );
 
     const response = await forwardOpenWarApiRequest(
@@ -37,7 +38,9 @@ describe("same-origin Open War API proxy", () => {
     expect(new Headers(init?.headers).get("authorization")).toBe(
       "Bearer player-token",
     );
-    expect(new Headers(init?.headers).get("x-api-key")).toBe("openwar-test-key");
+    expect(new Headers(init?.headers).get("x-api-key")).toBe(
+      "openwar-test-key",
+    );
     expect(new Headers(init?.headers).has("origin")).toBe(false);
     expect(response?.status).toBe(200);
     expect(await response?.json()).toEqual({
@@ -54,11 +57,12 @@ describe("same-origin Open War API proxy", () => {
       numWorkers: 1,
       liveGames: 0,
     };
-    const fetchMock = vi.fn(async (_input: RequestInfo | URL, _init?: RequestInit) =>
-      new Response(JSON.stringify({ state: "open" }), {
-        status: 200,
-        headers: { "Content-Type": "application/json" },
-      }),
+    const fetchMock = vi.fn(
+      async (_input: RequestInfo | URL, _init?: RequestInit) =>
+        new Response(JSON.stringify({ state: "open" }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
     );
 
     const response = await forwardOpenWarApiRequest(
