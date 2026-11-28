@@ -22,10 +22,10 @@ import {
 } from "./LobbyCoordinatorClient";
 import { logger } from "./Logger";
 import { MapPlaylist } from "./MapPlaylist";
-import { forwardOpenWarApiRequest } from "./OpenWarApiProxy";
 import { fetchMapWeights, MAP_WEIGHTS_POLL_MS } from "./MapWeights";
 import { MasterLobbyService } from "./MasterLobbyService";
 import { setNoStoreHeaders } from "./NoStoreHeaders";
+import { forwardOpenWarApiRequest } from "./OpenWarApiProxy";
 import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
 import { ServerEnv } from "./ServerEnv";
@@ -97,7 +97,10 @@ app.use(async (req, res, next) => {
       "upgrade",
     ]);
     for (const [name, value] of response.headers) {
-      if (!hopByHopHeaders.has(name.toLowerCase()) && name.toLowerCase() !== "set-cookie") {
+      if (
+        !hopByHopHeaders.has(name.toLowerCase()) &&
+        name.toLowerCase() !== "set-cookie"
+      ) {
         res.setHeader(name, value);
       }
     }
