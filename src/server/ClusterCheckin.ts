@@ -142,12 +142,7 @@ export async function registerClusterIdentity(
   // startup the HTTP listener is not up yet, so registration must go straight
   // to the real API host instead of calling back into this process.
   const apiOrigin = ServerEnv.apiOrigin();
-  const ownHosts = [ServerEnv.publicHost(), ServerEnv.siteHost()].filter(
-    (value): value is string => value !== undefined,
-  );
-  const isSameOriginProxy = ownHosts.some(
-    (ownHost) => apiOrigin === `https://${ownHost}`,
-  );
+  const isSameOriginProxy = apiOrigin === `https://${host}`;
   const issuer = isSameOriginProxy
     ? `https://api.${ServerEnv.jwtAudience()}`
     : ServerEnv.jwtIssuer();
