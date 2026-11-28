@@ -173,7 +173,9 @@ describe("registerClusterIdentity", () => {
   });
   afterEach(() => vi.unstubAllEnvs());
 
-  test("registers a new site through the upstream API and uses its assigned identity", async () => {
+  test(
+    "registers a new site through the upstream API and uses its assigned identity",
+    async () => {
     const fetchFn = vi.fn(
       async (_url: RequestInfo | URL, _init?: RequestInit) =>
         new Response(JSON.stringify({ letter: "c", numWorkers: 4 }), {
@@ -203,11 +205,13 @@ describe("registerClusterIdentity", () => {
       cpus: 4,
     });
     expect(process.env.INSTANCE_LETTER).toBe("c");
-    // A worker count explicitly set by the Render service remains authoritative.
+    // An explicitly configured Render worker count remains authoritative.
     expect(process.env.NUM_WORKERS).toBe("1");
   });
 
-  test("does not register again when both identity values are supplied", async () => {
+  test(
+    "does not register again when both identity values are supplied",
+    async () => {
     vi.stubEnv("INSTANCE_LETTER", "b");
     vi.stubEnv("NUM_WORKERS", "2");
     const fetchFn = vi.fn();
@@ -220,7 +224,9 @@ describe("registerClusterIdentity", () => {
     expect(fetchFn).not.toHaveBeenCalled();
   });
 
-  test("does not register local development without a public host", async () => {
+  test(
+    "does not register local development without a public host",
+    async () => {
     vi.stubEnv("DOMAIN", "localhost");
     vi.stubEnv("SITE_HOST", "");
     vi.stubEnv("GAME_HOST", "");
