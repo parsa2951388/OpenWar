@@ -123,6 +123,8 @@ beforeEach(async () => {
   window.BOOTSTRAP_CONFIG = {
     gameEnv: "dev",
     numWorkers: 1,
+    cluster: { a: { host: "game.test", numWorkers: 1 } },
+    instanceLetter: "a",
     turnstileSiteKey: "",
     jwtAudience: "test",
     instanceId: "test",
