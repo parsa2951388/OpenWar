@@ -5,6 +5,8 @@ import {
   joinIsGateable,
   multiplayerAllowedForBackend,
   shouldBlockJoin,
+  shouldBlockLocalServerAction,
+  shouldBlockRegistryAction,
   shouldBlockMultiplayerAction,
   shouldBlockSocketSourcedAction,
 } from "../src/client/GameModeSelector";
@@ -328,5 +330,66 @@ describe("shouldBlockSocketSourcedAction", () => {
         );
       }
     }
+  });
+});
+
+describe("server selection requirements", () => {
+  const healthyUpdate = { status: "current", bytes: 0, total: 0 } as const;
+  const signedIn = { status: "signed-in" } as const;
+
+  it("allows create and join on the page's own server during a registry outage", () => {
+    expect(shouldBlockLocalServerAction(healthyUpdate, signedIn, true)).toBe(
+      false,
+    );
+  });
+
+  it("blocks local-server actions when the page does not identify a game server", () => {
+    expect(shouldBlockLocalServerAction(healthyUpdate, signedIn, false)).toBe(
+      true,
+    );
+  });
+
+  it("still blocks local-server actions for a pending update or signed-out shell", () => {
+    expect(
+      shouldBlockLocalServerAction(
+        { status: "staged", bytes: 0, total: 0 },
+        signedIn,
+        true,
+      ),
+    ).toBe(true);
+    expect(
+      shouldBlockLocalServerAction(
+        healthyUpdate,
+        { status: "signed-out", reason: "steam-wedged" },
+        true,
+      ),
+    ).toBe(true);
+  });
+
+  it("keeps registry-dependent Ranked blocked until a compatible list is available", () => {
+    expect(
+      shouldBlockRegistryAction(healthyUpdate, signedIn, true, false),
+    ).toBe(true);
+    expect(
+      shouldBlockRegistryAction(healthyUpdate, signedIn, false, false),
+    ).toBe(true);
+  });
+
+  it("does not block Ranked while registry availability is still unknown", () => {
+    expect(
+      shouldBlockRegistryAction(healthyUpdate, signedIn, false, null),
+    ).toBe(false);
+  });
+
+  it("still blocks Ranked during a confirmed outage when availability is unknown", () => {
+    expect(shouldBlockRegistryAction(healthyUpdate, signedIn, true, null)).toBe(
+      true,
+    );
+  });
+
+  it("allows registry-dependent actions only when a compatible server is selected", () => {
+    expect(
+      shouldBlockRegistryAction(healthyUpdate, signedIn, false, true),
+    ).toBe(false);
   });
 });

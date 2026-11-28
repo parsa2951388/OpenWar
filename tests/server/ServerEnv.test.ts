@@ -163,6 +163,44 @@ describe("ServerEnv.jwtAudience", () => {
   });
 });
 
+describe("ServerEnv local preview hostname", () => {
+  afterEach(() => {
+    vi.unstubAllEnvs();
+  });
+
+  test("uses Render's public hostname when explicit host variables are absent", () => {
+    vi.stubEnv("OPENWAR_LOCAL_PREVIEW", "true");
+    vi.stubEnv("GAME_HOST", "");
+    vi.stubEnv("SITE_HOST", "");
+    vi.stubEnv("SUBDOMAIN", "");
+    vi.stubEnv(
+      "RENDER_EXTERNAL_HOSTNAME",
+      "open-war-v2-solo-test.onrender.com",
+    );
+
+    expect(ServerEnv.publicHost()).toBe("open-war-v2-solo-test.onrender.com");
+    expect(ServerEnv.siteHost()).toBe("open-war-v2-solo-test.onrender.com");
+    expect(ServerEnv.apiOrigin()).toBe(
+      "https://open-war-v2-solo-test.onrender.com",
+    );
+  });
+
+  test("does not use Render hostname fallback outside local preview", () => {
+    vi.stubEnv("OPENWAR_LOCAL_PREVIEW", "");
+    vi.stubEnv("GAME_HOST", "");
+    vi.stubEnv("SITE_HOST", "");
+    vi.stubEnv("SUBDOMAIN", "");
+    vi.stubEnv(
+      "RENDER_EXTERNAL_HOSTNAME",
+      "open-war-v2-solo-test.onrender.com",
+    );
+
+    expect(ServerEnv.publicHost()).toBeUndefined();
+    expect(ServerEnv.siteHost()).toBeUndefined();
+    expect(ServerEnv.apiOrigin()).toBeUndefined();
+  });
+});
+
 describe("ServerEnv.jwtIssuer", () => {
   afterEach(() => {
     vi.unstubAllEnvs();

@@ -4,6 +4,7 @@ import crypto from "crypto";
 import express from "express";
 import rateLimit from "express-rate-limit";
 import http from "http";
+import { Readable } from "node:stream";
 import path from "path";
 import { fileURLToPath } from "url";
 import {
@@ -11,6 +12,7 @@ import {
   CHECKIN_INTERVAL_MS,
   checkinBody,
   isRefusal,
+  registerClusterIdentity,
   registeredSite,
   sendCheckin,
 } from "./ClusterCheckin";
@@ -24,6 +26,10 @@ import { MapPlaylist } from "./MapPlaylist";
 import { fetchMapWeights, MAP_WEIGHTS_POLL_MS } from "./MapWeights";
 import { MasterLobbyService } from "./MasterLobbyService";
 import { setNoStoreHeaders } from "./NoStoreHeaders";
+import {
+  createLocalPreviewServerList,
+  forwardOpenWarApiRequest,
+} from "./OpenWarApiProxy";
 import { startPolling } from "./PollingLoop";
 import { renderAppShell } from "./RenderHtml";
 import { ServerEnv } from "./ServerEnv";
@@ -44,7 +50,359 @@ let lastReadinessFailure: string | null = null;
 const __filename = fileURLToPath(import.meta.url);
 const __dirname = path.dirname(__filename);
 
+// The Docker deployment routes /wN requests through nginx. Render's native
+// Node service runs this master directly, without nginx, so the public port
+// must forward worker HTTP and WebSocket traffic itself.
+const BALANCED_WORKER_ROUTES = new Set([
+  "/api/create_game",
+  "/api/adminbot/create_game",
+  "/api/adminbot/create_pool",
+]);
+
+interface WorkerRouteTarget {
+  workerId: number;
+  path: string;
+}
+
+function resolveWorkerRouteTarget(
+  rawUrl: string,
+  balanceCreateRoutes = true,
+): WorkerRouteTarget | null {
+  const incoming = new URL(rawUrl, "http://localhost");
+  const match = incoming.pathname.match(/^\/w(\d+)(\/.*)?$/);
+  if (match) {
+    return {
+      workerId: Number(match[1]),
+      path: (match[2] ?? "/") + incoming.search,
+    };
+  }
+
+  if (balanceCreateRoutes && BALANCED_WORKER_ROUTES.has(incoming.pathname)) {
+    const workerCount = ServerEnv.numWorkers();
+    return {
+      workerId: Math.floor(Math.random() * workerCount),
+      path: incoming.pathname + incoming.search,
+    };
+  }
+
+  return null;
+}
+
+function isValidWorkerId(workerId: number): boolean {
+  return (
+    Number.isInteger(workerId) &&
+    workerId >= 0 &&
+    workerId < ServerEnv.numWorkers()
+  );
+}
+
+function workerForwardHeaders(
+  request: http.IncomingMessage,
+  workerPort: number,
+): http.OutgoingHttpHeaders {
+  const headers: http.OutgoingHttpHeaders = { ...request.headers };
+  headers.host = request.headers.host ?? "127.0.0.1:" + workerPort;
+  headers.connection = "close";
+  headers["x-forwarded-host"] = request.headers.host ?? "";
+  headers["x-forwarded-proto"] =
+    request.headers["x-forwarded-proto"] ?? "https";
+
+  const existingForwardedFor = request.headers["x-forwarded-for"];
+  const forwardedFor = [
+    ...(Array.isArray(existingForwardedFor)
+      ? existingForwardedFor
+      : existingForwardedFor
+        ? [existingForwardedFor]
+        : []),
+    request.socket.remoteAddress,
+  ]
+    .filter((value): value is string => Boolean(value))
+    .join(", ");
+  if (forwardedFor) headers["x-forwarded-for"] = forwardedFor;
+
+  return headers;
+}
+
+function proxyWorkerHttp(
+  request: http.IncomingMessage,
+  response: http.ServerResponse,
+  target: WorkerRouteTarget,
+): void {
+  const workerPort = ServerEnv.workerPortByIndex(target.workerId);
+  const upstream = http.request(
+    {
+      hostname: "127.0.0.1",
+      port: workerPort,
+      method: request.method,
+      path: target.path,
+      headers: workerForwardHeaders(request, workerPort),
+    },
+    (upstreamResponse) => {
+      response.writeHead(
+        upstreamResponse.statusCode ?? 502,
+        upstreamResponse.headers,
+      );
+      upstreamResponse.pipe(response);
+    },
+  );
+
+  upstream.setTimeout(30_000, () => {
+    upstream.destroy(new Error("worker HTTP request timed out"));
+  });
+  upstream.on("error", (error) => {
+    log.warn("Worker HTTP proxy failed", {
+      workerId: target.workerId,
+      path: target.path,
+      error: error.message,
+    });
+    if (!response.headersSent) {
+      response.writeHead(502, {
+        "Cache-Control": "no-store",
+        "Content-Type": "application/json; charset=utf-8",
+      });
+      response.end(JSON.stringify({ error: "worker_unavailable" }));
+    } else {
+      response.destroy(error);
+    }
+  });
+
+  request.on("aborted", () => upstream.destroy());
+  response.on("close", () => {
+    if (!response.writableEnded) upstream.destroy();
+  });
+  request.pipe(upstream);
+}
+
+// Forward worker HTTP routes before express.json() consumes their request
+// bodies. This also covers create-game endpoints normally load-balanced by
+// nginx in the Docker deployment.
+app.use((request, response, next) => {
+  const target = resolveWorkerRouteTarget(request.url ?? "/");
+  if (target === null) {
+    next();
+    return;
+  }
+  if (!isValidWorkerId(target.workerId)) {
+    response.status(404).json({ error: "worker_not_found" });
+    return;
+  }
+  proxyWorkerHttp(request, response, target);
+});
+
 app.use(express.json());
+
+// WebSocket upgrades bypass Express middleware. Proxy /wN/lobbies and /wN
+// game sockets to the same worker that handles their HTTP routes.
+server.on("upgrade", (request, socket, head) => {
+  const target = resolveWorkerRouteTarget(request.url ?? "/", false);
+  if (target === null || !isValidWorkerId(target.workerId)) {
+    socket.end(
+      "HTTP/1.1 404 Not Found\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
+    );
+    return;
+  }
+
+  const workerPort = ServerEnv.workerPortByIndex(target.workerId);
+  const headers = workerForwardHeaders(request, workerPort);
+  headers.connection = "Upgrade";
+  headers.upgrade = request.headers.upgrade ?? "websocket";
+
+  const upstream = http.request({
+    hostname: "127.0.0.1",
+    port: workerPort,
+    method: request.method,
+    path: target.path,
+    headers,
+  });
+
+  upstream.setTimeout(10_000, () => {
+    upstream.destroy(new Error("worker WebSocket handshake timed out"));
+  });
+
+  upstream.on("upgrade", (upstreamResponse, upstreamSocket, upstreamHead) => {
+    const responseLines = [
+      "HTTP/" +
+        upstreamResponse.httpVersion +
+        " " +
+        (upstreamResponse.statusCode ?? 101) +
+        " " +
+        (upstreamResponse.statusMessage ?? ""),
+    ];
+    for (let i = 0; i < upstreamResponse.rawHeaders.length; i += 2) {
+      responseLines.push(
+        upstreamResponse.rawHeaders[i] +
+          ": " +
+          upstreamResponse.rawHeaders[i + 1],
+      );
+    }
+    socket.write(responseLines.join("\r\n") + "\r\n\r\n");
+    if (upstreamHead.length > 0) socket.write(upstreamHead);
+    if (head.length > 0) upstreamSocket.write(head);
+
+    socket.on("error", () => upstreamSocket.destroy());
+    upstreamSocket.on("error", () => socket.destroy());
+    socket.on("close", () => upstreamSocket.destroy());
+    upstreamSocket.on("close", () => socket.destroy());
+
+    socket.pipe(upstreamSocket);
+    upstreamSocket.pipe(socket);
+  });
+
+  upstream.on("response", (upstreamResponse) => {
+    const responseLines = [
+      "HTTP/" +
+        upstreamResponse.httpVersion +
+        " " +
+        (upstreamResponse.statusCode ?? 502) +
+        " " +
+        (upstreamResponse.statusMessage ?? ""),
+    ];
+    for (let i = 0; i < upstreamResponse.rawHeaders.length; i += 2) {
+      responseLines.push(
+        upstreamResponse.rawHeaders[i] +
+          ": " +
+          upstreamResponse.rawHeaders[i + 1],
+      );
+    }
+    socket.write(responseLines.join("\r\n") + "\r\n\r\n");
+    upstreamResponse.pipe(socket);
+  });
+
+  upstream.on("error", (error) => {
+    log.warn("Worker WebSocket proxy failed", {
+      workerId: target.workerId,
+      path: target.path,
+      error: error.message,
+    });
+    if (!socket.destroyed) {
+      socket.end(
+        "HTTP/1.1 502 Bad Gateway\r\nConnection: close\r\nContent-Length: 0\r\n\r\n",
+      );
+    }
+  });
+
+  socket.on("error", () => upstream.destroy());
+  upstream.end();
+});
+
+// The solo-test Render instance can expose the allowlisted account API on its
+// own hostname. Enable this only when API_ORIGIN is explicitly set to this
+// server's public hostname; production deployments that use the Cloudflare
+// gateway continue to use that gateway directly.
+app.use(async (req, res, next) => {
+  const host =
+    ServerEnv.publicHost() ??
+    ServerEnv.siteHost() ??
+    (process.env.OPENWAR_LOCAL_PREVIEW === "true"
+      ? process.env.RENDER_EXTERNAL_HOSTNAME
+      : undefined);
+
+  // The local preview registry is deliberately independent of API_ORIGIN:
+  // it must still work when Render's environment variables are incomplete.
+  if (
+    process.env.OPENWAR_LOCAL_PREVIEW === "true" &&
+    host !== undefined &&
+    req.path === "/cluster.json"
+  ) {
+    const incoming = new URL(req.originalUrl, `https://${host}`);
+    if (incoming.searchParams.get("site") !== host) {
+      res.status(404).json({ error: "unknown_site" });
+      return;
+    }
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      res.json(
+        createLocalPreviewServerList(
+          host,
+          ServerEnv.instanceLetter(),
+          ServerEnv.numWorkers(),
+          ServerEnv.gitCommit(),
+        ),
+      );
+    } catch (error) {
+      log.error("Failed to build local preview server list:", error);
+      res.status(503).json({ error: "local_server_unavailable" });
+    }
+    return;
+  }
+
+  if (host === undefined || ServerEnv.apiOrigin() !== `https://${host}`) {
+    next();
+    return;
+  }
+
+  const headers = new Headers();
+  for (const [name, value] of Object.entries(req.headers)) {
+    if (typeof value === "string") {
+      headers.set(name, value);
+    } else if (Array.isArray(value)) {
+      headers.set(name, value.join(", "));
+    }
+  }
+  // The account API key belongs to the server, not the browser. Always use
+  // the configured server key so allowlisted API requests can authenticate
+  // without exposing the secret to client code.
+  for (const [name, value] of Object.entries(ServerEnv.apiKeyHeaders())) {
+    headers.set(name, value);
+  }
+
+  try {
+    const incoming = new URL(req.originalUrl, `https://${host}`);
+    const response = await forwardOpenWarApiRequest({
+      method: req.method,
+      pathname: incoming.pathname,
+      search: incoming.search,
+      host,
+      origin: req.get("origin"),
+      headers,
+      body: req.body,
+    });
+
+    if (response === null) {
+      next();
+      return;
+    }
+
+    res.status(response.status);
+    const hopByHopHeaders = new Set([
+      "connection",
+      "keep-alive",
+      "proxy-authenticate",
+      "proxy-authorization",
+      "te",
+      "trailer",
+      "transfer-encoding",
+      "upgrade",
+    ]);
+    for (const [name, value] of response.headers) {
+      if (
+        !hopByHopHeaders.has(name.toLowerCase()) &&
+        name.toLowerCase() !== "set-cookie"
+      ) {
+        res.setHeader(name, value);
+      }
+    }
+    const setCookies = response.headers.getSetCookie();
+    if (setCookies.length > 0) {
+      res.setHeader("Set-Cookie", setCookies);
+    }
+
+    if (response.body === null) {
+      res.end();
+      return;
+    }
+    Readable.fromWeb(
+      response.body as import("node:stream/web").ReadableStream<Uint8Array>,
+    ).pipe(res);
+  } catch (error) {
+    log.error("Same-origin Open War API proxy failed:", error);
+    if (!res.headersSent) {
+      res.status(502).json({ error: "upstream_unavailable" });
+    } else {
+      res.destroy(error instanceof Error ? error : undefined);
+    }
+  }
+});
 
 // Serve the shared app shell for the root document.
 app.use(async (req, res, next) => {
@@ -165,11 +523,23 @@ export async function startMaster() {
   }
 
   log.info(`Primary ${process.pid} is running`);
+  const localPreview = process.env.OPENWAR_LOCAL_PREVIEW === "true";
+  const registered = localPreview ? false : await registerClusterIdentity();
+  if (localPreview) {
+    log.info(
+      "Local preview enabled; using the Render instance as its own server registry",
+    );
+  }
+  if (registered) {
+    log.info(
+      `Registered ${ServerEnv.publicHost()} as letter ${ServerEnv.instanceLetter()} with ${ServerEnv.numWorkers()} workers`,
+    );
+  }
   log.info(`Setting up ${ServerEnv.numWorkers()} workers...`);
 
   // A server that registers schedules nothing until the API calls it open: a
   // mistyped letter must not mint lobbies under a letter routed elsewhere.
-  const registers = checkinBody(0) !== null;
+  const registers = !localPreview && checkinBody(0) !== null;
   lobbyService = new MasterLobbyService(playlist, log, registers);
 
   const INSTANCE_ID =
@@ -186,7 +556,7 @@ export async function startMaster() {
   // workers fork so the first roster normally lands before scheduling
   // begins; until it does, and whenever it stops, the master schedules its
   // own lobbies exactly as it does without a coordinator.
-  const hello = checkinBody(0);
+  const hello = localPreview ? null : checkinBody(0);
   const coordinator = coordinatorUrl(registeredSite());
   if (coordinator !== null && hello !== null) {
     log.info(`Joining lobby coordinator at ${coordinator}`);

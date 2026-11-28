@@ -21,7 +21,7 @@ async function main(): Promise<void> {
   process.env.API_ORIGIN =
     nonEmpty(process.env.API_ORIGIN) ??
     "https://openwar-api-gateway.parsaoj.workers.dev";
-  process.env.CDN_BASE = "";
+  process.env.CDN_BASE = process.env.GITHUB_PAGES === "true" ? "/OpenWar" : "";
   process.env.GIT_COMMIT =
     nonEmpty(process.env.RENDER_GIT_COMMIT) ??
     nonEmpty(process.env.GIT_COMMIT) ??

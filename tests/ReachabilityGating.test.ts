@@ -111,6 +111,18 @@ function clickEveryButton(): number {
   return buttons.length;
 }
 
+function actionButton(key: "create" | "ranked" | "join"): HTMLButtonElement {
+  const button = selector.querySelector<HTMLButtonElement>(
+    `button[data-action-key="${key}"]`,
+  );
+  if (button === null) throw new Error(`Missing ${key} action button`);
+  return button;
+}
+
+function clickAction(key: "create" | "ranked" | "join"): void {
+  actionButton(key).click();
+}
+
 /**
  * The rendered public-lobby card's button. Socket-sourced: whatever the
  * server-list API is doing, this one must keep working (the reachability rule
@@ -145,13 +157,13 @@ async function confirmOutage(): Promise<void> {
 }
 
 beforeEach(() => {
-  // connectedCallback reads ClientEnv.gameCreationRate(), which throws
-  // without the config the server injects into index.html. No serverHost and
-  // no openfrontDesktop: this is the web build, where the update and session
-  // gates do not exist and reachability is the only one that can fire.
+  // The page is served by one game server. It has its own one-entry cluster
+  // map even though the public registry has not registered this test site.
   window.BOOTSTRAP_CONFIG = {
     gameEnv: "dev",
     numWorkers: 1,
+    cluster: { a: { host: "game.test", numWorkers: 1 } },
+    instanceLetter: "a",
     turnstileSiteKey: "",
     jwtAudience: "test",
     instanceId: "test",
@@ -200,55 +212,40 @@ afterEach(() => {
   vi.restoreAllMocks();
 });
 
-describe("the multiplayer entry points while the backend is unreachable", () => {
-  it("lets everything through before the first attempt has settled", async () => {
-    // The rule that matters most: a player must never be locked out of
-    // multiplayer on a suspicion we have not even tested yet. Every page is
-    // in this state for its first few hundred milliseconds.
+describe("local and registry actions while the backend is unreachable", () => {
+  it("keeps local Create and Join available while registry status is unknown", async () => {
     selector = await mountSelector();
     expect(backendUnreachableConfirmed()).toBe(false);
 
-    expect(clickEveryButton()).toBeGreaterThan(0);
-
-    expect(joinOpen).toHaveBeenCalled();
-    expect(hostOpen).toHaveBeenCalled();
-    expect(
-      selector.querySelectorAll('button[aria-disabled="true"]').length,
-    ).toBe(0);
+    expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
     expect(messages).toEqual([]);
   });
 
-  it("lets everything through after a SINGLE missed attempt", async () => {
-    // One timed-out heartbeat is a blip. The cached list is still serving,
-    // the next request would very likely work, and dimming every button for
-    // a retry interval over it -- with no Retry on the web to escape with --
-    // takes the game away for no good reason.
+  it("keeps local Create and Join available after a single missed attempt", async () => {
     selector = await mountSelector();
     await announce(false, false);
 
-    expect(
-      selector.querySelectorAll('button[aria-disabled="true"]').length,
-    ).toBe(0);
-    expect(clickEveryButton()).toBeGreaterThan(0);
-    expect(joinOpen).toHaveBeenCalled();
-    expect(hostOpen).toHaveBeenCalled();
+    expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
     expect(messages).toEqual([]);
   });
 
-  it("dims and refuses the API-DEPENDENT entry points once the outage is confirmed", async () => {
-    // Create, Ranked and Join-by-code each have to resolve a server for
-    // something nothing has told this client about, so a dead list API really
-    // does mean the click cannot work.
+  it("keeps private lobbies available but blocks Ranked after a confirmed registry outage", async () => {
     selector = await mountSelector();
     await announce(false, true);
 
-    expect(
-      selector.querySelectorAll('button[aria-disabled="true"]').length,
-    ).toBeGreaterThan(0);
-    clickEveryButton();
+    expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("ranked").getAttribute("aria-disabled")).toBe("true");
 
-    expect(joinOpen).not.toHaveBeenCalled();
-    expect(hostOpen).not.toHaveBeenCalled();
+    clickAction("create");
+    clickAction("join");
+    expect(hostOpen).toHaveBeenCalled();
+    expect(joinOpen).toHaveBeenCalled();
+
+    clickAction("ranked");
+    expect(messages).toContain("common.backend_unreachable");
   });
 
   it("still joins the public lobby card during a confirmed outage", async () => {
@@ -287,32 +284,28 @@ describe("the multiplayer entry points while the backend is unreachable", () => 
     expect(messages).toEqual([]);
   });
 
-  it("says why, on the web, where there is no status bar to read", async () => {
+  it("says why when Ranked is refused on the web", async () => {
     selector = await mountSelector();
     await announce(false, true);
 
-    clickEveryButton();
+    clickAction("ranked");
 
     // Refusing silently would look like a broken button, and unlike the
     // desktop gates there is nothing else on screen naming the reason.
     expect(messages).toContain("common.backend_unreachable");
   });
 
-  it("re-enables everything when the backend comes back", async () => {
+  it("keeps private actions available when the registry recovers without a site registration", async () => {
     selector = await mountSelector();
     await announce(false, true);
-    clickEveryButton();
-    document.dispatchEvent(new CustomEvent("leave-lobby"));
-    expect(joinOpen).not.toHaveBeenCalled();
-
+    await ensureServerList();
     await announce(true);
 
-    expect(
-      selector.querySelectorAll('button[aria-disabled="true"]').length,
-    ).toBe(0);
-    expect(clickEveryButton()).toBeGreaterThan(0);
-    expect(joinOpen).toHaveBeenCalled();
-    expect(hostOpen).toHaveBeenCalled();
+    expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
+    // A reachable 404 means the API is healthy but this site has no compatible
+    // registered server, so Ranked remains unavailable.
+    expect(actionButton("ranked").getAttribute("aria-disabled")).toBe("true");
   });
 
   it("leaves single-player alone", async () => {
@@ -333,37 +326,39 @@ describe("the multiplayer entry points while the backend is unreachable", () => 
     expect(soloOpen).toHaveBeenCalled();
   });
 
-  it("gates a selector that mounted after the outage was already confirmed", async () => {
-    // The seed half. No "backend-reachability" event is dispatched anywhere
-    // below: the only ones this document will ever see fired while nothing
-    // was listening, so the accessor is the sole path by which the selector
-    // can know. This is OPE-396's bug, on a new signal.
+  it("keeps private actions available and socket-sourced lobbies joinable when a selector mounts during a confirmed outage", async () => {
+    // No "backend-reachability" event is dispatched after the selector mounts:
+    // it must seed the confirmed outage from the ServerList accessor itself.
     await confirmOutage();
 
     selector = await mountSelector();
 
-    expect(
-      selector.querySelectorAll('button[aria-disabled="true"]').length,
-    ).toBeGreaterThan(0);
-    clickEveryButton();
-    expect(joinOpen).not.toHaveBeenCalled();
-    expect(hostOpen).not.toHaveBeenCalled();
-    // ...and the card that came over the socket still joins, from the same
-    // seed.
+    expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("ranked").getAttribute("aria-disabled")).toBe("true");
+
+    clickAction("ranked");
+    expect(messages).toContain("common.backend_unreachable");
+
+    // A public card already delivered over the live game-server socket remains
+    // joinable even while the separate global registry is unavailable.
+    lobbyCardButton()!.click();
     expect(joinLobby).toHaveBeenCalled();
   });
 
-  it("does not gate a selector that mounted after an attempt SUCCEEDED", async () => {
-    // The control for the seed: a 404 is an answer, so a site with no list
-    // at all is still a reachable backend.
+  it("keeps private actions available when the API answers but this site is unregistered", async () => {
+    // A 404 is an answer: the API is reachable, but this test host has no
+    // compatible global registry entry. That must affect Ranked only.
     await ensureServerList();
     expect(backendUnreachableConfirmed()).toBe(false);
 
     selector = await mountSelector();
 
-    expect(clickEveryButton()).toBeGreaterThan(0);
-    expect(joinOpen).toHaveBeenCalled();
-    expect(hostOpen).toHaveBeenCalled();
+    expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("ranked").getAttribute("aria-disabled")).toBe("true");
+    clickAction("ranked");
+    expect(messages).toContain("mode_selector.no_compatible_server");
   });
 });
 
@@ -398,7 +393,7 @@ describe("a refused multiplayer click on the web", () => {
     await mountGated();
     const before = fetchMock.mock.calls.length;
 
-    clickEveryButton();
+    clickAction("ranked");
 
     expect(messages).toContain("common.backend_unreachable");
     expect(fetchMock.mock.calls.length).toBe(before + 1);
@@ -412,20 +407,20 @@ describe("a refused multiplayer click on the web", () => {
     await mountGated();
     const before = fetchMock.mock.calls.length;
 
-    clickEveryButton();
+    clickAction("ranked");
 
     expect(fetchMock.mock.calls.length).toBe(before + 1);
   });
 
   it("does not probe again inside the cooldown, but still says why", async () => {
     await mountGated();
-    clickEveryButton();
+    clickAction("ranked");
     document.dispatchEvent(new CustomEvent("leave-lobby"));
     await vi.waitFor(() => expect(attemptInFlight()).toBe(false));
     const after = fetchMock.mock.calls.length;
     messages.length = 0;
 
-    clickEveryButton();
+    clickAction("ranked");
 
     expect(fetchMock.mock.calls.length).toBe(after);
     // The player is still being refused, so they are still told so: the
@@ -435,18 +430,18 @@ describe("a refused multiplayer click on the web", () => {
 
   it("probes again once the cooldown has elapsed", async () => {
     await mountGated();
-    clickEveryButton();
+    clickAction("ranked");
     document.dispatchEvent(new CustomEvent("leave-lobby"));
     await vi.waitFor(() => expect(attemptInFlight()).toBe(false));
     const after = fetchMock.mock.calls.length;
 
     advancePastRetryCooldown();
-    clickEveryButton();
+    clickAction("ranked");
 
     expect(fetchMock.mock.calls.length).toBe(after + 1);
   });
 
-  it("lets the player back in when the probe finds the backend up", async () => {
+  it("keeps private lobby actions available when the API probe succeeds for an unregistered site", async () => {
     // End to end: a refused click starts the probe, the probe answers, the
     // reachability event that carries the answer un-dims the buttons, and the
     // next click goes through. No Retry button involved anywhere.
@@ -458,28 +453,30 @@ describe("a refused multiplayer click on the web", () => {
         }),
     );
 
-    clickEveryButton();
+    clickAction("ranked");
     document.dispatchEvent(new CustomEvent("leave-lobby"));
     await vi.waitFor(() => expect(backendUnreachableConfirmed()).toBe(false));
     await selector.updateComplete;
 
-    expect(
-      selector.querySelectorAll('button[aria-disabled="true"]').length,
-    ).toBe(0);
-    expect(clickEveryButton()).toBeGreaterThan(0);
+    // The 404 is a reachable API response, but this host has no compatible
+    // registry entry. Local create/join are available; Ranked stays disabled.
+    expect(actionButton("create").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("join").getAttribute("aria-disabled")).toBe("false");
+    expect(actionButton("ranked").getAttribute("aria-disabled")).toBe("true");
+    clickAction("create");
+    clickAction("join");
     expect(hostOpen).toHaveBeenCalled();
     expect(joinOpen).toHaveBeenCalled();
   });
 
-  it("does not probe when the click was not refused", async () => {
-    // The control. A healthy page clicks the same buttons; nothing here may
-    // turn an ordinary click into an extra request.
+  it("does not probe when a local Create click is not refused", async () => {
     selector = await mountSelector();
     const before = fetchMock.mock.calls.length;
 
-    clickEveryButton();
+    clickAction("create");
 
     expect(fetchMock.mock.calls.length).toBe(before);
+    expect(hostOpen).toHaveBeenCalled();
   });
 
   it("does not probe on a card click that goes through", async () => {

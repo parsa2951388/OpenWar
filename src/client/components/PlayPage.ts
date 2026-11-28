@@ -26,7 +26,7 @@ export class PlayPage extends LitElement {
         <!-- Mobile: Fixed top bar -->
         <div class="ow-mobile-topbar lg:hidden">
           <div
-            class="grid grid-cols-[minmax(0,1fr)_auto_minmax(0,1fr)] items-center h-14 px-2 gap-2"
+            class="ow-mobile-topbar__inner grid grid-cols-[2.5rem_minmax(0,1fr)_auto] items-center h-14 px-2 gap-1"
           >
             <button
               id="hamburger-btn"
@@ -54,7 +54,7 @@ export class PlayPage extends LitElement {
             </button>
 
             <div
-              class="col-start-2 flex items-center justify-center text-malibu-blue min-w-0"
+              class="ow-mobile-topbar__brand col-start-2 flex items-center justify-center text-malibu-blue min-w-0"
             >
               <img
                 src=${assetUrl("images/OpenWarLogo.svg")}
@@ -67,7 +67,7 @@ export class PlayPage extends LitElement {
                  the account affordance on every platform now — on CrazyGames
                  its "Sign in" item hands off to their SDK prompt. -->
             <div
-              class="col-start-3 justify-self-end shrink-0 flex items-center gap-0.5"
+              class="ow-mobile-topbar__actions col-start-3 justify-self-end shrink-0 flex items-center gap-0.5"
             >
               <nav-utility-icons size="mobile"></nav-utility-icons>
               <nav-account-menu variant="mobile"></nav-account-menu>

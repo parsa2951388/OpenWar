@@ -461,7 +461,7 @@ export default defineConfig(({ mode }) => {
       ],
     },
     root: "./",
-    base: "/",
+    base: process.env.GITHUB_PAGES === "true" ? "/OpenWar/" : "/",
     publicDir: isProduction ? false : "resources",
 
     // Vite's JS preload helper (`__vitePreload`, used by dynamic import())

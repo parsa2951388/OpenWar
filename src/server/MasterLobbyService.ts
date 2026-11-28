@@ -1,3 +1,4 @@
+import { GameEnv } from "@openfront/shared/configuration/Env";
 import {
   MAX_HOSTED_LOBBIES,
   PublicGameType,
@@ -284,7 +285,16 @@ export class MasterLobbyService {
       this.started = true;
       this.log.info("All workers ready, starting game scheduling");
       startPolling(async () => this.broadcastLobbies(), 500);
-      startPolling(async () => await this.maybeScheduleLobby(), 1000);
+      if (
+        ServerEnv.env() === GameEnv.Dev &&
+        process.env.DISABLE_PUBLIC_LOBBY_SCHEDULING === "true"
+      ) {
+        this.log.info(
+          "Public lobby scheduling disabled for this development server",
+        );
+      } else {
+        startPolling(async () => await this.maybeScheduleLobby(), 1000);
+      }
     }
   }
 

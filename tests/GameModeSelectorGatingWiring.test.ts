@@ -123,6 +123,8 @@ beforeEach(async () => {
   window.BOOTSTRAP_CONFIG = {
     gameEnv: "dev",
     numWorkers: 1,
+    cluster: { a: { host: "game.test", numWorkers: 1 } },
+    instanceLetter: "a",
     turnstileSiteKey: "",
     jwtAudience: "test",
     instanceId: "test",
@@ -431,5 +433,45 @@ describe("grid placement", () => {
     );
     expect(rows.some((c) => c.includes("sm:row-start-3"))).toBe(true);
     expect(rows.some((c) => c.includes("sm:row-span-2"))).toBe(false);
+  });
+});
+
+describe("server-served page actions when the registry is unavailable", () => {
+  it("allows local create and join while keeping Ranked unavailable", async () => {
+    const bootstrap = window.BOOTSTRAP_CONFIG as any;
+    bootstrap.cluster = { a: { host: "game.test", numWorkers: 1 } };
+    bootstrap.instanceLetter = "a";
+    ClientEnv.reset();
+
+    document.dispatchEvent(
+      new CustomEvent("backend-reachability", {
+        detail: { reachable: false, confirmed: true },
+      }),
+    );
+    await selector.updateComplete;
+
+    const action = (key: string) =>
+      selector.querySelector<HTMLButtonElement>(
+        `button[data-action-key="${key}"]`,
+      );
+
+    const create = action("create");
+    const join = action("join");
+    const ranked = action("ranked");
+    expect(create).not.toBeNull();
+    expect(join).not.toBeNull();
+    expect(ranked).not.toBeNull();
+
+    expect(create!.getAttribute("aria-disabled")).toBe("false");
+    expect(join!.getAttribute("aria-disabled")).toBe("false");
+    expect(ranked!.getAttribute("aria-disabled")).toBe("true");
+
+    create!.click();
+    join!.click();
+    ranked!.click();
+
+    expect(hostOpen).toHaveBeenCalledTimes(1);
+    expect(joinOpen).toHaveBeenCalledTimes(1);
+    expect(window.showPage).not.toHaveBeenCalledWith("page-ranked");
   });
 });

@@ -44,6 +44,7 @@ describe("Open War API gateway route allowlist", () => {
   });
 
   it.each([
+    ["/cluster/register", "POST", "cluster"],
     ["/users/@me", "GET", "user-profile"],
     ["/users/@me", "DELETE", "user-profile"],
     ["/users/@me/username", "PUT", "user-profile"],

@@ -18,6 +18,7 @@ const ROUTES = [
     group: "cluster",
     methods: ["GET", "POST"],
   },
+  { pattern: /^\/cluster\/register$/, group: "cluster", methods: ["POST"] },
   { pattern: /^\/map_weights$/, group: "map-weights", methods: ["GET"] },
   { pattern: /^\/cluster\.json$/, group: "cluster-list", methods: ["GET"] },
   { pattern: /^\/\.well-known\/jwks\.json$/, group: "jwks", methods: ["GET"] },
@@ -154,6 +155,11 @@ function routeFor(pathname) {
 
 export function routeGroup(pathname) {
   return routeFor(pathname)?.group ?? null;
+}
+
+export function routeMethods(pathname) {
+  const route = routeFor(pathname);
+  return route === null ? null : [...route.methods];
 }
 
 function allowedOrigins(env) {

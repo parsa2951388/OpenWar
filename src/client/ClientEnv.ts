@@ -74,6 +74,14 @@ export class ClientEnv {
     return ClientEnv.apiList !== null;
   }
   /**
+   * True only when the registry selected a server that can serve this
+   * client's build. A reachable API response with an unknown site, or a
+   * list containing only other builds, is not a usable Ranked destination.
+   */
+  static hasRegistrySelectedServer(): boolean {
+    return ClientEnv.pickedServer() !== null;
+  }
+  /**
    * Whether this page carries a server of its own — a page a game server
    * rendered, not a static one. True when `serverHost` was injected, or
    * when the cluster map and this page's own letter both were.

@@ -24,6 +24,17 @@ vi.mock("@openfront/engine/worker/Worker.worker?worker&inline", () => ({
       if (type === "error") worker.errorListeners.push(l);
       else worker.listeners.push(l);
     }
+    removeEventListener(type: string, l: (e: any) => void) {
+      if (type === "error") {
+        worker.errorListeners = worker.errorListeners.filter(
+          (listener) => listener !== l,
+        );
+      } else {
+        worker.listeners = worker.listeners.filter(
+          (listener) => listener !== l,
+        );
+      }
+    }
     postMessage(msg: Record<string, unknown>, transfer: unknown[] = []) {
       worker.posted.push({ msg, transfer });
     }

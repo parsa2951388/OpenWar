@@ -31,6 +31,7 @@ import { whenModalLoaded } from "./LazyModals";
 import { PublicLobbySocket } from "./LobbySocket";
 import type { JoinLobbyEvent } from "./Main";
 import {
+  backendReachable,
   backendUnreachableConfirmed,
   isPinnedToAVersion,
   MANUAL_RETRY_COOLDOWN_MS,
@@ -147,6 +148,39 @@ export function shouldBlockMultiplayerAction(
   if (session !== null && !multiplayerAllowedForSession(session)) return true;
   if (!multiplayerAllowedForBackend(backendOutage)) return true;
   return false;
+}
+
+/**
+ * Local Create/Join need a server that rendered this page, not the global
+ * registry. That server can answer its own worker routes while the registry
+ * is unavailable or has not yet registered this site.
+ */
+export function shouldBlockLocalServerAction(
+  update: DesktopUpdateState | null,
+  session: DesktopSessionState | null,
+  ownServerAvailable: boolean,
+): boolean {
+  if (update !== null && !multiplayerAllowed(update)) return true;
+  if (session !== null && !multiplayerAllowedForSession(session)) return true;
+  return !ownServerAvailable;
+}
+
+/**
+ * Ranked requires a compatible server selected from the global registry.
+ * A reachable API with an unknown site or no server for this build is not
+ * enough; do not send players to an unrelated OpenFront deployment.
+ */
+export function shouldBlockRegistryAction(
+  update: DesktopUpdateState | null,
+  session: DesktopSessionState | null,
+  backendOutage: boolean,
+  registryServerAvailable: boolean | null,
+): boolean {
+  if (update !== null && !multiplayerAllowed(update)) return true;
+  if (session !== null && !multiplayerAllowedForSession(session)) return true;
+  // null means the registry has not answered yet, or only one transient
+  // request failed. Do not turn "unknown" into "unavailable".
+  return backendOutage || registryServerAvailable === false;
 }
 
 /**
@@ -614,9 +648,12 @@ export class GameModeSelector extends LitElement {
     const canRetry = !lobbyFeedSuspended(this.desktopSessionState);
     // "Offline" is only ever said of a gated desktop session. An outage is
     // our servers not answering, which is not the player being offline.
+    // This test site serves its own game server but is not registered in the
+    // shared public-lobby registry yet. Say that the PUBLIC feed is unavailable,
+    // not that the Open War game server itself cannot be reached.
     const message = !canRetry
       ? "mode_selector.offline_lobbies"
-      : this.backendOutage
+      : this.backendOutage && !this.pageHasOwnServer()
         ? "mode_selector.servers_unreachable"
         : "mode_selector.lobbies_unreachable";
     return html`<div
@@ -739,14 +776,16 @@ export class GameModeSelector extends LitElement {
               this.openHostLobby,
               SECONDARY_ACTION,
               undefined,
-              true,
+              "local-server",
+              nothing,
+              "create",
             )}
             ${this.renderSmallActionCard(
               translateText("mode_selector.ranked_title"),
               this.openRankedMenu,
               SECONDARY_ACTION,
               undefined,
-              true,
+              "registry",
               // Ranked admits trusted accounts only. A trusted viewer gets the
               // green open lock; anyone else meets the red locks and the trust
               // popup inside the ranked modal. Small, so it clears the label on
@@ -760,13 +799,16 @@ export class GameModeSelector extends LitElement {
                     small: true,
                   })
                 : nothing,
+              "ranked",
             )}
             ${this.renderSmallActionCard(
               translateText("main.join"),
               this.openJoinLobby,
               SECONDARY_ACTION,
               this.hostedLobbyCount(),
-              true,
+              "local-server",
+              nothing,
+              "join",
             )}
           </div>
 
@@ -845,16 +887,58 @@ export class GameModeSelector extends LitElement {
    * reportMultiplayerRefusal makes of it. The button stays clickable and
    * merely stops being actionable.
    */
-  private blockedFromApiAction(): boolean {
-    if (
-      !shouldBlockMultiplayerAction(
-        this.desktopUpdateState,
-        this.desktopSessionState,
-        this.backendOutage,
-      )
-    )
+  private pageHasOwnServer(): boolean {
+    try {
+      return ClientEnv.servedByGameServer();
+    } catch {
       return false;
-    reportMultiplayerRefusal(this.backendOutage);
+    }
+  }
+
+  private registryHasCompatibleServer(): boolean | null {
+    try {
+      if (ClientEnv.hasRegistrySelectedServer()) return true;
+    } catch {
+      return null;
+    }
+    // A reachable response without a selected build-compatible server means
+    // this site is unknown or has no compatible deployment. One missed
+    // request is inconclusive; the confirmed-outage gate handles repeated
+    // failures separately.
+    return backendReachable() === true ? false : null;
+  }
+
+  private blockedFromApiAction(
+    requirement: "local-server" | "registry" = "registry",
+  ): boolean {
+    const blocked =
+      requirement === "local-server"
+        ? shouldBlockLocalServerAction(
+            this.desktopUpdateState,
+            this.desktopSessionState,
+            this.pageHasOwnServer(),
+          )
+        : shouldBlockRegistryAction(
+            this.desktopUpdateState,
+            this.desktopSessionState,
+            this.backendOutage,
+            this.registryHasCompatibleServer(),
+          );
+    if (!blocked) return false;
+    const desktopBlocked =
+      (this.desktopUpdateState !== null &&
+        !multiplayerAllowed(this.desktopUpdateState)) ||
+      (this.desktopSessionState !== null &&
+        !multiplayerAllowedForSession(this.desktopSessionState));
+    const registryUnavailable =
+      requirement === "registry" &&
+      !this.backendOutage &&
+      !desktopBlocked &&
+      this.registryHasCompatibleServer() === false;
+    reportMultiplayerRefusal(requirement === "registry" && this.backendOutage);
+    if (registryUnavailable) {
+      showToast(translateText("mode_selector.no_compatible_server"), "red");
+    }
     return true;
   }
 
@@ -879,7 +963,7 @@ export class GameModeSelector extends LitElement {
 
   private openRankedMenu = () => {
     if (this.inLobby) return;
-    if (this.blockedFromApiAction()) return;
+    if (this.blockedFromApiAction("registry")) return;
     if (!this.validateUsername()) return;
     window.showPage?.("page-ranked");
   };
@@ -910,7 +994,7 @@ export class GameModeSelector extends LitElement {
 
   private openHostLobby = () => {
     if (this.inLobby) return;
-    if (this.blockedFromApiAction()) return;
+    if (this.blockedFromApiAction("local-server")) return;
     if (!this.validateUsername()) return;
     whenModalLoaded("host-lobby-modal", () => {
       if (this.inLobby) return;
@@ -920,7 +1004,7 @@ export class GameModeSelector extends LitElement {
 
   private openJoinLobby = () => {
     if (this.inLobby) return;
-    if (this.blockedFromApiAction()) return;
+    if (this.blockedFromApiAction("local-server")) return;
     if (!this.validateUsername()) return;
     whenModalLoaded("join-lobby-modal", () => {
       if (this.inLobby) return;
@@ -998,25 +1082,34 @@ export class GameModeSelector extends LitElement {
     onClick: () => void,
     bgClass: string = SECONDARY_ACTION,
     badge?: number,
-    // Only the three multiplayer action cards (create/ranked/join) pass this;
-    // the solo card is never gated (see openSinglePlayerModal) and must never
-    // show as disabled here.
-    gated: boolean = false,
+    // Solo/tutorial are ungated; local-server actions use the host that
+    // rendered this page; registry actions require a compatible API pick.
+    gate: false | "local-server" | "registry" = false,
     adornment: TemplateResult | typeof nothing = nothing,
+    actionKey?: "create" | "ranked" | "join",
   ) {
     const blocked =
-      gated &&
-      shouldBlockMultiplayerAction(
-        this.desktopUpdateState,
-        this.desktopSessionState,
-        this.backendOutage,
-      );
+      gate === "local-server"
+        ? shouldBlockLocalServerAction(
+            this.desktopUpdateState,
+            this.desktopSessionState,
+            this.pageHasOwnServer(),
+          )
+        : gate === "registry"
+          ? shouldBlockRegistryAction(
+              this.desktopUpdateState,
+              this.desktopSessionState,
+              this.backendOutage,
+              this.registryHasCompatibleServer(),
+            )
+          : false;
     const disabled = !this.inputValid || this.inLobby;
     return html`
       <button
         @click=${onClick}
         ?disabled=${disabled}
         aria-disabled=${blocked || this.inLobby}
+        data-action-key=${actionKey ?? nothing}
         class="relative flex items-center justify-center w-full h-full rounded-lg ${bgClass} transition-all duration-200 text-sm lg:text-base font-medium text-white uppercase tracking-wider text-center ${
           disabled ? DISABLED : blocked ? "opacity-50 cursor-not-allowed" : ""
         }"

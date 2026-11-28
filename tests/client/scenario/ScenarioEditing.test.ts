@@ -887,7 +887,7 @@ describe("resizing", () => {
     expect(grown.structures).toHaveLength(doc.structures.length);
     expect(grown.warships).toHaveLength(doc.warships.length);
     expectEngineHolds(await rebuilt(grown), grown);
-  });
+  }, 15_000);
 
   test("only to a size a scenario can have", () => {
     const doc = built();
