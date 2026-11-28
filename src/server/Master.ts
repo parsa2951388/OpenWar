@@ -57,7 +57,42 @@ app.use(express.json());
 // server's public hostname; production deployments that use the Cloudflare
 // gateway continue to use that gateway directly.
 app.use(async (req, res, next) => {
-  const host = ServerEnv.publicHost() ?? ServerEnv.siteHost();
+  const host =
+    ServerEnv.publicHost() ??
+    ServerEnv.siteHost() ??
+    (process.env.OPENWAR_LOCAL_PREVIEW === "true"
+      ? process.env.RENDER_EXTERNAL_HOSTNAME
+      : undefined);
+
+  // The local preview registry is deliberately independent of API_ORIGIN:
+  // it must still work when Render's environment variables are incomplete.
+  if (
+    process.env.OPENWAR_LOCAL_PREVIEW === "true" &&
+    host !== undefined &&
+    req.path === "/cluster.json"
+  ) {
+    const incoming = new URL(req.originalUrl, `https://${host}`);
+    if (incoming.searchParams.get("site") !== host) {
+      res.status(404).json({ error: "unknown_site" });
+      return;
+    }
+    try {
+      res.setHeader("Cache-Control", "no-store");
+      res.json(
+        createLocalPreviewServerList(
+          host,
+          ServerEnv.instanceLetter(),
+          ServerEnv.numWorkers(),
+          ServerEnv.gitCommit(),
+        ),
+      );
+    } catch (error) {
+      log.error("Failed to build local preview server list:", error);
+      res.status(503).json({ error: "local_server_unavailable" });
+    }
+    return;
+  }
+
   if (host === undefined || ServerEnv.apiOrigin() !== `https://${host}`) {
     next();
     return;
@@ -80,30 +115,6 @@ app.use(async (req, res, next) => {
 
   try {
     const incoming = new URL(req.originalUrl, `https://${host}`);
-    if (
-      process.env.OPENWAR_LOCAL_PREVIEW === "true" &&
-      incoming.pathname === "/cluster.json"
-    ) {
-      if (incoming.searchParams.get("site") !== host) {
-        res.status(404).json({ error: "unknown_site" });
-        return;
-      }
-      try {
-        res.setHeader("Cache-Control", "no-store");
-        res.json(
-          createLocalPreviewServerList(
-            host,
-            ServerEnv.instanceLetter(),
-            ServerEnv.numWorkers(),
-            ServerEnv.gitCommit(),
-          ),
-        );
-      } catch (error) {
-        log.error("Failed to build local preview server list:", error);
-        res.status(503).json({ error: "local_server_unavailable" });
-      }
-      return;
-    }
     const response = await forwardOpenWarApiRequest({
       method: req.method,
       pathname: incoming.pathname,
