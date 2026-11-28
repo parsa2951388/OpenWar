@@ -166,6 +166,14 @@ export function joinLobby(
 ): JoinLobbyResult {
   // Joining a game stops a resume waiting to open the Store.
   cancelPendingResume();
+  // Start loading the large worker and font bundles while the lobby and
+  // WebSocket handshake are still in progress.
+  void preloadGameWorker().catch((error) => {
+    console.warn("lobby: worker preload failed; will retry at game start", error);
+  });
+  void preloadAtlasData().catch((error) => {
+    console.warn("lobby: font atlas preload failed; will retry at game start", error);
+  });
   // Mutable clientID state — assigned by server (multiplayer) or derived from gameStartInfo (singleplayer)
   let clientID: ClientID | undefined;
 
@@ -238,7 +246,6 @@ export function joinLobby(
   // the streak reaches the debounce threshold.
   let pendingPreloadKey: string | null = null;
   let pendingPreloadStreak = 0;
-  let startupAssetsPreloaded = false;
   const requestTerrainLoad = (
     map: Parameters<typeof loadCachedTerrainMap>[0],
     mapSize: Parameters<typeof loadCachedTerrainMap>[1],
@@ -323,25 +330,6 @@ export function joinLobby(
         }
         if (pendingPreloadStreak >= MAP_PRELOAD_DEBOUNCE_STREAK) {
           void requestTerrainLoad(gameConfig.gameMap, gameConfig.gameMapSize);
-          if (!startupAssetsPreloaded) {
-            startupAssetsPreloaded = true;
-            // Download the worker chunk and font metrics before the host
-            // starts the game. These are required at game creation anyway;
-            // preloading them in parallel with the map removes most of their
-            // network wait from the visible start transition.
-            void preloadGameWorker().catch((error) => {
-              console.warn(
-                "lobby: worker preload failed; will retry at game start",
-                error,
-              );
-            });
-            void preloadAtlasData().catch((error) => {
-              console.warn(
-                "lobby: font atlas preload failed; will retry at game start",
-                error,
-              );
-            });
-          }
         }
       }
       return;
