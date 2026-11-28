@@ -94,6 +94,7 @@ describe("Inventory navigation", () => {
       tag: "inventory-modal",
       pageId: "page-inventory",
     });
+    initNavigation();
 
     history.replaceState(null, "", "/#modal=inventory&tab=skins");
     expect(modalRouter.routeFromHash()).toBe(true);
@@ -116,4 +117,5 @@ describe("Inventory navigation", () => {
       );
     });
     expect(window.location.hash).toBe("#modal=inventory&tab=crowns");
-  });});
+  });
+});
