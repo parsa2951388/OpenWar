@@ -3,6 +3,7 @@ import {
   applyCheckinState,
   checkinBody,
   isRefusal,
+  registerClusterIdentity,
   sendCheckin,
 } from "../../src/server/ClusterCheckin";
 
@@ -153,6 +154,105 @@ describe("checkinBody", () => {
     vi.stubEnv("DOMAIN", "localhost");
     vi.stubEnv("GAME_ENV", "dev");
     expect(checkinBody(0)).toBeNull();
+  });
+});
+
+describe("registerClusterIdentity", () => {
+  beforeEach(() => {
+    vi.stubEnv("GAME_ENV", "dev");
+    vi.stubEnv("DOMAIN", "openfront.io");
+    vi.stubEnv("API_KEY", "registration-secret");
+    vi.stubEnv("SITE_HOST", "open-war-v2-solo-test.onrender.com");
+    vi.stubEnv("GAME_HOST", "open-war-v2-solo-test.onrender.com");
+    vi.stubEnv(
+      "API_ORIGIN",
+      "https://open-war-v2-solo-test.onrender.com",
+    );
+    vi.stubEnv("INSTANCE_LETTER", "");
+    vi.stubEnv("NUM_WORKERS", "1");
+  });
+  afterEach(() => vi.unstubAllEnvs());
+
+  test("registers a new site through the upstream API and uses its assigned identity", async () => {
+    const fetchFn = vi.fn(
+      async (_url: RequestInfo | URL, _init?: RequestInit) =>
+        new Response(JSON.stringify({ letter: "c", numWorkers: 4 }), {
+          status: 200,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+
+    await registerClusterIdentity(
+      fetchFn as unknown as typeof fetch,
+      4,
+    );
+
+    expect(fetchFn).toHaveBeenCalledTimes(1);
+    const [url, init] = vi.mocked(fetchFn).mock.calls[0] as unknown as [
+      string,
+      RequestInit,
+    ];
+    expect(url).toBe("https://api.openfront.io/cluster/register");
+    expect(init.method).toBe("POST");
+    expect(new Headers(init.headers).get("x-api-key")).toBe(
+      "registration-secret",
+    );
+    expect(JSON.parse(String(init.body))).toEqual({
+      site: "open-war-v2-solo-test.onrender.com",
+      host: "open-war-v2-solo-test.onrender.com",
+      cpus: 4,
+    });
+    expect(process.env.INSTANCE_LETTER).toBe("c");
+    // A worker count explicitly set by the Render service remains authoritative.
+    expect(process.env.NUM_WORKERS).toBe("1");
+  });
+
+  test("does not register again when both identity values are supplied", async () => {
+    vi.stubEnv("INSTANCE_LETTER", "b");
+    vi.stubEnv("NUM_WORKERS", "2");
+    const fetchFn = vi.fn();
+
+    await registerClusterIdentity(
+      fetchFn as unknown as typeof fetch,
+      2,
+    );
+
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  test("does not register local development without a public host", async () => {
+    vi.stubEnv("DOMAIN", "localhost");
+    vi.stubEnv("SITE_HOST", "");
+    vi.stubEnv("GAME_HOST", "");
+    vi.stubEnv("SUBDOMAIN", "");
+    vi.stubEnv("INSTANCE_LETTER", "");
+    vi.stubEnv("NUM_WORKERS", "");
+    const fetchFn = vi.fn();
+
+    await registerClusterIdentity(
+      fetchFn as unknown as typeof fetch,
+      2,
+    );
+
+    expect(fetchFn).not.toHaveBeenCalled();
+  });
+
+  test("fails fast when the registry refuses registration", async () => {
+    const fetchFn = vi.fn(
+      async (_url: RequestInfo | URL, _init?: RequestInit) =>
+        new Response(JSON.stringify({ error: "invalid_api_key" }), {
+          status: 403,
+          headers: { "Content-Type": "application/json" },
+        }),
+    );
+
+    await expect(
+      registerClusterIdentity(
+        fetchFn as unknown as typeof fetch,
+        4,
+      ),
+    ).rejects.toThrow("HTTP 403");
+    expect(fetchFn).toHaveBeenCalledTimes(1);
   });
 });
 
